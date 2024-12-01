@@ -25,12 +25,14 @@ public class ModItems {
 
     public static final DeferredItem<Item> TOMATO =
             ITEMS.registerItem("tomato", properties -> new Item(properties) {
+                // Using an anonymous class to create a tooltip inline instead of using a full class in ModItems
                 @Override
                 public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
                     pTooltipComponents.add(Component.translatable("tooltip.florafauna.tomato.1"));
                     super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
                 }
-            }, new Item.Properties().food(ModFoodProperties.TOMATO));
+            }, new Item.Properties().food(ModFoodProperties.TOMATO)); //This enables the tomato to be eaten
+
     public static final DeferredItem<Item> FROSTFIRE_ICE =
             ITEMS.registerItem("frostfire_ice", properties -> new FuelItem(properties, 800), new Item.Properties());
 
