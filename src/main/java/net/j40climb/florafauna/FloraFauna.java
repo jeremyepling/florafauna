@@ -1,6 +1,7 @@
 package net.j40climb.florafauna;
 
 import net.j40climb.florafauna.block.ModBlocks;
+import net.j40climb.florafauna.item.ModArmorMaterials;
 import net.j40climb.florafauna.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.item.ModItems;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -42,6 +43,7 @@ public class FloraFauna {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModArmorMaterials.register(modEventBus);
 
 
         // Register ourselves for server and other game events we are interested in.

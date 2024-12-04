@@ -4,15 +4,12 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.block.ModBlocks;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.*;
-import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
-import java.awt.*;
-
-public class ModBlockStateProvider extends BlockStateProvider {
-    public ModBlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
+public class BlockStateProvider extends net.neoforged.neoforge.client.model.generators.BlockStateProvider {
+    public BlockStateProvider(PackOutput output, ExistingFileHelper exFileHelper) {
         super(output, FloraFauna.MOD_ID, exFileHelper);
     }
 

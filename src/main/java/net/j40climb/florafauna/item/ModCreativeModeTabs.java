@@ -28,6 +28,20 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.TOMATO);
                         pOutput.accept(ModItems.FROSTFIRE_ICE);
 
+                        pOutput.accept(ModItems.BLACK_OPAL_SWORD);
+                        pOutput.accept(ModItems.BLACK_OPAL_PICKAXE);
+                        pOutput.accept(ModItems.BLACK_OPAL_AXE);
+                        pOutput.accept(ModItems.BLACK_OPAL_SHOVEL);
+                        pOutput.accept(ModItems.BLACK_OPAL_HOE);
+
+                        pOutput.accept(ModItems.BLACK_OPAL_PAXEL);
+                        pOutput.accept(ModItems.BLACK_OPAL_HAMMER);
+
+                        pOutput.accept(ModItems.BLACK_OPAL_HELMET);
+                        pOutput.accept(ModItems.BLACK_OPAL_CHESTPLATE);
+                        pOutput.accept(ModItems.BLACK_OPAL_LEGGINGS);
+                        pOutput.accept(ModItems.BLACK_OPAL_BOOTS);
+
                     }).build());
 
     public static final Supplier<CreativeModeTab> BLACK_OPAL_BLOCKS_TAB =
