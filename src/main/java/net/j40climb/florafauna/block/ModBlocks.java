@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.block;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.block.custom.BlackOpalLampBlock;
 import net.j40climb.florafauna.block.custom.MagicBlock;
 import net.j40climb.florafauna.item.ModItems;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -63,6 +64,10 @@ public class ModBlocks {
             () -> new DoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of().strength(4f).requiresCorrectToolForDrops().noOcclusion()));
     public static final DeferredBlock<Block> BLACK_OPAL_TRAPDOOR = registerBlock("black_opal_trapdoor",
             () -> new TrapDoorBlock(BlockSetType.IRON, BlockBehaviour.Properties.of().strength(4f).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final DeferredBlock<Block> BLACK_OPAL_LAMP = registerBlock("black_opal_lamp",
+            () -> new BlackOpalLampBlock(BlockBehaviour.Properties.of().strength(3f)
+                    .requiresCorrectToolForDrops().lightLevel(state -> state.getValue(BlackOpalLampBlock.CLICKED) ? 15 : 0)));
 
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {

@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "florafauna:item/data_tablet_off"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "florafauna:on": 1
+      },
+      "model": "florafauna:item/data_tablet_on"
+    }
+  ]
+}

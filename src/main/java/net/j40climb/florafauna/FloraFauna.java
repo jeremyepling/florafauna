@@ -1,9 +1,11 @@
 package net.j40climb.florafauna;
 
 import net.j40climb.florafauna.block.ModBlocks;
+import net.j40climb.florafauna.component.DataComponentTypes;
 import net.j40climb.florafauna.item.ModArmorMaterials;
 import net.j40climb.florafauna.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.item.ModItems;
+import net.j40climb.florafauna.util.ModItemProperties;
 import net.minecraft.world.item.CreativeModeTabs;
 import org.slf4j.Logger;
 
@@ -44,6 +46,7 @@ public class FloraFauna {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
+        DataComponentTypes.register(modEventBus);
 
 
         // Register ourselves for server and other game events we are interested in.
@@ -90,9 +93,7 @@ public class FloraFauna {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            // Some client setup code
-            LOGGER.info("HELLO FROM CLIENT SETUP");
-            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+            ModItemProperties.addCustomItemProperties();
         }
     }
 }

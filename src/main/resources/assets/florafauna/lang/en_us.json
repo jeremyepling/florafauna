@@ -4,6 +4,8 @@
   "item.florafauna.chainsaw": "Chainsaw",
   "item.florafauna.tomato": "Tomato",
   "item.florafauna.frostfire_ice": "Frostfire Ice",
+  "item.florafauna.metal_detector": "Metal Detector",
+  "item.florafauna.data_tablet": "Data Tablet",
 
   "item.florafauna.black_opal_sword": "Black Opal Sword",
   "item.florafauna.black_opal_pickaxe": "Black Opal Pickaxe",
@@ -40,6 +42,7 @@
   "block.florafauna.black_opal_door": "Black Opal Door",
   "block.florafauna.black_opal_trapdoor": "Black Opal Trapdoor",
 
+  "block.florafauna.black_opal_lamp": "Black Opal Lamp",
 
   "tooltip.florafauna.chainsaw.tooltip.shift": "Press §eShift§r for more Information!",
   "tooltip.florafauna.chainsaw.tooltip.1": "This chainsaw is awesome and will cut down trees!",
@@ -47,6 +50,8 @@
 
   "tooltip.florafauna.magic_block.tooltip.1": "This Block is §9MAGICAL§r",
   "tooltip.florafauna.tomato.1": "Tomato; Tomato",
+
+  "item.florafauna.metal_detector.no_valuables" : "No valuables found",
 
   "itemGroup.florafauna.black_opal_items_tab": "Black Opal Items",
   "itemGroup.florafauna.black_opal_blocks_tab": "Black Opal Blocks"

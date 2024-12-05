@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.item.custom;
 
+import net.j40climb.florafauna.component.DataComponentTypes;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -31,6 +32,8 @@ public class ChainsawItem extends Item {
 
                 pContext.getItemInHand().hurtAndBreak(1, ((ServerLevel) level), ((ServerPlayer) pContext.getPlayer()),
                         item -> Objects.requireNonNull(pContext.getPlayer()).onEquippedItemBroken(item, EquipmentSlot.MAINHAND));
+
+                pContext.getItemInHand().set(DataComponentTypes.COORDINATES.get(), pContext.getClickedPos());
             }
         }
 
@@ -44,6 +47,10 @@ public class ChainsawItem extends Item {
             pTooltipComponents.add(Component.translatable("tooltip.florafauna.chainsaw.tooltip.2"));
         } else {
             pTooltipComponents.add(Component.translatable("tooltip.florafauna.chainsaw.tooltip.shift"));
+        }
+
+        if(pStack.get(DataComponentTypes.COORDINATES.get()) != null) {
+            pTooltipComponents.add(Component.literal("Last Tree was chopped at " + pStack.get(DataComponentTypes.COORDINATES.get())));
         }
 
         super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);

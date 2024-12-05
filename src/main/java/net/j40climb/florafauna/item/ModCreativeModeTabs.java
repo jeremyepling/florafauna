@@ -28,6 +28,9 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.TOMATO);
                         pOutput.accept(ModItems.FROSTFIRE_ICE);
 
+                        pOutput.accept(ModItems.METAL_DETECTOR);
+                        pOutput.accept(ModItems.DATA_TABLET);
+
                         pOutput.accept(ModItems.BLACK_OPAL_SWORD);
                         pOutput.accept(ModItems.BLACK_OPAL_PICKAXE);
                         pOutput.accept(ModItems.BLACK_OPAL_AXE);
@@ -72,6 +75,8 @@ public class ModCreativeModeTabs {
 
                         pOutput.accept(ModBlocks.BLACK_OPAL_DOOR);
                         pOutput.accept(ModBlocks.BLACK_OPAL_TRAPDOOR);
+
+                        pOutput.accept(ModBlocks.BLACK_OPAL_LAMP);
 
                     }).build());
 
