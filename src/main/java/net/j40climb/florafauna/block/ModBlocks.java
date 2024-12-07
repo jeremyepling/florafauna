@@ -3,6 +3,7 @@ package net.j40climb.florafauna.block;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.block.custom.BlackOpalLampBlock;
 import net.j40climb.florafauna.block.custom.MagicBlock;
+import net.j40climb.florafauna.block.custom.PedestalBlock;
 import net.j40climb.florafauna.item.ModItems;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.BlockItem;
@@ -68,6 +69,10 @@ public class ModBlocks {
     public static final DeferredBlock<Block> BLACK_OPAL_LAMP = registerBlock("black_opal_lamp",
             () -> new BlackOpalLampBlock(BlockBehaviour.Properties.of().strength(3f)
                     .requiresCorrectToolForDrops().lightLevel(state -> state.getValue(BlackOpalLampBlock.CLICKED) ? 15 : 0)));
+
+    // No occlusion needed to show the block below since this block's base isn't a full block size
+    public static final DeferredBlock<Block> PEDESTAL = registerBlock("pedestal",
+            () -> new PedestalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)));
 
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {

@@ -1,6 +1,7 @@
 package net.j40climb.florafauna;
 
 import net.j40climb.florafauna.block.ModBlocks;
+import net.j40climb.florafauna.block.entity.ModBlockEntities;
 import net.j40climb.florafauna.component.DataComponentTypes;
 import net.j40climb.florafauna.item.ModArmorMaterials;
 import net.j40climb.florafauna.item.ModCreativeModeTabs;
@@ -47,6 +48,7 @@ public class FloraFauna {
         ModArmorMaterials.register(modEventBus);
         DataComponentTypes.register(modEventBus);
 
+        ModBlockEntities.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
