@@ -9,8 +9,10 @@ import java.util.Objects;
 
 public record FoundBlockData(BlockState block, BlockPos pos) {
     public static final Codec<FoundBlockData> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(BlockState.CODEC.fieldOf("block").forGetter(FoundBlockData::block),
-                    BlockPos.CODEC.fieldOf("position").forGetter(FoundBlockData::pos)).apply(instance, FoundBlockData::new));
+            instance.group(
+                    BlockState.CODEC.fieldOf("block").forGetter(FoundBlockData::block),
+                    BlockPos.CODEC.fieldOf("position").forGetter(FoundBlockData::pos)
+            ).apply(instance, FoundBlockData::new));
 
     public String getOutputString() {
         return block.getBlock().getName().getString() + " at " + "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
@@ -26,9 +28,9 @@ public record FoundBlockData(BlockState block, BlockPos pos) {
         if(obj == this) {
             return true;
         } else {
-            return obj instanceof FoundBlockData(
-                    BlockState block1, BlockPos pos1
-            ) && this.block == block1 && this.pos == pos1;
+            return obj instanceof FoundBlockData(BlockState block1, BlockPos pos1)
+                    && this.block == block1
+                    && this.pos == pos1;
         }
     }
 }

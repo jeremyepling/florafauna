@@ -31,6 +31,8 @@ public class ModCreativeModeTabs {
                         pOutput.accept(ModItems.METAL_DETECTOR);
                         pOutput.accept(ModItems.DATA_TABLET);
 
+                        pOutput.accept(ModItems.KAUPEN_BOW);
+
                         pOutput.accept(ModItems.BLACK_OPAL_SWORD);
                         pOutput.accept(ModItems.BLACK_OPAL_PICKAXE);
                         pOutput.accept(ModItems.BLACK_OPAL_AXE);

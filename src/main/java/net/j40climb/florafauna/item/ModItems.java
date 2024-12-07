@@ -7,6 +7,7 @@ import net.j40climb.florafauna.item.custom.HammerItem;
 import net.j40climb.florafauna.item.custom.PaxelItem;
 import net.j40climb.florafauna.item.custom.*;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BowItem;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.*;
 import net.neoforged.bus.api.IEventBus;
@@ -59,15 +60,6 @@ public class ModItems {
             () -> new HoeItem(ModToolTiers.BLACK_OPAL,
                     new Item.Properties().attributes(HoeItem.createAttributes(ModToolTiers.BLACK_OPAL, 3, -2.4f))));
 
-    // New custom items
-    public static final DeferredItem<Item> BLACK_OPAL_PAXEL = ITEMS.register("black_opal_paxel",
-            () -> new PaxelItem(ModToolTiers.BLACK_OPAL,
-                    new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.BLACK_OPAL, 1, -2.8f))));
-
-    public static final DeferredItem<Item> BLACK_OPAL_HAMMER = ITEMS.register("black_opal_hammer",
-            () -> new HammerItem(ModToolTiers.BLACK_OPAL,
-                    new Item.Properties().attributes(HammerItem.createAttributes(ModToolTiers.BLACK_OPAL, 8, -3.3f))));
-
 
     // Armor items
     public static final DeferredItem<Item> BLACK_OPAL_HELMET = ITEMS.register("black_opal_helmet",
@@ -86,11 +78,24 @@ public class ModItems {
             () -> new ArmorItem(ModArmorMaterials.BLACK_OPAL, ArmorItem.Type.BOOTS,
                     new Item.Properties().durability(ArmorItem.Type.BOOTS.getDurability(16))));
 
+
+    // New custom items
+    public static final DeferredItem<Item> BLACK_OPAL_PAXEL = ITEMS.register("black_opal_paxel",
+            () -> new PaxelItem(ModToolTiers.BLACK_OPAL,
+                    new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.BLACK_OPAL, 1, -2.8f))));
+
+    public static final DeferredItem<Item> BLACK_OPAL_HAMMER = ITEMS.register("black_opal_hammer",
+            () -> new HammerItem(ModToolTiers.BLACK_OPAL,
+                    new Item.Properties().attributes(HammerItem.createAttributes(ModToolTiers.BLACK_OPAL, 8, -3.3f))));
+
     public static final DeferredItem<Item> METAL_DETECTOR = ITEMS.register("metal_detector",
             () -> new MetalDetectorItem(new Item.Properties().durability(100)));
 
     public static final DeferredItem<Item> DATA_TABLET = ITEMS.register("data_tablet",
             () -> new DataTabletItem(new Item.Properties().stacksTo(1)));
+
+    public static final DeferredItem<Item> KAUPEN_BOW = ITEMS.register("kaupen_bow",
+            () -> new BowItem(new Item.Properties().durability(500)));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

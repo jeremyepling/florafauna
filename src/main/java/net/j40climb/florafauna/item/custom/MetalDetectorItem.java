@@ -27,10 +27,9 @@ public class MetalDetectorItem extends Item {
             BlockPos positionClicked = pContext.getClickedPos();
             Player player = pContext.getPlayer();
             boolean foundBlock = false;
-            // Add 64 since bedrock is -64 so it iterates from 0 to player position
-            int playerPosFromBedrock = positionClicked.getY() + 64;
+            int lowestYHeight = -64;
 
-            for(int i = 0; i <= playerPosFromBedrock; i++) {
+            for(int i = lowestYHeight; i <= positionClicked.getY(); i++) {
                 BlockState blockState = pContext.getLevel().getBlockState(positionClicked.below(i));
                 if(isValuableBlock(blockState)) {
                     outputValuableCoordinates(positionClicked.below(i), player, blockState.getBlock());

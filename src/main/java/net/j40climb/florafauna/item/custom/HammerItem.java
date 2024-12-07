@@ -1,22 +1,31 @@
 package net.j40climb.florafauna.item.custom;
 
+import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.HitRangeData;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class HammerItem extends DiggerItem {
+
     public HammerItem(Tier pTier, Properties pProperties) {
         // New tags in 1.21.30 make this easier #minecraft:iron_tier_destructible for all diggers or
         // #minecraft:is_pickaxe_item_destructible for pickaxe
-        super(pTier, BlockTags.MINEABLE_WITH_PICKAXE, pProperties);
+        super(pTier, BlockTags.MINEABLE_WITH_PICKAXE, pProperties.component(DataComponentTypes.HIT_RANGE, new HitRangeData(3, 1)));
     }
 
     public static List<BlockPos> getBlocksToBeDestroyed(int range, BlockPos initalBlockPos, ServerPlayer player) {
@@ -41,5 +50,14 @@ public class HammerItem extends DiggerItem {
             }
         }
         return positions;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
+        if(pStack.get(DataComponentTypes.HIT_RANGE.get()) != null) {
+            pTooltipComponents.add(Component.literal("Mining size " + Objects.requireNonNull(pStack.get(DataComponentTypes.HIT_RANGE)).range()));
+        }
+
+        super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
     }
 }

@@ -39,8 +39,6 @@ public class PaxelItem extends DiggerItem {
         BlockPos blockpos = pContext.getClickedPos();
         Player player = pContext.getPlayer();
 
-
-
         if (playerHasShieldUseIntent(pContext)) {
             return InteractionResult.PASS;
         } else {
