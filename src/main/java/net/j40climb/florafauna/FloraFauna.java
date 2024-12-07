@@ -7,7 +7,9 @@ import net.j40climb.florafauna.item.ModArmorMaterials;
 import net.j40climb.florafauna.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.item.ModItems;
 import net.j40climb.florafauna.util.ModItemProperties;
+import net.j40climb.florafauna.block.entity.renderer.PedestalBlockEntityRenderer;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -95,6 +97,11 @@ public class FloraFauna {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             ModItemProperties.addCustomItemProperties();
+        }
+
+        @SubscribeEvent
+        public static void registerBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(ModBlockEntities.PEDESTAL_BE.get(), PedestalBlockEntityRenderer::new);
         }
     }
 }
