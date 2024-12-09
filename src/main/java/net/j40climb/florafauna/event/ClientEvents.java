@@ -9,6 +9,7 @@ import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
 public class ClientEvents {
+
     @SubscribeEvent
     public static void onComputeFovModifierEvent(ComputeFovModifierEvent event) {
         if(event.getPlayer().isUsingItem() && event.getPlayer().getUseItem().getItem() == ModItems.KAUPEN_BOW.get()) {
@@ -24,5 +25,4 @@ public class ClientEvents {
             event.setNewFovModifier(fovModifier);
         }
     }
-
 }

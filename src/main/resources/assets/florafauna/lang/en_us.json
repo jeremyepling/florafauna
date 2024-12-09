@@ -44,7 +44,7 @@
   "block.florafauna.black_opal_trapdoor": "Black Opal Trapdoor",
 
   "block.florafauna.black_opal_lamp": "Black Opal Lamp",
-  "block.florafauna.pedestal": "Pedestal",
+  "blockentity.florafauna.pedestal": "Pedestal",
 
   "tooltip.florafauna.chainsaw.tooltip.shift": "Press §eShift§r for more Information!",
   "tooltip.florafauna.chainsaw.tooltip.1": "This chainsaw is awesome and will cut down trees!",
