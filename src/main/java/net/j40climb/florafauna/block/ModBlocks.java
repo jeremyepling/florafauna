@@ -70,7 +70,7 @@ public class ModBlocks {
             () -> new BlackOpalLampBlock(BlockBehaviour.Properties.of().strength(3f)
                     .requiresCorrectToolForDrops().lightLevel(state -> state.getValue(BlackOpalLampBlock.CLICKED) ? 15 : 0)));
 
-    // No occlusion needed to show the block below since this block's base isn't a full block size
+    // No occlusion needed to show the block below since this block's base isn't a full block maxBlocksToBreak
     public static final DeferredBlock<Block> PEDESTAL = registerBlock("pedestal",
             () -> new PedestalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)));
 

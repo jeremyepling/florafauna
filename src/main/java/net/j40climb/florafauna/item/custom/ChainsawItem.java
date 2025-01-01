@@ -34,9 +34,6 @@ public class ChainsawItem extends Item {
                         item -> Objects.requireNonNull(pContext.getPlayer()).onEquippedItemBroken(item, EquipmentSlot.MAINHAND));
 
                 pContext.getItemInHand().set(DataComponentTypes.COORDINATES.get(), pContext.getClickedPos());
-
-                // TODO: remove this was for testing
-                pContext.getItemInHand().set(DataComponentTypes.JEREMY.get(), 42);
             }
         }
 
@@ -54,9 +51,6 @@ public class ChainsawItem extends Item {
 
         if(pStack.get(DataComponentTypes.COORDINATES.get()) != null) {
             pTooltipComponents.add(Component.literal("Last Tree was chopped at " + pStack.get(DataComponentTypes.COORDINATES.get())));
-
-            // TODO: remove this was for testing
-            pTooltipComponents.add(Component.literal("Magic number " + pStack.get(DataComponentTypes.JEREMY.get())));
         }
 
         super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);

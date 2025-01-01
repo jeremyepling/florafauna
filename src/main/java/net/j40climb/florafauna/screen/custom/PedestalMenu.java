@@ -69,7 +69,7 @@ public class PedestalMenu extends AbstractContainerMenu {
             System.out.println("Invalid slotIndex:" + index);
             return ItemStack.EMPTY;
         }
-        // If stack size == 0 (the entire stack was moved) set slot contents to empty
+        // If stack maxBlocksToBreak == 0 (the entire stack was moved) set slot contents to empty
         if (sourceStack.getCount() == 0) {
             sourceSlot.set(ItemStack.EMPTY);
         } else {

@@ -1,7 +1,7 @@
-package net.j40climb.florafauna.event;
+package net.j40climb.florafauna.client.events;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.items.interfaces.DiggerTool;
+import net.j40climb.florafauna.item.custom.HammerItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,7 +15,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.Set;
 
-import static net.j40climb.florafauna.common.items.interfaces.DiggerTool.getBlocksToBeBroken;
+import static net.j40climb.florafauna.item.custom.HammerItem.getBlocksToBeBroken;
 
 /*
 This code came from https://github.com/Direwolf20-MC/JustDireThings/blob/32225177c42a25f32e69d46e342ea81dfed91a7f/src/main/java/com/direwolf20/justdirethings/client/events/PlayerEvents.java
@@ -31,12 +31,12 @@ public class PlayerEvents {
     public static void LeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         ItemStack itemStack = event.getItemStack();
 
-        if (itemStack.getItem() instanceof DiggerTool diggerTool && event.getFace() != null) {
-            PlayerEvents.doExtraCrumblings(event, itemStack, diggerTool);
+        if (itemStack.getItem() instanceof HammerItem hammerItem && event.getFace() != null) {
+            PlayerEvents.doExtraCrumblings(event);
         }
     }
 
-    static void doExtraCrumblings(PlayerInteractEvent.LeftClickBlock event, ItemStack itemStack, DiggerTool diggerTool) {
+    static void doExtraCrumblings(PlayerInteractEvent.LeftClickBlock event) {
 
         Player player = event.getEntity();
         Level level = player.level();
@@ -49,7 +49,7 @@ public class PlayerEvents {
             }
         }
         if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.STOP || event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.ABORT) { //Server Only
-            cancelBreaks(level, blockState, blockPos, player, diggerTool, itemStack);
+            cancelBreaks(level, blockState, blockPos, player);
         }
 
         if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.CLIENT_HOLD) { //Client Only
@@ -59,12 +59,14 @@ public class PlayerEvents {
                 PlayerEvents.gameTicksMining = 0;
                 destroyPos = blockPos;
             }
-            incrementDestroyProgress(level, blockState, blockPos, player, diggerTool, itemStack);
+            incrementDestroyProgress(level, blockState, blockPos, player);
         }
     }
 
-    static void incrementDestroyProgress(Level level, BlockState blockState, BlockPos pPos, Player player, DiggerTool diggerTool, ItemStack diggerItemStack) {
-        Set<BlockPos> breakBlockPositions = getBlocksToBeBroken(3, pPos, player);
+    static void incrementDestroyProgress(Level level, BlockState blockState, BlockPos pPos, Player player) {
+
+
+        Set<BlockPos> breakBlockPositions = getBlocksToBeBroken(pPos, player);
         int i = PlayerEvents.gameTicksMining;
         float f = blockState.getDestroyProgress(player, player.level(), pPos) * (float) (i + 1);
         int j = (int) (f * 10.0F);
@@ -77,8 +79,8 @@ public class PlayerEvents {
         }
     }
 
-    static void cancelBreaks(Level level, BlockState pState, BlockPos pPos, Player player, DiggerTool diggerItem, ItemStack diggerItemStack) {
-        Set<BlockPos> breakBlockPositions = getBlocksToBeBroken(3, pPos, player);
+    static void cancelBreaks(Level level, BlockState pState, BlockPos pPos, Player player) {
+        Set<BlockPos> breakBlockPositions = getBlocksToBeBroken(pPos, player);
         for (BlockPos blockPos : breakBlockPositions) {
             if (blockPos.equals(pPos)) continue; //Let the vanilla mechanics handle the block we're hitting
             player.level().destroyBlockProgress(player.getId() + generatePosHash(blockPos), blockPos, -1);

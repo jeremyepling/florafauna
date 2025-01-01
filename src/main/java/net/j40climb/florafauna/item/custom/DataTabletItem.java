@@ -19,21 +19,21 @@ public class DataTabletItem extends Item {
     
     @Override
     public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
-        if(pPlayer.getItemInHand(pUsedHand).get(DataComponentTypes.FOUND_BLOCK.get()) != null) {
-            pPlayer.getItemInHand(pUsedHand).set(DataComponentTypes.FOUND_BLOCK.get(), null);
+        if(pPlayer.getItemInHand(pUsedHand).get(DataComponentTypes.FOUND_BLOCK) != null) {
+            pPlayer.getItemInHand(pUsedHand).set(DataComponentTypes.FOUND_BLOCK, null);
         }
         return InteractionResultHolder.success(pPlayer.getItemInHand(pUsedHand));
     }
 
     @Override
     public boolean isFoil(ItemStack pStack) {
-        return pStack.get(DataComponentTypes.FOUND_BLOCK.get()) != null;
+        return pStack.get(DataComponentTypes.FOUND_BLOCK) != null;
     }
 
     @Override
     public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
-        if(pStack.get(DataComponentTypes.FOUND_BLOCK.get()) != null) {
-            pTooltipComponents.add(Component.literal(pStack.get(DataComponentTypes.FOUND_BLOCK.get()).getOutputString()));
+        if(pStack.get(DataComponentTypes.FOUND_BLOCK) != null) {
+            pTooltipComponents.add(Component.literal(pStack.get(DataComponentTypes.FOUND_BLOCK).getOutputString()));
         }
         super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
     }

@@ -17,20 +17,4 @@ public record FoundBlockData(BlockState block, BlockPos pos) {
     public String getOutputString() {
         return block.getBlock().getName().getString() + " at " + "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.block, this.pos);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj == this) {
-            return true;
-        } else {
-            return obj instanceof FoundBlockData(BlockState block1, BlockPos pos1)
-                    && this.block == block1
-                    && this.pos == pos1;
-        }
-    }
 }
