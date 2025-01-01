@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.item.custom;
 
-import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.component.MiningModeData;
 import net.j40climb.florafauna.component.MiningShape;
 import net.minecraft.core.BlockPos;
@@ -8,14 +8,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +25,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -45,7 +39,7 @@ public class HammerItem extends DiggerItem {
 
         // TODO Changing this to ModTags.Blocks.PAXEL_MINEABLE causes a max networking error
         super(pTier, BlockTags.MINEABLE_WITH_PICKAXE, pProperties
-                .component(DataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.FLAT_SQUARE, 1, 9))
+                .component(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.FLAT_SQUARE, 1, 9))
         );
     }
 
@@ -59,7 +53,7 @@ public class HammerItem extends DiggerItem {
 
         switch (traceResult.getType()) {
             case HitResult.Type.BLOCK:
-                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(DataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
+                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
                 if (miningModeData.shape() == MiningShape.SINGLE) {
                     positions.add(initalBlockPos);
                 }
@@ -277,14 +271,14 @@ public class HammerItem extends DiggerItem {
             ItemStack hammerItemStack = player.getMainHandItem();
 
             // Get current mode and shapeId
-            MiningModeData miningMode = hammerItemStack.getOrDefault(DataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
+            MiningModeData miningMode = hammerItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
             int shapeId = miningMode.shape().id();
 
             // Go to next shape
-            hammerItemStack.set(DataComponentTypes.MINING_MODE_DATA, MiningModeData.getNextMode(shapeId));
+            hammerItemStack.set(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.getNextMode(shapeId));
 
             // Output the change
-            MiningModeData miningModeManager2 = hammerItemStack.getOrDefault(DataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
+            MiningModeData miningModeManager2 = hammerItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
             player.sendSystemMessage(Component.literal("New Mining Mode: " + miningModeManager2.shape().name()));
 
         }
@@ -294,8 +288,8 @@ public class HammerItem extends DiggerItem {
 
     @Override
     public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
-        if(pStack.get(DataComponentTypes.MINING_MODE_DATA.get()) != null) {
-            MiningModeData miningModeData = Objects.requireNonNull(pStack.get(DataComponentTypes.MINING_MODE_DATA));
+        if(pStack.get(ModDataComponentTypes.MINING_MODE_DATA.get()) != null) {
+            MiningModeData miningModeData = Objects.requireNonNull(pStack.get(ModDataComponentTypes.MINING_MODE_DATA));
             pTooltipComponents.add(Component.literal("Mining shape:" + miningModeData.shape().name() + " radius:" + + miningModeData.radius()));
         }
         super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);

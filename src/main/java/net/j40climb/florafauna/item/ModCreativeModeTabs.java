@@ -20,32 +20,34 @@ public class ModCreativeModeTabs {
             CREATIVE_MODE_TABS.register("black_opal_items_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.florafauna.black_opal_items_tab"))
                     .icon(() -> new ItemStack(ModItems.BLACK_OPAL.get()))
-                    .displayItems((pParameters, pOutput) -> {
-                        pOutput.accept(ModItems.BLACK_OPAL);
-                        pOutput.accept(ModItems.RAW_BLACK_OPAL);
+                    .displayItems((pParameters, output) -> {
+                        output.accept(ModItems.BLACK_OPAL);
+                        output.accept(ModItems.RAW_BLACK_OPAL);
 
-                        pOutput.accept(ModItems.CHAINSAW);
-                        pOutput.accept(ModItems.TOMATO);
-                        pOutput.accept(ModItems.FROSTFIRE_ICE);
+                        output.accept(ModItems.CHAINSAW);
+                        output.accept(ModItems.TOMATO);
+                        output.accept(ModItems.FROSTFIRE_ICE);
 
-                        pOutput.accept(ModItems.METAL_DETECTOR);
-                        pOutput.accept(ModItems.DATA_TABLET);
+                        output.accept(ModItems.METAL_DETECTOR);
+                        output.accept(ModItems.DATA_TABLET);
 
-                        pOutput.accept(ModItems.KAUPEN_BOW);
+                        output.accept(ModItems.KAUPEN_BOW);
 
-                        pOutput.accept(ModItems.BLACK_OPAL_SWORD);
-                        pOutput.accept(ModItems.BLACK_OPAL_PICKAXE);
-                        pOutput.accept(ModItems.BLACK_OPAL_AXE);
-                        pOutput.accept(ModItems.BLACK_OPAL_SHOVEL);
-                        pOutput.accept(ModItems.BLACK_OPAL_HOE);
+                        output.accept(ModItems.BLACK_OPAL_SWORD);
+                        output.accept(ModItems.BLACK_OPAL_PICKAXE);
+                        output.accept(ModItems.BLACK_OPAL_AXE);
+                        output.accept(ModItems.BLACK_OPAL_SHOVEL);
+                        output.accept(ModItems.BLACK_OPAL_HOE);
 
-                        pOutput.accept(ModItems.BLACK_OPAL_PAXEL);
-                        pOutput.accept(ModItems.BLACK_OPAL_HAMMER);
+                        output.accept(ModItems.BLACK_OPAL_PAXEL);
+                        output.accept(ModItems.BLACK_OPAL_HAMMER);
 
-                        pOutput.accept(ModItems.BLACK_OPAL_HELMET);
-                        pOutput.accept(ModItems.BLACK_OPAL_CHESTPLATE);
-                        pOutput.accept(ModItems.BLACK_OPAL_LEGGINGS);
-                        pOutput.accept(ModItems.BLACK_OPAL_BOOTS);
+                        output.accept(ModItems.BLACK_OPAL_HELMET);
+                        output.accept(ModItems.BLACK_OPAL_CHESTPLATE);
+                        output.accept(ModItems.BLACK_OPAL_LEGGINGS);
+                        output.accept(ModItems.BLACK_OPAL_BOOTS);
+
+                        output.accept(ModItems.GECKO_SPAWN_EGG);
 
                     }).build());
 

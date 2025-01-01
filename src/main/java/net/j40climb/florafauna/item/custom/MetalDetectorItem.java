@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.item.custom;
 
-import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.component.FoundBlockData;
 import net.j40climb.florafauna.item.ModItems;
 import net.j40climb.florafauna.util.InventoryUtil;
@@ -51,7 +51,7 @@ public class MetalDetectorItem extends Item {
     private void addDataToDataTablet(Player player, BlockPos below, Block block) {
         ItemStack dataTablet = player.getInventory().getItem(InventoryUtil.getFirstInventoryIndex(player, ModItems.DATA_TABLET.get()));
         FoundBlockData data = new FoundBlockData(block.defaultBlockState(), below);
-        dataTablet.set(DataComponentTypes.FOUND_BLOCK, data);
+        dataTablet.set(ModDataComponentTypes.FOUND_BLOCK, data);
     }
     private void outputNoValuableFound(Player player) {
         player.sendSystemMessage(Component.translatable("item.florafauna.metal_detector.no_valuables"));

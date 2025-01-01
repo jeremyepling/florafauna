@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.event;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.component.MiningModeData;
 import net.j40climb.florafauna.item.ModItems;
 import net.j40climb.florafauna.item.custom.HammerItem;
@@ -52,7 +52,7 @@ public class BlockEvents {
                     return;
                 }
 
-                MiningModeData miningModeData = Objects.requireNonNull(mainHandItem.get(DataComponentTypes.MINING_MODE_DATA));
+                MiningModeData miningModeData = Objects.requireNonNull(mainHandItem.get(ModDataComponentTypes.MINING_MODE_DATA));
 
                 // Only do a hammer mine if the block being mined is the correct tool
                 if (hammer.isCorrectToolForDrops(mainHandItem, event.getLevel().getBlockState(initialBlockPos))) {

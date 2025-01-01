@@ -56,5 +56,18 @@
   "item.florafauna.metal_detector.no_valuables" : "No valuables found",
 
   "itemGroup.florafauna.black_opal_items_tab": "Black Opal Items",
-  "itemGroup.florafauna.black_opal_blocks_tab": "Black Opal Blocks"
+  "itemGroup.florafauna.black_opal_blocks_tab": "Black Opal Blocks",
+
+  "entity.florafauna.gecko": "Gecko",
+
+  "key.categories.florafauna": "Flora Fauna",
+  "key.florafauna.throw_hammer": "Throw Hammer",
+  "key.florafauna.teleport_surface": "Teleport to Surface",
+
+  "mode.florafauna.single_block" : "Single Block Mining",
+  "mode.florafauna.mode_3x3": "3x3 Mining",
+  "mode.florafauna.vein_mining": "Vein Mining",
+  "mode.florafauna.directional": "Directional Mining",
+  "mode.florafauna.tunnel_up": "Tunnel Up",
+  "mode.florafauna.tunnel_down": "Tunnel Down"
 }

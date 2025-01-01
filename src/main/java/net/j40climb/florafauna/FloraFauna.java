@@ -2,7 +2,8 @@ package net.j40climb.florafauna;
 
 import net.j40climb.florafauna.block.ModBlocks;
 import net.j40climb.florafauna.block.entity.ModBlockEntities;
-import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.ModDataComponentTypes;
+import net.j40climb.florafauna.entity.ModEntities;
 import net.j40climb.florafauna.item.ModArmorMaterials;
 import net.j40climb.florafauna.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.item.ModItems;
@@ -10,6 +11,8 @@ import net.j40climb.florafauna.screen.custom.PedestalScreen;
 import net.j40climb.florafauna.screen.ModMenuTypes;
 import net.j40climb.florafauna.util.ModItemProperties;
 import net.j40climb.florafauna.block.entity.renderer.PedestalBlockEntityRenderer;
+import net.j40climb.florafauna.entity.client.GeckoRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -51,7 +54,9 @@ public class FloraFauna {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
-        DataComponentTypes.register(modEventBus);
+        ModDataComponentTypes.register(modEventBus);
+
+        ModEntities.register(modEventBus);
 
         ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
@@ -101,6 +106,7 @@ public class FloraFauna {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             ModItemProperties.addCustomItemProperties();
+            EntityRenderers.register(ModEntities.GECKO.get(), GeckoRenderer::new);
         }
 
         @SubscribeEvent

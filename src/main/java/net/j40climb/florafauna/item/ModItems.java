@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.item;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.entity.ModEntities;
 import net.j40climb.florafauna.item.custom.ChainsawItem;
 import net.j40climb.florafauna.item.custom.FuelItem;
 import net.j40climb.florafauna.item.custom.HammerItem;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.*;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -96,6 +98,13 @@ public class ModItems {
 
     public static final DeferredItem<Item> KAUPEN_BOW = ITEMS.register("kaupen_bow",
             () -> new BowItem(new Item.Properties().durability(500)));
+
+    /*
+    / Entities
+     */
+    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.register("gecko_spawn_egg",
+            () -> new DeferredSpawnEggItem(ModEntities.GECKO, 0x31afaf, 0xffac00,
+                    new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

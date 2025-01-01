@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.util;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.item.ModItems;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
@@ -15,7 +15,7 @@ public class ModItemProperties {
                 ModItems.DATA_TABLET.get(),
                 ResourceLocation.fromNamespaceAndPath(
                         FloraFauna.MOD_ID, "on"),
-                (pStack, pLevel, pEntity, pSeed) -> pStack.get(DataComponentTypes.FOUND_BLOCK) != null ? 1f : 0f);
+                (pStack, pLevel, pEntity, pSeed) -> pStack.get(ModDataComponentTypes.FOUND_BLOCK) != null ? 1f : 0f);
 
         makeCustomBow(ModItems.KAUPEN_BOW.get());
     }

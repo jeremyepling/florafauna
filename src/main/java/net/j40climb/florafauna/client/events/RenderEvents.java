@@ -3,7 +3,7 @@ package net.j40climb.florafauna.client.events;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.component.DataComponentTypes;
+import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.component.MiningModeData;
 import net.j40climb.florafauna.component.MiningShape;
 import net.j40climb.florafauna.item.ModItems;
@@ -59,7 +59,7 @@ public class RenderEvents {
             Level level = player.level();
             BlockPos targetPos = evt.getTarget().getBlockPos();
 
-            MiningModeData miningModeData = mainHandItemStack.getOrDefault(DataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
+            MiningModeData miningModeData = mainHandItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
 
             Set<BlockPos> breakBlockPositions = HammerItem.getBlocksToBeBroken(targetPos, player);
             Vec3 vec3 = evt.getCamera().getPosition();
