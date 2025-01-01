@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public class GeckoRenderer extends MobRenderer<GeckoEntity, GeckoModel<GeckoEntity>> {
 
     public GeckoRenderer(EntityRendererProvider.Context context) {
-        super(context, new GeckoModel<>(context.bakeLayer(GeckoModel.GECKO)), 0.25f);
+        super(context, new GeckoModel<>(context.bakeLayer(GeckoModel.LAYER_LOCATION)), 0.25f);
     }
 
     @Override
