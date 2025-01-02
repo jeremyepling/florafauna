@@ -1,15 +1,32 @@
 package net.j40climb.florafauna.entity.client;
 
+import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.entity.GeckoVariant;
 import net.j40climb.florafauna.entity.custom.GeckoEntity;
+import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 public class GeckoRenderer extends MobRenderer<GeckoEntity, GeckoModel<GeckoEntity>> {
+    private static final Map<GeckoVariant, ResourceLocation> LOCATION_BY_VARIANT =
+            Util.make(Maps.newEnumMap(GeckoVariant.class), map -> {
+                map.put(GeckoVariant.BLUE,
+                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/gecko/gecko.png"));
+                map.put(GeckoVariant.GREEN,
+                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/gecko/gecko_green.png"));
+                map.put(GeckoVariant.PINK,
+                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/gecko/gecko_pink.png"));
+                map.put(GeckoVariant.BROWN,
+                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/gecko/gecko_brown.png"));
+            });
+
 
     public GeckoRenderer(EntityRendererProvider.Context context) {
         super(context, new GeckoModel<>(context.bakeLayer(GeckoModel.GECKO)), 0.25f);
@@ -17,7 +34,8 @@ public class GeckoRenderer extends MobRenderer<GeckoEntity, GeckoModel<GeckoEnti
 
     @Override
     public @NotNull ResourceLocation getTextureLocation(@NotNull GeckoEntity entity) {
-        return ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/gecko/gecko.png");
+        //return ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/gecko/gecko.png");
+        return LOCATION_BY_VARIANT.get(entity.getVariant());
     }
 
     @Override
