@@ -25,3 +25,4 @@ run-data
 
 repo
 /src/generated/
+/gradle/gradle-daemon-jvm.properties
