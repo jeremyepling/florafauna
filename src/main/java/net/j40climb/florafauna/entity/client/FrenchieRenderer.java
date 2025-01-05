@@ -39,13 +39,11 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieModel<
 
     @Override
     public void render(FrenchieEntity entity, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight) {
-
         if(entity.isBaby()) {
             poseStack.scale(0.45f, 0.45f, 0.45f);
         } else {
             poseStack.scale(1f, 1f, 1f);
         }
-
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 

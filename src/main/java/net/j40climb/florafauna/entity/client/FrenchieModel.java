@@ -90,9 +90,15 @@ public class FrenchieModel<T extends FrenchieEntity> extends HierarchicalModel<T
         } else if (entity.getPose() == Pose.SLEEPING) {
             entity.sleepAnimationState.startIfStopped((int) ageInTicks);
             animate(entity.sleepAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks);
-        } else if (limbSwingAmount > 0.1F ){
+        } else if (entity.getPose() == Pose.SITTING) {
+            entity.sleepAnimationState.startIfStopped((int) ageInTicks);
+            animate(entity.sleepAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks);
+        } else if (limbSwingAmount > 0.1F ) {
             this.animateWalk(FrenchieAnimations.ANIM_WALK, limbSwing, limbSwingAmount , 6F, 2.5F);
         }
+
+        this.animate(entity.sitDownAnimationState, FrenchieAnimations.ANIM_GO_TO_SLEEP, ageInTicks, 1.0F);
+        this.animate(entity.sitPoseAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks, 1.0F);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {

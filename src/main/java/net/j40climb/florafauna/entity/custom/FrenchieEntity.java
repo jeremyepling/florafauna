@@ -40,6 +40,7 @@ public class FrenchieEntity extends TamableAnimal {
     public final AnimationState sitDownAnimationState = new AnimationState();
     public final AnimationState sitPoseAnimationState = new AnimationState();
     public final AnimationState sitUpAnimationState = new AnimationState();
+
     public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
 
@@ -122,7 +123,7 @@ public class FrenchieEntity extends TamableAnimal {
     public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
         ItemStack itemstack = pPlayer.getItemInHand(pHand);
         Item item = itemstack.getItem();
-        Item itemForTaming = Items.APPLE;
+        Item itemForTaming = Items.BONE;
         if(item == itemForTaming && !isTame()) {
             if(this.level().isClientSide()) {
                 return InteractionResult.CONSUME;
@@ -150,6 +151,7 @@ public class FrenchieEntity extends TamableAnimal {
     public boolean isSitting() {
         return this.entityData.get(LAST_POSE_CHANGE_TICK) < 0L;
     }
+
     public void toggleSitting() {
         if (this.isSitting()) {
             standUp();
@@ -159,7 +161,7 @@ public class FrenchieEntity extends TamableAnimal {
     }
     public void sitDown() {
         if (!this.isSitting()) {
-            this.makeSound(SoundEvents.CAMEL_SIT);
+            //this.makeSound(SoundEvents.CAMEL_SIT);
             this.setPose(Pose.SITTING);
             this.gameEvent(GameEvent.ENTITY_ACTION);
             this.resetLastPoseChangeTick(-this.level().getGameTime());
@@ -169,7 +171,7 @@ public class FrenchieEntity extends TamableAnimal {
     }
     public void standUp() {
         if (this.isSitting()) {
-            this.makeSound(SoundEvents.CAMEL_STAND);
+            //this.makeSound(SoundEvents.CAMEL_STAND);
             this.setPose(Pose.STANDING);
             this.gameEvent(GameEvent.ENTITY_ACTION);
             this.resetLastPoseChangeTick(this.level().getGameTime());
@@ -246,15 +248,6 @@ public class FrenchieEntity extends TamableAnimal {
 
     }
 
-    private void setupAnimationStates() {
-        if (this.idleAnimationTimeout <= 0) {
-            this.idleAnimationTimeout = 40;
-            this.idleAnimationState.start(this.tickCount);
-        } else {
-            --this.idleAnimationTimeout;
-        }
-
-    }
     public boolean isInPoseTransition() {
         long i = this.getPoseTime();
         return i < (long) (this.isSitting() ? 40 : 52);
