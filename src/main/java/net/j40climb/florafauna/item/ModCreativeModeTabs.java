@@ -47,7 +47,12 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.BLACK_OPAL_LEGGINGS);
                         output.accept(ModItems.BLACK_OPAL_BOOTS);
 
+                        output.accept(ModItems.ENERGY_HAMMER);
+                        output.accept(ModItems.RADIATION_STAFF);
+
                         output.accept(ModItems.GECKO_SPAWN_EGG);
+                        output.accept(ModItems.LIZARD_SPAWN_EGG);
+                        output.accept(ModItems.FRENCHIE_SPAWN_EGG);
 
                     }).build());
 

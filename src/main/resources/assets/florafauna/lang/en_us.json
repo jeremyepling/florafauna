@@ -17,10 +17,17 @@
   "item.florafauna.black_opal_paxel": "Black Opal Paxel",
   "item.florafauna.black_opal_hammer": "Black Opal Hammer",
 
+  "item.florafauna.energy_hammer": "Energy Hammer",
+  "item.florafauna.radiation_staff": "Radiation Staff",
+
   "item.florafauna.black_opal_helmet": "Black Opal Helmet",
   "item.florafauna.black_opal_chestplate": "Black Opal Chestplate",
   "item.florafauna.black_opal_leggings": "Black Opal Leggings",
   "item.florafauna.black_opal_boots": "Black Opal Boots",
+
+  "item.florafauna.frenchie_spawn_egg": "Frenchie Spawn Egg",
+  "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
+  "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
 
 
   "block.florafauna.black_opal_block": "Block of Black Opal",
@@ -58,7 +65,10 @@
   "itemGroup.florafauna.black_opal_items_tab": "Black Opal Items",
   "itemGroup.florafauna.black_opal_blocks_tab": "Black Opal Blocks",
 
+  "entity.florafauna.frenchie": "Frenchie",
   "entity.florafauna.gecko": "Gecko",
+  "entity.florafauna.lizard": "Lizard",
+
 
   "key.categories.florafauna": "Flora Fauna",
   "key.florafauna.throw_hammer": "Throw Hammer",

@@ -39,7 +39,7 @@ public class HammerItem extends DiggerItem {
 
         // TODO Changing this to ModTags.Blocks.PAXEL_MINEABLE causes a max networking error
         super(pTier, BlockTags.MINEABLE_WITH_PICKAXE, pProperties
-                .component(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.FLAT_SQUARE, 1, 9))
+                .component(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData())
         );
     }
 
@@ -53,16 +53,14 @@ public class HammerItem extends DiggerItem {
 
         switch (traceResult.getType()) {
             case HitResult.Type.BLOCK:
-                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
-                if (miningModeData.shape() == MiningShape.SINGLE) {
-                    positions.add(initalBlockPos);
-                }
-                if (miningModeData.shape() == MiningShape.FLAT_SQUARE) {
-                    positions = findSurroundingBlocksInFlatSquare(player, initalBlockPos, traceResult, miningModeData.radius());
-                }
-                if (miningModeData.shape() == MiningShape.SHAPELESS) {
-                    BlockState blockState = player.level().getBlockState(traceResult.getBlockPos());
-                    positions = findSurroundingSameBlocksShapeless(player, blockState, initalBlockPos, 64, miningModeData.radius());
+                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData());
+                switch (miningModeData.shape()) {
+                    case MiningShape.SINGLE -> positions.add(initalBlockPos);
+                    case MiningShape.FLAT_3X3, MiningShape.FLAT_5X5, MiningShape.FLAT_7X7 -> positions = findSurroundingBlocksInFlatSquare(player, initalBlockPos, traceResult, miningModeData.radius());
+                    case MiningShape.SHAPELESS -> {
+                        BlockState blockState = player.level().getBlockState(traceResult.getBlockPos());
+                        positions = findSurroundingSameBlocksShapeless(player, blockState, initalBlockPos, miningModeData.maxBlocksToBreak(), miningModeData.radius());
+                    }
                 }
             case HitResult.Type.ENTITY:
                 // Handle entity hit
@@ -214,28 +212,6 @@ public class HammerItem extends DiggerItem {
         serverPlayer.connection.send(new ClientboundBlockDestructionPacket(pBreakerId, pPos, pProgress));
     }
 
-    public static boolean airBurst(Level level, Player player, ItemStack itemStack) {
-        int multiplier = 3;
-        if (!level.isClientSide) {
-            // Get the player's looking direction as a vector
-            Vec3 lookDirection = player.getViewVector(1.0F);
-            // Define the strength of the burst, adjust this value to change how strong the burst should be
-            double addedStrength = (double) multiplier / 2;
-            double burstStrength = 1.5 + addedStrength;
-            // Set the player's motion based on the look direction and burst strength
-            player.setDeltaMovement(lookDirection.x * burstStrength, lookDirection.y * burstStrength, lookDirection.z * burstStrength);
-            ((ServerPlayer) player).connection.send(new ClientboundSetEntityMotionPacket(player));
-            //player.hurtMarked = true; //This tells the server to move the client
-            player.resetFallDistance();
-            // Optionally, you could add some effects or sounds here
-            //damageTool(itemStack, player, Ability.AIRBURST, multiplier);
-            //PacketDistributor.sendToPlayer((ServerPlayer) player, new ClientSoundPayload(SoundEvents.FIRECHARGE_USE.getLocation(), 0.5f, 0.125f));
-            //level.playSound(player, player.getOnPos(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 0.5f, 0.125f);
-            return true;
-        }
-        return true;
-    }
-
     /**
      * Teleport drops from https://github.com/Direwolf20-MC/JustDireThings/blob/main/src/main/java/com/direwolf20/justdirethings/common/items/interfaces/Helpers.java#L352
      * TODO need to implement this
@@ -268,30 +244,31 @@ public class HammerItem extends DiggerItem {
             Level level = pContext.getLevel();
             BlockPos blockpos = pContext.getClickedPos();
             Player player = pContext.getPlayer();
-            ItemStack hammerItemStack = player.getMainHandItem();
+            if (player != null) {
+                ItemStack hammerItemStack = player.getMainHandItem();
 
-            // Get current mode and shapeId
-            MiningModeData miningMode = hammerItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
-            int shapeId = miningMode.shape().id();
+                // Get current mode and shapeId
+                MiningModeData miningMode = hammerItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData());
+                int shapeId = miningMode.shape().id();
 
-            // Go to next shape
-            hammerItemStack.set(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.getNextMode(shapeId));
+                // Go to next shape
+                hammerItemStack.set(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.getNextMode(shapeId));
 
-            // Output the change
-            MiningModeData miningModeManager2 = hammerItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
-            player.sendSystemMessage(Component.literal("New Mining Mode: " + miningModeManager2.shape().name()));
-
+                // Output the change
+                MiningModeData miningModeManager2 = hammerItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData());
+                player.displayClientMessage(Component.literal("New Mining Mode: " + miningModeManager2.shape().name()), true);
+            }
         }
 
         return InteractionResult.PASS;
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
-        if(pStack.get(ModDataComponentTypes.MINING_MODE_DATA.get()) != null) {
-            MiningModeData miningModeData = Objects.requireNonNull(pStack.get(ModDataComponentTypes.MINING_MODE_DATA));
-            pTooltipComponents.add(Component.literal("Mining shape:" + miningModeData.shape().name() + " radius:" + + miningModeData.radius()));
+    public void appendHoverText(ItemStack ItemStack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        if(ItemStack.get(ModDataComponentTypes.MINING_MODE_DATA.get()) != null) {
+            MiningModeData miningModeData = ItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData());
+            tooltipComponents.add(Component.literal("Mining shape:" + miningModeData.shape().name() + " radius:" + miningModeData.shape().getRadius()));
         }
-        super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
+        super.appendHoverText(ItemStack, context, tooltipComponents, tooltipFlag);
     }
 }

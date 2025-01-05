@@ -21,10 +21,15 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
             MiningModeData::new
     );
 
+    public MiningModeData() {
+        this(MiningShape.SINGLE, 0, 64);
+    }
+
     public static MiningModeData getNextMode(int currentShape) {
         if (currentShape == MiningShape.values().length - 1) {
             currentShape = 0;
         } else currentShape++;
-        return new MiningModeData(MiningShape.getShapeByID(currentShape),  1, 64);
+        MiningShape miningShape = MiningShape.getShapeByID(currentShape);
+        return new MiningModeData(miningShape,  miningShape.getRadius(), 64);
     }
 }

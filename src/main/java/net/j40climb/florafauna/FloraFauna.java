@@ -4,6 +4,8 @@ import net.j40climb.florafauna.block.ModBlocks;
 import net.j40climb.florafauna.block.entity.ModBlockEntities;
 import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.entity.ModEntities;
+import net.j40climb.florafauna.entity.client.FrenchieRenderer;
+import net.j40climb.florafauna.entity.client.LizardRenderer;
 import net.j40climb.florafauna.item.ModArmorMaterials;
 import net.j40climb.florafauna.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.item.ModItems;
@@ -107,6 +109,8 @@ public class FloraFauna {
         public static void onClientSetup(FMLClientSetupEvent event) {
             ModItemProperties.addCustomItemProperties();
             EntityRenderers.register(ModEntities.GECKO.get(), GeckoRenderer::new);
+            EntityRenderers.register(ModEntities.LIZARD.get(), LizardRenderer::new);
+            EntityRenderers.register(ModEntities.FRENCHIE.get(), FrenchieRenderer::new);
         }
 
         @SubscribeEvent

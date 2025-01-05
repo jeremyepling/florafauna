@@ -13,9 +13,11 @@ import java.util.Map;
 import java.util.function.IntFunction;
 
 public enum MiningShape implements StringRepresentable {
-    SINGLE(0, "single"),
-    FLAT_SQUARE(1, "flat_square"),
-    SHAPELESS(2, "shapeless");
+    SINGLE(0, "single", 0),
+    FLAT_3X3(1, "flat_3x3", 1),
+    FLAT_5X5(2, "flat_5x5", 2),
+    FLAT_7X7(3, "flat_7x7", 3),
+    SHAPELESS(4, "shapeless", 1);
 
     private static final IntFunction<MiningShape> BY_ID = ByIdMap.continuous(
             p_348119_ -> p_348119_.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO
@@ -24,11 +26,13 @@ public enum MiningShape implements StringRepresentable {
     static final StreamCodec<ByteBuf, MiningShape> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, p_348120_ -> p_348120_.id);
 
     private final int id;
+    private final int radius;
     private final String name;
 
-    MiningShape(int id, String name) {
+    MiningShape(int id, String name, int radius) {
         this.name = name;
         this.id = id;
+        this.radius = radius;
     }
 
     // Static map for lookup by id
@@ -45,6 +49,8 @@ public enum MiningShape implements StringRepresentable {
     public int getId() {
         return this.id;
     }
+
+    public int getRadius() { return this.radius; }
 
     public static MiningShape getShapeByID(int id) {
         return shapeByID.get(id);

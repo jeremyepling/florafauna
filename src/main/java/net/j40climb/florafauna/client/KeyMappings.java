@@ -15,8 +15,8 @@ public class KeyMappings {
     public static final String CATEGORY = "key.categories.florafauna";
 
     // Define key mappings
-    public static final KeyMapping THROW_HAMMER_KEY = new KeyMapping(
-            "key.florafauna.throw_hammer", // Translation key
+    public static final KeyMapping SUMMON_LIGHTNING_KEY = new KeyMapping(
+            "key.florafauna.summon_lightning", // Translation key
             KeyConflictContext.IN_GAME, // Only active in-game
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_R, // Default key is R
@@ -31,10 +31,18 @@ public class KeyMappings {
             CATEGORY
     );
 
+    public static final KeyMapping DASH_KEY = new KeyMapping(
+            "key.florafauna.dash",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_N,
+            CATEGORY
+    );
+
     // Register key mappings
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(THROW_HAMMER_KEY);
+        event.register(SUMMON_LIGHTNING_KEY);
         event.register(TELEPORT_SURFACE_KEY);
     }
 

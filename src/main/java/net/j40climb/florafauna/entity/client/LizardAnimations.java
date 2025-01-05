@@ -5,7 +5,7 @@ import net.minecraft.client.animation.AnimationDefinition;
 import net.minecraft.client.animation.Keyframe;
 import net.minecraft.client.animation.KeyframeAnimations;
 
-public class GeckoAnimations {
+public class LizardAnimations {
         public static final AnimationDefinition ANIM_GECKO_IDLE = AnimationDefinition.Builder.withLength(2.0F).looping()
                 .addAnimation("head", new AnimationChannel(AnimationChannel.Targets.ROTATION,
                         new Keyframe(0.0F, KeyframeAnimations.degreeVec(8.54F, 0.0F, 0.0F), AnimationChannel.Interpolations.LINEAR),
@@ -223,14 +223,6 @@ public class GeckoAnimations {
                         new Keyframe(0.5F, KeyframeAnimations.degreeVec(14.1824F, 25.7562F, 17.5327F), AnimationChannel.Interpolations.LINEAR),
                         new Keyframe(0.625F, KeyframeAnimations.degreeVec(14.2162F, 25.2003F, 21.3002F), AnimationChannel.Interpolations.LINEAR),
                         new Keyframe(1.0F, KeyframeAnimations.degreeVec(0.0F, 30.0F, 0.0F), AnimationChannel.Interpolations.LINEAR)
-                ))
-                .build();
-
-        public static final AnimationDefinition ANIM_GECKO_LICK = AnimationDefinition.Builder.withLength(0.3333F)
-                .addAnimation("tongueBone", new AnimationChannel(AnimationChannel.Targets.POSITION,
-                        new Keyframe(0.0F, KeyframeAnimations.posVec(0.0F, 0.0F, 0.0F), AnimationChannel.Interpolations.LINEAR),
-                        new Keyframe(0.1667F, KeyframeAnimations.posVec(0.0F, 0.0F, -1.0F), AnimationChannel.Interpolations.CATMULLROM),
-                        new Keyframe(0.3333F, KeyframeAnimations.posVec(0.0F, 0.0F, 0.0F), AnimationChannel.Interpolations.CATMULLROM)
                 ))
                 .build();
 }

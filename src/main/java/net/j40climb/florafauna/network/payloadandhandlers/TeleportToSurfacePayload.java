@@ -52,7 +52,13 @@ public enum TeleportToSurfacePayload implements CustomPacketPayload {
                     level.getBlockState(scanPos.above()).isAir() &&
                     level.getBlockState(scanPos.above(2)).isAir()) {
                 // Safe position found
-                player.teleportTo(scanPos.getX(), scanPos.getY(), scanPos.getZ());
+
+                // Calculate the center of the block and one up to account for feet
+                double centerX = scanPos.getX() + 0.5;
+                double centerY = scanPos.getY() + 1.5;
+                double centerZ = scanPos.getZ() + 0.5;
+
+                player.teleportTo(centerX, centerY, centerZ);
                 player.displayClientMessage(Component.literal("Teleported to surface!"), true);
                 return;
             }
