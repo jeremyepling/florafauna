@@ -1,7 +1,6 @@
 package net.j40climb.florafauna.entity.custom;
 
 import net.j40climb.florafauna.entity.ModEntities;
-import net.j40climb.florafauna.item.ModItems;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -9,18 +8,19 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-public class LizardEntity extends AbstractHorse {
+public class LizardEntity extends AbstractChestedHorse {
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
 
-    public LizardEntity(EntityType<? extends AbstractHorse> entityType, Level level) {
+    public LizardEntity(EntityType<? extends AbstractChestedHorse> entityType, Level level) {
         super(entityType, level);
     }
 
@@ -56,8 +56,8 @@ public class LizardEntity extends AbstractHorse {
     }
 
     @Override
-    public boolean isFood(ItemStack pStack) {
-        return pStack.is(ModItems.TOMATO.get());
+    public boolean isFood(ItemStack stack) {
+        return stack.is(Items.GLOW_BERRIES.asItem());
     }
 
     /* RIDEABLE */
@@ -81,10 +81,8 @@ public class LizardEntity extends AbstractHorse {
                     return InteractionResult.sidedSuccess(this.level().isClientSide);
                 }
             }
-            return super.mobInteract(pPlayer, pHand);
-        } else {
-            return super.mobInteract(pPlayer, pHand);
         }
+        return super.mobInteract(pPlayer, pHand);
     }
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity entity, EntityDimensions dimensions, float partialTick) {
@@ -92,4 +90,6 @@ public class LizardEntity extends AbstractHorse {
                 .add(new Vec3(0.0, -0.6, -0.5 * (double)partialTick)
                         .yRot(-this.getYRot() * (float) (Math.PI / 180.0)));
     }
+
+
 }

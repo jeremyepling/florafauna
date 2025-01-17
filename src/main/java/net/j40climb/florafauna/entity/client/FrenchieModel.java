@@ -87,10 +87,12 @@ public class FrenchieModel<T extends FrenchieEntity> extends HierarchicalModel<T
         // Got this from FrogModel
         if (entity.isInWaterOrBubble()) {
             this.animateWalk(FrenchieAnimations.ANIM_SWIM, limbSwing, limbSwingAmount * 5, 8F, 2.5F);
-        } else if (entity.getPose() == Pose.SLEEPING) {
+        }
+        else if (entity.getPose() == Pose.SLEEPING) {
             entity.sleepAnimationState.startIfStopped((int) ageInTicks);
             animate(entity.sleepAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks);
-        } else if (entity.getPose() == Pose.SITTING) {
+        }
+        else if (entity.getPose() == Pose.SITTING) {
             entity.sleepAnimationState.startIfStopped((int) ageInTicks);
             animate(entity.sleepAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks);
         } else if (limbSwingAmount > 0.1F ) {
