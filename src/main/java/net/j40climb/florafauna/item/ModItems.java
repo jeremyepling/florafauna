@@ -81,7 +81,7 @@ public class ModItems {
                     new Item.Properties().durability(ArmorItem.Type.BOOTS.getDurability(16))));
 
 
-    // New custom items
+    // Tutorial items
     public static final DeferredItem<Item> BLACK_OPAL_PAXEL = ITEMS.register("black_opal_paxel",
             () -> new PaxelItem(ModToolTiers.BLACK_OPAL,
                     new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.BLACK_OPAL, 1, -2.8f))));
@@ -99,11 +99,13 @@ public class ModItems {
     public static final DeferredItem<Item> KAUPEN_BOW = ITEMS.register("kaupen_bow",
             () -> new BowItem(new Item.Properties().durability(500)));
 
-    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.register("energy_hammer",
-            () -> new DataTabletItem(new Item.Properties().stacksTo(1).fireResistant()));
 
-    public static final DeferredItem<Item> RADIATION_STAFF = ITEMS.registerItem("radiation_staff",
-            properties -> new Item(properties.stacksTo(1)));
+    /*
+    / Mod items
+    */
+    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.register("energy_hammer",
+            () -> new EnergyHammerItem(ModToolTiers.BLACK_OPAL,
+                    new Item.Properties().fireResistant().attributes(EnergyHammerItem.createAttributes(ModToolTiers.BLACK_OPAL, 8, -3.3f))));
 
     /*
     / Entities

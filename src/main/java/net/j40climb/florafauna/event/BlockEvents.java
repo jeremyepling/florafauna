@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.event;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.client.BlockBreakUtils;
 import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.component.MiningModeData;
 import net.j40climb.florafauna.item.ModItems;
@@ -56,7 +57,7 @@ public class BlockEvents {
 
                 // Only do a hammer mine if the block being mined is the correct tool
                 if (hammer.isCorrectToolForDrops(mainHandItem, event.getLevel().getBlockState(initialBlockPos))) {
-                    for (BlockPos pos : HammerItem.getBlocksToBeBroken(initialBlockPos, serverPlayer)) {
+                    for (BlockPos pos : BlockBreakUtils.getBlocksToBeBroken(initialBlockPos, serverPlayer)) {
                         // Don't mine the position that was just mined, or a different type of block
                         if (pos == initialBlockPos || !hammer.isCorrectToolForDrops(mainHandItem, event.getLevel().getBlockState(pos))) {
                             continue;

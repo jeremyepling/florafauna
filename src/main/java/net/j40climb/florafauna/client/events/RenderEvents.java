@@ -3,11 +3,11 @@ package net.j40climb.florafauna.client.events;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.client.BlockBreakUtils;
 import net.j40climb.florafauna.component.ModDataComponentTypes;
 import net.j40climb.florafauna.component.MiningModeData;
 import net.j40climb.florafauna.component.MiningShape;
 import net.j40climb.florafauna.item.ModItems;
-import net.j40climb.florafauna.item.custom.HammerItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
@@ -55,13 +55,13 @@ public class RenderEvents {
             return;
         }
         ItemStack mainHandItemStack = player.getMainHandItem();
-        if (mainHandItemStack.getItem() instanceof HammerItem hammerItem) {
+        if (player.getMainHandItem().get(ModDataComponentTypes.MINING_MODE_DATA) != null) {
             Level level = player.level();
             BlockPos targetPos = evt.getTarget().getBlockPos();
 
             MiningModeData miningModeData = mainHandItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.SINGLE, 1, 1));
 
-            Set<BlockPos> breakBlockPositions = HammerItem.getBlocksToBeBroken(targetPos, player);
+            Set<BlockPos> breakBlockPositions = BlockBreakUtils.getBlocksToBeBroken(targetPos, player);
             Vec3 vec3 = evt.getCamera().getPosition();
             double d0 = vec3.x();
             double d1 = vec3.y();
