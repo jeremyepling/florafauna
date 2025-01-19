@@ -3,6 +3,7 @@ package net.j40climb.florafauna.client.events;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.BlockBreakUtils;
 import net.j40climb.florafauna.component.ModDataComponentTypes;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -22,8 +23,9 @@ public class PlayerEvents {
         ItemStack itemStack = event.getItemStack();
 
         Player player = event.getEntity();
-        if (player.getMainHandItem().get(ModDataComponentTypes.MINING_MODE_DATA) != null) {
-                BlockBreakUtils.doExtraCrumblings(event);
+
+        if (itemStack.get(ModDataComponentTypes.MINING_MODE_DATA) != null && player instanceof ServerPlayer serverPlayer) {
+            BlockBreakUtils.doExtraCrumblings(event);
         }
     }
 }

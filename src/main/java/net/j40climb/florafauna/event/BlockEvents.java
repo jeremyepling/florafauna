@@ -33,7 +33,7 @@ public class BlockEvents {
         // It's on the server and the action isn't restricted, like Spectator mode
         if (player instanceof ServerPlayer serverPlayer &&
                 !serverPlayer.blockActionRestricted(level, initialBlockPos, type)) {
-            BlockBreakUtils.breakWithMiningMode(mainHandItem, initialBlockPos, serverPlayer, level, type);
+            BlockBreakUtils.breakWithMiningMode(mainHandItem, initialBlockPos, serverPlayer, level);
         }
     }
 
