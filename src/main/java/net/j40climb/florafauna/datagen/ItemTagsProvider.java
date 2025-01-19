@@ -50,7 +50,6 @@ public class ItemTagsProvider extends net.minecraft.data.tags.ItemTagsProvider {
                 .add(ModItems.BLACK_OPAL_PAXEL.get());
         tag(ModTags.Items.HAMMERS)
                 .add(ModItems.BLACK_OPAL_HAMMER.get());
-
         tag(Tags.Items.MINING_TOOL_TOOLS)
                 .add(ModItems.BLACK_OPAL_PICKAXE.get())
                 .add(ModItems.BLACK_OPAL_PAXEL.get())

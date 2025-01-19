@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import static net.j40climb.florafauna.client.ClientUtils.raycastFromPlayer;
 
 public class BlockBreakUtils {
+    private static final Set<BlockPos> HARVESTED_BLOCKS = new HashSet<>();
     public static BlockPos destroyPos = BlockPos.ZERO;
     public static int gameTicksMining = 0;
 
@@ -52,13 +54,13 @@ public class BlockBreakUtils {
         }
     }
 
-    static void incrementDestroyProgress(Level level, BlockState blockState, BlockPos pPos, Player player) {
-        Set<BlockPos> breakBlockPositions = getBlocksToBeBroken(pPos, player);
+    static void incrementDestroyProgress(Level level, BlockState blockState, BlockPos initialBlockPos, Player player) {
+        Set<BlockPos> breakBlockPositions = getBlocksToBeBrokenWithMiningMode(initialBlockPos, player);
         int i = gameTicksMining;
-        float f = blockState.getDestroyProgress(player, player.level(), pPos) * (float) (i + 1);
+        float f = blockState.getDestroyProgress(player, player.level(), initialBlockPos) * (float) (i + 1);
         int j = (int) (f * 10.0F);
         for (BlockPos blockPos : breakBlockPositions) {
-            if (blockPos.equals(pPos)) continue; //Let the vanilla mechanics handle the block we're hitting
+            if (blockPos.equals(initialBlockPos)) continue; //Let the vanilla mechanics handle the block we're hitting
             if (level.isClientSide)
                 level.destroyBlockProgress(player.getId() + generatePosHash(blockPos), blockPos, j);
             else
@@ -67,21 +69,21 @@ public class BlockBreakUtils {
     }
 
     static void cancelBreaks(BlockPos pPos, Player player) {
-        Set<BlockPos> breakBlockPositions = getBlocksToBeBroken(pPos, player);
+        Set<BlockPos> breakBlockPositions = getBlocksToBeBrokenWithMiningMode(pPos, player);
         for (BlockPos blockPos : breakBlockPositions) {
             if (blockPos.equals(pPos)) continue; //Let the vanilla mechanics handle the block we're hitting
             player.level().destroyBlockProgress(player.getId() + generatePosHash(blockPos), blockPos, -1);
         }
     }
 
-    public static Set<BlockPos> getBlocksToBeBroken(BlockPos initalBlockPos, Player player) {
+    public static Set<BlockPos> getBlocksToBeBrokenWithMiningMode(BlockPos initalBlockPos, Player player) {
         Set<BlockPos> positions = new HashSet<>();
         float maxDistance = 6f; // Define the maximum raycast distance
         BlockHitResult traceResult = (BlockHitResult) raycastFromPlayer(player, maxDistance);
 
         switch (traceResult.getType()) {
             case HitResult.Type.BLOCK:
-                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData());
+                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
                 switch (miningModeData.shape()) {
                     case MiningShape.SINGLE -> positions.add(initalBlockPos);
                     case MiningShape.FLAT_3X3, MiningShape.FLAT_5X5, MiningShape.FLAT_7X7 -> positions = findSurroundingBlocksInFlatSquare(player, initalBlockPos, traceResult, miningModeData.radius());
@@ -105,10 +107,9 @@ public class BlockBreakUtils {
 
         for(int x = -radius; x <= radius; x++) {
             for(int y = -radius; y <= radius; y++) {
-                BlockState blockState = player.level().getBlockState(traceResult.getBlockPos());
                 BlockPos blockPosToCheck = null;
 
-                if (player.getMainHandItem().isCorrectToolForDrops(blockState)) { // Is the target block mineable
+                if (isValidToMine(player, initalBlockPos)) {
                     if (traceResult.getDirection() == Direction.DOWN || traceResult.getDirection() == Direction.UP) {
                         // Get the position of the block around the target
                         blockPosToCheck = new BlockPos(initalBlockPos.getX() + x, initalBlockPos.getY(), initalBlockPos.getZ() + y);
@@ -174,10 +175,10 @@ public class BlockBreakUtils {
         return foundBlocks;
     }
 
-    private static boolean isValidToMine(Player player, BlockPos blockPosToAdd) {
-        BlockState blockStateToAdd = player.level().getBlockState(blockPosToAdd);
+    private static boolean isValidToMine(Player player, BlockPos blockPosToCheck) {
+        BlockState blockStateToCheck = player.level().getBlockState(blockPosToCheck);
         // Are the surrounding blocks mineable
-        return player.getMainHandItem().isCorrectToolForDrops(blockStateToAdd) && !blockStateToAdd.isAir();
+        return player.getMainHandItem().isCorrectToolForDrops(blockStateToCheck) && !blockStateToCheck.isAir();
     }
 
     private static int generatePosHash(BlockPos blockPos) {
@@ -186,6 +187,33 @@ public class BlockBreakUtils {
 
     private static void sendDestroyBlockProgress(int pBreakerId, BlockPos pPos, int pProgress, ServerPlayer serverPlayer) {
         serverPlayer.connection.send(new ClientboundBlockDestructionPacket(pBreakerId, pPos, pProgress));
+    }
+
+    public static void breakWithMiningMode(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level, GameType type) {
+        // Does the item have the MiningMode component
+        if(mainHandItem.get(ModDataComponentTypes.MINING_MODE_DATA) != null ) {
+            // Don't havest the block twice
+            if (HARVESTED_BLOCKS.contains(initialBlockPos)) {
+                return;
+            }
+
+            // Only do a MiningMode if the block being mined is the correct tool
+            if (mainHandItem.isCorrectToolForDrops(level.getBlockState(initialBlockPos))) {
+                for (BlockPos blockPos : getBlocksToBeBrokenWithMiningMode(initialBlockPos, serverPlayer)) {
+                    // Don't mine the position that was just mined, or a different type of block
+                    if (blockPos == initialBlockPos || !mainHandItem.isCorrectToolForDrops(level.getBlockState(blockPos))) {
+                        continue;
+                    }
+
+                    HARVESTED_BLOCKS.add(blockPos);
+                    // Call destroy which runs this event again so we need the fast return above in if(HARVESTED_BLOCKS.contains(initialBlockPos))
+                    // If not, it would keep deleting and not move through the set, creating an infinite loop
+                    // https://courses.kaupenjoe.net/courses/modding-by-kaupenjoe-neoforge-modding-for-minecraft-1-21-x/lectures/55341862 at 10min in
+                    serverPlayer.gameMode.destroyBlock(blockPos);
+                    HARVESTED_BLOCKS.remove(blockPos);
+                }
+            }
+        }
     }
 
     /**

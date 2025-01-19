@@ -13,7 +13,7 @@ public class ModTags {
         public static final TagKey<Block> INCORRECT_FOR_BLACK_OPAL_TOOL = createTag("incorrect_for_black_opal_tool");
         public static final TagKey<Block> NEEDS_FOR_BLACK_OPAL_TOOL = createTag("needs_for_black_opal_tool");
 
-        public static final TagKey<Block> PAXEL_MINEABLE = createTag("mineable/paxel");
+        public static final TagKey<Block> MINEABLE_WITH_PAXEL = createTag("mineable/paxel");
 
         private static TagKey<Block> createTag(String name) {
             return BlockTags.create(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, name));

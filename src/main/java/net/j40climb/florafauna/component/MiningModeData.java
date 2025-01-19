@@ -21,15 +21,19 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
             MiningModeData::new
     );
 
-    public MiningModeData() {
-        this(MiningShape.SINGLE, 0, 64);
+    // Default mining mode instead of a contstructor like the Neoforge example https://docs.neoforged.net/docs/1.21.1/items/datacomponents#adding-default-data-components-to-items
+    public static final MiningModeData DEFAULT = new MiningModeData(MiningShape.SINGLE, 0, 64);
+
+    public MiningModeData getNextMode() {
+        int currentShapeIndex = this.shape().id();
+        if (currentShapeIndex == MiningShape.values().length - 1) {
+            currentShapeIndex = 0;
+        } else currentShapeIndex++;
+        MiningShape miningShape = MiningShape.getShapeByID(currentShapeIndex);
+        return new MiningModeData(miningShape,  miningShape.getRadius(), 64);
     }
 
-    public static MiningModeData getNextMode(int currentShape) {
-        if (currentShape == MiningShape.values().length - 1) {
-            currentShape = 0;
-        } else currentShape++;
-        MiningShape miningShape = MiningShape.getShapeByID(currentShape);
-        return new MiningModeData(miningShape,  miningShape.getRadius(), 64);
+    public String getMiningModeString() {
+        return "Mining Mode: " + this.shape().name();
     }
 }

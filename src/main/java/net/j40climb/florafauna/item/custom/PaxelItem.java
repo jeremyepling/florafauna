@@ -31,7 +31,7 @@ public class PaxelItem extends DiggerItem {
     protected static final Map<Block, Block> STRIPPABLES = Axe.getStrippables();
 
     public PaxelItem(Tier pTier, Properties pProperties) {
-        super(pTier, ModTags.Blocks.PAXEL_MINEABLE, pProperties);
+        super(pTier, ModTags.Blocks.MINEABLE_WITH_PAXEL, pProperties);
     }
 
     public InteractionResult useOn(UseOnContext pContext) {

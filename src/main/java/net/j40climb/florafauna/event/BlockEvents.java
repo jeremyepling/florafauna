@@ -2,13 +2,9 @@ package net.j40climb.florafauna.event;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.BlockBreakUtils;
-import net.j40climb.florafauna.component.ModDataComponentTypes;
-import net.j40climb.florafauna.component.MiningModeData;
 import net.j40climb.florafauna.item.ModItems;
-import net.j40climb.florafauna.item.custom.HammerItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -23,55 +19,21 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
 public class BlockEvents {
-    private static final Set<BlockPos> HARVESTED_BLOCKS = new HashSet<>();
 
     @SubscribeEvent
     public static void onBlockBreakEvent(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
         Level level = player.level();
         GameType type = player.getAbilities().instabuild ? GameType.CREATIVE : GameType.SURVIVAL;
+        ItemStack mainHandItem = player.getMainHandItem();
+        BlockPos initialBlockPos = event.getPos();
 
-        if (player instanceof ServerPlayer serverPlayer && level instanceof ServerLevel serverLevel) {
-            ItemStack mainHandItem = player.getMainHandItem();
-            BlockPos initialBlockPos = event.getPos();
-
-            // Don't do the action if it's restricted, like in Spectator mode
-            if (player.blockActionRestricted(level, initialBlockPos, type)) {
-                return;
-            }
-
-            // Actions for HammerItem
-            if(mainHandItem.getItem() instanceof HammerItem hammer) {
-
-                if (HARVESTED_BLOCKS.contains(initialBlockPos)) {
-                    return;
-                }
-
-                MiningModeData miningModeData = Objects.requireNonNull(mainHandItem.get(ModDataComponentTypes.MINING_MODE_DATA));
-
-                // Only do a hammer mine if the block being mined is the correct tool
-                if (hammer.isCorrectToolForDrops(mainHandItem, event.getLevel().getBlockState(initialBlockPos))) {
-                    for (BlockPos pos : BlockBreakUtils.getBlocksToBeBroken(initialBlockPos, serverPlayer)) {
-                        // Don't mine the position that was just mined, or a different type of block
-                        if (pos == initialBlockPos || !hammer.isCorrectToolForDrops(mainHandItem, event.getLevel().getBlockState(pos))) {
-                            continue;
-                        }
-
-                        HARVESTED_BLOCKS.add(pos);
-                        // Call destroy which runs this event again so we need the fast return above in if(HARVESTED_BLOCKS.contains(initialBlockPos))
-                        // If not, it would keep deleting and not move through the set, creating an infinite loop
-                        // https://courses.kaupenjoe.net/courses/modding-by-kaupenjoe-neoforge-modding-for-minecraft-1-21-x/lectures/55341862 at 10min in
-                        serverPlayer.gameMode.destroyBlock(pos);
-                        HARVESTED_BLOCKS.remove(pos);
-                    }
-                }
-            }
+        // It's on the server and the action isn't restricted, like Spectator mode
+        if (player instanceof ServerPlayer serverPlayer &&
+                !serverPlayer.blockActionRestricted(level, initialBlockPos, type)) {
+            BlockBreakUtils.breakWithMiningMode(mainHandItem, initialBlockPos, serverPlayer, level, type);
         }
     }
 

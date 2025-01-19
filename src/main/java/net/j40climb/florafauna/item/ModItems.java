@@ -2,13 +2,8 @@ package net.j40climb.florafauna.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.entity.ModEntities;
-import net.j40climb.florafauna.item.custom.ChainsawItem;
-import net.j40climb.florafauna.item.custom.FuelItem;
-import net.j40climb.florafauna.item.custom.HammerItem;
-import net.j40climb.florafauna.item.custom.PaxelItem;
 import net.j40climb.florafauna.item.custom.*;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BowItem;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.*;
 import net.neoforged.bus.api.IEventBus;
@@ -21,13 +16,7 @@ import java.util.List;
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FloraFauna.MOD_ID);
 
-    public static final DeferredItem<Item> BLACK_OPAL = ITEMS.registerSimpleItem("black_opal");
-    public static final DeferredItem<Item> RAW_BLACK_OPAL =
-            ITEMS.registerItem("raw_black_opal", Item::new, new Item.Properties());
-
-    public static final DeferredItem<Item> CHAINSAW =
-            ITEMS.registerItem("chainsaw", ChainsawItem::new, new Item.Properties().durability(32));
-
+    // Food
     public static final DeferredItem<Item> TOMATO =
             ITEMS.registerItem("tomato", properties -> new Item(properties) {
                 // Using an anonymous class to create a tooltip inline instead of using a full class in ModItems
@@ -38,8 +27,16 @@ public class ModItems {
                 }
             }, new Item.Properties().food(ModFoodProperties.TOMATO)); //This enables the tomato to be eaten
 
+
+    // Fuel
     public static final DeferredItem<Item> FROSTFIRE_ICE =
             ITEMS.registerItem("frostfire_ice", properties -> new FuelItem(properties, 800), new Item.Properties());
+
+    // Ores and materials
+
+    public static final DeferredItem<Item> BLACK_OPAL = ITEMS.registerSimpleItem("black_opal");
+    public static final DeferredItem<Item> RAW_BLACK_OPAL =
+            ITEMS.registerItem("raw_black_opal", Item::new, new Item.Properties());
 
     // Tools and weapons
     public static final DeferredItem<Item> BLACK_OPAL_SWORD = ITEMS.register("black_opal_sword",
@@ -62,6 +59,14 @@ public class ModItems {
             () -> new HoeItem(ModToolTiers.BLACK_OPAL,
                     new Item.Properties().attributes(HoeItem.createAttributes(ModToolTiers.BLACK_OPAL, 3, -2.4f))));
 
+    public static final DeferredItem<Item> BLACK_OPAL_PAXEL = ITEMS.register("black_opal_paxel",
+            () -> new PaxelItem(ModToolTiers.BLACK_OPAL,
+                    new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.BLACK_OPAL, 1, -2.8f))));
+
+    public static final DeferredItem<Item> BLACK_OPAL_HAMMER = ITEMS.register("black_opal_hammer",
+            () -> new HammerItem(ModToolTiers.BLACK_OPAL,
+                    new Item.Properties().attributes(HammerItem.createAttributes(ModToolTiers.BLACK_OPAL, 8, -3.3f))));
+
 
     // Armor items
     public static final DeferredItem<Item> BLACK_OPAL_HELMET = ITEMS.register("black_opal_helmet",
@@ -82,13 +87,7 @@ public class ModItems {
 
 
     // Tutorial items
-    public static final DeferredItem<Item> BLACK_OPAL_PAXEL = ITEMS.register("black_opal_paxel",
-            () -> new PaxelItem(ModToolTiers.BLACK_OPAL,
-                    new Item.Properties().attributes(PickaxeItem.createAttributes(ModToolTiers.BLACK_OPAL, 1, -2.8f))));
-
-    public static final DeferredItem<Item> BLACK_OPAL_HAMMER = ITEMS.register("black_opal_hammer",
-            () -> new HammerItem(ModToolTiers.BLACK_OPAL,
-                    new Item.Properties().attributes(HammerItem.createAttributes(ModToolTiers.BLACK_OPAL, 8, -3.3f))));
+    public static final DeferredItem<Item> CHAINSAW = ITEMS.register("chainsaw", ChainsawItem::new);
 
     public static final DeferredItem<Item> METAL_DETECTOR = ITEMS.register("metal_detector",
             () -> new MetalDetectorItem(new Item.Properties().durability(100)));
@@ -103,9 +102,7 @@ public class ModItems {
     /*
     / Mod items
     */
-    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.register("energy_hammer",
-            () -> new EnergyHammerItem(ModToolTiers.BLACK_OPAL,
-                    new Item.Properties().fireResistant().attributes(EnergyHammerItem.createAttributes(ModToolTiers.BLACK_OPAL, 8, -3.3f))));
+    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.register("energy_hammer", EnergyHammerItem::new);
 
     /*
     / Entities
@@ -121,7 +118,6 @@ public class ModItems {
     public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.register("frenchie_spawn_egg",
             () -> new DeferredSpawnEggItem(ModEntities.FRENCHIE, 0xe7d7a5, 0x7e5b41,
                     new Item.Properties()));
-
 
 
     public static void register(IEventBus eventBus) {

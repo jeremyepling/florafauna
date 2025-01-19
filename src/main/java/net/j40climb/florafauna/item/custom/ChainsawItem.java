@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class ChainsawItem extends Item {
-    public ChainsawItem(Properties pProperties) {
-        super(pProperties);
+    public ChainsawItem() {
+        super(new Item.Properties()
+                .stacksTo(1)
+                .durability(32));
     }
 
     @Override
