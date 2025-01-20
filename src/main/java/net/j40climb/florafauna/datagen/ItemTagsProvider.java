@@ -21,7 +21,7 @@ public class ItemTagsProvider extends net.minecraft.data.tags.ItemTagsProvider {
     }
 
     @Override
-    protected void addTags(HolderLookup.Provider pProvider) {
+    protected void addTags(HolderLookup.Provider provider) {
         // Tag for items that the magic block can transform
         tag(ModTags.Items.TRANSFORMABLE_ITEMS)
                 .add(ModItems.BLACK_OPAL.get())
@@ -34,6 +34,7 @@ public class ItemTagsProvider extends net.minecraft.data.tags.ItemTagsProvider {
         tag(ItemTags.PICKAXES)
                 .add(ModItems.BLACK_OPAL_PICKAXE.get())
                 .add(ModItems.BLACK_OPAL_HAMMER.get())
+                .add(ModItems.ENERGY_HAMMER.get())
                 .addTag(ModTags.Items.PAXELS);
         tag(ItemTags.SHOVELS)
                 .add(ModItems.BLACK_OPAL_SHOVEL.get())
@@ -47,7 +48,8 @@ public class ItemTagsProvider extends net.minecraft.data.tags.ItemTagsProvider {
 
         // Create my own tags and add my custom items to them
         tag(ModTags.Items.PAXELS)
-                .add(ModItems.BLACK_OPAL_PAXEL.get());
+                .add(ModItems.BLACK_OPAL_PAXEL.get())
+                .add(ModItems.ENERGY_HAMMER.get()); // This allows all the enchantments to work
         tag(ModTags.Items.HAMMERS)
                 .add(ModItems.BLACK_OPAL_HAMMER.get());
         tag(Tags.Items.MINING_TOOL_TOOLS)

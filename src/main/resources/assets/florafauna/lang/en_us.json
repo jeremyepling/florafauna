@@ -68,10 +68,11 @@
   "entity.florafauna.gecko": "Gecko",
   "entity.florafauna.lizard": "Lizard",
 
-
   "key.categories.florafauna": "Flora Fauna",
   "key.florafauna.throw_hammer": "Throw Hammer",
   "key.florafauna.teleport_surface": "Teleport to Surface",
+  "key.florafauna.dash": "Dash",
+  "key.florafauna.toggle_fortune_and_silk_touch": "Toggle Mining Mode",
 
   "mode.florafauna.single_block" : "Single Block Mining",
   "mode.florafauna.mode_3x3": "3x3 Mining",

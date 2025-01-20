@@ -26,21 +26,21 @@ public class EnergyHammerItem extends DiggerItem {
         // #minecraft:is_pickaxe_item_destructible for pickaxe
 
         // TODO Changing this to ModTags.Blocks.MINEABLE_WITH_PAXEL causes a max networking error
+        // BlockTags.MINEABLE_WITH_PICKAXE doesn't do anything - I don't think - since isCorrectTool is overridden
         // io.netty.handler.codec.EncoderException: java.io.UTFDataFormatException: encoded string (Tool[rul...Block=1]) too long: 81675 bytes
         super(Tiers.NETHERITE, BlockTags.MINEABLE_WITH_PICKAXE, new Properties()
-                .fireResistant()
                 .attributes(EnergyHammerItem.createAttributes(Tiers.NETHERITE, 8, -3.3f))
                 .component(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
-                .component(ModDataComponentTypes.MINING_SPEED, MiningSpeed.INSTABREAK)
+                .component(ModDataComponentTypes.MINING_SPEED, MiningSpeed.EFFICIENCY)
         );
     }
 
     @Override
-    public @NotNull InteractionResult useOn(UseOnContext pContext) {
-        if(!pContext.getLevel().isClientSide()) {
-            Level level = pContext.getLevel();
-            BlockPos blockpos = pContext.getClickedPos();
-            Player player = pContext.getPlayer();
+    public @NotNull InteractionResult useOn(UseOnContext useOnContext) {
+        if(!useOnContext.getLevel().isClientSide()) {
+            Level level = useOnContext.getLevel();
+            BlockPos blockpos = useOnContext.getClickedPos();
+            Player player = useOnContext.getPlayer();
             if (player != null) {
                 ItemStack hammerItemStack = player.getMainHandItem();
 
@@ -60,15 +60,16 @@ public class EnergyHammerItem extends DiggerItem {
     }
 
     @Override
-    public boolean isCorrectToolForDrops(ItemStack stack, BlockState state) {
-        return (state.is(BlockTags.MINEABLE_WITH_PICKAXE) || state.is(BlockTags.MINEABLE_WITH_SHOVEL) || state.is(BlockTags.MINEABLE_WITH_AXE) || state.is(BlockTags.MINEABLE_WITH_HOE) || state.is(BlockTags.SWORD_EFFICIENT));
+    public boolean isCorrectToolForDrops(ItemStack itemStack, BlockState blockState) {
+        // TODO what is the downside of just returning true?
+        return (blockState.is(BlockTags.MINEABLE_WITH_PICKAXE) || blockState.is(BlockTags.MINEABLE_WITH_SHOVEL) || blockState.is(BlockTags.MINEABLE_WITH_AXE) || blockState.is(BlockTags.MINEABLE_WITH_HOE) || blockState.is(BlockTags.SWORD_EFFICIENT));
     }
 
     @Override
-    public float getDestroySpeed(ItemStack itemStack, BlockState state) {
+    public float getDestroySpeed(ItemStack itemStack, BlockState blockState) {
         return switch (itemStack.getOrDefault(ModDataComponentTypes.MINING_SPEED, 2)) {
             case MiningSpeed.STANDARD ->
-                    (state.is(BlockTags.MINEABLE_WITH_PICKAXE) || state.is(BlockTags.MINEABLE_WITH_SHOVEL) || state.is(BlockTags.MINEABLE_WITH_AXE)) ? super.getDestroySpeed(itemStack, Blocks.COBBLESTONE.defaultBlockState()) : 1.0F;
+                    (blockState.is(BlockTags.MINEABLE_WITH_PICKAXE) || blockState.is(BlockTags.MINEABLE_WITH_SHOVEL) || blockState.is(BlockTags.MINEABLE_WITH_AXE)) ? super.getDestroySpeed(itemStack, Blocks.COBBLESTONE.defaultBlockState()) : 1.0F;
             case MiningSpeed.EFFICIENCY -> 35.0F;
             case MiningSpeed.INSTABREAK -> 100.0F;
             default ->
@@ -77,11 +78,11 @@ public class EnergyHammerItem extends DiggerItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack ItemStack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        if(ItemStack.get(ModDataComponentTypes.MINING_MODE_DATA.get()) != null) {
-            MiningModeData miningModeData = ItemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
+    public void appendHoverText(ItemStack itemStack, TooltipContext tooltipContext, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        if(itemStack.get(ModDataComponentTypes.MINING_MODE_DATA.get()) != null) {
+            MiningModeData miningModeData = itemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
             tooltipComponents.add(Component.literal(miningModeData.getMiningModeString()));
         }
-        super.appendHoverText(ItemStack, context, tooltipComponents, tooltipFlag);
+        super.appendHoverText(itemStack, tooltipContext, tooltipComponents, tooltipFlag);
     }
 }

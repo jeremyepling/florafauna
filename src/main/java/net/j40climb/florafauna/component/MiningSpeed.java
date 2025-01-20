@@ -20,8 +20,8 @@ public enum MiningSpeed implements StringRepresentable {
     private static final IntFunction<MiningSpeed> BY_ID = ByIdMap.continuous(
             p_348119_ -> p_348119_.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO
     );
-    static final Codec<MiningSpeed> CODEC = StringRepresentable.fromEnum(MiningSpeed::values);
-    static final StreamCodec<ByteBuf, MiningSpeed> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, m -> m.id);
+    public static final Codec<MiningSpeed> CODEC = StringRepresentable.fromEnum(MiningSpeed::values);
+    public static final StreamCodec<ByteBuf, MiningSpeed> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, m -> m.id);
 
     private final int id;
     private final String name;

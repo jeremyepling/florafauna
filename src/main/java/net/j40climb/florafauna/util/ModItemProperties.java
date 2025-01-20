@@ -11,11 +11,8 @@ import net.minecraft.world.item.Item;
 // TODO This should move to item model data components in 1.21.X
 public class ModItemProperties {
     public static void addCustomItemProperties() {
-        ItemProperties.register(
-                ModItems.DATA_TABLET.get(),
-                ResourceLocation.fromNamespaceAndPath(
-                        FloraFauna.MOD_ID, "on"),
-                (pStack, pLevel, pEntity, pSeed) -> pStack.get(ModDataComponentTypes.FOUND_BLOCK) != null ? 1f : 0f);
+        ItemProperties.register(ModItems.DATA_TABLET.get(), ResourceLocation.fromNamespaceAndPath(
+                        FloraFauna.MOD_ID, "on"), (pStack, pLevel, pEntity, pSeed) -> pStack.get(ModDataComponentTypes.FOUND_BLOCK) != null ? 1f : 0f);
 
         makeCustomBow(ModItems.KAUPEN_BOW.get());
     }

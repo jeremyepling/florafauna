@@ -18,5 +18,4 @@ public class HammerItem extends DiggerItem {
                 .component(ModDataComponentTypes.MINING_MODE_DATA, new MiningModeData(MiningShape.FLAT_3X3, 1, 64))
         );
     }
-
 }

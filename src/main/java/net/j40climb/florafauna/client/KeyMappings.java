@@ -31,11 +31,19 @@ public class KeyMappings {
             CATEGORY
     );
 
+    public static final KeyMapping TOGGLE_FORTUNE_AND_SILK_TOUCH = new KeyMapping(
+            "key.florafauna.toggle_fortune_and_silk_touch",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_MOUSE_BUTTON_4,
+            CATEGORY
+    );
+
     public static final KeyMapping DASH_KEY = new KeyMapping(
             "key.florafauna.dash",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_N,
+            GLFW.GLFW_MOUSE_BUTTON_5,
             CATEGORY
     );
 
@@ -44,6 +52,8 @@ public class KeyMappings {
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
         event.register(SUMMON_LIGHTNING_KEY);
         event.register(TELEPORT_SURFACE_KEY);
+        event.register(TOGGLE_FORTUNE_AND_SILK_TOUCH);
+        event.register(DASH_KEY);
     }
 
 }
