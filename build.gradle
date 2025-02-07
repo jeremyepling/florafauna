@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.75'
+    id 'idea'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -178,4 +179,16 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+}
+
+
+// https://discord.com/channels/313125603924639766/1185197721477468160/1330729872213151806
+// Thats basically for libraries that upload their sources into their maven, if u are on intellij when u
+// CTRL + Click into a function/variable/etc of a library it uses decompiled jar, but if you download the sources
+// (which there is a button for it when u are seeing the decompiled jar) you see the real code
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
 }

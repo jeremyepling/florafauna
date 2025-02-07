@@ -1,8 +1,8 @@
 package net.j40climb.florafauna.client;
 
-import net.j40climb.florafauna.component.MiningModeData;
-import net.j40climb.florafauna.component.MiningShape;
-import net.j40climb.florafauna.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.component.MiningModeData;
+import net.j40climb.florafauna.common.component.MiningShape;
+import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;

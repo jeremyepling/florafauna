@@ -1,28 +1,22 @@
 package net.j40climb.florafauna;
 
-import net.j40climb.florafauna.block.ModBlocks;
-import net.j40climb.florafauna.block.entity.ModBlockEntities;
-import net.j40climb.florafauna.component.ModDataComponentTypes;
-import net.j40climb.florafauna.entity.ModEntities;
-import net.j40climb.florafauna.entity.client.FrenchieRenderer;
-import net.j40climb.florafauna.entity.client.LizardRenderer;
-import net.j40climb.florafauna.item.ModArmorMaterials;
-import net.j40climb.florafauna.item.ModCreativeModeTabs;
-import net.j40climb.florafauna.item.ModItems;
-import net.j40climb.florafauna.screen.custom.PedestalScreen;
-import net.j40climb.florafauna.screen.ModMenuTypes;
-import net.j40climb.florafauna.util.ModItemProperties;
-import net.j40climb.florafauna.block.entity.renderer.PedestalBlockEntityRenderer;
-import net.j40climb.florafauna.entity.client.GeckoRenderer;
+import com.mojang.logging.LogUtils;
+import net.j40climb.florafauna.client.gui.ModMenuTypes;
+import net.j40climb.florafauna.client.gui.custom.PedestalScreen;
+import net.j40climb.florafauna.common.block.ModBlocks;
+import net.j40climb.florafauna.common.block.entity.ModBlockEntities;
+import net.j40climb.florafauna.common.block.entity.renderer.PedestalBlockEntityRenderer;
+import net.j40climb.florafauna.common.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.entity.ModEntities;
+import net.j40climb.florafauna.common.entity.client.FrenchieRenderer;
+import net.j40climb.florafauna.common.entity.client.GeckoRenderer;
+import net.j40climb.florafauna.common.entity.client.LizardRenderer;
+import net.j40climb.florafauna.common.item.ModArmorMaterials;
+import net.j40climb.florafauna.common.item.ModCreativeModeTabs;
+import net.j40climb.florafauna.common.item.ModItems;
+import net.j40climb.florafauna.common.util.ModItemProperties;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import org.slf4j.Logger;
-
-import com.mojang.logging.LogUtils;
-
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -32,8 +26,12 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(FloraFauna.MOD_ID)

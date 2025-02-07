@@ -2,7 +2,7 @@ package net.j40climb.florafauna.client.events;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.BlockBreakUtils;
-import net.j40climb.florafauna.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
