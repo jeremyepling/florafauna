@@ -16,14 +16,12 @@ import net.j40climb.florafauna.common.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.j40climb.florafauna.common.util.ModItemProperties;
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -66,20 +64,14 @@ public class FloraFauna {
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);
-
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
     }
 
-    // Add the example block item to the building blocks tab
+    // Add items to vanilla creative tabs
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
-            event.accept(ModItems.BLACK_OPAL);
-            event.accept(ModItems.RAW_BLACK_OPAL);
-        }
+        // No items to add to vanilla tabs currently
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

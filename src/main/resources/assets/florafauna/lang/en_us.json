@@ -1,6 +1,4 @@
 {
-  "item.florafauna.black_opal": "Black Opal",
-  "item.florafauna.raw_black_opal": "Raw Black Opal",
   "item.florafauna.chainsaw": "Chainsaw",
   "item.florafauna.tomato": "Tomato",
   "item.florafauna.frostfire_ice": "Frostfire Ice",
@@ -8,48 +6,16 @@
   "item.florafauna.data_tablet": "Data Tablet",
   "item.florafauna.kaupen_bow": "Kaupen Bow",
 
-  "item.florafauna.black_opal_sword": "Black Opal Sword",
-  "item.florafauna.black_opal_pickaxe": "Black Opal Pickaxe",
-  "item.florafauna.black_opal_axe": "Black Opal Axe",
-  "item.florafauna.black_opal_shovel": "Black Opal Shovel",
-  "item.florafauna.black_opal_hoe": "Black Opal Hoe",
-
-  "item.florafauna.black_opal_paxel": "Black Opal Paxel",
-  "item.florafauna.black_opal_hammer": "Black Opal Hammer",
 
   "item.florafauna.energy_hammer": "Energy Hammer",
 
-  "item.florafauna.black_opal_helmet": "Black Opal Helmet",
-  "item.florafauna.black_opal_chestplate": "Black Opal Chestplate",
-  "item.florafauna.black_opal_leggings": "Black Opal Leggings",
-  "item.florafauna.black_opal_boots": "Black Opal Boots",
 
   "item.florafauna.frenchie_spawn_egg": "Frenchie Spawn Egg",
   "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
   "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
 
-
-  "block.florafauna.black_opal_block": "Block of Black Opal",
-  "block.florafauna.raw_black_opal_block": "Raw Black Opal Block",
-
-  "block.florafauna.black_opal_ore": "Black Opal Ore",
-  "block.florafauna.black_opal_deepslate_ore": "Black Opal Deepslate Ore",
-  "block.florafauna.black_opal_end_ore": "Black Opal End Ore",
-  "block.florafauna.black_opal_nether_ore": "Black Opal Nether Ore",
-
   "block.florafauna.magic_block": "Magic Block",
 
-  "block.florafauna.black_opal_stairs": "Black Opal Stairs",
-  "block.florafauna.black_opal_slab": "Black Opal Slab",
-  "block.florafauna.black_opal_pressure_plate": "Black Opal Pressure Plate",
-  "block.florafauna.black_opal_button": "Black Opal Button",
-  "block.florafauna.black_opal_fence": "Black Opal Fence",
-  "block.florafauna.black_opal_fence_gate": "Black Opal Fence Gate",
-  "block.florafauna.black_opal_wall": "Black Opal Wall",
-  "block.florafauna.black_opal_door": "Black Opal Door",
-  "block.florafauna.black_opal_trapdoor": "Black Opal Trapdoor",
-
-  "block.florafauna.black_opal_lamp": "Black Opal Lamp",
   "blockentity.florafauna.pedestal": "Pedestal",
 
   "tooltip.florafauna.chainsaw.tooltip.shift": "Press §eShift§r for more Information!",
@@ -61,8 +27,8 @@
 
   "item.florafauna.metal_detector.no_valuables" : "No valuables found",
 
-  "itemGroup.florafauna.black_opal_items_tab": "Black Opal Items",
-  "itemGroup.florafauna.black_opal_blocks_tab": "Black Opal Blocks",
+  "itemGroup.florafauna.florafauna_items_tab": "Flora Fauna Items",
+  "itemGroup.florafauna.florafauna_blocks_tab": "Flora Fauna Blocks",
 
   "entity.florafauna.frenchie": "Frenchie",
   "entity.florafauna.gecko": "Gecko",
