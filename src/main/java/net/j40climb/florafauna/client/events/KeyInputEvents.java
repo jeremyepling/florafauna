@@ -56,45 +56,4 @@ public class KeyInputEvents {
             }
         }
     }
-
-
-// FROM DIRETHINGS
-// Handling key presses
-//    @SubscribeEvent
-//    public static void onKeyInput(InputEvent.Key event) {
-//
-//
-//        Minecraft mc = Minecraft.getInstance();
-//        if (mc.level == null || mc.player == null || mc.screen != null || event.getAction() != 1)
-//            return;
-//        Player player = mc.player;
-//        if (event.getAction() == InputConstants.PRESS) {
-//            if (player.getMainHandItem().getItem() instanceof HammerItem hammerItem) {
-//                if (KeyMappings.SUMMON_LIGHTNING_KEY.consumeClick()) {
-//                    BlockPos targetPos = player.blockPosition().offset((int) (player.getLookAngle().x * 5), (int) player.getLookAngle().y * 5, (int) player.getLookAngle().z * 5);
-//
-//                    PacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
-//                }
-//                if (KeyMappings.TELEPORT_SURFACE_KEY.consumeClick()) {
-//                    PacketDistributor.sendToServer(TeleportToSurfacePayload.INSTANCE);
-//                }
-//            }
-//
-//        }
-//    }
-//
-//    // Handling mouse clicks
-//    @SubscribeEvent
-//    public static void onMouseInput(InputEvent.MouseButton.Post event) {
-//        Minecraft mc = Minecraft.getInstance();
-//        if (mc.level == null || mc.player == null || mc.screen != null || event.getButton() == 0 || event.getButton() == 1 || event.getAction() != InputConstants.PRESS)
-//            return;
-//        Player player = mc.player;
-//        for (int i = 0; i < mc.player.getInventory().items.size(); i++) {
-//            ItemStack itemStack = mc.player.getInventory().getItem(i);
-//            if (itemStack.getItem() instanceof HammerItem hammerItem ) {
-////                activateAbilities(itemStack, event.getButton(), toggleableTool, player, i, true);
-//            }
-//        }
-//    }
 }
