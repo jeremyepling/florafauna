@@ -39,7 +39,7 @@ public class GeckoRenderer extends MobRenderer<GeckoEntity, GeckoModel<GeckoEnti
     }
 
     @Override
-    public void render(GeckoEntity entity, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    public void render(GeckoEntity entity, float entityYaw, float partialTicks, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int packedLight) {
 
         if(entity.isBaby()) {
             poseStack.scale(0.45f, 0.45f, 0.45f);

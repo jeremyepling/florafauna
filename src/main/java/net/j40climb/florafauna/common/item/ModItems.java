@@ -2,7 +2,9 @@ package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.ModEntities;
-import net.j40climb.florafauna.common.item.custom.*;
+import net.j40climb.florafauna.common.item.custom.DataTabletItem;
+import net.j40climb.florafauna.common.item.custom.EnergyHammerItem;
+import net.j40climb.florafauna.common.item.custom.MetalDetectorItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -29,15 +31,7 @@ public class ModItems {
                 }
             }, new Item.Properties().food(ModFoodProperties.TOMATO)); //This enables the tomato to be eaten
 
-
-    // Fuel
-    public static final DeferredItem<Item> FROSTFIRE_ICE =
-            ITEMS.registerItem("frostfire_ice", properties -> new FuelItem(properties, 800), new Item.Properties());
-
-
     // Tutorial items
-    public static final DeferredItem<Item> CHAINSAW = ITEMS.register("chainsaw", ChainsawItem::new);
-
     public static final DeferredItem<Item> METAL_DETECTOR = ITEMS.register("metal_detector",
             () -> new MetalDetectorItem(new Item.Properties().durability(100)));
 

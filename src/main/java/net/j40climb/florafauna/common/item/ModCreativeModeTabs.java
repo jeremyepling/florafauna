@@ -19,11 +19,9 @@ public class ModCreativeModeTabs {
     public static final Supplier<CreativeModeTab> FLORAFAUNA_ITEMS_TAB =
             CREATIVE_MODE_TABS.register("florafauna_items_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.florafauna.florafauna_items_tab"))
-                    .icon(() -> new ItemStack(ModItems.CHAINSAW.get()))
+                    .icon(() -> new ItemStack(ModItems.TOMATO.get()))
                     .displayItems((pParameters, output) -> {
-                        output.accept(ModItems.CHAINSAW);
                         output.accept(ModItems.TOMATO);
-                        output.accept(ModItems.FROSTFIRE_ICE);
 
                         output.accept(ModItems.METAL_DETECTOR);
                         output.accept(ModItems.DATA_TABLET);

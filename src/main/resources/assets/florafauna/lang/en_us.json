@@ -1,7 +1,5 @@
 {
-  "item.florafauna.chainsaw": "Chainsaw",
   "item.florafauna.tomato": "Tomato",
-  "item.florafauna.frostfire_ice": "Frostfire Ice",
   "item.florafauna.metal_detector": "Metal Detector",
   "item.florafauna.data_tablet": "Data Tablet",
   "item.florafauna.kaupen_bow": "Kaupen Bow",
@@ -17,10 +15,6 @@
   "block.florafauna.magic_block": "Magic Block",
 
   "blockentity.florafauna.pedestal": "Pedestal",
-
-  "tooltip.florafauna.chainsaw.tooltip.shift": "Press §eShift§r for more Information!",
-  "tooltip.florafauna.chainsaw.tooltip.1": "This chainsaw is awesome and will cut down trees!",
-  "tooltip.florafauna.chainsaw.tooltip.2": "§oChainsaw go vroom!§r",
 
   "tooltip.florafauna.magic_block.tooltip.1": "This Block is §9MAGICAL§r",
   "tooltip.florafauna.tomato.1": "Tomato; Tomato",

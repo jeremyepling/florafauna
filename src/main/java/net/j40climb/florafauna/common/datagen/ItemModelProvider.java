@@ -17,9 +17,7 @@ ItemModelProvider extends net.neoforged.neoforge.client.model.generators.ItemMod
 
     @Override
     protected void registerModels() {
-        basicItem(ModItems.CHAINSAW.get());
         basicItem(ModItems.TOMATO.get());
-        basicItem(ModItems.FROSTFIRE_ICE.get());
 
         basicItem(ModItems.METAL_DETECTOR.get());
 
