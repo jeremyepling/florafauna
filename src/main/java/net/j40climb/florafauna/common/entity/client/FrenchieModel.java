@@ -1,46 +1,38 @@
 package net.j40climb.florafauna.common.entity.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.custom.FrenchieEntity;
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.BabyModelTransform;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Pose;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
-public class FrenchieModel<T extends FrenchieEntity> extends HierarchicalModel<T> {
-    public static final ModelLayerLocation FRENCHIE =
-            new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie"), "frenchie"); // is path is folder under textures/entity?
+import java.util.Set;
+
+@OnlyIn(Dist.CLIENT)
+public class FrenchieModel extends EntityModel<FrenchieRenderState> {
+    public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 10.0F, 4.0F, Set.of("head"));
+
+
+    public static final ModelLayerLocation FRENCHIE = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie"), "frenchie"); // is path is folder under textures/entity?
+    public static final ModelLayerLocation FRENCHIE_BABY = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie_baby"), "frenchie_baby"); // is path is folder under textures/entity?
 
     private final ModelPart root;
     private final ModelPart head;
-    private final ModelPart earR;
-    private final ModelPart earL;
-    private final ModelPart tongueBone;
-    private final ModelPart torso;
-    private final ModelPart frontLegL;
-    private final ModelPart frontLegR;
-    private final ModelPart backLegL;
-    private final ModelPart backLegR;
-    private final ModelPart tail;
 
     public FrenchieModel(ModelPart root) {
+        super(root);
+
         this.root = root.getChild("root");
         this.head = this.root.getChild("head");
-        this.earR = this.head.getChild("earR");
-        this.earL = this.head.getChild("earL");
-        this.tongueBone = this.head.getChild("tongueBone");
-        this.torso = this.root.getChild("torso");
-        this.frontLegL = this.root.getChild("frontLegL");
-        this.frontLegR = this.root.getChild("frontLegR");
-        this.backLegL = this.root.getChild("backLegL");
-        this.backLegR = this.root.getChild("backLegR");
-        this.tail = this.root.getChild("tail");
+
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -80,27 +72,17 @@ public class FrenchieModel<T extends FrenchieEntity> extends HierarchicalModel<T
     }
 
     @Override
-    public void setupAnim(FrenchieEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.root().getAllParts().forEach(ModelPart::resetPose);
-        this.applyHeadRotation(netHeadYaw, headPitch);
+    public void setupAnim(FrenchieRenderState renderState) {  //FrenchieEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+        super.setupAnim(renderState);
+        this.applyHeadRotation(renderState.yRot, renderState.xRot);
 
-        // Got this from FrogModel
-        if (entity.isInWaterOrBubble()) {
-            this.animateWalk(FrenchieAnimations.ANIM_SWIM, limbSwing, limbSwingAmount * 5, 8F, 2.5F);
-        }
-        else if (entity.getPose() == Pose.SLEEPING) {
-            entity.sleepAnimationState.startIfStopped((int) ageInTicks);
-            animate(entity.sleepAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks);
-        }
-        else if (entity.getPose() == Pose.SITTING) {
-            entity.sleepAnimationState.startIfStopped((int) ageInTicks);
-            animate(entity.sleepAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks);
-        } else if (limbSwingAmount > 0.1F ) {
-            this.animateWalk(FrenchieAnimations.ANIM_WALK, limbSwing, limbSwingAmount , 6F, 2.5F);
+        if (renderState.isSwimming) {
+            this.animateWalk(FrenchieAnimations.ANIM_SWIM, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1F, 2.5F);
+        } else {
+            this.animateWalk(FrenchieAnimations.ANIM_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1.5F, 2.5F);
         }
 
-        this.animate(entity.sitDownAnimationState, FrenchieAnimations.ANIM_GO_TO_SLEEP, ageInTicks, 1.0F);
-        this.animate(entity.sitPoseAnimationState, FrenchieAnimations.ANIM_SLEEP, ageInTicks, 1.0F);
+        this.animate(renderState.idleAnimationState, FrenchieAnimations.ANIM_IDLE, renderState.ageInTicks, 1.0F);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {
@@ -109,15 +91,5 @@ public class FrenchieModel<T extends FrenchieEntity> extends HierarchicalModel<T
 
         this.head.yRot = headYaw * ((float)Math.PI / 180f);
         this.head.xRot = headPitch *  ((float)Math.PI / 180f);
-    }
-
-    @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color) {
-        root.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-    }
-
-    @Override
-    public ModelPart root() {
-        return root;
     }
 }

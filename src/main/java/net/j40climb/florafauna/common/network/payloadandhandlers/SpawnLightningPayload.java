@@ -7,6 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
@@ -34,7 +35,7 @@ public record SpawnLightningPayload(BlockPos targetPos) implements CustomPacketP
         }
 
         // Create the lightning bolt
-        LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(level);
+        LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
         if (lightningBolt != null) {
             lightningBolt.moveTo(Vec3.atBottomCenterOf(targetPos));
             // Summon the lightning bolt

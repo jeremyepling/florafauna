@@ -6,7 +6,6 @@ import net.j40climb.florafauna.common.util.ModTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
@@ -21,12 +20,6 @@ public class ItemTagsProvider extends net.minecraft.data.tags.ItemTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        // Tag for items that the magic block can transform
-        tag(ModTags.Items.TRANSFORMABLE_ITEMS)
-                .add(Items.COAL)
-                .add(Items.DANDELION)
-                .add(Items.COMPASS);
-
         tag(ItemTags.PICKAXES)
                 .add(ModItems.ENERGY_HAMMER.get())
                 .addTag(ModTags.Items.PAXELS);

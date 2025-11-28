@@ -1,3 +1,4 @@
+/*
 package net.j40climb.florafauna.common.entity.custom;
 
 import net.j40climb.florafauna.common.entity.ModEntities;
@@ -60,7 +61,8 @@ public class LizardEntity extends AbstractChestedHorse {
         return stack.is(Items.GLOW_BERRIES.asItem());
     }
 
-    /* RIDEABLE */
+// rideable
+
 
     @Override
     public boolean canUseSlot(EquipmentSlot slot) {
@@ -92,4 +94,4 @@ public class LizardEntity extends AbstractChestedHorse {
     }
 
 
-}
+} */

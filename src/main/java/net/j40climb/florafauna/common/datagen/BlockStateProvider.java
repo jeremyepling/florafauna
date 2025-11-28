@@ -1,7 +1,6 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.ModBlocks;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -14,7 +13,7 @@ public class BlockStateProvider extends net.neoforged.neoforge.client.model.gene
 
     @Override
     protected void registerStatesAndModels() {
-        blockWithItem(ModBlocks.MAGIC_BLOCK);
+        // No blocks with models currently
     }
 
     private void blockWithItem(DeferredBlock<Block> deferredBlock) {

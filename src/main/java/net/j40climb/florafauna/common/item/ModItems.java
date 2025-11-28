@@ -2,16 +2,19 @@ package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.ModEntities;
-import net.j40climb.florafauna.common.item.custom.DataTabletItem;
 import net.j40climb.florafauna.common.item.custom.EnergyHammerItem;
-import net.j40climb.florafauna.common.item.custom.MetalDetectorItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -21,46 +24,48 @@ public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FloraFauna.MOD_ID);
 
     // Food
-    public static final DeferredItem<Item> TOMATO =
-            ITEMS.registerItem("tomato", properties -> new Item(properties) {
+    public static final DeferredItem<Item> TOMATO = ITEMS.registerItem("tomato", properties ->
+            new Item(properties.component(DataComponents.CONSUMABLE,
+                    Consumable.builder()
+                            .consumeSeconds(1.6f)
+                            .animation(ItemUseAnimation.EAT)
+                            .sound(SoundEvents.GENERIC_EAT)
+                            .soundAfterConsume(SoundEvents.GENERIC_DRINK)
+                            .hasConsumeParticles(true)
+                            .onConsume(
+                                    new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.HUNGER, 600, 0), 0.3F)
+                            )
+                            .build()
+            )) {
                 // Using an anonymous class to create a tooltip inline instead of using a full class in ModItems
                 @Override
-                public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
-                    pTooltipComponents.add(Component.translatable("tooltip.florafauna.tomato.1"));
-                    super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
+                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+                    tooltipComponents.add(Component.translatable("tooltip.florafauna.tomato"));
                 }
-            }, new Item.Properties().food(ModFoodProperties.TOMATO)); //This enables the tomato to be eaten
-
-    // Tutorial items
-    public static final DeferredItem<Item> METAL_DETECTOR = ITEMS.register("metal_detector",
-            () -> new MetalDetectorItem(new Item.Properties().durability(100)));
-
-    public static final DeferredItem<Item> DATA_TABLET = ITEMS.register("data_tablet",
-            () -> new DataTabletItem(new Item.Properties().stacksTo(1)));
-
-    public static final DeferredItem<Item> KAUPEN_BOW = ITEMS.register("kaupen_bow",
-            () -> new BowItem(new Item.Properties().durability(500)));
+            }
+            );
 
 
     /*
     / Mod items
     */
-    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.register("energy_hammer", EnergyHammerItem::new);
+    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", EnergyHammerItem::new);
 
     /*
     / Entities
      */
-    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.register("gecko_spawn_egg",
-            () -> new DeferredSpawnEggItem(ModEntities.GECKO, 0x31afaf, 0xffac00,
-                    new Item.Properties()));
-
-    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.register("lizard_spawn_egg",
-            () -> new DeferredSpawnEggItem(ModEntities.LIZARD, 0xe7d7a5, 0x7e5b41,
-                    new Item.Properties()));
+//    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.register("gecko_spawn_egg",
+//            () -> new SpawnEggItem(ModEntities.GECKO.get(), 0x31afaf, 0xffac00,
+//                    new Item.Properties()));
+//
+//    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.register("lizard_spawn_egg",
+//            () -> new SpawnEggItem(ModEntities.LIZARD.get(), 0xe7d7a5, 0x7e5b41,
+//                    new Item.Properties()));
 
     public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.register("frenchie_spawn_egg",
-            () -> new DeferredSpawnEggItem(ModEntities.FRENCHIE, 0xe7d7a5, 0x7e5b41,
-                    new Item.Properties()));
+            () -> new SpawnEggItem(ModEntities.FRENCHIE.get(), 0xe7d7a5, 0x7e5b41,
+                    new Item.Properties().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("florafauna", "frenchie_spawn_egg")))));
 
 
     public static void register(IEventBus eventBus) {

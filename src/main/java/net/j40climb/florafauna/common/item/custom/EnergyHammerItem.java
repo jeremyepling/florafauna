@@ -6,12 +6,10 @@ import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -21,15 +19,23 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class EnergyHammerItem extends DiggerItem {
-    public EnergyHammerItem() {
+    public static final ToolMaterial HAMMER_MATERIAL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, // What can't be mined
+            59, // Durability
+            2.0F, // Mining speed
+            0.0F, // Attack damage bonus
+            15, // Enchantability
+            ItemTags.NETHERITE_TOOL_MATERIALS // Repair ingredient
+    );
+
+    public EnergyHammerItem(Item.Properties properties) {
         // New tags in 1.21.30 make this easier #minecraft:iron_tier_destructible for all diggers or
         // #minecraft:is_pickaxe_item_destructible for pickaxe
 
         // TODO Changing this to ModTags.Blocks.MINEABLE_WITH_PAXEL causes a max networking error
         // BlockTags.MINEABLE_WITH_PICKAXE doesn't do anything - I don't think - since isCorrectTool is overridden
         // io.netty.handler.codec.EncoderException: java.io.UTFDataFormatException: encoded string (Tool[rul...Block=1]) too long: 81675 bytes
-        super(Tiers.NETHERITE, BlockTags.MINEABLE_WITH_PICKAXE, new Properties()
-                .attributes(EnergyHammerItem.createAttributes(Tiers.NETHERITE, 8, -3.3f))
+        super(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -3.3f, properties
                 .component(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
                 .component(ModDataComponentTypes.MINING_SPEED, MiningSpeed.EFFICIENCY)
         );

@@ -1,10 +1,8 @@
 package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.ModBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
@@ -22,29 +20,10 @@ public class ModCreativeModeTabs {
                     .icon(() -> new ItemStack(ModItems.TOMATO.get()))
                     .displayItems((pParameters, output) -> {
                         output.accept(ModItems.TOMATO);
-
-                        output.accept(ModItems.METAL_DETECTOR);
-                        output.accept(ModItems.DATA_TABLET);
-
-                        output.accept(ModItems.KAUPEN_BOW);
-
                         output.accept(ModItems.ENERGY_HAMMER);
-
-                        output.accept(ModItems.GECKO_SPAWN_EGG);
-                        output.accept(ModItems.LIZARD_SPAWN_EGG);
+                        //output.accept(ModItems.GECKO_SPAWN_EGG);
+                        //output.accept(ModItems.LIZARD_SPAWN_EGG);
                         output.accept(ModItems.FRENCHIE_SPAWN_EGG);
-
-                    }).build());
-
-    public static final Supplier<CreativeModeTab> FLORAFAUNA_BLOCKS_TAB =
-            CREATIVE_MODE_TABS.register("florafauna_blocks_tab", () -> CreativeModeTab.builder()
-                    .title(Component.translatable("itemGroup.florafauna.florafauna_blocks_tab"))
-                    .icon(() -> new ItemStack(ModBlocks.MAGIC_BLOCK))
-                    .withTabsBefore(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "florafauna_items_tab"))
-                    .displayItems((pParameters, pOutput) -> {
-
-                        pOutput.accept(ModBlocks.MAGIC_BLOCK);
-                        pOutput.accept(ModBlocks.PEDESTAL);
 
                     }).build());
 

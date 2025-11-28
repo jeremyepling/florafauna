@@ -1,3 +1,4 @@
+/*
 package net.j40climb.florafauna.common.entity.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -127,3 +128,4 @@ public class LizardModel<T extends LizardEntity> extends HierarchicalModel<T> {
         return root;
     }
 }
+*/

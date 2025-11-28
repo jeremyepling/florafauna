@@ -1,3 +1,4 @@
+/*
 package net.j40climb.florafauna.common.entity.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -30,4 +31,4 @@ public class LizardRenderer extends MobRenderer<LizardEntity, LizardModel<Lizard
         }
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
-}
+}*/

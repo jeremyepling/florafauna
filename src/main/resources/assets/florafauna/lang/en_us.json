@@ -1,7 +1,5 @@
 {
   "item.florafauna.tomato": "Tomato",
-  "item.florafauna.metal_detector": "Metal Detector",
-  "item.florafauna.data_tablet": "Data Tablet",
   "item.florafauna.kaupen_bow": "Kaupen Bow",
 
 
@@ -12,17 +10,9 @@
   "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
   "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
 
-  "block.florafauna.magic_block": "Magic Block",
-
-  "blockentity.florafauna.pedestal": "Pedestal",
-
-  "tooltip.florafauna.magic_block.tooltip.1": "This Block is §9MAGICAL§r",
-  "tooltip.florafauna.tomato.1": "Tomato; Tomato",
-
-  "item.florafauna.metal_detector.no_valuables" : "No valuables found",
+  "tooltip.florafauna.tomato": "Tomato; Tomato",
 
   "itemGroup.florafauna.florafauna_items_tab": "Flora Fauna Items",
-  "itemGroup.florafauna.florafauna_blocks_tab": "Flora Fauna Blocks",
 
   "entity.florafauna.frenchie": "Frenchie",
   "entity.florafauna.gecko": "Gecko",

@@ -16,7 +16,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
-        dropSelf(ModBlocks.PEDESTAL.get());
+        // No blocks currently registered
     }
 
     @Override

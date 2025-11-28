@@ -1,6 +1,0 @@
-{
-  "parent": "florafauna:item/kaupen_bow",
-  "textures": {
-    "layer0": "florafauna:item/kaupen_bow_pulling_0"
-  }
-}

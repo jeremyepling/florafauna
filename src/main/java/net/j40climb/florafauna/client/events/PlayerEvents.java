@@ -15,7 +15,7 @@ This code came from https://github.com/Direwolf20-MC/JustDireThings/blob/3222517
 and has been modified for my needs.
  */
 
-@EventBusSubscriber(modid = FloraFauna.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public class PlayerEvents {
 
     @SubscribeEvent

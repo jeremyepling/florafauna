@@ -9,8 +9,7 @@ import net.neoforged.neoforge.client.model.generators.ItemModelBuilder;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredItem;
 
-public class
-ItemModelProvider extends net.neoforged.neoforge.client.model.generators.ItemModelProvider {
+public class ItemModelProvider extends net.neoforged.neoforge.client.model.generators.ItemModelProvider {
     public ItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
         super(output, FloraFauna.MOD_ID, existingFileHelper);
     }
@@ -19,10 +18,8 @@ ItemModelProvider extends net.neoforged.neoforge.client.model.generators.ItemMod
     protected void registerModels() {
         basicItem(ModItems.TOMATO.get());
 
-        basicItem(ModItems.METAL_DETECTOR.get());
-
-        withExistingParent(ModItems.GECKO_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
-        withExistingParent(ModItems.LIZARD_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
+        //withExistingParent(ModItems.GECKO_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
+        //withExistingParent(ModItems.LIZARD_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
         withExistingParent(ModItems.FRENCHIE_SPAWN_EGG.getId().getPath(), mcLoc("item/template_spawn_egg"));
     }
 

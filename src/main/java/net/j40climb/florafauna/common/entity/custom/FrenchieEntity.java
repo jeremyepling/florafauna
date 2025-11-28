@@ -33,21 +33,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FrenchieEntity extends TamableAnimal {
-    public final AnimationState idleAnimationState = new AnimationState();
-    public final AnimationState swimIdleAnimationState = new AnimationState();
-    public final AnimationState sleepAnimationState = new AnimationState();
 
+    public final AnimationState idleAnimationState = new AnimationState();
+    public final AnimationState swimAnimationState = new AnimationState();
+    public final AnimationState sleepAnimationState = new AnimationState();
     public final AnimationState sitDownAnimationState = new AnimationState();
     public final AnimationState sitPoseAnimationState = new AnimationState();
     public final AnimationState sitUpAnimationState = new AnimationState();
 
     public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
-
-    private int idleAnimationTimeout = 0;
-
     private static final EntityDataAccessor<Integer> VARIANT =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.INT);
+
+    private int idleAnimationTimeout = 0;
 
     public FrenchieEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -56,15 +55,11 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-
         this.goalSelector.addGoal(0, new SitWhenOrderedToGoal(this));
-
         this.goalSelector.addGoal(2, new BreedGoal(this, 1.0D));
         this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, Ingredient.of(Items.GLOW_BERRIES), false));
-
         this.goalSelector.addGoal(4, new FollowOwnerGoal(this, 1.25d, 18f, 7f));
         this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25));
-
         this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
@@ -74,7 +69,8 @@ public class FrenchieEntity extends TamableAnimal {
         return Animal.createLivingAttributes()
                 .add(Attributes.MAX_HEALTH, 10D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.FOLLOW_RANGE, 24D);
+                .add(Attributes.FOLLOW_RANGE, 24D)
+                .add(Attributes.TEMPT_RANGE, 10D);
     }
 
     @Override
@@ -89,9 +85,17 @@ public class FrenchieEntity extends TamableAnimal {
 
     @Nullable
     @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason, @Nullable SpawnGroupData spawnData) {
+        FrenchieVariant variant = Util.getRandom(FrenchieVariant.values(), this.random);
+        this.setVariant(variant);
+        return super.finalizeSpawn(level, difficulty, spawnReason, spawnData);
+    }
+
+    @Nullable
+    @Override
     public AgeableMob getBreedOffspring(@NotNull ServerLevel level, AgeableMob otherParent) {
         FrenchieVariant variant = Util.getRandom(FrenchieVariant.values(), this.random);
-        FrenchieEntity baby = ModEntities.FRENCHIE.get().create(level);
+        FrenchieEntity baby = ModEntities.FRENCHIE.get().create(level, EntitySpawnReason.BREEDING);
         assert baby != null;
         baby.setVariant(variant);
         return baby;
@@ -110,7 +114,7 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     public FrenchieVariant getVariant() {
-        return FrenchieVariant.byId(this.getTypeVariant() & 255);
+        return FrenchieVariant.byId(this.getTypeVariant() & 255); // used to compress the size with the 255
     }
 
     private void setVariant(FrenchieVariant variant) {
@@ -197,15 +201,6 @@ public class FrenchieEntity extends TamableAnimal {
         }
     }
 
-    @Override
-    public @NotNull SpawnGroupData finalizeSpawn(@NotNull ServerLevelAccessor level, DifficultyInstance difficulty,
-                                                 MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
-        FrenchieVariant variant = Util.getRandom(FrenchieVariant.values(), this.random);
-        this.setVariant(variant);
-        this.resetLastPoseChangeTickToFullStand(level.getLevel().getGameTime());
-        return super.finalizeSpawn(level, difficulty, spawnType, spawnGroupData);
-    }
-
     /* Animation */
 
     @Override
@@ -216,7 +211,7 @@ public class FrenchieEntity extends TamableAnimal {
             // Setup animation states
             if (this.idleAnimationTimeout <= 0) {
                 this.idleAnimationTimeout = 40; // 40 ticks is to seconds and that's the length of the idle animation
-                this.swimIdleAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
+                this.swimAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
 
                 this.idleAnimationState.start(this.tickCount);
             } else {

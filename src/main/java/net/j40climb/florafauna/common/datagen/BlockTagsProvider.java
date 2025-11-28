@@ -1,7 +1,6 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.ModBlocks;
 import net.j40climb.florafauna.common.util.ModTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -18,9 +17,6 @@ public class BlockTagsProvider extends net.neoforged.neoforge.common.data.BlockT
 
     @Override
     protected void addTags(HolderLookup.Provider pProvider) {
-        this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(ModBlocks.MAGIC_BLOCK.get());
-
         this.tag(ModTags.Blocks.MINEABLE_WITH_PAXEL)
                 .addTag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .addTag(BlockTags.MINEABLE_WITH_AXE)

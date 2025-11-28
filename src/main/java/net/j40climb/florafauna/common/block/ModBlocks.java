@@ -1,14 +1,10 @@
 package net.j40climb.florafauna.common.block;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.custom.MagicBlock;
-import net.j40climb.florafauna.common.block.custom.PedestalBlock;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,16 +14,6 @@ import java.util.function.Supplier;
 public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS =
             DeferredRegister.createBlocks(FloraFauna.MOD_ID);
-
-
-
-    public static final DeferredBlock<Block> MAGIC_BLOCK = registerBlock("magic_block",
-            () -> new MagicBlock(BlockBehaviour.Properties.of().strength(4f).requiresCorrectToolForDrops().noLootTable()));
-
-
-    // No occlusion needed to show the block below since this block's base isn't a full block maxBlocksToBreak
-    public static final DeferredBlock<Block> PEDESTAL = registerBlock("pedestal",
-            () -> new PedestalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)));
 
 
     private static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block) {
@@ -44,3 +30,6 @@ public class ModBlocks {
         BLOCKS.register(eventBus);
     }
 }
+
+
+

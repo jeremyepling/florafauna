@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.BlockBreakUtils;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
-import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
@@ -21,29 +20,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 
 import java.util.Set;
 
-@EventBusSubscriber(modid = FloraFauna.MOD_ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+@EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class RenderEvents {
-
-    @SubscribeEvent
-    public static void onComputeFovModifierEvent(ComputeFovModifierEvent event) {
-        if(event.getPlayer().isUsingItem() && event.getPlayer().getUseItem().getItem() == ModItems.KAUPEN_BOW.get()) {
-            float fovModifier = 1f;
-            int ticksUsingItem = event.getPlayer().getTicksUsingItem();
-            float deltaTicks = (float)ticksUsingItem / 20f;
-            if(deltaTicks > 1f) {
-                deltaTicks = 1f;
-            } else {
-                deltaTicks *= deltaTicks;
-            }
-            fovModifier *= 1f - deltaTicks * 0.15f;
-            event.setNewFovModifier(fovModifier);
-        }
-    }
 
     @SubscribeEvent
     static void renderBlockHighlight(RenderHighlightEvent.Block evt) {
@@ -109,7 +91,7 @@ public class RenderEvents {
             float pBlue,
             float pAlpha
     ) {
-        PoseStack.Pose posestack$pose = pPoseStack.last();
+        PoseStack.Pose pose = pPoseStack.last();
         pShape.forAllEdges(
                 (p_234280_, p_234281_, p_234282_, p_234283_, p_234284_, p_234285_) -> {
                     float f = (float) (p_234283_ - p_234280_);
@@ -119,12 +101,12 @@ public class RenderEvents {
                     f /= f3;
                     f1 /= f3;
                     f2 /= f3;
-                    pConsumer.addVertex(posestack$pose.pose(), (float) (p_234280_ + pX), (float) (p_234281_ + pY), (float) (p_234282_ + pZ))
+                    pConsumer.addVertex(pose.pose(), (float) (p_234280_ + pX), (float) (p_234281_ + pY), (float) (p_234282_ + pZ))
                             .setColor(pRed, pGreen, pBlue, pAlpha)
-                            .setNormal(posestack$pose, f, f1, f2);
-                    pConsumer.addVertex(posestack$pose.pose(), (float) (p_234283_ + pX), (float) (p_234284_ + pY), (float) (p_234285_ + pZ))
+                            .setNormal(pose, f, f1, f2);
+                    pConsumer.addVertex(pose.pose(), (float) (p_234283_ + pX), (float) (p_234284_ + pY), (float) (p_234285_ + pZ))
                             .setColor(pRed, pGreen, pBlue, pAlpha)
-                            .setNormal(posestack$pose, f, f1, f2);
+                            .setNormal(pose, f, f1, f2);
                 }
         );
     }

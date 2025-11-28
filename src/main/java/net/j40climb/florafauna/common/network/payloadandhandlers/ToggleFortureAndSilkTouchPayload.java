@@ -36,18 +36,21 @@ public enum ToggleFortureAndSilkTouchPayload implements CustomPacketPayload {
 
     public static void toggleFortuneAndSilkTouch(ItemStack itemStack, Level level, Player player) {
         if (!level.isClientSide()) {
-            Holder<Enchantment> silktouchHolder = Helpers.toHolder(level, Enchantments.SILK_TOUCH);
-            Holder<Enchantment> fortuneHolder = Helpers.toHolder(level, Enchantments.FORTUNE);
 
-            if (itemStack.getEnchantmentLevel(Helpers.toHolder(level, Enchantments.SILK_TOUCH)) > 0) {
+            Holder<Enchantment> silktouchHolder = level.registryAccess().holderOrThrow(Enchantments.SILK_TOUCH);
+
+            Holder<Enchantment> fortuneHolder = level.registryAccess().holderOrThrow(Enchantments.FORTUNE);
+
+
+            if (itemStack.getEnchantmentLevel(level.registryAccess().holderOrThrow(Enchantments.SILK_TOUCH)) > 0) {
                 EnchantmentHelper.updateEnchantments(itemStack, itemEnchantment -> itemEnchantment.removeIf(enchantmentHolder -> enchantmentHolder.is(Enchantments.SILK_TOUCH)));
-                if (Helpers.checkEnchantment(itemStack, fortuneHolder, level)) {
+                if (Helpers.checkEnchantment(itemStack, fortuneHolder)) {
                     itemStack.enchant(fortuneHolder, 3);
                     player.displayClientMessage(Component.literal("Switched to Fortune 3"), true);
                 }
             } else {
                 EnchantmentHelper.updateEnchantments(itemStack, itemEnchantment -> itemEnchantment.removeIf(enchantmentHolder -> enchantmentHolder.is(Enchantments.FORTUNE)));
-                if (Helpers.checkEnchantment(itemStack, silktouchHolder, level)) {
+                if (Helpers.checkEnchantment(itemStack, silktouchHolder)) {
                     itemStack.enchant(silktouchHolder, 1);
                     player.displayClientMessage(Component.literal("Switched to Silk Touch"), true);
                 }
