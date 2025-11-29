@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity;
+package net.j40climb.florafauna.common.entity.client.frenchie;
 
 import java.util.Arrays;
 import java.util.Comparator;

@@ -4,7 +4,9 @@ import com.mojang.logging.LogUtils;
 import net.j40climb.florafauna.client.gui.ModMenuTypes;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.j40climb.florafauna.common.entity.ModEntities;
-import net.j40climb.florafauna.common.entity.client.FrenchieRenderer;
+import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieRenderer;
+import net.j40climb.florafauna.common.entity.client.gecko.GeckoRenderer;
+import net.j40climb.florafauna.common.entity.client.lizard.LizardRenderer;
 import net.j40climb.florafauna.common.item.ModCreativeModeTabs;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -36,13 +38,10 @@ public class FloraFauna {
         modEventBus.addListener(this::commonSetup);
 
         ModCreativeModeTabs.register(modEventBus);
-
         ModItems.register(modEventBus);
         //ModBlocks.register(modEventBus);
         ModDataComponentTypes.register(modEventBus);
-
         ModEntities.register(modEventBus);
-
         //ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
 
@@ -75,8 +74,8 @@ public class FloraFauna {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            //EntityRenderers.register(ModEntities.GECKO.get(), GeckoRenderer::new);
-            //EntityRenderers.register(ModEntities.LIZARD.get(), LizardRenderer::new);
+            EntityRenderers.register(ModEntities.GECKO.get(), GeckoRenderer::new);
+            EntityRenderers.register(ModEntities.LIZARD.get(), LizardRenderer::new);
             EntityRenderers.register(ModEntities.FRENCHIE.get(), FrenchieRenderer::new);
         }
     }

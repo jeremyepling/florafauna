@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.client;
+package net.j40climb.florafauna.common.entity.client.lizard;
 
 import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.animation.AnimationDefinition;

@@ -4,10 +4,7 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.j40climb.florafauna.common.item.custom.EnergyHammerItem;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -55,17 +52,14 @@ public class ModItems {
     /*
     / Entities
      */
-//    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.register("gecko_spawn_egg",
-//            () -> new SpawnEggItem(ModEntities.GECKO.get(), 0x31afaf, 0xffac00,
-//                    new Item.Properties()));
-//
-//    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.register("lizard_spawn_egg",
-//            () -> new SpawnEggItem(ModEntities.LIZARD.get(), 0xe7d7a5, 0x7e5b41,
-//                    new Item.Properties()));
+    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
+            new SpawnEggItem(ModEntities.GECKO.get(), 0x31afaf, 0xffac00, properties));
 
-    public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.register("frenchie_spawn_egg",
-            () -> new SpawnEggItem(ModEntities.FRENCHIE.get(), 0xe7d7a5, 0x7e5b41,
-                    new Item.Properties().setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("florafauna", "frenchie_spawn_egg")))));
+    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
+            new SpawnEggItem(ModEntities.LIZARD.get(), 0xffac00, 0x7e5b41, properties));
+
+    public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.registerItem("frenchie_spawn_egg", properties ->
+            new SpawnEggItem(ModEntities.FRENCHIE.get(), 0xe7d7a5, 0xffac00, properties));
 
 
     public static void register(IEventBus eventBus) {

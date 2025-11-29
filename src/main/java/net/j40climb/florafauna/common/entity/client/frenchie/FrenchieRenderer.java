@@ -1,10 +1,8 @@
-package net.j40climb.florafauna.common.entity.client;
+package net.j40climb.florafauna.common.entity.client.frenchie;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.FrenchieVariant;
-import net.j40climb.florafauna.common.entity.custom.FrenchieEntity;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -26,7 +24,7 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
             });
 
     public FrenchieRenderer(EntityRendererProvider.Context context) {
-        super(context, new FrenchieModel(context.bakeLayer(FrenchieModel.FRENCHIE)), 0.4f);
+        super(context, new FrenchieModel(context.bakeLayer(FrenchieModel.FRENCHIE)), 0.4f); //last parameter is the size of the shadow
     }
 
     @Override

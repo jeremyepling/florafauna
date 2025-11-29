@@ -1,5 +1,4 @@
-/*
-package net.j40climb.florafauna.common.entity.custom;
+package net.j40climb.florafauna.common.entity.client.lizard;
 
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +29,7 @@ public class LizardEntity extends AbstractChestedHorse {
                 .add(Attributes.MOVEMENT_SPEED, 0.2)
                 .add(Attributes.ATTACK_DAMAGE, 2f)
                 .add(Attributes.FOLLOW_RANGE, 24D)
+                .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.JUMP_STRENGTH, 0.7f);
     }
 
@@ -53,7 +53,7 @@ public class LizardEntity extends AbstractChestedHorse {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel pLevel, AgeableMob pOtherParent) {
-        return ModEntities.LIZARD.get().create(pLevel);
+        return ModEntities.LIZARD.get().create(pLevel, EntitySpawnReason.BREEDING);
     }
 
     @Override
@@ -80,7 +80,7 @@ public class LizardEntity extends AbstractChestedHorse {
                 }
                 if (!this.isTamed()) {
                     this.makeMad();
-                    return InteractionResult.sidedSuccess(this.level().isClientSide);
+                    return InteractionResult.SUCCESS;
                 }
             }
         }
@@ -92,6 +92,4 @@ public class LizardEntity extends AbstractChestedHorse {
                 .add(new Vec3(0.0, -0.6, -0.5 * (double)partialTick)
                         .yRot(-this.getYRot() * (float) (Math.PI / 180.0)));
     }
-
-
-} */
+}

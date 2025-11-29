@@ -1,11 +1,9 @@
-/*
 package net.j40climb.florafauna.common.entity.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.custom.LizardEntity;
-import net.minecraft.client.model.HierarchicalModel;
+import net.j40climb.florafauna.common.entity.client.lizard.LizardAnimations;
+import net.j40climb.florafauna.common.entity.client.lizard.LizardRenderState;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -13,32 +11,17 @@ import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public class LizardModel<T extends LizardEntity> extends HierarchicalModel<T> {
+public class LizardModel extends EntityModel<LizardRenderState> {
     public static final ModelLayerLocation LIZARD =
             new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "lizard"), "lizard");
 
     private final ModelPart root;
     private final ModelPart head;
-    private final ModelPart hair;
-    private final ModelPart neck;
-    private final ModelPart torso;
-    private final ModelPart frontLegL;
-    private final ModelPart frontLegR;
-    private final ModelPart backLegL;
-    private final ModelPart backLegR;
-    private final ModelPart tail;
 
     public LizardModel(ModelPart root) {
+        super(root);
         this.root = root.getChild("root");
         this.head = this.root.getChild("head");
-        this.hair = this.head.getChild("hair");
-        this.neck = this.root.getChild("neck");
-        this.torso = this.root.getChild("torso");
-        this.frontLegL = this.root.getChild("frontLegL");
-        this.frontLegR = this.root.getChild("frontLegR");
-        this.backLegL = this.root.getChild("backLegL");
-        this.backLegR = this.root.getChild("backLegR");
-        this.tail = this.root.getChild("tail");
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -102,12 +85,12 @@ public class LizardModel<T extends LizardEntity> extends HierarchicalModel<T> {
     }
 
     @Override
-    public void setupAnim(LizardEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.root().getAllParts().forEach(ModelPart::resetPose);
-        this.applyHeadRotation(netHeadYaw, headPitch);
+    public void setupAnim(LizardRenderState renderState) {
+        super.setupAnim(renderState);
+        this.applyHeadRotation(renderState.yRot, renderState.xRot);
 
-        this.animateWalk(LizardAnimations.ANIM_GECKO_WALK, limbSwing, limbSwingAmount, 6f, 2.5f);
-        this.animate(entity.idleAnimationState, LizardAnimations.ANIM_GECKO_IDLE, ageInTicks, 1f);
+        this.animateWalk(LizardAnimations.ANIM_GECKO_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 6f, 2.5f);
+        this.animate(renderState.idleAnimationState, LizardAnimations.ANIM_GECKO_IDLE, renderState.ageInTicks, 1f);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {
@@ -118,14 +101,4 @@ public class LizardModel<T extends LizardEntity> extends HierarchicalModel<T> {
         this.head.xRot = headPitch *  ((float)Math.PI / 180f);
     }
 
-    @Override
-    public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, int color) {
-        root.render(poseStack, vertexConsumer, packedLight, packedOverlay, color);
-    }
-
-    @Override
-    public ModelPart root() {
-        return root;
-    }
 }
-*/

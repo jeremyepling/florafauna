@@ -1,24 +1,19 @@
 {
-  "item.florafauna.tomato": "Tomato",
-  "item.florafauna.kaupen_bow": "Kaupen Bow",
+  "key.categories.florafauna": "Flora Fauna",
+  "itemGroup.florafauna.florafauna_items_tab": "Flora Fauna Items",
 
+  "item.florafauna.tomato": "Tomato",
+  "tooltip.florafauna.tomato": "Tomato; Tomato",
 
   "item.florafauna.energy_hammer": "Energy Hammer",
 
-
   "item.florafauna.frenchie_spawn_egg": "Frenchie Spawn Egg",
-  "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
-  "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
-
-  "tooltip.florafauna.tomato": "Tomato; Tomato",
-
-  "itemGroup.florafauna.florafauna_items_tab": "Flora Fauna Items",
-
   "entity.florafauna.frenchie": "Frenchie",
+  "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
   "entity.florafauna.gecko": "Gecko",
+  "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
   "entity.florafauna.lizard": "Lizard",
 
-  "key.categories.florafauna": "Flora Fauna",
   "key.florafauna.throw_hammer": "Throw Hammer",
   "key.florafauna.teleport_surface": "Teleport to Surface",
   "key.florafauna.dash": "Dash",

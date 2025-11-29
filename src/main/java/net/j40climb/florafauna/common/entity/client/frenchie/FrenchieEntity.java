@@ -1,6 +1,5 @@
-package net.j40climb.florafauna.common.entity.custom;
+package net.j40climb.florafauna.common.entity.client.frenchie;
 
-import net.j40climb.florafauna.common.entity.FrenchieVariant;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
@@ -40,13 +39,12 @@ public class FrenchieEntity extends TamableAnimal {
     public final AnimationState sitDownAnimationState = new AnimationState();
     public final AnimationState sitPoseAnimationState = new AnimationState();
     public final AnimationState sitUpAnimationState = new AnimationState();
+    private int idleAnimationTimeout = 0;
 
     public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Integer> VARIANT =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.INT);
-
-    private int idleAnimationTimeout = 0;
 
     public FrenchieEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);

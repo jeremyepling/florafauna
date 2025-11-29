@@ -21,8 +21,8 @@ public class ModCreativeModeTabs {
                     .displayItems((pParameters, output) -> {
                         output.accept(ModItems.TOMATO);
                         output.accept(ModItems.ENERGY_HAMMER);
-                        //output.accept(ModItems.GECKO_SPAWN_EGG);
-                        //output.accept(ModItems.LIZARD_SPAWN_EGG);
+                        output.accept(ModItems.GECKO_SPAWN_EGG);
+                        output.accept(ModItems.LIZARD_SPAWN_EGG);
                         output.accept(ModItems.FRENCHIE_SPAWN_EGG);
 
                     }).build());

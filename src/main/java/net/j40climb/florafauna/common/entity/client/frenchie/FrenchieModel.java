@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.client;
+package net.j40climb.florafauna.common.entity.client.frenchie;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.client.model.BabyModelTransform;
@@ -21,15 +21,12 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
 
     public static final ModelLayerLocation FRENCHIE = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie"), "frenchie"); // is path is folder under textures/entity?
-    public static final ModelLayerLocation FRENCHIE_BABY = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie_baby"), "frenchie_baby"); // is path is folder under textures/entity?
 
     private final ModelPart root;
     private final ModelPart head;
 
     public FrenchieModel(ModelPart root) {
         super(root);
-
         this.root = root.getChild("root");
         this.head = this.root.getChild("head");
 
@@ -79,7 +76,7 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
         if (renderState.isSwimming) {
             this.animateWalk(FrenchieAnimations.ANIM_SWIM, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1F, 2.5F);
         } else {
-            this.animateWalk(FrenchieAnimations.ANIM_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1.5F, 2.5F);
+            this.animateWalk(FrenchieAnimations.ANIM_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 2.5F, 2.5F);
         }
 
         this.animate(renderState.idleAnimationState, FrenchieAnimations.ANIM_IDLE, renderState.ageInTicks, 1.0F);
