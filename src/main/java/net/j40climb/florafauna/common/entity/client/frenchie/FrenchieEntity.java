@@ -192,11 +192,10 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
-        this.entityData.set(VARIANT, compound.getInt("Variant"));
-        // Save the pose data, like sleeping
-        if (compound.contains("Pose")) {
-            this.setPose(Pose.valueOf(compound.getString("Pose")));
-        }
+        Integer variantID = compound.getInt("Variant").orElse(0);
+        this.entityData.set(VARIANT, variantID);
+        String poseName = compound.getString("Pose").orElse(Pose.STANDING.name());
+        this.setPose(Pose.valueOf(poseName));
     }
 
     /* Animation */
@@ -209,7 +208,7 @@ public class FrenchieEntity extends TamableAnimal {
             // Setup animation states
             if (this.idleAnimationTimeout <= 0) {
                 this.idleAnimationTimeout = 40; // 40 ticks is to seconds and that's the length of the idle animation
-                this.swimAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
+                this.swimAnimationState.animateWhen(this.isInWater() && !this.walkAnimation.isMoving(), this.tickCount);
 
                 this.idleAnimationState.start(this.tickCount);
             } else {
@@ -232,9 +231,9 @@ public class FrenchieEntity extends TamableAnimal {
         }
         if (!this.level().isClientSide()) { // Server side only
             long time = this.level().getDayTime() % 24000;
-            if (time >= 13000 && time <= 23000 && random.nextFloat() < 0.01f && !this.isInWaterOrBubble()) {
+            if (time >= 13000 && time <= 23000 && random.nextFloat() < 0.01f && !this.isInWater()) {
                 this.setPose(Pose.SLEEPING);
-            } else if (time < 13000 || time > 23000 || this.isInWaterOrBubble()) {
+            } else if (time < 13000 || time > 23000 || this.isInWater()) {
                 this.setPose(Pose.STANDING);
             }
         }

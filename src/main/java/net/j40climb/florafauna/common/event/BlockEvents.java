@@ -8,10 +8,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -43,12 +42,7 @@ public class BlockEvents {
             if(event.getSource().getDirectEntity() instanceof Player player) {
                 if(player.getMainHandItem().getItem() == ModItems.TOMATO.get()) {
                     player.displayClientMessage(Component.literal(player.getName().getString() + " just hit a freaking Sheep with a tomato!"), false);
-                    sheep.addEffect(new MobEffectInstance(MobEffects.JUMP, 600, 50));
-                    player.getMainHandItem().shrink(1); // Remove item from main hand
-                }
-                if(player.getMainHandItem().getItem() == Items.END_ROD) {
-                    player.displayClientMessage(Component.literal(player.getName().getString() + " just hit a freaking Sheep with AN END ROD WHAT?!!"), false);
-                    sheep.addEffect(new MobEffectInstance(MobEffects.POISON, 600, 50));
+                    sheep.addEffect(new MobEffectInstance(MobEffects.LEVITATION, 600, 50));
                     player.getMainHandItem().shrink(1); // Remove item from main hand
                 }
             }

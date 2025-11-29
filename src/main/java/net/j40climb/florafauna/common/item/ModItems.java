@@ -2,20 +2,23 @@ package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.ModEntities;
-import net.j40climb.florafauna.common.item.custom.EnergyHammerItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.List;
+import java.util.function.Consumer;
+
+import static net.j40climb.florafauna.common.item.custom.EnergyHammerItem.HAMMER_MATERIAL;
 
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FloraFauna.MOD_ID);
@@ -36,9 +39,9 @@ public class ModItems {
             )) {
                 // Using an anonymous class to create a tooltip inline instead of using a full class in ModItems
                 @Override
-                public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-                    super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
-                    tooltipComponents.add(Component.translatable("tooltip.florafauna.tomato"));
+                public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+                    tooltipComponents.accept(Component.translatable("tooltip.florafauna.tomato"));
+                    super.appendHoverText(itemStack, context, tooltipDisplay, tooltipComponents, tooltipFlag);
                 }
             }
             );
@@ -47,8 +50,9 @@ public class ModItems {
     /*
     / Mod items
     */
-    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", EnergyHammerItem::new);
-
+    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", properties ->
+            new Item(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -3.3f, 0)));
+    // TODO should this be mineable with paxel?
     /*
     / Entities
      */

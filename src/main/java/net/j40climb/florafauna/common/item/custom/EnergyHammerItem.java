@@ -3,22 +3,24 @@ package net.j40climb.florafauna.common.item.custom;
 import net.j40climb.florafauna.common.component.MiningModeData;
 import net.j40climb.florafauna.common.component.MiningSpeed;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ToolMaterial;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.function.Consumer;
 
-public class EnergyHammerItem extends DiggerItem {
+public class EnergyHammerItem extends Item {
     public static final ToolMaterial HAMMER_MATERIAL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, // What can't be mined
             59, // Durability
@@ -28,14 +30,8 @@ public class EnergyHammerItem extends DiggerItem {
             ItemTags.NETHERITE_TOOL_MATERIALS // Repair ingredient
     );
 
-    public EnergyHammerItem(Item.Properties properties) {
-        // New tags in 1.21.30 make this easier #minecraft:iron_tier_destructible for all diggers or
-        // #minecraft:is_pickaxe_item_destructible for pickaxe
-
-        // TODO Changing this to ModTags.Blocks.MINEABLE_WITH_PAXEL causes a max networking error
-        // BlockTags.MINEABLE_WITH_PICKAXE doesn't do anything - I don't think - since isCorrectTool is overridden
-        // io.netty.handler.codec.EncoderException: java.io.UTFDataFormatException: encoded string (Tool[rul...Block=1]) too long: 81675 bytes
-        super(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -3.3f, properties
+    public EnergyHammerItem(Properties properties) {
+        super(properties
                 .component(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
                 .component(ModDataComponentTypes.MINING_SPEED, MiningSpeed.EFFICIENCY)
         );
@@ -44,8 +40,6 @@ public class EnergyHammerItem extends DiggerItem {
     @Override
     public @NotNull InteractionResult useOn(UseOnContext useOnContext) {
         if(!useOnContext.getLevel().isClientSide()) {
-            Level level = useOnContext.getLevel();
-            BlockPos blockpos = useOnContext.getClickedPos();
             Player player = useOnContext.getPlayer();
             if (player != null) {
                 ItemStack hammerItemStack = player.getMainHandItem();
@@ -84,11 +78,11 @@ public class EnergyHammerItem extends DiggerItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext tooltipContext, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         if(itemStack.get(ModDataComponentTypes.MINING_MODE_DATA.get()) != null) {
             MiningModeData miningModeData = itemStack.getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
-            tooltipComponents.add(Component.literal(miningModeData.getMiningModeString()));
+            tooltipComponents.accept(Component.literal(miningModeData.getMiningModeString()));
         }
-        super.appendHoverText(itemStack, tooltipContext, tooltipComponents, tooltipFlag);
+        super.appendHoverText(itemStack, context, tooltipDisplay, tooltipComponents, tooltipFlag);
     }
 }

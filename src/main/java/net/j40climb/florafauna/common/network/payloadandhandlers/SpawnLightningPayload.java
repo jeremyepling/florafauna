@@ -37,7 +37,7 @@ public record SpawnLightningPayload(BlockPos targetPos) implements CustomPacketP
         // Create the lightning bolt
         LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
         if (lightningBolt != null) {
-            lightningBolt.moveTo(Vec3.atBottomCenterOf(targetPos));
+            lightningBolt.setPos(Vec3.atBottomCenterOf(targetPos)); // TODO not sure if this is correct. had to update for 1.21.5
             // Summon the lightning bolt
             serverLevel.addFreshEntity(lightningBolt);
         }
