@@ -52,14 +52,15 @@ public class ModItems {
     /*
     / Entities
      */
-    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
-            new SpawnEggItem(ModEntities.GECKO.get(), 0x31afaf, 0xffac00, properties));
 
+    // TODO create a client json item for these since spawn eggs are all custom in 1.21.5
+    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
+            new SpawnEggItem(ModEntities.GECKO.get(), properties));
     public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
-            new SpawnEggItem(ModEntities.LIZARD.get(), 0xffac00, 0x7e5b41, properties));
+            new SpawnEggItem(ModEntities.LIZARD.get(), properties));
 
     public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.registerItem("frenchie_spawn_egg", properties ->
-            new SpawnEggItem(ModEntities.FRENCHIE.get(), 0xe7d7a5, 0xffac00, properties));
+            new SpawnEggItem(ModEntities.FRENCHIE.get(), properties));
 
 
     public static void register(IEventBus eventBus) {
