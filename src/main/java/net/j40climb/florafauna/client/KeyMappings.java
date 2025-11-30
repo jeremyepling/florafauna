@@ -37,16 +37,16 @@ public class KeyMappings {
     public static final Lazy<KeyMapping> TOGGLE_FORTUNE_AND_SILK_TOUCH = Lazy.of(() -> new KeyMapping(
             "key.florafauna.toggle_fortune_and_silk_touch",
             KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_MOUSE_BUTTON_4,
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_5,
             CATEGORY
     ));
 
     public static final Lazy<KeyMapping> DASH_KEY = Lazy.of(() -> new KeyMapping(
             "key.florafauna.dash",
             KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_MOUSE_BUTTON_5,
+            InputConstants.Type.MOUSE,
+            GLFW.GLFW_MOUSE_BUTTON_4,
             CATEGORY
     ));
 
