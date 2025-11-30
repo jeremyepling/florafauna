@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.ModEntities;
+import net.j40climb.florafauna.common.item.custom.EnergyHammerItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -51,7 +52,7 @@ public class ModItems {
     / Mod items
     */
     public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", properties ->
-            new Item(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -3.3f, 0)));
+            new EnergyHammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -3.3f, 0)));
     // TODO should this be mineable with paxel?
     /*
     / Entities
