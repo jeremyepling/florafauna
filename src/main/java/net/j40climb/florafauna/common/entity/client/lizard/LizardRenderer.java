@@ -3,14 +3,12 @@ package net.j40climb.florafauna.common.entity.client.lizard;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.client.LizardModel;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
-@OnlyIn(Dist.CLIENT)
 public class LizardRenderer extends MobRenderer<LizardEntity, LizardRenderState, LizardModel> {
 
     public LizardRenderer(EntityRendererProvider.Context context) {
@@ -27,11 +25,11 @@ public class LizardRenderer extends MobRenderer<LizardEntity, LizardRenderState,
     }
 
     @Override
-    public void render(LizardRenderState renderState, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+    public void submit(LizardRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
         if(renderState.isBaby) {
             poseStack.scale(0.5f, 0.6f, 0.5f);
         }
-        super.render(renderState, poseStack, bufferSource, packedLight);
+        super.submit(renderState, poseStack, submitNodeCollector, cameraRenderState);
     }
 
     @Override

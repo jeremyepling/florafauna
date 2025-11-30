@@ -4,16 +4,14 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.Util;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
 public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRenderState, FrenchieModel> {
     private static final Map<FrenchieVariant, ResourceLocation> TEXTURE_LOCATION_BY_VARIANT =
             Util.make(Maps.newEnumMap(FrenchieVariant.class), map -> {
@@ -33,13 +31,13 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
     }
 
     @Override
-    public void render(FrenchieRenderState renderState, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+    public void submit(FrenchieRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
         if(renderState.isBaby) {
             poseStack.scale(0.45f, 0.45f, 0.45f);
         } else {
             poseStack.scale(1f, 1f, 1f);
         }
-        super.render(renderState, poseStack, bufferSource, packedLight);
+        super.submit(renderState, poseStack, submitNodeCollector, cameraRenderState);
     }
 
     @Override

@@ -14,10 +14,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.j40climb.florafauna.client.ClientUtils.raycastFromPlayer;
@@ -213,27 +214,5 @@ public class BlockBreakUtils {
                 }
             }
         }
-    }
-
-    /**
-     * Teleport drops from <a href="https://github.com/Direwolf20-MC/JustDireThings/blob/main/src/main/java/com/direwolf20/justdirethings/common/items/interfaces/Helpers.java#L352">...</a>
-     * TODO need to implement this
-     */
-    public static ItemStack teleportDrop(ItemStack itemStack, IItemHandler handler) {
-        ItemStack leftover = ItemHandlerHelper.insertItemStacked(handler, itemStack, false);
-        return leftover;
-    }
-
-    public static void teleportDrops(List<ItemStack> drops, IItemHandler handler) {
-        List<ItemStack> leftovers = new ArrayList<>();
-        for (ItemStack drop : drops) {
-            ItemStack leftover = teleportDrop(drop, handler);
-            if (!leftover.isEmpty()) {
-                leftovers.add(leftover);
-            }
-        }
-        // Clear the original drops list and add all leftovers to it
-        drops.clear();
-        drops.addAll(leftovers);
     }
 }

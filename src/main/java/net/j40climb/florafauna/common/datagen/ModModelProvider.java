@@ -40,9 +40,7 @@ public class ModModelProvider extends ModelProvider {
                 ),
                 // Defines some settings to use during the rendering process
                 new ClientItem.Properties(
-                    // When false, disables the animation where the item is raised
-                    // up towards its normal position on item swap
-                    false, false
+                    true, false
                 )
                 )
         );

@@ -18,7 +18,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
@@ -33,26 +33,26 @@ public class KeyInputEvents {
 
         ItemStack itemStack = player.getMainHandItem();
         // The KeyMappings has to be consumed during the event or it will replay the event on each tick. Don't check anything for this outside of player null
-        while (KeyMappings.SUMMON_LIGHTNING_KEY.consumeClick()) {
+        while (KeyMappings.SUMMON_LIGHTNING_KEY.get().consumeClick()) {
             if (itemStack.is(ModItems.ENERGY_HAMMER.get())) {
                 Vec3 vec3 = ClientUtils.raycastFromPlayer(player, 10).getLocation();
                 BlockPos targetPos = new BlockPos(new Vec3i((int) vec3.x, (int) vec3.y, (int) vec3.z));
-                PacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
+                ClientPacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
             }
         }
-        while (KeyMappings.TOGGLE_FORTUNE_AND_SILK_TOUCH.consumeClick()) {
+        while (KeyMappings.TOGGLE_FORTUNE_AND_SILK_TOUCH.get().consumeClick()) {
             if (itemStack.is(ModItems.ENERGY_HAMMER.get())) {
-                PacketDistributor.sendToServer(ToggleFortureAndSilkTouchPayload.INSTANCE);
+                ClientPacketDistributor.sendToServer(ToggleFortureAndSilkTouchPayload.INSTANCE);
             }
         }
-        while (KeyMappings.TELEPORT_SURFACE_KEY.consumeClick()) {
+        while (KeyMappings.TELEPORT_SURFACE_KEY.get().consumeClick()) {
             if (itemStack.is(ModItems.ENERGY_HAMMER.get())) {
-                PacketDistributor.sendToServer(TeleportToSurfacePayload.INSTANCE);
+                ClientPacketDistributor.sendToServer(TeleportToSurfacePayload.INSTANCE);
             }
         }
-        while (KeyMappings.DASH_KEY.consumeClick()) {
+        while (KeyMappings.DASH_KEY.get().consumeClick()) {
             if (itemStack.is(ModItems.ENERGY_HAMMER.get())) {
-                PacketDistributor.sendToServer(DashPayload.INSTANCE);
+                ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
             }
         }
     }
