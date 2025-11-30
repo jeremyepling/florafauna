@@ -33,7 +33,7 @@ public class BlockBreakUtils {
         BlockPos blockPos = event.getPos();
         BlockState blockState = level.getBlockState(blockPos);
         if (event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START) { //Client and Server
-            if (level.isClientSide) {
+            if (level.isClientSide()) {
                 gameTicksMining = 0;
                 destroyPos = blockPos;
             }
@@ -60,7 +60,7 @@ public class BlockBreakUtils {
         int j = (int) (f * 10.0F);
         for (BlockPos blockPos : breakBlockPositions) {
             if (blockPos.equals(initialBlockPos)) continue; //Let the vanilla mechanics handle the block we're hitting
-            if (level.isClientSide)
+            if (level.isClientSide())
                 level.destroyBlockProgress(player.getId() + generatePosHash(blockPos), blockPos, j);
             else
                 sendDestroyBlockProgress(player.getId() + generatePosHash(blockPos), blockPos, -1, (ServerPlayer) player);
