@@ -16,7 +16,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
-        // No blocks currently registered
+        dropSelf(ModBlocks.BISMUTH_BLOCK.get());
     }
 
     @Override

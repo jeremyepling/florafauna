@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.ModBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -24,6 +25,8 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.GECKO_SPAWN_EGG);
                         output.accept(ModItems.LIZARD_SPAWN_EGG);
                         output.accept(ModItems.FRENCHIE_SPAWN_EGG);
+
+                        output.accept(ModBlocks.BISMUTH_BLOCK);
 
                     }).build());
 

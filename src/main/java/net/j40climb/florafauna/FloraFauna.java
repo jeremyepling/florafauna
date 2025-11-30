@@ -2,6 +2,7 @@ package net.j40climb.florafauna;
 
 import com.mojang.logging.LogUtils;
 import net.j40climb.florafauna.client.gui.ModMenuTypes;
+import net.j40climb.florafauna.common.block.ModBlocks;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieRenderer;
@@ -39,7 +40,7 @@ public class FloraFauna {
 
         ModCreativeModeTabs.register(modEventBus);
         ModItems.register(modEventBus);
-        //ModBlocks.register(modEventBus);
+        ModBlocks.register(modEventBus);
         ModDataComponentTypes.register(modEventBus);
         ModEntities.register(modEventBus);
         //ModBlockEntities.register(modEventBus);

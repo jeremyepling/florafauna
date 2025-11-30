@@ -49,19 +49,23 @@ public class ModItems {
 
 
     /*
-    / Mod items
+    / Tools
     */
     public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", properties ->
             new EnergyHammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -2.4f, 0)));
     // TODO should this be mineable with paxel?
+
     /*
     / Entities
      */
 
     // TODO create a client item for these since spawn eggs are all custom in 1.21.5
-    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties -> new SpawnEggItem(properties.spawnEgg(ModEntities.GECKO.get())));
-    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties -> new SpawnEggItem(properties.spawnEgg(ModEntities.LIZARD.get())));
-    public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.registerItem("frenchie_spawn_egg", properties -> new SpawnEggItem(properties.spawnEgg(ModEntities.FRENCHIE.get())));
+    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
+            new SpawnEggItem(properties.spawnEgg(ModEntities.GECKO.get())));
+    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
+            new SpawnEggItem(properties.spawnEgg(ModEntities.LIZARD.get())));
+    public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.registerItem("frenchie_spawn_egg", properties ->
+            new SpawnEggItem(properties.spawnEgg(ModEntities.FRENCHIE.get())));
 
 
     public static void register(IEventBus eventBus) {

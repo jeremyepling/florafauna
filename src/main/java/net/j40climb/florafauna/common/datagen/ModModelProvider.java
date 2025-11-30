@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.ModBlocks;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
@@ -23,6 +24,9 @@ public class ModModelProvider extends ModelProvider {
 
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+
+        ///  ITEM MODELS
+
         itemModels.generateFlatItem(ModItems.TOMATO.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
@@ -42,9 +46,12 @@ public class ModModelProvider extends ModelProvider {
                 new ClientItem.Properties(
                     true, false
                 )
-                )
+            )
         );
 
+        ///  BLOCK MODELS
+
+        blockModels.createTrivialCube(ModBlocks.BISMUTH_BLOCK.get());
     }
 
     @Override
