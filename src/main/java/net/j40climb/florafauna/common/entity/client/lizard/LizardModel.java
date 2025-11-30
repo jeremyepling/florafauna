@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.entity.client;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.client.lizard.LizardAnimations;
 import net.j40climb.florafauna.common.entity.client.lizard.LizardRenderState;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -17,11 +18,16 @@ public class LizardModel extends EntityModel<LizardRenderState> {
 
     private final ModelPart root;
     private final ModelPart head;
+    private final KeyframeAnimation walkingAnimation;
+    private final KeyframeAnimation idlingAnimation;
 
     public LizardModel(ModelPart root) {
         super(root);
         this.root = root.getChild("root");
         this.head = this.root.getChild("head");
+
+        this.walkingAnimation = LizardAnimations.ANIM_GECKO_WALK.bake(root);
+        this.idlingAnimation = LizardAnimations.ANIM_GECKO_IDLE.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -89,8 +95,8 @@ public class LizardModel extends EntityModel<LizardRenderState> {
         super.setupAnim(renderState);
         this.applyHeadRotation(renderState.yRot, renderState.xRot);
 
-        this.animateWalk(LizardAnimations.ANIM_GECKO_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 6f, 2.5f);
-        this.animate(renderState.idleAnimationState, LizardAnimations.ANIM_GECKO_IDLE, renderState.ageInTicks, 1f);
+        this.walkingAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 6f, 2.5f);
+        this.idlingAnimation.apply(renderState.idleAnimationState, renderState.ageInTicks, 1f);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {

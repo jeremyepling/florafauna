@@ -3,7 +3,6 @@ package net.j40climb.florafauna.common.entity.client.frenchie;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -27,6 +26,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -183,18 +184,18 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag compound) {
-        super.addAdditionalSaveData(compound);
-        compound.putInt("Variant", this.getTypeVariant());
-        compound.putString("Pose", this.getPose().name());
+    protected void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+        output.putInt("Variant", this.getTypeVariant());
+        output.putString("Pose", this.getPose().name());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag compound) {
-        super.readAdditionalSaveData(compound);
-        Integer variantID = compound.getInt("Variant").orElse(0);
+    public void readAdditionalSaveData(ValueInput input) {
+        super.readAdditionalSaveData(input);
+        Integer variantID = input.getIntOr("Variant", 0);
         this.entityData.set(VARIANT, variantID);
-        String poseName = compound.getString("Pose").orElse(Pose.STANDING.name());
+        String poseName = input.getStringOr("Pose", Pose.STANDING.name());
         this.setPose(Pose.valueOf(poseName));
     }
 

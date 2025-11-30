@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.entity.client.frenchie;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.BabyModelTransform;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -25,11 +26,20 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
     private final ModelPart root;
     private final ModelPart head;
 
+    private final KeyframeAnimation walkingAnimation;
+    private final KeyframeAnimation swimmingAnimation;
+    private final KeyframeAnimation sleepingAnimation;
+    private final KeyframeAnimation idlingAnimation;
+
     public FrenchieModel(ModelPart root) {
         super(root);
         this.root = root.getChild("root");
         this.head = this.root.getChild("head");
 
+        this.walkingAnimation = FrenchieAnimations.ANIM_WALK.bake(root);
+        this.swimmingAnimation = FrenchieAnimations.ANIM_SWIM.bake(root);
+        this.sleepingAnimation = FrenchieAnimations.ANIM_SLEEP.bake(root);
+        this.idlingAnimation = FrenchieAnimations.ANIM_IDLE.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -74,12 +84,16 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
         this.applyHeadRotation(renderState.yRot, renderState.xRot);
 
         if (renderState.isSwimming) {
-            this.animateWalk(FrenchieAnimations.ANIM_SWIM, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1F, 2.5F);
+            this.swimmingAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1F, 2.5F);
         } else {
-            this.animateWalk(FrenchieAnimations.ANIM_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 2.5F, 2.5F);
+            this.walkingAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 2.5F, 2.5F);
         }
 
-        this.animate(renderState.idleAnimationState, FrenchieAnimations.ANIM_IDLE, renderState.ageInTicks, 1.0F);
+        if (renderState.isSleeping) {
+            this.sleepingAnimation.apply(renderState.sleepAnimationState, renderState.ageInTicks, 1.0F);
+        }
+
+        this.idlingAnimation.apply(renderState.idleAnimationState, renderState.ageInTicks, 1.0F);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {

@@ -57,12 +57,11 @@ public class ModItems {
     / Entities
      */
 
-    // TODO create a client json item for these since spawn eggs are all custom in 1.21.5
+    // TODO create a client item for these since spawn eggs are all custom in 1.21.5
     public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
             new SpawnEggItem(ModEntities.GECKO.get(), properties));
     public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
             new SpawnEggItem(ModEntities.LIZARD.get(), properties));
-
     public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.registerItem("frenchie_spawn_egg", properties ->
             new SpawnEggItem(ModEntities.FRENCHIE.get(), properties));
 

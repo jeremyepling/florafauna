@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.entity.client.gecko;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -16,11 +17,16 @@ public class GeckoModel extends EntityModel<GeckoRenderState> {
 
     private final ModelPart root;
     private final ModelPart head;
+    private final KeyframeAnimation walkingAnimation;
+    private final KeyframeAnimation idlingAnimation;
 
     public GeckoModel(ModelPart root) {
         super(root);
         this.root = root.getChild("root");
         this.head = this.root.getChild("head");
+
+        this.walkingAnimation = GeckoAnimations.ANIM_GECKO_WALK.bake(root);
+        this.idlingAnimation = GeckoAnimations.ANIM_GECKO_IDLE.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -70,8 +76,8 @@ public class GeckoModel extends EntityModel<GeckoRenderState> {
         super.setupAnim(renderState);
         this.applyHeadRotation(renderState.yRot, renderState.xRot);
 
-        this.animateWalk(GeckoAnimations.ANIM_GECKO_WALK, renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1.5F, 2.5F);
-        this.animate(renderState.idleAnimationState, GeckoAnimations.ANIM_GECKO_IDLE, renderState.ageInTicks, 1f);
+        this.walkingAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1.5F, 2.5F);
+        this.idlingAnimation.apply(renderState.idleAnimationState, renderState.ageInTicks, 1f);
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {

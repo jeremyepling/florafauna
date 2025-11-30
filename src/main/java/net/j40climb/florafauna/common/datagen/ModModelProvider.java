@@ -42,7 +42,7 @@ public class ModModelProvider extends ModelProvider {
                 new ClientItem.Properties(
                     // When false, disables the animation where the item is raised
                     // up towards its normal position on item swap
-                    false
+                    false, false
                 )
                 )
         );
