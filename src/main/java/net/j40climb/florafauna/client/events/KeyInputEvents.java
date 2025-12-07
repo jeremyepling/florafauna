@@ -2,7 +2,8 @@ package net.j40climb.florafauna.client.events;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.ClientUtils;
-import net.j40climb.florafauna.client.KeyMappings;
+import net.j40climb.florafauna.client.keybindings.KeyMappings;
+import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.j40climb.florafauna.common.network.payloadandhandlers.DashPayload;
 import net.j40climb.florafauna.common.network.payloadandhandlers.SpawnLightningPayload;
@@ -51,7 +52,8 @@ public class KeyInputEvents {
             }
         }
         while (KeyMappings.DASH_KEY.get().consumeClick()) {
-            if (itemStack.is(ModItems.ENERGY_HAMMER.get())) {
+            // Check if player has a bonded symbiote
+            if (player.getData(ModAttachmentTypes.SYMBIOTE_DATA).bonded()) {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
             }
         }

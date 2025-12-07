@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.item;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.j40climb.florafauna.common.item.custom.EnergyHammerItem;
+import net.j40climb.florafauna.common.item.custom.SymbioteItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -54,6 +55,19 @@ public class ModItems {
     public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", properties ->
             new EnergyHammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -2.4f, 0)));
     // TODO should this be mineable with paxel?
+
+    /*
+    / Custom Items
+     */
+    public static final DeferredItem<Item> SYMBIOTE = ITEMS.registerItem("symbiote", properties ->
+            new SymbioteItem(properties.component(DataComponents.CONSUMABLE,
+                    Consumable.builder()
+                            .consumeSeconds(2.0f) // 40 ticks = 2 seconds
+                            .animation(ItemUseAnimation.DRINK)
+                            .sound(SoundEvents.GENERIC_DRINK)
+                            .hasConsumeParticles(true)
+                            .build()
+            )));
 
     /*
     / Entities

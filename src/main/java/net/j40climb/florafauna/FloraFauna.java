@@ -2,7 +2,10 @@ package net.j40climb.florafauna;
 
 import com.mojang.logging.LogUtils;
 import net.j40climb.florafauna.client.gui.ModMenuTypes;
+import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.block.ModBlocks;
+import net.j40climb.florafauna.common.block.entity.ModBlockEntities;
+import net.j40climb.florafauna.common.command.SymbioteCommand;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieRenderer;
@@ -21,6 +24,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
@@ -42,8 +46,9 @@ public class FloraFauna {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModDataComponentTypes.register(modEventBus);
+        ModAttachmentTypes.register(modEventBus);
         ModEntities.register(modEventBus);
-        //ModBlockEntities.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
@@ -68,6 +73,11 @@ public class FloraFauna {
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
+    }
+
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
+        SymbioteCommand.register(event.getDispatcher());
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent

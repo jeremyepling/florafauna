@@ -16,7 +16,8 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
-        dropSelf(ModBlocks.BISMUTH_BLOCK.get());
+        dropSelf(ModBlocks.TEAL_MOSS_BLOCK.get());
+        dropSelf(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
     }
 
     @Override

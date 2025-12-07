@@ -7,6 +7,9 @@
 
   "item.florafauna.energy_hammer": "Energy Hammer",
 
+  "item.florafauna.symbiote": "Symbiote",
+  "tooltip.florafauna.symbiote": "A mysterious alien lifeform",
+
   "item.florafauna.frenchie_spawn_egg": "Frenchie Spawn Egg",
   "entity.florafauna.frenchie": "Frenchie",
   "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
@@ -24,5 +27,8 @@
   "mode.florafauna.vein_mining": "Vein Mining",
   "mode.florafauna.directional": "Directional Mining",
   "mode.florafauna.tunnel_up": "Tunnel Up",
-  "mode.florafauna.tunnel_down": "Tunnel Down"
+  "mode.florafauna.tunnel_down": "Tunnel Down",
+
+  "block.florafauna.teal_moss_block": "Teal Moss Block",
+  "block.florafauna.symbiote_containment_chamber": "Symbiote Containment Chamber"
 }

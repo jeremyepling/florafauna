@@ -28,6 +28,7 @@ public class ModModelProvider extends ModelProvider {
         ///  ITEM MODELS
 
         itemModels.generateFlatItem(ModItems.TOMATO.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModItems.SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(ModItems.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
@@ -51,7 +52,8 @@ public class ModModelProvider extends ModelProvider {
 
         ///  BLOCK MODELS
 
-        blockModels.createTrivialCube(ModBlocks.BISMUTH_BLOCK.get());
+        blockModels.createTrivialCube(ModBlocks.TEAL_MOSS_BLOCK.get());
+        blockModels.createTrivialCube(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
     }
 
     @Override

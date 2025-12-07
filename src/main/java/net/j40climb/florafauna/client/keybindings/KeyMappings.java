@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.client;
+package net.j40climb.florafauna.client.keybindings;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
