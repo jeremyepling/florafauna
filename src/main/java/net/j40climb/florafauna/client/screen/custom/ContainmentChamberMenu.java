@@ -2,7 +2,7 @@ package net.j40climb.florafauna.client.screen.custom;
 
 import net.j40climb.florafauna.client.screen.ModMenuTypes;
 import net.j40climb.florafauna.common.block.ModBlocks;
-import net.j40climb.florafauna.common.block.entity.SymbioteContainmentChamberBlockEntity;
+import net.j40climb.florafauna.common.block.entity.ContainmentChamberBlockEntity;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 public class ContainmentChamberMenu extends AbstractContainerMenu {
-    public final SymbioteContainmentChamberBlockEntity blockEntity;
+    public final ContainmentChamberBlockEntity blockEntity;
     private final ContainerData data;
     private final Level level;
 
@@ -32,7 +32,7 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
     public ContainmentChamberMenu(int containerId, Inventory playerInventory, BlockEntity entity, ContainerData data) {
         super(ModMenuTypes.CONTAINMENT_CHAMBER.get(), containerId);
 
-        this.blockEntity = ((SymbioteContainmentChamberBlockEntity) entity);
+        this.blockEntity = ((ContainmentChamberBlockEntity) entity);
         this.level = playerInventory.player.level();
         this.data = data;
 

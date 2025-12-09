@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.menu;
 
-import net.j40climb.florafauna.common.block.entity.SymbioteContainmentChamberBlockEntity;
+import net.j40climb.florafauna.common.block.entity.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.symbiote.ability.SymbioteAbility;
 import net.j40climb.florafauna.common.symbiote.ability.SymbioteAbilityData;
 import net.minecraft.world.inventory.ContainerData;
@@ -19,9 +19,9 @@ public class SymbioteContainerData implements ContainerData {
     private static final int UNLOCKED_FLAGS_START = 1;
     private static final int ABILITY_COUNTS_START = 3;
 
-    private final SymbioteContainmentChamberBlockEntity blockEntity;
+    private final ContainmentChamberBlockEntity blockEntity;
 
-    public SymbioteContainerData(SymbioteContainmentChamberBlockEntity blockEntity) {
+    public SymbioteContainerData(ContainmentChamberBlockEntity blockEntity) {
         this.blockEntity = blockEntity;
     }
 

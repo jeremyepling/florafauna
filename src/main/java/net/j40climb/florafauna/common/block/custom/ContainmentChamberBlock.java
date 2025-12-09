@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.block.custom;
 
 import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.block.entity.ModBlockEntities;
-import net.j40climb.florafauna.common.block.entity.SymbioteContainmentChamberBlockEntity;
+import net.j40climb.florafauna.common.block.entity.ContainmentChamberBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,11 +25,11 @@ import org.jetbrains.annotations.Nullable;
  * A containment chamber block that houses a symbiote.
  * Items can be inserted to feed the symbiote and unlock abilities.
  */
-public class SymbioteContainmentChamberBlock extends BaseEntityBlock {
+public class ContainmentChamberBlock extends BaseEntityBlock {
 
-    public static final MapCodec<SymbioteContainmentChamberBlock> CODEC = simpleCodec(SymbioteContainmentChamberBlock::new);
+    public static final MapCodec<ContainmentChamberBlock> CODEC = simpleCodec(ContainmentChamberBlock::new);
 
-    public SymbioteContainmentChamberBlock(Properties properties) {
+    public ContainmentChamberBlock(Properties properties) {
         super(properties);
     }
 
@@ -41,7 +41,7 @@ public class SymbioteContainmentChamberBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new SymbioteContainmentChamberBlockEntity(pos, state);
+        return new ContainmentChamberBlockEntity(pos, state);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SymbioteContainmentChamberBlock extends BaseEntityBlock {
                                                Player player, InteractionHand hand, BlockHitResult hitResult) {
         if (!level.isClientSide()) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof SymbioteContainmentChamberBlockEntity chamber) {
+            if (blockEntity instanceof ContainmentChamberBlockEntity chamber) {
                 if (player instanceof ServerPlayer serverPlayer) {
                     serverPlayer.openMenu(new SimpleMenuProvider(chamber, Component.translatable("block.florafauna.containment_chamber")), pos);
                 }

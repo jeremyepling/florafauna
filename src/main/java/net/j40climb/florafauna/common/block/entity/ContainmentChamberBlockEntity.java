@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
  * Slot 0: Symbiote item
  * Slots 1-9: Feeding items
  */
-public class SymbioteContainmentChamberBlockEntity extends BlockEntity implements MenuProvider {
+public class ContainmentChamberBlockEntity extends BlockEntity implements MenuProvider {
     public final ItemStacksResourceHandler handler = new ItemStacksResourceHandler(2) {
         @Override
         public boolean isValid(int index, ItemResource resource) {
@@ -70,14 +70,14 @@ public class SymbioteContainmentChamberBlockEntity extends BlockEntity implement
     private int progress = 0;
     private int maxProgress = 72;
 
-    public SymbioteContainmentChamberBlockEntity(BlockPos pos, BlockState blockState) {
+    public ContainmentChamberBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.SYMBIOTE_CONTAINMENT_CHAMBER.get(), pos, blockState);
         data = new ContainerData() {
             @Override
             public int get(int i) {
                 return switch (i) {
-                    case 0 -> SymbioteContainmentChamberBlockEntity.this.progress;
-                    case 1 -> SymbioteContainmentChamberBlockEntity.this.maxProgress;
+                    case 0 -> ContainmentChamberBlockEntity.this.progress;
+                    case 1 -> ContainmentChamberBlockEntity.this.maxProgress;
                     default -> 0;
                 };
             }
@@ -85,8 +85,8 @@ public class SymbioteContainmentChamberBlockEntity extends BlockEntity implement
             @Override
             public void set(int i, int value) {
                 switch (i) {
-                    case 0: SymbioteContainmentChamberBlockEntity.this.progress = value;
-                    case 1: SymbioteContainmentChamberBlockEntity.this.maxProgress = value;
+                    case 0: ContainmentChamberBlockEntity.this.progress = value;
+                    case 1: ContainmentChamberBlockEntity.this.maxProgress = value;
                 }
             }
 

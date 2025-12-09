@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.custom.SymbioteContainmentChamberBlock;
+import net.j40climb.florafauna.common.block.custom.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
@@ -22,9 +22,9 @@ public class ModBlocks {
             (blockBehavior$Properties) -> new Block(blockBehavior$Properties
                     .strength(4f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST)));
 
-    public static final DeferredBlock<SymbioteContainmentChamberBlock> SYMBIOTE_CONTAINMENT_CHAMBER =
+    public static final DeferredBlock<ContainmentChamberBlock> SYMBIOTE_CONTAINMENT_CHAMBER =
             registerBlock("containment_chamber",
-                    props -> new SymbioteContainmentChamberBlock(props
+                    props -> new ContainmentChamberBlock(props
                             .strength(5f, 6f)
                             .requiresCorrectToolForDrops()
                             .sound(SoundType.METAL)
