@@ -1,7 +1,8 @@
 package net.j40climb.florafauna;
 
 import com.mojang.logging.LogUtils;
-import net.j40climb.florafauna.client.gui.ModMenuTypes;
+import net.j40climb.florafauna.client.screen.ModMenuTypes;
+import net.j40climb.florafauna.client.screen.custom.SymbioteContainmentChamberScreen;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.block.ModBlocks;
 import net.j40climb.florafauna.common.block.entity.ModBlockEntities;
@@ -88,6 +89,12 @@ public class FloraFauna {
             EntityRenderers.register(ModEntities.GECKO.get(), GeckoRenderer::new);
             EntityRenderers.register(ModEntities.LIZARD.get(), LizardRenderer::new);
             EntityRenderers.register(ModEntities.FRENCHIE.get(), FrenchieRenderer::new);
+        }
+
+        @SubscribeEvent
+        public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
+            event.register(ModMenuTypes.CONTAINMENT_CHAMBER.get(),
+                    SymbioteContainmentChamberScreen::new);
         }
     }
 }

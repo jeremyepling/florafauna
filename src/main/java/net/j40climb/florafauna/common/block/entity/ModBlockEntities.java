@@ -15,7 +15,7 @@ public class ModBlockEntities {
             DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FloraFauna.MOD_ID);
 
     public static final Supplier<BlockEntityType<SymbioteContainmentChamberBlockEntity>> SYMBIOTE_CONTAINMENT_CHAMBER = BLOCK_ENTITIES.register(
-            "symbiote_containment_chamber",
+            "containment_chamber",
             () -> new BlockEntityType<>(
                             SymbioteContainmentChamberBlockEntity::new,
                             false,

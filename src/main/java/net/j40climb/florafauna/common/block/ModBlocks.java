@@ -23,7 +23,7 @@ public class ModBlocks {
                     .strength(4f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST)));
 
     public static final DeferredBlock<SymbioteContainmentChamberBlock> SYMBIOTE_CONTAINMENT_CHAMBER =
-            registerBlock("symbiote_containment_chamber",
+            registerBlock("containment_chamber",
                     props -> new SymbioteContainmentChamberBlock(props
                             .strength(5f, 6f)
                             .requiresCorrectToolForDrops()

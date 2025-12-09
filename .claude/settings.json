@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(gradle:*)",
+      "Bash(./gradlew:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git branch:*)",
+      "Bash(java:*)",
+      "Bash(javac:*)",
+      "Bash(pwd:*)",
+      "Bash(cat:*)",
+      "Bash(mv:*)",
+      "mcp__ide__getDiagnostics",
+      "WebFetch(domain:docs.neoforged.net)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:maven.neoforged.net)",
+      "WebSearch",
+      "Read(*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
