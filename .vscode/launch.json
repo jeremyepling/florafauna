@@ -4,7 +4,7 @@
     {
       "type": "java",
       "request": "launch",
-      "name": "Client",
+      "name": "runClient (Debug)",
       "presentation": {
         "group": "Mod Development - florafauna",
         "order": 0
@@ -26,7 +26,7 @@
     {
       "type": "java",
       "request": "launch",
-      "name": "Data",
+      "name": "runData (Debug)",
       "presentation": {
         "group": "Mod Development - florafauna",
         "order": 1
