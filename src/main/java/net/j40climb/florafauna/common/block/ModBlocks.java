@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.block;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.custom.ContainmentChamberBlock;
+import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
@@ -13,14 +14,30 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Function;
 
+/**
+ * Central registry for all mod blocks. Blocks registered here automatically
+ * get a corresponding BlockItem registered to ModItems.
+ *
+ * ACCESSING BLOCKS:
+ *   Regular blocks:
+ *     ModBlocks.TEAL_MOSS_BLOCK.get()    - Get the Block instance
+ *     ModBlocks.TEAL_MOSS_BLOCK          - Get DeferredBlock (for creative tabs, recipes, etc.)
+ *
+ *   Wood blocks (via ModWoodType enum):
+ *     ModWoodType.DRIFTWOOD.getBlockSet().log().get()   - Get the Block instance
+ *     ModWoodType.DRIFTWOOD.getBlockSet().log()         - Get DeferredBlock
+ *     ModWoodType.DRIFTWOOD.getBlockSet().planks()      - Access different block types
+ *
+ * Wood blocks live in ModWoodType enum instead of here because the enum
+ * handles registration automatically - just add a new enum entry to create
+ * a full set of wood blocks (log, stripped_log, wood, stripped_wood, planks).
+ */
 public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(FloraFauna.MOD_ID);
 
-    // Add blockers here
-
+    // ========== MISC BLOCKS ==========
     public static final DeferredBlock<Block> TEAL_MOSS_BLOCK = registerBlock("teal_moss_block",
-            (blockBehavior$Properties) -> new Block(blockBehavior$Properties
-                    .strength(4f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST)));
+            props -> new Block(props.strength(4f).requiresCorrectToolForDrops().sound(SoundType.AMETHYST)));
 
     public static final DeferredBlock<ContainmentChamberBlock> SYMBIOTE_CONTAINMENT_CHAMBER =
             registerBlock("containment_chamber",
@@ -32,8 +49,18 @@ public class ModBlocks {
                             .noOcclusion()
                     ));
 
-    ///  This a helper method that registers the block and the block item
-    private static <T extends Block> DeferredBlock<T> registerBlock(String name, Function<BlockBehaviour.Properties, T> function) {
+    // ========== WOOD BLOCKS ==========
+    // Wood blocks are registered via ModWoodType enum. We call this method to ensure
+    // the enum class loads when ModBlocks loads. Loading the enum triggers its static
+    // initialization, which runs the enum constructors and registers all wood blocks.
+    static { registerWoodTypes(); }
+
+    private static void registerWoodTypes() {
+        ModWoodType.values();
+    }
+
+    // ========== BLOCK REGISTRATION HELPER ==========
+    public static <T extends Block> DeferredBlock<T> registerBlock(String name, Function<BlockBehaviour.Properties, T> function) {
         DeferredBlock<T> blockToRegister = BLOCKS.registerBlock(name, function);
         ModItems.ITEMS.registerItem(name, (properties) -> new BlockItem(blockToRegister.get(), properties.useBlockDescriptionPrefix()));
         return blockToRegister;

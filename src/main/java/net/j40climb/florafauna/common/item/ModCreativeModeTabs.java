@@ -2,6 +2,8 @@ package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.ModBlocks;
+import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -30,6 +32,19 @@ public class ModCreativeModeTabs {
 
                         output.accept(ModBlocks.TEAL_MOSS_BLOCK);
                         output.accept(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER);
+
+                        // Wood blocks - iterates through all wood types
+                        for (ModWoodType woodType : ModWoodType.values()) {
+                            WoodBlockSet wood = woodType.getBlockSet();
+                            output.accept(wood.log());
+                            output.accept(wood.strippedLog());
+                            output.accept(wood.wood());
+                            output.accept(wood.strippedWood());
+                            output.accept(wood.planks());
+                            output.accept(wood.slab());
+                            output.accept(wood.fence());
+                            output.accept(wood.fenceGate());
+                        }
 
                     }).build());
 

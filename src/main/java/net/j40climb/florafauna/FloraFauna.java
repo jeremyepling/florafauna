@@ -44,8 +44,8 @@ public class FloraFauna {
         modEventBus.addListener(this::commonSetup);
 
         ModCreativeModeTabs.register(modEventBus);
-        ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModItems.register(modEventBus);
         ModDataComponentTypes.register(modEventBus);
         ModAttachmentTypes.register(modEventBus);
         ModEntities.register(modEventBus);
@@ -62,6 +62,7 @@ public class FloraFauna {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        // Stripping behavior is registered via ModEvents.registerStrippables
     }
 
     // Add items to vanilla creative tabs

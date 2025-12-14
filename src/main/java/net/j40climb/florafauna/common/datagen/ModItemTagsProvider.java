@@ -1,6 +1,8 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.j40climb.florafauna.common.util.ModTags;
 import net.minecraft.core.HolderLookup;
@@ -33,6 +35,42 @@ public class ModItemTagsProvider extends ItemTagsProvider {
                 .add(ModItems.ENERGY_HAMMER.get()); // This allows all the enchantments to work
         tag(ModTags.Items.HAMMERS);
 
+        // Wood block items - add to appropriate tags
+        for (ModWoodType woodType : ModWoodType.values()) {
+            WoodBlockSet wood = woodType.getBlockSet();
+
+            // Logs item tag
+            tag(ItemTags.LOGS)
+                    .add(wood.log().get().asItem())
+                    .add(wood.strippedLog().get().asItem())
+                    .add(wood.wood().get().asItem())
+                    .add(wood.strippedWood().get().asItem());
+
+            // Logs that burn item tag
+            tag(ItemTags.LOGS_THAT_BURN)
+                    .add(wood.log().get().asItem())
+                    .add(wood.strippedLog().get().asItem())
+                    .add(wood.wood().get().asItem())
+                    .add(wood.strippedWood().get().asItem());
+
+            // Planks item tag
+            tag(ItemTags.PLANKS)
+                    .add(wood.planks().get().asItem());
+
+            // Slabs item tag
+            tag(ItemTags.WOODEN_SLABS)
+                    .add(wood.slab().get().asItem());
+
+            // Fences item tag
+            tag(ItemTags.WOODEN_FENCES)
+                    .add(wood.fence().get().asItem());
+            tag(ItemTags.FENCES)
+                    .add(wood.fence().get().asItem());
+
+            // Fence gates item tag
+            tag(ItemTags.FENCE_GATES)
+                    .add(wood.fenceGate().get().asItem());
+        }
     }
 
 }

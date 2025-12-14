@@ -2,12 +2,15 @@ package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.ModBlocks;
+import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
+import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.renderer.item.BlockModelWrapper;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.core.Holder;
@@ -54,6 +57,36 @@ public class ModModelProvider extends ModelProvider {
 
         blockModels.createTrivialCube(ModBlocks.TEAL_MOSS_BLOCK.get());
         blockModels.createTrivialCube(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
+
+        // Wood blocks - iterate through all wood types
+        for (ModWoodType woodType : ModWoodType.values()) {
+            WoodBlockSet wood = woodType.getBlockSet();
+
+            // Logs use column model (different top/side textures)
+            blockModels.createRotatedPillarWithHorizontalVariant(
+                    wood.log().get(),
+                    TexturedModel.COLUMN,
+                    TexturedModel.COLUMN_HORIZONTAL
+            );
+            blockModels.createRotatedPillarWithHorizontalVariant(
+                    wood.strippedLog().get(),
+                    TexturedModel.COLUMN,
+                    TexturedModel.COLUMN_HORIZONTAL
+            );
+
+            // Wood blocks use log side texture on all faces
+            blockModels.woodProvider(wood.log().get()).wood(wood.wood().get());
+            blockModels.woodProvider(wood.strippedLog().get()).wood(wood.strippedWood().get());
+
+            // Planks use simple cube
+            blockModels.createTrivialCube(wood.planks().get());
+
+            // Slab, fence, fence gate derive from planks using family pattern
+            blockModels.familyWithExistingFullBlock(wood.planks().get())
+                    .slab(wood.slab().get())
+                    .fence(wood.fence().get())
+                    .fenceGate(wood.fenceGate().get());
+        }
     }
 
     @Override

@@ -40,5 +40,6 @@ public class DataGenerators {
         generator.addProvider(true, new ModBlockTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new ModItemTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new ModModelProvider(packOutput));
+        generator.addProvider(true, new ModRecipeProvider(packOutput, lookupProvider));
     }
 }
