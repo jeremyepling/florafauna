@@ -8,6 +8,7 @@ import net.j40climb.florafauna.common.block.ModBlocks;
 import net.j40climb.florafauna.common.block.entity.ModBlockEntities;
 import net.j40climb.florafauna.common.command.SymbioteCommand;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.datagen.DataGenerators;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.client.gecko.GeckoRenderer;
@@ -51,6 +52,10 @@ public class FloraFauna {
         ModEntities.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModMenuTypes.register(modEventBus);
+
+        // Register datagen events on the mod bus
+        modEventBus.addListener(DataGenerators::gatherClientData);
+        modEventBus.addListener(DataGenerators::gatherServerData);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.

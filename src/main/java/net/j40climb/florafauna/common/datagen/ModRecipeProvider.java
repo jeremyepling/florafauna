@@ -92,7 +92,7 @@ public class ModRecipeProvider extends RecipeProvider.Runner {
                     .define('#', planks)
                     .group("wooden_slab")
                     .unlockedBy("has_planks", has(planks))
-                    .save(output, FloraFauna.MOD_ID + ":" + name + "_slab");
+                    .save(output);
         }
 
         private void fenceFromPlanks(ItemLike fence, ItemLike planks, String name) {
@@ -103,7 +103,7 @@ public class ModRecipeProvider extends RecipeProvider.Runner {
                     .define('S', Items.STICK)
                     .group("wooden_fence")
                     .unlockedBy("has_planks", has(planks))
-                    .save(output, FloraFauna.MOD_ID + ":" + name + "_fence");
+                    .save(output);
         }
 
         private void fenceGateFromPlanks(ItemLike fenceGate, ItemLike planks, String name) {
@@ -114,7 +114,7 @@ public class ModRecipeProvider extends RecipeProvider.Runner {
                     .define('S', Items.STICK)
                     .group("wooden_fence_gate")
                     .unlockedBy("has_planks", has(planks))
-                    .save(output, FloraFauna.MOD_ID + ":" + name + "_fence_gate");
+                    .save(output);
         }
     }
 }

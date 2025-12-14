@@ -62,16 +62,16 @@ public class ModModelProvider extends ModelProvider {
         for (ModWoodType woodType : ModWoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
 
-            // Logs use column model (different top/side textures)
+            // Logs use log column model (expects {name}.png for side, {name}_top.png for ends)
             blockModels.createRotatedPillarWithHorizontalVariant(
                     wood.log().get(),
-                    TexturedModel.COLUMN,
-                    TexturedModel.COLUMN_HORIZONTAL
+                    TexturedModel.COLUMN_ALT,
+                    TexturedModel.COLUMN_HORIZONTAL_ALT
             );
             blockModels.createRotatedPillarWithHorizontalVariant(
                     wood.strippedLog().get(),
-                    TexturedModel.COLUMN,
-                    TexturedModel.COLUMN_HORIZONTAL
+                    TexturedModel.COLUMN_ALT,
+                    TexturedModel.COLUMN_HORIZONTAL_ALT
             );
 
             // Wood blocks use log side texture on all faces
