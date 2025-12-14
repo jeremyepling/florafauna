@@ -2,8 +2,6 @@ package net.j40climb.florafauna.common.item.custom;
 
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.attachments.SymbioteData;
-import net.j40climb.florafauna.common.component.ModDataComponentTypes;
-import net.j40climb.florafauna.common.symbiote.ability.SymbioteAbilityData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,9 +28,7 @@ public class SymbioteItem extends Item {
      * @param properties the item properties
      */
     public SymbioteItem(Properties properties) {
-        super(properties
-                .component(ModDataComponentTypes.SYMBIOTE_ABILITY_DATA, SymbioteAbilityData.DEFAULT)
-        );
+        super(properties);
     }
 
     /**
@@ -117,18 +113,11 @@ public class SymbioteItem extends Item {
                     true,                    // bonded = true
                     level.getGameTime(),     // bondTime = current game time
                     1,                       // tier = 1 (basic)
-                    0,                       // energy = 0
-                    100,                      // health = 100 (full)
-                    false, false, false);
+                    false,                   // dash = false
+                    false,                   // featherFalling = false
+                    false);                  // speed = false
 
             player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
-
-            // Read ability data from the symbiote item and apply to player
-            SymbioteAbilityData symbioteAbilities = itemStack.getOrDefault(
-                    ModDataComponentTypes.SYMBIOTE_ABILITY_DATA,
-                    SymbioteAbilityData.DEFAULT
-            );
-            player.setData(ModAttachmentTypes.SYMBIOTE_ABILITY_DATA, symbioteAbilities);
 
             // Display success message
             player.displayClientMessage(

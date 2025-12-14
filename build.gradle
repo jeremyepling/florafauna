@@ -49,6 +49,9 @@ neoForge {
             // Set default window size
             programArguments.addAll '--width', '1600', '--height', '900'
 
+            // Auto-load into world (replace "New World" with your world name from saves folder)
+            programArguments.addAll '--quickPlaySingleplayer', 'New World'
+
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }

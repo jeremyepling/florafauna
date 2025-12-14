@@ -8,9 +8,9 @@ import net.minecraft.network.codec.StreamCodec;
 
 /**
  * Data structure representing the state of a symbiote bonded to a player.
- * Stores bonding status, evolution progress, energy, and health/integrity.
+ * Stores bonding status, evolution tier, and ability toggles.
  */
-public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, int health, boolean dash,
+public record SymbioteData(boolean bonded, long bondTime, int tier, boolean dash,
                            boolean featherFalling, boolean speed) {
     /**
      * Codec for NBT persistence (disk save/load).
@@ -20,9 +20,10 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, 
                     Codec.BOOL.fieldOf("bonded").forGetter(SymbioteData::bonded),
                     Codec.LONG.fieldOf("bondTime").forGetter(SymbioteData::bondTime),
                     Codec.INT.fieldOf("tier").forGetter(SymbioteData::tier),
-                    Codec.INT.fieldOf("energy").forGetter(SymbioteData::energy),
-                    Codec.INT.fieldOf("health").forGetter(SymbioteData::health)
-            ).apply(builder, (bonded1, bondTime1, tier1, energy1, health1) -> new SymbioteData(bonded1, bondTime1, tier1, energy1, health1, false, false, false)));
+                    Codec.BOOL.fieldOf("dash").forGetter(SymbioteData::dash),
+                    Codec.BOOL.fieldOf("featherFalling").forGetter(SymbioteData::featherFalling),
+                    Codec.BOOL.fieldOf("speed").forGetter(SymbioteData::speed)
+            ).apply(builder, SymbioteData::new));
 
     /**
      * StreamCodec for network synchronization (client-server sync).
@@ -31,63 +32,15 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, 
             ByteBufCodecs.BOOL, SymbioteData::bonded,
             ByteBufCodecs.VAR_LONG, SymbioteData::bondTime,
             ByteBufCodecs.INT, SymbioteData::tier,
-            ByteBufCodecs.INT, SymbioteData::energy,
-            ByteBufCodecs.INT, SymbioteData::health,
-            (bonded1, bondTime1, tier1, energy1, health1) -> new SymbioteData(bonded1, bondTime1, tier1, energy1, health1, false, false, false)
+            ByteBufCodecs.BOOL, SymbioteData::dash,
+            ByteBufCodecs.BOOL, SymbioteData::featherFalling,
+            ByteBufCodecs.BOOL, SymbioteData::speed,
+            SymbioteData::new
     );
 
     /**
      * Default symbiote state: not bonded, no progress.
      */
-    public static final SymbioteData DEFAULT = new SymbioteData(false, 0L, 0, 0, 100, false, false, false);
+    public static final SymbioteData DEFAULT = new SymbioteData(false, 0L, 0, false, false, false);
 
-    /**
-     * Creates a new SymbioteData with updated health.
-     *
-     * @param newHealth the new health value (clamped to 0-100)
-     * @return a new SymbioteData instance with the updated health
-     */
-    public SymbioteData withHealth(int newHealth) {
-        return new SymbioteData(bonded, bondTime, tier, energy, Math.clamp(newHealth, 0, 100), false, false, false);
-    }
-
-    /**
-     * Adds energy to the symbiote.
-     *
-     * @param amount the amount of energy to add
-     * @return a new SymbioteData instance with the updated energy
-     */
-    public SymbioteData addEnergy(int amount) {
-        return new SymbioteData(bonded, bondTime, tier, energy + amount, health, false, false, false);
-    }
-
-    /**
-     * Damages the symbiote, reducing its health.
-     *
-     * @param amount the amount of damage to apply
-     * @return a new SymbioteData instance with reduced health
-     */
-    public SymbioteData damage(int amount) {
-        return withHealth(health - amount);
-    }
-
-    /**
-     * Heals the symbiote, restoring health.
-     *
-     * @param amount the amount to heal
-     * @return a new SymbioteData instance with increased health
-     */
-    public SymbioteData heal(int amount) {
-        return withHealth(health + amount);
-    }
-
-    /**
-     * Gets the ability multiplier based on current health.
-     * Damaged symbiotes provide reduced abilities.
-     *
-     * @return a multiplier between 0.0 and 1.0
-     */
-    public float getAbilityMultiplier() {
-        return health / 100.0f;
-    }
 }

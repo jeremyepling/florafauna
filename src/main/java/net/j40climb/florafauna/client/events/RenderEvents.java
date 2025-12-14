@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.client.events;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.client.CustomBlockOutlineRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -11,6 +12,6 @@ public class RenderEvents {
 
     @SubscribeEvent
     public static void extractBlockOutlineRenderStateEvent(ExtractBlockOutlineRenderStateEvent event) {
-        event.addCustomRenderer(new customBlockOutlineRenderer());
+        event.addCustomRenderer(new CustomBlockOutlineRenderer());
     }
 }

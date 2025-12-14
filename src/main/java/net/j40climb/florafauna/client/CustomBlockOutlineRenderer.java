@@ -1,8 +1,7 @@
-package net.j40climb.florafauna.client.events;
+package net.j40climb.florafauna.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.j40climb.florafauna.client.BlockBreakUtils;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,12 +17,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.client.CustomBlockOutlineRenderer;
 
 import java.util.Set;
 
-public class customBlockOutlineRenderer implements CustomBlockOutlineRenderer {
-    public customBlockOutlineRenderer() {
+public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client.CustomBlockOutlineRenderer {
+    public CustomBlockOutlineRenderer() {
     }
 
     @Override
