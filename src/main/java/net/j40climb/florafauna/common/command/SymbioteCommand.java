@@ -5,6 +5,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.attachments.SymbioteData;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogue;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueTrigger;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -118,6 +120,9 @@ public class SymbioteCommand {
         );
         player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
 
+        // Trigger bonding dialogue
+        SymbioteDialogue.forceTrigger(player, SymbioteDialogueTrigger.BONDED);
+
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.bonded_success")
                 .withStyle(style -> style.withColor(0x2ECC71)), false);
         return 1;
@@ -144,8 +149,13 @@ public class SymbioteCommand {
             return 0;
         }
 
+        // Trigger unbonding dialogue
+        SymbioteDialogue.forceTrigger(player, SymbioteDialogueTrigger.UNBONDED);
+
         // Unbond the symbiote (reset to default)
         player.setData(ModAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+
+        // NOTE: Event tracking is NOT reset - symbiote memory persists across bond/unbond cycles
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.unbonded_success")
                 .withStyle(style -> style.withColor(0xE74C3C)), false);

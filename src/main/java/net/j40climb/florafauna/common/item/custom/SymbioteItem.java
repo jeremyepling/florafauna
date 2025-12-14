@@ -2,7 +2,10 @@ package net.j40climb.florafauna.common.item.custom;
 
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.attachments.SymbioteData;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogue;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueTrigger;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -118,6 +121,9 @@ public class SymbioteItem extends Item {
                     false);                  // speed = false
 
             player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
+
+            // Trigger bonding dialogue
+            SymbioteDialogue.forceTrigger((ServerPlayer) player, SymbioteDialogueTrigger.BONDED);
 
             // Display success message
             player.displayClientMessage(

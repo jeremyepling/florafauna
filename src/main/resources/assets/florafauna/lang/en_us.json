@@ -58,5 +58,13 @@
   "command.florafauna.symbiote.bonded_success": "Symbiote bonded successfully!",
   "command.florafauna.symbiote.unbonded_success": "Symbiote unbonded successfully!",
   "command.florafauna.symbiote.toggle_success": "Toggled %s to %s",
-  "command.florafauna.symbiote.invalid_ability": "Invalid ability: %s. Valid abilities: dash, featherFalling, speed"
+  "command.florafauna.symbiote.invalid_ability": "Invalid ability: %s. Valid abilities: dash, featherFalling, speed",
+
+  "symbiote.dialogue.bonded": "We are one now. I will protect you, and you will give me purpose.",
+  "symbiote.dialogue.unbonded": "Our bond... is severed. I will await another host.",
+  "symbiote.dialogue.cold_water": "This water is freezing! I can sense your cells struggling. We should get somewhere warm.",
+  "symbiote.dialogue.fall_damage": "That was quite a drop! Next time, let me cushion your fall.",
+  "symbiote.dialogue.drowning": "You need air! Your lungs are failing. Surface now!",
+  "symbiote.dialogue.mob_attack": "We've been attacked! I can feel your pain. Let me help you fight back.",
+  "symbiote.dialogue.sleeping": "Rest now, host. I will keep watch while you regenerate."
 }

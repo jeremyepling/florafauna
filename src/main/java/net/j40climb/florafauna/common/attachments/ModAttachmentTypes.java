@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.attachments;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.symbiote.tracking.SymbioteEventTracker;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -33,6 +34,19 @@ public class ModAttachmentTypes {
                     AttachmentType.builder(() -> SymbioteData.DEFAULT)
                             .serialize(SymbioteData.CODEC.fieldOf("symbiote_data"))
                             .sync(SymbioteData.STREAM_CODEC)
+                            .build()
+            );
+
+    /**
+     * Symbiote event tracker for dialogue triggers.
+     * Tracks which first-time events have been triggered.
+     * Persists across bonding/unbonding cycles - the symbiote "remembers" experiences.
+     */
+    public static final Supplier<AttachmentType<SymbioteEventTracker>> SYMBIOTE_EVENT_TRACKER =
+            ATTACHMENT_TYPES.register("symbiote_event_tracker", () ->
+                    AttachmentType.builder(() -> SymbioteEventTracker.DEFAULT)
+                            .serialize(SymbioteEventTracker.CODEC.fieldOf("symbiote_event_tracker"))
+                            .sync(SymbioteEventTracker.STREAM_CODEC)
                             .build()
             );
 
