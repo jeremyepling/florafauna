@@ -118,8 +118,8 @@ public class SymbioteItem extends Item {
                     level.getGameTime(),     // bondTime = current game time
                     1,                       // tier = 1 (basic)
                     0,                       // energy = 0
-                    100                      // health = 100 (full)
-            );
+                    100,                      // health = 100 (full)
+                    false, false, false);
 
             player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
 

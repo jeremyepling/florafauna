@@ -39,5 +39,21 @@
   "block.florafauna.driftwood_planks": "Driftwood Planks",
   "block.florafauna.driftwood_slab": "Driftwood Slab",
   "block.florafauna.driftwood_fence": "Driftwood Fence",
-  "block.florafauna.driftwood_fence_gate": "Driftwood Fence Gate"
+  "block.florafauna.driftwood_fence_gate": "Driftwood Fence Gate",
+
+  "command.florafauna.symbiote.header": "Symbiote Data",
+  "command.florafauna.symbiote.player_only": "This command can only be run by a player!",
+  "command.florafauna.symbiote.bonded": "Bonded",
+  "command.florafauna.symbiote.bond_time": "Bond Time",
+  "command.florafauna.symbiote.tier": "Tier",
+  "command.florafauna.symbiote.energy": "Energy",
+  "command.florafauna.symbiote.health": "Health",
+  "command.florafauna.symbiote.dash": "Dash",
+  "command.florafauna.symbiote.feather_falling": "Feather Falling",
+  "command.florafauna.symbiote.speed": "Speed",
+  "command.florafauna.symbiote.ability_multiplier": "Ability Multiplier",
+  "command.florafauna.symbiote.yes": "Yes",
+  "command.florafauna.symbiote.no": "No",
+  "command.florafauna.symbiote.enabled": "Enabled",
+  "command.florafauna.symbiote.disabled": "Disabled"
 }

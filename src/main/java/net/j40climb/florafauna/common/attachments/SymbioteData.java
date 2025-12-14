@@ -10,7 +10,8 @@ import net.minecraft.network.codec.StreamCodec;
  * Data structure representing the state of a symbiote bonded to a player.
  * Stores bonding status, evolution progress, energy, and health/integrity.
  */
-public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, int health) {
+public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, int health, boolean dash,
+                           boolean featherFalling, boolean speed) {
     /**
      * Codec for NBT persistence (disk save/load).
      */
@@ -21,7 +22,7 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, 
                     Codec.INT.fieldOf("tier").forGetter(SymbioteData::tier),
                     Codec.INT.fieldOf("energy").forGetter(SymbioteData::energy),
                     Codec.INT.fieldOf("health").forGetter(SymbioteData::health)
-            ).apply(builder, SymbioteData::new));
+            ).apply(builder, (bonded1, bondTime1, tier1, energy1, health1) -> new SymbioteData(bonded1, bondTime1, tier1, energy1, health1, false, false, false)));
 
     /**
      * StreamCodec for network synchronization (client-server sync).
@@ -32,13 +33,13 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, 
             ByteBufCodecs.INT, SymbioteData::tier,
             ByteBufCodecs.INT, SymbioteData::energy,
             ByteBufCodecs.INT, SymbioteData::health,
-            SymbioteData::new
+            (bonded1, bondTime1, tier1, energy1, health1) -> new SymbioteData(bonded1, bondTime1, tier1, energy1, health1, false, false, false)
     );
 
     /**
      * Default symbiote state: not bonded, no progress.
      */
-    public static final SymbioteData DEFAULT = new SymbioteData(false, 0L, 0, 0, 100);
+    public static final SymbioteData DEFAULT = new SymbioteData(false, 0L, 0, 0, 100, false, false, false);
 
     /**
      * Creates a new SymbioteData with updated health.
@@ -47,7 +48,7 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, 
      * @return a new SymbioteData instance with the updated health
      */
     public SymbioteData withHealth(int newHealth) {
-        return new SymbioteData(bonded, bondTime, tier, energy, Math.clamp(newHealth, 0, 100));
+        return new SymbioteData(bonded, bondTime, tier, energy, Math.clamp(newHealth, 0, 100), false, false, false);
     }
 
     /**
@@ -57,7 +58,7 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, int energy, 
      * @return a new SymbioteData instance with the updated energy
      */
     public SymbioteData addEnergy(int amount) {
-        return new SymbioteData(bonded, bondTime, tier, energy + amount, health);
+        return new SymbioteData(bonded, bondTime, tier, energy + amount, health, false, false, false);
     }
 
     /**

@@ -38,27 +38,40 @@ public class SymbioteCommand {
 
         // Check if the command was run by a player
         if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("This command can only be run by a player!"));
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
             return 0;
         }
 
         // Get the player's symbiote data
         SymbioteData data = player.getData(ModAttachmentTypes.SYMBIOTE_DATA);
 
-        // Display the data
-        source.sendSuccess(() -> Component.literal("=== Symbiote Data ===")
+        // Display the header
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.header")
                 .withStyle(style -> style.withColor(0x9B59B6).withBold(true)), false);
 
-        source.sendSuccess(() -> Component.literal("Bonded: " + (data.bonded() ? "Yes" : "No"))
-                .withStyle(style -> style.withColor(data.bonded() ? 0x2ECC71 : 0xE74C3C)), false);
+        // Display bonded status
+        source.sendSuccess(() -> formatField(
+                "command.florafauna.symbiote.bonded",
+                formatBoolean(data.bonded())
+        ), false);
 
+        // Display all other fields if bonded
         if (data.bonded()) {
-            source.sendSuccess(() -> Component.literal("Bond Time: " + data.bondTime()), false);
-            source.sendSuccess(() -> Component.literal("Tier: " + data.tier()), false);
-            source.sendSuccess(() -> Component.literal("Energy: " + data.energy()), false);
-            source.sendSuccess(() -> Component.literal("Health: " + data.health() + "/100")
-                    .withStyle(style -> style.withColor(getHealthColor(data.health()))), false);
-            source.sendSuccess(() -> Component.literal("Ability Multiplier: " +
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.bond_time",
+                    String.valueOf(data.bondTime())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.tier",
+                    String.valueOf(data.tier())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.energy",
+                    String.valueOf(data.energy())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.health",
+                    data.health() + "/100"), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.dash",
+                    formatEnabledDisabled(data.dash())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.feather_falling",
+                    formatEnabledDisabled(data.featherFalling())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.speed",
+                    formatEnabledDisabled(data.speed())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.ability_multiplier",
                     String.format("%.2f%%", data.getAbilityMultiplier() * 100)), false);
         }
 
@@ -66,15 +79,38 @@ public class SymbioteCommand {
     }
 
     /**
-     * Gets a color for the health value (red to green gradient).
+     * Formats a field with its translated label and value.
      *
-     * @param health the health value (0-100)
-     * @return the color as an RGB integer
+     * @param labelKey the translation key for the field label
+     * @param value the value to display
+     * @return a formatted Component
      */
-    private static int getHealthColor(int health) {
-        if (health >= 75) return 0x2ECC71; // Green
-        if (health >= 50) return 0xF39C12; // Orange
-        if (health >= 25) return 0xE67E22; // Dark orange
-        return 0xE74C3C; // Red
+    private static Component formatField(String labelKey, String value) {
+        return Component.translatable(labelKey).append(": " + value);
     }
+
+    /**
+     * Formats a boolean as Yes/No using translation keys.
+     *
+     * @param value the boolean value
+     * @return the translated yes/no string
+     */
+    private static String formatBoolean(boolean value) {
+        return Component.translatable(value ?
+                "command.florafauna.symbiote.yes" :
+                "command.florafauna.symbiote.no").getString();
+    }
+
+    /**
+     * Formats a boolean as Enabled/Disabled using translation keys.
+     *
+     * @param value the boolean value
+     * @return the translated enabled/disabled string
+     */
+    private static String formatEnabledDisabled(boolean value) {
+        return Component.translatable(value ?
+                "command.florafauna.symbiote.enabled" :
+                "command.florafauna.symbiote.disabled").getString();
+    }
+
 }
