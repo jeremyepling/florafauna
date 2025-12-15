@@ -6,7 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.attachments.SymbioteData;
 import net.j40climb.florafauna.common.component.ModDataComponentTypes;
-import net.j40climb.florafauna.common.component.SymbioteAbilityState;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogue;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueTrigger;
@@ -166,16 +165,18 @@ public class SymbioteCommand {
         // Create symbiote item with current player state
         ItemStack symbioteItem = new ItemStack(ModItems.SYMBIOTE.get());
 
-        // Copy player ability state to item components
-        SymbioteAbilityState abilityState = new SymbioteAbilityState(
-                currentData.tier(),
-                currentData.dash(),
+        // Copy player state to item components (set bonded=false since it's an item now)
+        SymbioteData unbondedData = new SymbioteData(
+                false,                      // bonded = false (it's an item now)
+                0L,                         // bondTime = 0 (not bonded)
+                currentData.tier(),         // preserve tier
+                currentData.dash(),         // preserve abilities
                 currentData.featherFalling(),
                 currentData.speed()
         );
-        symbioteItem.set(ModDataComponentTypes.SYMBIOTE_ABILITY_STATE, abilityState);
+        symbioteItem.set(ModDataComponentTypes.SYMBIOTE_DATA, unbondedData);
 
-        // Copy event tracker to item
+        // Copy event tracker to item (memory persists)
         symbioteItem.set(ModDataComponentTypes.SYMBIOTE_EVENT_TRACKER, eventTracker);
 
         // Give item to player

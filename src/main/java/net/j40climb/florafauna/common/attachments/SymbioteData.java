@@ -7,7 +7,12 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Data structure representing the state of a symbiote bonded to a player.
+ * Data structure representing symbiote state.
+ * Used as both an Attachment (on players) and a DataComponent (on items).
+ *
+ * When on player: bonded=true, bondTime=actual time
+ * When on item: bonded=false, bondTime=0
+ *
  * Stores bonding status, evolution tier, and ability toggles.
  */
 public record SymbioteData(boolean bonded, long bondTime, int tier, boolean dash,
@@ -39,8 +44,9 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, boolean dash
     );
 
     /**
-     * Default symbiote state: not bonded, no progress.
+     * Default symbiote state: not bonded, tier 1, no abilities.
+     * Used for both unbonded players and newly created symbiote items.
      */
-    public static final SymbioteData DEFAULT = new SymbioteData(false, 0L, 0, false, false, false);
+    public static final SymbioteData DEFAULT = new SymbioteData(false, 0L, 1, false, false, false);
 
 }
