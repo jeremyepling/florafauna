@@ -5,19 +5,25 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.attachments.SymbioteData;
+import net.j40climb.florafauna.common.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.component.SymbioteAbilityState;
+import net.j40climb.florafauna.common.item.ModItems;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogue;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueTrigger;
+import net.j40climb.florafauna.common.symbiote.tracking.SymbioteEventTracker;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Commands for managing symbiote attachment data.
  * Usage:
  *   /symbiote check - Display current symbiote data
  *   /symbiote bond - Bond a symbiote to the player
- *   /symbiote unbond - Unbond the symbiote from the player
+ *   /symbiote unbond - Unbond the symbiote from the player (returns item with memory intact)
+ *   /symbiote reset - Reset the symbiote completely (for testing, no item created)
  *   /symbiote toggle <ability> - Toggle an ability (dash, featherFalling, speed)
  */
 public class SymbioteCommand {
@@ -35,6 +41,8 @@ public class SymbioteCommand {
                                 .executes(SymbioteCommand::bondSymbiote))
                         .then(Commands.literal("unbond")
                                 .executes(SymbioteCommand::unbondSymbiote))
+                        .then(Commands.literal("reset")
+                                .executes(SymbioteCommand::resetSymbiote))
                         .then(Commands.literal("toggle")
                                 .then(Commands.argument("ability", StringArgumentType.word())
                                         .suggests((context, builder) -> {
@@ -152,13 +160,67 @@ public class SymbioteCommand {
         // Trigger unbonding dialogue
         SymbioteDialogue.forceTrigger(player, SymbioteDialogueTrigger.UNBONDED);
 
-        // Unbond the symbiote (reset to default)
-        player.setData(ModAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+        // Read current player state
+        SymbioteEventTracker eventTracker = player.getData(ModAttachmentTypes.SYMBIOTE_EVENT_TRACKER);
 
-        // NOTE: Event tracking is NOT reset - symbiote memory persists across bond/unbond cycles
+        // Create symbiote item with current player state
+        ItemStack symbioteItem = new ItemStack(ModItems.SYMBIOTE.get());
+
+        // Copy player ability state to item components
+        SymbioteAbilityState abilityState = new SymbioteAbilityState(
+                currentData.tier(),
+                currentData.dash(),
+                currentData.featherFalling(),
+                currentData.speed()
+        );
+        symbioteItem.set(ModDataComponentTypes.SYMBIOTE_ABILITY_STATE, abilityState);
+
+        // Copy event tracker to item
+        symbioteItem.set(ModDataComponentTypes.SYMBIOTE_EVENT_TRACKER, eventTracker);
+
+        // Give item to player
+        if (!player.getInventory().add(symbioteItem)) {
+            // If inventory is full, drop at player's feet
+            player.drop(symbioteItem, false);
+        }
+
+        // Unbond the symbiote (reset player attachments to default)
+        player.setData(ModAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+        player.setData(ModAttachmentTypes.SYMBIOTE_EVENT_TRACKER, SymbioteEventTracker.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.unbonded_success")
                 .withStyle(style -> style.withColor(0xE74C3C)), false);
+        return 1;
+    }
+
+    /**
+     * Executes the reset command to fully reset the symbiote (for testing).
+     * This does a complete reset of all symbiote data without creating an item.
+     *
+     * @param context the command context
+     * @return 1 if successful
+     */
+    private static int resetSymbiote(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        SymbioteData currentData = player.getData(ModAttachmentTypes.SYMBIOTE_DATA);
+
+        if (!currentData.bonded()) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
+            return 0;
+        }
+
+        // Full reset - clear both attachments without creating an item
+        player.setData(ModAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+        player.setData(ModAttachmentTypes.SYMBIOTE_EVENT_TRACKER, SymbioteEventTracker.DEFAULT);
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.reset_success")
+                .withStyle(style -> style.withColor(0xF39C12)), false);
         return 1;
     }
 

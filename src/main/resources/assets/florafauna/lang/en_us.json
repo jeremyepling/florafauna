@@ -57,6 +57,7 @@
   "command.florafauna.symbiote.not_bonded": "You don't have a bonded symbiote!",
   "command.florafauna.symbiote.bonded_success": "Symbiote bonded successfully!",
   "command.florafauna.symbiote.unbonded_success": "Symbiote unbonded successfully!",
+  "command.florafauna.symbiote.reset_success": "Symbiote reset successfully!",
   "command.florafauna.symbiote.toggle_success": "Toggled %s to %s",
   "command.florafauna.symbiote.invalid_ability": "Invalid ability: %s. Valid abilities: dash, featherFalling, speed",
 

@@ -2,8 +2,11 @@ package net.j40climb.florafauna.common.item.custom;
 
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.attachments.SymbioteData;
+import net.j40climb.florafauna.common.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.component.SymbioteAbilityState;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogue;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueTrigger;
+import net.j40climb.florafauna.common.symbiote.tracking.SymbioteEventTracker;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -27,11 +30,15 @@ import java.util.function.Consumer;
 public class SymbioteItem extends Item {
     /**
      * Constructs a new SymbioteItem with the specified properties.
+     * Sets default components for ability state and event tracking.
      *
      * @param properties the item properties
      */
     public SymbioteItem(Properties properties) {
-        super(properties);
+        super(properties
+                .component(ModDataComponentTypes.SYMBIOTE_ABILITY_STATE, SymbioteAbilityState.DEFAULT)
+                .component(ModDataComponentTypes.SYMBIOTE_EVENT_TRACKER, SymbioteEventTracker.DEFAULT)
+        );
     }
 
     /**
@@ -111,16 +118,27 @@ public class SymbioteItem extends Item {
                 return itemStack; // Don't consume the item
             }
 
-            // Bond the symbiote
+            // Read symbiote state from item components
+            SymbioteAbilityState abilityState = itemStack.getOrDefault(
+                    ModDataComponentTypes.SYMBIOTE_ABILITY_STATE,
+                    SymbioteAbilityState.DEFAULT
+            );
+            SymbioteEventTracker eventTracker = itemStack.getOrDefault(
+                    ModDataComponentTypes.SYMBIOTE_EVENT_TRACKER,
+                    SymbioteEventTracker.DEFAULT
+            );
+
+            // Bond the symbiote - copy item state to player attachments
             SymbioteData newData = new SymbioteData(
-                    true,                    // bonded = true
-                    level.getGameTime(),     // bondTime = current game time
-                    1,                       // tier = 1 (basic)
-                    false,                   // dash = false
-                    false,                   // featherFalling = false
-                    false);                  // speed = false
+                    true,                        // bonded = true
+                    level.getGameTime(),         // bondTime = current game time
+                    abilityState.tier(),         // tier from item
+                    abilityState.dash(),         // dash from item
+                    abilityState.featherFalling(), // featherFalling from item
+                    abilityState.speed());       // speed from item
 
             player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
+            player.setData(ModAttachmentTypes.SYMBIOTE_EVENT_TRACKER, eventTracker);
 
             // Trigger bonding dialogue
             SymbioteDialogue.forceTrigger((ServerPlayer) player, SymbioteDialogueTrigger.BONDED);
