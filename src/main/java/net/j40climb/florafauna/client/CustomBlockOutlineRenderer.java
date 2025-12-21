@@ -27,20 +27,20 @@ public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client
     @Override
     public boolean render(BlockOutlineRenderState renderState, MultiBufferSource.BufferSource buffer, PoseStack poseStack, boolean translucentPass, LevelRenderState levelRenderState) {
         Player player = Minecraft.getInstance().player;
-
-        //itemStack.is(ModItems.ENERGY_HAMMER.get())  check or item instead if i'm not moving this component to other items?
         assert player != null;
-        if (player.getMainHandItem().get(ModDataComponentTypes.MINING_MODE_DATA) != null) {
-            Level level = player.level();
-            BlockPos targetPos = renderState.pos();
 
+        Level level = player.level();
+        BlockPos targetPos = renderState.pos();
+
+        Vec3 vec3 = levelRenderState.cameraRenderState.pos;
+        double d0 = vec3.x();
+        double d1 = vec3.y();
+        double d2 = vec3.z();
+
+        // Mining mode outline rendering
+        if (player.getMainHandItem().get(ModDataComponentTypes.MINING_MODE_DATA) != null) {
             Set<BlockPos> breakBlockPositions = BlockBreakUtils.getBlocksToBeBrokenWithMiningMode(targetPos, player);
 
-
-            Vec3 vec3 = levelRenderState.cameraRenderState.pos;
-            double d0 = vec3.x();
-            double d1 = vec3.y();
-            double d2 = vec3.z();
             for (BlockPos blockPos : breakBlockPositions) {
                 if (blockPos.equals(targetPos)) {
                     continue; //Let the original event draw this one!
@@ -49,7 +49,8 @@ public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client
                 renderHitOutline(poseStack, vertexConsumer, player, d0, d1, d2, level, blockPos, level.getBlockState(blockPos));
             }
         }
-        // Always let minecraft draw outline and just draw over itme
+
+        // Always let minecraft draw outline and just draw over it
         return false;
     }
 

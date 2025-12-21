@@ -32,6 +32,7 @@ public class ModCreativeModeTabs {
 
                         output.accept(ModBlocks.TEAL_MOSS_BLOCK);
                         output.accept(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER);
+                        output.accept(ModBlocks.COPPER_GOLEM_BARRIER);
 
                         // Wood blocks - iterates through all wood types
                         for (ModWoodType woodType : ModWoodType.values()) {

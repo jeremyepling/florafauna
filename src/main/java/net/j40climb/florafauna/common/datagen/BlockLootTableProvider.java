@@ -20,6 +20,7 @@ public class BlockLootTableProvider extends BlockLootSubProvider {
     protected void generate() {
         dropSelf(ModBlocks.TEAL_MOSS_BLOCK.get());
         dropSelf(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
+        dropSelf(ModBlocks.COPPER_GOLEM_BARRIER.get());
 
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (ModWoodType woodType : ModWoodType.values()) {

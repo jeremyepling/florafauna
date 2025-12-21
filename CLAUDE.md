@@ -14,6 +14,31 @@ NeoForge 1.21.10 Minecraft mod.
 - `src/main/resources/assets/florafauna/` - Assets (textures, lang, models)
 - `src/main/resources/data/florafauna/` - Data (recipes, loot tables, tags)
 
+## Minecraft/NeoForge Source Reference
+The decompiled Minecraft and NeoForge source code is available in:
+```
+C:\Users\jerem\IdeaProjects\florafauna\build\moddev\artifacts\neoforge-21.10.64-merged.jar
+```
+
+This JAR contains:
+- `net/minecraft/` - Minecraft classes (entities, blocks, items, world, etc.)
+- `net/neoforged/` - NeoForge API and hooks
+
+**Use this to:**
+- Reference vanilla Minecraft implementations
+- See how existing features work (entities, blocks, items, etc.)
+- Find available methods and classes
+- Understand NeoForge event systems and hooks
+
+**Example usage:**
+```bash
+# List all entity classes
+jar tf build/moddev/artifacts/neoforge-21.10.64-merged.jar | grep "net/minecraft/world/entity/"
+
+# Extract a specific class for reference
+jar xf build/moddev/artifacts/neoforge-21.10.64-merged.jar net/minecraft/world/entity/Entity.class
+```
+
 ## Block Registration
 
 ### Regular Blocks

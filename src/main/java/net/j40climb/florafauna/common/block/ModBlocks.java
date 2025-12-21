@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.block;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.custom.ContainmentChamberBlock;
+import net.j40climb.florafauna.common.block.custom.CopperGolemBarrierBlock;
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.item.ModItems;
 import net.minecraft.world.item.BlockItem;
@@ -48,6 +49,13 @@ public class ModBlocks {
                             .lightLevel(state -> 5)
                             .noOcclusion()
                     ));
+
+    public static final DeferredBlock<Block> COPPER_GOLEM_BARRIER = registerBlock("copper_golem_barrier",
+            props -> new CopperGolemBarrierBlock(props
+                    .noOcclusion()
+                    .strength(-1.0F, 3600000.0F)
+                    .sound(SoundType.STONE)
+            ));
 
     // ========== WOOD BLOCKS ==========
     // Wood blocks are registered via ModWoodType enum. We call this method to ensure

@@ -58,6 +58,9 @@ public class ModModelProvider extends ModelProvider {
         blockModels.createTrivialCube(ModBlocks.TEAL_MOSS_BLOCK.get());
         blockModels.createTrivialCube(ModBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
 
+        // Copper Golem Barrier - invisible block, model not actually rendered
+        blockModels.createTrivialCube(ModBlocks.COPPER_GOLEM_BARRIER.get());
+
         // Wood blocks - iterate through all wood types
         for (ModWoodType woodType : ModWoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
