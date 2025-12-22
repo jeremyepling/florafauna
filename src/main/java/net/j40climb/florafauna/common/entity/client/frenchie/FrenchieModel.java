@@ -27,6 +27,8 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
     private final KeyframeAnimation swimmingAnimation;
     private final KeyframeAnimation sleepingAnimation;
     private final KeyframeAnimation idlingAnimation;
+    private final KeyframeAnimation sitDownAnimation;
+    private final KeyframeAnimation sitPoseAnimation;
 
     public FrenchieModel(ModelPart root) {
         super(root);
@@ -37,6 +39,8 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
         this.swimmingAnimation = FrenchieAnimations.ANIM_SWIM.bake(root);
         this.sleepingAnimation = FrenchieAnimations.ANIM_SLEEP.bake(root);
         this.idlingAnimation = FrenchieAnimations.ANIM_IDLE.bake(root);
+        this.sitDownAnimation = FrenchieAnimations.ANIM_GO_TO_SLEEP.bake(root);
+        this.sitPoseAnimation = FrenchieAnimations.ANIM_SLEEP.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -78,17 +82,29 @@ public class FrenchieModel extends EntityModel<FrenchieRenderState> {
     @Override
     public void setupAnim(FrenchieRenderState renderState) {  //FrenchieEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         super.setupAnim(renderState);
-        this.applyHeadRotation(renderState.yRot, renderState.xRot);
 
-        if (renderState.isSwimming) {
-            this.swimmingAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1F, 2.5F);
-        } else {
+        // Don't rotate head/body when sleeping or sitting
+        if (!renderState.isSleeping && !renderState.isSitting) {
+            this.applyHeadRotation(renderState.yRot, renderState.xRot);
+        }
+
+        // Apply walk animation (swimming uses its own animation state below)
+        if (!renderState.isSwimming) {
             this.walkingAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 2.5F, 2.5F);
+        }
+
+        // Apply swim animation when in water
+        if (renderState.isSwimming) {
+            this.swimmingAnimation.apply(renderState.swimAnimationState, renderState.ageInTicks, 1.0F);
         }
 
         if (renderState.isSleeping) {
             this.sleepingAnimation.apply(renderState.sleepAnimationState, renderState.ageInTicks, 1.0F);
         }
+
+        // Apply sitting animations - each animation state controls when it's active
+        this.sitDownAnimation.apply(renderState.sitDownAnimationState, renderState.ageInTicks, 1.0F);
+        this.sitPoseAnimation.apply(renderState.sitPoseAnimationState, renderState.ageInTicks, 1.0F);
 
         this.idlingAnimation.apply(renderState.idleAnimationState, renderState.ageInTicks, 1.0F);
     }

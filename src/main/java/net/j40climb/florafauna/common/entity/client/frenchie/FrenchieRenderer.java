@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Pose;
 
 import java.util.Map;
 
@@ -48,7 +49,14 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
     @Override
     public void extractRenderState(FrenchieEntity entity, FrenchieRenderState reusedState, float partialTick) {
         super.extractRenderState(entity, reusedState, partialTick);
-        reusedState.idleAnimationState.copyFrom(entity.idleAnimationState);
         reusedState.variant = entity.getVariant();
+        reusedState.isSleeping = entity.isFrenchieSleeping();
+        reusedState.isSwimming = entity.isSwimming();
+        reusedState.isSitting = entity.getPose() == Pose.SITTING;
+        reusedState.idleAnimationState.copyFrom(entity.idleAnimationState);
+        reusedState.sleepAnimationState.copyFrom(entity.sleepAnimationState);
+        reusedState.swimAnimationState.copyFrom(entity.swimAnimationState);
+        reusedState.sitDownAnimationState.copyFrom(entity.sitDownAnimationState);
+        reusedState.sitPoseAnimationState.copyFrom(entity.sitPoseAnimationState);
     }
 }

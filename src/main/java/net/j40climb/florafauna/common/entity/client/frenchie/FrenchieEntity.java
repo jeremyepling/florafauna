@@ -2,7 +2,6 @@ package net.j40climb.florafauna.common.entity.client.frenchie;
 
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.minecraft.Util;
-import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -39,13 +38,14 @@ public class FrenchieEntity extends TamableAnimal {
     public final AnimationState sleepAnimationState = new AnimationState();
     public final AnimationState sitDownAnimationState = new AnimationState();
     public final AnimationState sitPoseAnimationState = new AnimationState();
-    public final AnimationState sitUpAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
 
     public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Integer> VARIANT =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> IS_SLEEPING =
+            SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.BOOLEAN);
 
     public FrenchieEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -59,7 +59,7 @@ public class FrenchieEntity extends TamableAnimal {
         this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, Ingredient.of(Items.GLOW_BERRIES), false));
         this.goalSelector.addGoal(4, new FollowOwnerGoal(this, 1.25d, 18f, 7f));
         this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25));
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
+        this.goalSelector.addGoal(5, new RandomStrollGoal(this, 1.0));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
@@ -69,12 +69,24 @@ public class FrenchieEntity extends TamableAnimal {
                 .add(Attributes.MAX_HEALTH, 10D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
                 .add(Attributes.FOLLOW_RANGE, 24D)
-                .add(Attributes.TEMPT_RANGE, 10D);
+                .add(Attributes.TEMPT_RANGE, 10D)
+                .add(Attributes.STEP_HEIGHT, 1.0D)
+                .add(Attributes.WATER_MOVEMENT_EFFICIENCY, 1.0D);
     }
 
     @Override
     public boolean isSwimming() {
         return this.isInWater(); // return true if entity is in water
+    }
+
+    @Override
+    public boolean canBreatheUnderwater() {
+        return true; // Frenchie can breathe underwater to prevent drowning
+    }
+
+    @Override
+    public boolean canStartSwimming() {
+        return true; // Allow swimming
     }
 
     @Override
@@ -106,6 +118,15 @@ public class FrenchieEntity extends TamableAnimal {
         super.defineSynchedData(builder);
         builder.define(VARIANT, 0);
         builder.define(LAST_POSE_CHANGE_TICK, 0L);
+        builder.define(IS_SLEEPING, false);
+    }
+
+    public boolean isFrenchieSleeping() {
+        return this.entityData.get(IS_SLEEPING);
+    }
+
+    public void setFrenchieSleeping(boolean sleeping) {
+        this.entityData.set(IS_SLEEPING, sleeping);
     }
 
     private int getTypeVariant() {
@@ -145,6 +166,7 @@ public class FrenchieEntity extends TamableAnimal {
             }
         }
         if(isTame() && pHand == InteractionHand.MAIN_HAND && !isFood(itemstack)) {
+            System.out.println("[DEBUG] Player interacted with tamed Frenchie - calling toggleSitting()");
             toggleSitting();
             return InteractionResult.SUCCESS;
         }
@@ -156,6 +178,7 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     public void toggleSitting() {
+        System.out.println("[DEBUG] toggleSitting called - currently sitting: " + this.isSitting() + ", orderedToSit: " + this.isOrderedToSit());
         if (this.isSitting()) {
             standUp();
         } else {
@@ -163,24 +186,30 @@ public class FrenchieEntity extends TamableAnimal {
         }
     }
     public void sitDown() {
+        System.out.println("[DEBUG] sitDown called - isSitting: " + this.isSitting());
         if (!this.isSitting()) {
             //this.makeSound(SoundEvents.CAMEL_SIT);
             this.setPose(Pose.SITTING);
             this.gameEvent(GameEvent.ENTITY_ACTION);
             this.resetLastPoseChangeTick(-this.level().getGameTime());
+            System.out.println("[DEBUG] Set pose to SITTING, gameTime: " + this.level().getGameTime());
         }
         setOrderedToSit(true);
         setInSittingPose(true);
+        System.out.println("[DEBUG] After sitDown - orderedToSit: " + this.isOrderedToSit() + ", inSittingPose: " + this.isInSittingPose() + ", pose: " + this.getPose());
     }
     public void standUp() {
+        System.out.println("[DEBUG] standUp called - isSitting: " + this.isSitting());
         if (this.isSitting()) {
             //this.makeSound(SoundEvents.CAMEL_STAND);
             this.setPose(Pose.STANDING);
             this.gameEvent(GameEvent.ENTITY_ACTION);
             this.resetLastPoseChangeTick(this.level().getGameTime());
+            System.out.println("[DEBUG] Set pose to STANDING, gameTime: " + this.level().getGameTime());
         }
         setOrderedToSit(false);
         setInSittingPose(false);
+        System.out.println("[DEBUG] After standUp - orderedToSit: " + this.isOrderedToSit() + ", inSittingPose: " + this.isInSittingPose() + ", pose: " + this.getPose());
     }
 
     @Override
@@ -188,6 +217,8 @@ public class FrenchieEntity extends TamableAnimal {
         super.addAdditionalSaveData(output);
         output.putInt("Variant", this.getTypeVariant());
         output.putString("Pose", this.getPose().name());
+        output.putBoolean("IsSleeping", this.isFrenchieSleeping());
+        output.putLong("LastPoseChangeTick", this.entityData.get(LAST_POSE_CHANGE_TICK));
     }
 
     @Override
@@ -197,6 +228,10 @@ public class FrenchieEntity extends TamableAnimal {
         this.entityData.set(VARIANT, variantID);
         String poseName = input.getStringOr("Pose", Pose.STANDING.name());
         this.setPose(Pose.valueOf(poseName));
+        boolean sleeping = input.getBooleanOr("IsSleeping", false);
+        this.setFrenchieSleeping(sleeping);
+        long lastPoseChangeTick = input.getLongOr("LastPoseChangeTick", 0L);
+        this.entityData.set(LAST_POSE_CHANGE_TICK, lastPoseChangeTick);
     }
 
     /* Animation */
@@ -209,47 +244,72 @@ public class FrenchieEntity extends TamableAnimal {
             // Setup animation states
             if (this.idleAnimationTimeout <= 0) {
                 this.idleAnimationTimeout = 40; // 40 ticks is to seconds and that's the length of the idle animation
-                this.swimAnimationState.animateWhen(this.isInWater() && !this.walkAnimation.isMoving(), this.tickCount);
-
                 this.idleAnimationState.start(this.tickCount);
             } else {
                 --this.idleAnimationTimeout;
             }
+
+            // Swim animation plays whenever in water
+            this.swimAnimationState.animateWhen(this.isInWater(), this.tickCount);
+
+            // Sleep animation plays when sleeping
+            this.sleepAnimationState.animateWhen(this.isFrenchieSleeping(), this.tickCount);
+
             if (this.isVisuallySitting()) {
-                this.sitUpAnimationState.stop();
                 if (this.isVisuallySittingDown()) {
+                    // Playing sit down transition
                     this.sitDownAnimationState.startIfStopped(this.tickCount);
                     this.sitPoseAnimationState.stop();
                 } else {
+                    // Transition complete, play sit pose immediately
                     this.sitDownAnimationState.stop();
                     this.sitPoseAnimationState.startIfStopped(this.tickCount);
                 }
             } else {
+                // Standing up - just stop animations and snap back
                 this.sitDownAnimationState.stop();
                 this.sitPoseAnimationState.stop();
-                this.sitUpAnimationState.animateWhen(this.isInPoseTransition() && this.getPoseTime() >= 0L, this.tickCount);
             }
         }
         if (!this.level().isClientSide()) { // Server side only
-            long time = this.level().getDayTime() % 24000;
-            if (time >= 13000 && time <= 23000 && random.nextFloat() < 0.01f && !this.isInWater()) {
-                this.setPose(Pose.SLEEPING);
-            } else if (time < 13000 || time > 23000 || this.isInWater()) {
-                this.setPose(Pose.STANDING);
+            if (!this.isOrderedToSit()) {
+                // Sleep during player sleep time (when beds are usable)
+                if (isPlayerSleepTime() && !this.isInWater()) {
+                    if (!this.isFrenchieSleeping()) {
+                        System.out.println("[DEBUG] Going to sleep - isPlayerSleepTime: true, inWater: " + this.isInWater());
+                        this.setFrenchieSleeping(true);
+                    }
+                } else if (!isPlayerSleepTime() || this.isInWater()) {
+                    // Wake up during day or when in water
+                    if (this.isFrenchieSleeping()) {
+                        System.out.println("[DEBUG] Waking up - isPlayerSleepTime: " + isPlayerSleepTime() + ", inWater: " + this.isInWater());
+                        this.setFrenchieSleeping(false);
+                    }
+                }
+            } else {
+                // When ordered to sit, don't sleep
+                if (this.isFrenchieSleeping()) {
+                    this.setFrenchieSleeping(false);
+                }
+                // Debug: Show when ordered to sit prevents auto pose changes
+                if (this.tickCount % 100 == 0) { // Log every 5 seconds to avoid spam
+                    System.out.println("[DEBUG] Frenchie is orderedToSit - skipping auto pose changes. Current pose: " + this.getPose());
+                }
             }
         }
-
     }
 
     public boolean isInPoseTransition() {
         long i = this.getPoseTime();
-        return i < (long) (this.isSitting() ? 40 : 52);
+        // Sit down animation is 20 ticks (1 second), sit up is 20 ticks
+        return i < (long) (this.isSitting() ? 20 : 20);
     }
     public boolean isVisuallySitting() {
         return this.getPoseTime() < 0L != this.isSitting();
     }
     private boolean isVisuallySittingDown() {
-        return this.isSitting() && this.getPoseTime() < 40L && this.getPoseTime() >= 0L;
+        // Sitting down transition lasts 20 ticks (1 second)
+        return this.isSitting() && this.getPoseTime() < 20L && this.getPoseTime() >= 0L;
     }
     public void resetLastPoseChangeTick(long pLastPoseChangeTick) {
         this.entityData.set(LAST_POSE_CHANGE_TICK, pLastPoseChangeTick);
@@ -258,19 +318,28 @@ public class FrenchieEntity extends TamableAnimal {
         return this.level().getGameTime() - Math.abs(this.entityData.get(LAST_POSE_CHANGE_TICK));
     }
     private void resetLastPoseChangeTickToFullStand(long pLastPoseChangedTick) {
-        this.resetLastPoseChangeTick(Math.max(0L, pLastPoseChangedTick - 52L - 1L));
+        this.resetLastPoseChangeTick(Math.max(0L, pLastPoseChangedTick - 20L - 1L));
     }
 
     /* Sleeping */
 
-    @Override
-    public @Nullable Direction getBedOrientation() {
-        return Direction.NORTH;
+    /**
+     * Checks if it's night time when players can sleep in beds.
+     * In clear weather: ticks 12542-23459 (when stars appear)
+     * In rainy weather: ticks 12010-23991 (earlier sleep window)
+     */
+    private boolean isPlayerSleepTime() {
+        long time = this.level().getDayTime() % 24000;
+        if (this.level().isRaining()) {
+            return time >= 12010 && time < 23991;
+        } else {
+            return time >= 12542 && time < 23459;
+        }
     }
 
     @Override
     protected boolean isImmobile() {
-        return super.isImmobile() || this.getPose() == Pose.SLEEPING;
+        return super.isImmobile() || this.isFrenchieSleeping();
     }
 
     /*

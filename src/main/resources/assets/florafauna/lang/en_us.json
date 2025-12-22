@@ -16,6 +16,7 @@
   "entity.florafauna.gecko": "Gecko",
   "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
   "entity.florafauna.lizard": "Lizard",
+  "container.florafauna.lizard": "Lizard",
 
   "key.florafauna.throw_hammer": "Throw Hammer",
   "key.florafauna.teleport_surface": "Teleport to Surface",

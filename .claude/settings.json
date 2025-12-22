@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(find:*)",
+      "Bash(cd:*)",
       "Bash(ls:*)",
       "Bash(gradle:*)",
       "Bash(./gradlew:*)",

@@ -7,7 +7,11 @@ public class FrenchieRenderState extends LivingEntityRenderState {
     public FrenchieVariant variant;
     public boolean isSleeping;
     public boolean isSwimming;
+    public boolean isSitting;
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState sleepAnimationState = new AnimationState();
+    public final AnimationState swimAnimationState = new AnimationState();
+    public final AnimationState sitDownAnimationState = new AnimationState();
+    public final AnimationState sitPoseAnimationState = new AnimationState();
 
 }
