@@ -166,7 +166,6 @@ public class FrenchieEntity extends TamableAnimal {
             }
         }
         if(isTame() && pHand == InteractionHand.MAIN_HAND && !isFood(itemstack)) {
-            System.out.println("[DEBUG] Player interacted with tamed Frenchie - calling toggleSitting()");
             toggleSitting();
             return InteractionResult.SUCCESS;
         }
@@ -174,11 +173,10 @@ public class FrenchieEntity extends TamableAnimal {
     }
     /* SITTING */
     public boolean isSitting() {
-        return this.entityData.get(LAST_POSE_CHANGE_TICK) < 0L;
+        return this.getPose() == Pose.SITTING;
     }
 
     public void toggleSitting() {
-        System.out.println("[DEBUG] toggleSitting called - currently sitting: " + this.isSitting() + ", orderedToSit: " + this.isOrderedToSit());
         if (this.isSitting()) {
             standUp();
         } else {
@@ -186,30 +184,24 @@ public class FrenchieEntity extends TamableAnimal {
         }
     }
     public void sitDown() {
-        System.out.println("[DEBUG] sitDown called - isSitting: " + this.isSitting());
         if (!this.isSitting()) {
             //this.makeSound(SoundEvents.CAMEL_SIT);
             this.setPose(Pose.SITTING);
             this.gameEvent(GameEvent.ENTITY_ACTION);
-            this.resetLastPoseChangeTick(-this.level().getGameTime());
-            System.out.println("[DEBUG] Set pose to SITTING, gameTime: " + this.level().getGameTime());
+            this.resetLastPoseChangeTick(this.level().getGameTime());
         }
         setOrderedToSit(true);
         setInSittingPose(true);
-        System.out.println("[DEBUG] After sitDown - orderedToSit: " + this.isOrderedToSit() + ", inSittingPose: " + this.isInSittingPose() + ", pose: " + this.getPose());
     }
     public void standUp() {
-        System.out.println("[DEBUG] standUp called - isSitting: " + this.isSitting());
         if (this.isSitting()) {
             //this.makeSound(SoundEvents.CAMEL_STAND);
             this.setPose(Pose.STANDING);
             this.gameEvent(GameEvent.ENTITY_ACTION);
             this.resetLastPoseChangeTick(this.level().getGameTime());
-            System.out.println("[DEBUG] Set pose to STANDING, gameTime: " + this.level().getGameTime());
         }
         setOrderedToSit(false);
         setInSittingPose(false);
-        System.out.println("[DEBUG] After standUp - orderedToSit: " + this.isOrderedToSit() + ", inSittingPose: " + this.isInSittingPose() + ", pose: " + this.getPose());
     }
 
     @Override
@@ -272,56 +264,50 @@ public class FrenchieEntity extends TamableAnimal {
             }
         }
         if (!this.level().isClientSide()) { // Server side only
-            if (!this.isOrderedToSit()) {
-                // Sleep during player sleep time (when beds are usable)
-                if (isPlayerSleepTime() && !this.isInWater()) {
-                    if (!this.isFrenchieSleeping()) {
-                        System.out.println("[DEBUG] Going to sleep - isPlayerSleepTime: true, inWater: " + this.isInWater());
-                        this.setFrenchieSleeping(true);
-                    }
-                } else if (!isPlayerSleepTime() || this.isInWater()) {
-                    // Wake up during day or when in water
-                    if (this.isFrenchieSleeping()) {
-                        System.out.println("[DEBUG] Waking up - isPlayerSleepTime: " + isPlayerSleepTime() + ", inWater: " + this.isInWater());
-                        this.setFrenchieSleeping(false);
-                    }
-                }
-            } else {
-                // When ordered to sit, don't sleep
-                if (this.isFrenchieSleeping()) {
-                    this.setFrenchieSleeping(false);
-                }
-                // Debug: Show when ordered to sit prevents auto pose changes
-                if (this.tickCount % 100 == 0) { // Log every 5 seconds to avoid spam
-                    System.out.println("[DEBUG] Frenchie is orderedToSit - skipping auto pose changes. Current pose: " + this.getPose());
-                }
-            }
+            updateSleepState();
         }
     }
 
     public boolean isInPoseTransition() {
-        long i = this.getPoseTime();
-        // Sit down animation is 20 ticks (1 second), sit up is 20 ticks
-        return i < (long) (this.isSitting() ? 20 : 20);
+        // Sit down/up transition is 20 ticks (1 second)
+        return this.getPoseTime() < 20L;
     }
     public boolean isVisuallySitting() {
-        return this.getPoseTime() < 0L != this.isSitting();
+        return this.isSitting();
     }
     private boolean isVisuallySittingDown() {
         // Sitting down transition lasts 20 ticks (1 second)
-        return this.isSitting() && this.getPoseTime() < 20L && this.getPoseTime() >= 0L;
+        return this.isSitting() && this.getPoseTime() < 20L;
     }
     public void resetLastPoseChangeTick(long pLastPoseChangeTick) {
         this.entityData.set(LAST_POSE_CHANGE_TICK, pLastPoseChangeTick);
     }
     public long getPoseTime() {
-        return this.level().getGameTime() - Math.abs(this.entityData.get(LAST_POSE_CHANGE_TICK));
+        return this.level().getGameTime() - this.entityData.get(LAST_POSE_CHANGE_TICK);
     }
     private void resetLastPoseChangeTickToFullStand(long pLastPoseChangedTick) {
         this.resetLastPoseChangeTick(Math.max(0L, pLastPoseChangedTick - 20L - 1L));
     }
 
     /* Sleeping */
+
+    private void updateSleepState() {
+        if (this.isOrderedToSit()) {
+            // When ordered to sit, don't sleep
+            if (this.isFrenchieSleeping()) {
+                this.setFrenchieSleeping(false);
+            }
+            return;
+        }
+
+        boolean shouldSleep = isPlayerSleepTime() && !this.isInWater();
+
+        if (shouldSleep && !this.isFrenchieSleeping()) {
+            this.setFrenchieSleeping(true);
+        } else if (!shouldSleep && this.isFrenchieSleeping()) {
+            this.setFrenchieSleeping(false);
+        }
+    }
 
     /**
      * Checks if it's night time when players can sleep in beds.
