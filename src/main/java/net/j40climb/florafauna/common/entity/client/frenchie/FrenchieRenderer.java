@@ -14,6 +14,7 @@ import net.minecraft.world.entity.Pose;
 import java.util.Map;
 
 public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRenderState, FrenchieModel> {
+
     private static final Map<FrenchieVariant, ResourceLocation> TEXTURE_LOCATION_BY_VARIANT =
             Util.make(Maps.newEnumMap(FrenchieVariant.class), map -> {
                 map.put(FrenchieVariant.FAWN,
@@ -34,7 +35,7 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
     @Override
     public void submit(FrenchieRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
         if(renderState.isBaby) {
-            poseStack.scale(0.45f, 0.45f, 0.45f);
+            poseStack.scale(0.55f, 0.55f, 0.55f);
         } else {
             poseStack.scale(1f, 1f, 1f);
         }
@@ -56,7 +57,10 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
         reusedState.idleAnimationState.copyFrom(entity.idleAnimationState);
         reusedState.sleepAnimationState.copyFrom(entity.sleepAnimationState);
         reusedState.swimAnimationState.copyFrom(entity.swimAnimationState);
-        reusedState.sitDownAnimationState.copyFrom(entity.sitDownAnimationState);
+        reusedState.standToSitAnimationState.copyFrom(entity.standToSitAnimationState);
+        reusedState.sitToStandAnimationState.copyFrom(entity.sitToStandAnimationState);
         reusedState.sitPoseAnimationState.copyFrom(entity.sitPoseAnimationState);
+        reusedState.standToSleepAnimationState.copyFrom(entity.standToSleepAnimationState);
+        reusedState.sleepToStandAnimationState.copyFrom(entity.sleepToStandAnimationState);
     }
 }

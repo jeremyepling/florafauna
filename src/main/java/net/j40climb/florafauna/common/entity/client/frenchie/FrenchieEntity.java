@@ -36,11 +36,16 @@ public class FrenchieEntity extends TamableAnimal {
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState swimAnimationState = new AnimationState();
     public final AnimationState sleepAnimationState = new AnimationState();
-    public final AnimationState sitDownAnimationState = new AnimationState();
+    public final AnimationState standToSitAnimationState = new AnimationState();
+    public final AnimationState sitToStandAnimationState = new AnimationState();
     public final AnimationState sitPoseAnimationState = new AnimationState();
+    public final AnimationState standToSleepAnimationState = new AnimationState();
+    public final AnimationState sleepToStandAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
 
     public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK =
+            SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
+    public static final EntityDataAccessor<Long> LAST_SLEEP_CHANGE_TICK =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
     private static final EntityDataAccessor<Integer> VARIANT =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.INT);
@@ -118,6 +123,7 @@ public class FrenchieEntity extends TamableAnimal {
         super.defineSynchedData(builder);
         builder.define(VARIANT, 0);
         builder.define(LAST_POSE_CHANGE_TICK, 0L);
+        builder.define(LAST_SLEEP_CHANGE_TICK, 0L);
         builder.define(IS_SLEEPING, false);
     }
 
@@ -126,7 +132,10 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     public void setFrenchieSleeping(boolean sleeping) {
-        this.entityData.set(IS_SLEEPING, sleeping);
+        if (this.entityData.get(IS_SLEEPING) != sleeping) {
+            this.entityData.set(IS_SLEEPING, sleeping);
+            this.resetLastSleepChangeTick(this.level().getGameTime());
+        }
     }
 
     private int getTypeVariant() {
@@ -141,7 +150,7 @@ public class FrenchieEntity extends TamableAnimal {
         this.entityData.set(VARIANT, variant.getId() & 255);
     }
 
-    /* RIGHT CLICKING */
+    /* Interact */
 
     @Override
     public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
@@ -211,6 +220,7 @@ public class FrenchieEntity extends TamableAnimal {
         output.putString("Pose", this.getPose().name());
         output.putBoolean("IsSleeping", this.isFrenchieSleeping());
         output.putLong("LastPoseChangeTick", this.entityData.get(LAST_POSE_CHANGE_TICK));
+        output.putLong("LastSleepChangeTick", this.entityData.get(LAST_SLEEP_CHANGE_TICK));
     }
 
     @Override
@@ -224,6 +234,8 @@ public class FrenchieEntity extends TamableAnimal {
         this.setFrenchieSleeping(sleeping);
         long lastPoseChangeTick = input.getLongOr("LastPoseChangeTick", 0L);
         this.entityData.set(LAST_POSE_CHANGE_TICK, lastPoseChangeTick);
+        long lastSleepChangeTick = input.getLongOr("LastSleepChangeTick", 0L);
+        this.entityData.set(LAST_SLEEP_CHANGE_TICK, lastSleepChangeTick);
     }
 
     /* Animation */
@@ -233,48 +245,88 @@ public class FrenchieEntity extends TamableAnimal {
         super.tick();
 
         if(this.level().isClientSide()) {
-            // Setup animation states
+            // Idle animation
             if (this.idleAnimationTimeout <= 0) {
-                this.idleAnimationTimeout = 40; // 40 ticks is to seconds and that's the length of the idle animation
+                this.idleAnimationTimeout = 40; // 40 ticks = 2 seconds
                 this.idleAnimationState.start(this.tickCount);
             } else {
                 --this.idleAnimationTimeout;
             }
 
-            // Swim animation plays whenever in water
+            // Swim animation (simple boolean state)
             this.swimAnimationState.animateWhen(this.isInWater(), this.tickCount);
 
-            // Sleep animation plays when sleeping
-            this.sleepAnimationState.animateWhen(this.isFrenchieSleeping(), this.tickCount);
+            // Sitting transitions and pose
+            handleSittingAnimations();
 
-            if (this.isVisuallySitting()) {
-                if (this.isVisuallySittingDown()) {
-                    // Playing sit down transition
-                    this.sitDownAnimationState.startIfStopped(this.tickCount);
-                    this.sitPoseAnimationState.stop();
-                } else {
-                    // Transition complete, play sit pose immediately
-                    this.sitDownAnimationState.stop();
-                    this.sitPoseAnimationState.startIfStopped(this.tickCount);
-                }
-            } else {
-                // Standing up - just stop animations and snap back
-                this.sitDownAnimationState.stop();
-                this.sitPoseAnimationState.stop();
-            }
+            // Sleeping transitions and pose
+            handleSleepingAnimations();
         }
-        if (!this.level().isClientSide()) { // Server side only
+        if (!this.level().isClientSide()) {
             updateSleepState();
         }
     }
 
-    public boolean isVisuallySitting() {
-        return this.isSitting();
+    private void handleSittingAnimations() {
+        boolean sitting = this.isSitting();
+        long poseTime = this.getPoseTime();
+
+        if (sitting) {
+            // Transitioning from standing to sitting
+            if (poseTime < 10L) { // 0.5s = 10 ticks
+                this.standToSitAnimationState.startIfStopped(this.tickCount);
+                this.sitToStandAnimationState.stop();
+                this.sitPoseAnimationState.stop();
+            } else {
+                // Sitting pose (looping)
+                this.standToSitAnimationState.stop();
+                this.sitToStandAnimationState.stop();
+                this.sitPoseAnimationState.startIfStopped(this.tickCount);
+            }
+        } else {
+            // Transitioning from sitting to standing
+            if (poseTime < 10L) { // 0.5s = 10 ticks
+                this.sitToStandAnimationState.startIfStopped(this.tickCount);
+                this.standToSitAnimationState.stop();
+                this.sitPoseAnimationState.stop();
+            } else {
+                // Standing - all sitting animations off
+                this.standToSitAnimationState.stop();
+                this.sitToStandAnimationState.stop();
+                this.sitPoseAnimationState.stop();
+            }
+        }
     }
 
-    private boolean isVisuallySittingDown() {
-        // Sitting down transition lasts 20 ticks (1 second)
-        return this.isSitting() && this.getPoseTime() < 20L;
+    private void handleSleepingAnimations() {
+        boolean sleeping = this.isFrenchieSleeping();
+        long sleepTime = this.getSleepTime();
+
+        if (sleeping) {
+            // Transitioning from standing to sleeping
+            if (sleepTime < 20L) { // 1.0s = 20 ticks
+                this.standToSleepAnimationState.startIfStopped(this.tickCount);
+                this.sleepToStandAnimationState.stop();
+                this.sleepAnimationState.stop();
+            } else {
+                // Sleeping pose (looping)
+                this.standToSleepAnimationState.stop();
+                this.sleepToStandAnimationState.stop();
+                this.sleepAnimationState.startIfStopped(this.tickCount);
+            }
+        } else {
+            // Transitioning from sleeping to standing
+            if (sleepTime < 20L) { // 1.0s = 20 ticks
+                this.sleepToStandAnimationState.startIfStopped(this.tickCount);
+                this.standToSleepAnimationState.stop();
+                this.sleepAnimationState.stop();
+            } else {
+                // Awake - all sleeping animations off
+                this.standToSleepAnimationState.stop();
+                this.sleepToStandAnimationState.stop();
+                this.sleepAnimationState.stop();
+            }
+        }
     }
 
     public void resetLastPoseChangeTick(long pLastPoseChangeTick) {
@@ -283,6 +335,14 @@ public class FrenchieEntity extends TamableAnimal {
 
     public long getPoseTime() {
         return this.level().getGameTime() - this.entityData.get(LAST_POSE_CHANGE_TICK);
+    }
+
+    public void resetLastSleepChangeTick(long pLastSleepChangeTick) {
+        this.entityData.set(LAST_SLEEP_CHANGE_TICK, pLastSleepChangeTick);
+    }
+
+    public long getSleepTime() {
+        return this.level().getGameTime() - this.entityData.get(LAST_SLEEP_CHANGE_TICK);
     }
 
 
