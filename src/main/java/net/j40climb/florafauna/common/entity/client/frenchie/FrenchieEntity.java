@@ -268,26 +268,23 @@ public class FrenchieEntity extends TamableAnimal {
         }
     }
 
-    public boolean isInPoseTransition() {
-        // Sit down/up transition is 20 ticks (1 second)
-        return this.getPoseTime() < 20L;
-    }
     public boolean isVisuallySitting() {
         return this.isSitting();
     }
+
     private boolean isVisuallySittingDown() {
         // Sitting down transition lasts 20 ticks (1 second)
         return this.isSitting() && this.getPoseTime() < 20L;
     }
+
     public void resetLastPoseChangeTick(long pLastPoseChangeTick) {
         this.entityData.set(LAST_POSE_CHANGE_TICK, pLastPoseChangeTick);
     }
+
     public long getPoseTime() {
         return this.level().getGameTime() - this.entityData.get(LAST_POSE_CHANGE_TICK);
     }
-    private void resetLastPoseChangeTickToFullStand(long pLastPoseChangedTick) {
-        this.resetLastPoseChangeTick(Math.max(0L, pLastPoseChangedTick - 20L - 1L));
-    }
+
 
     /* Sleeping */
 
