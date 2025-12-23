@@ -17,8 +17,8 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
 
     // Scale factors for Frenchie entity - adjust these to resize the model
     // 1.0 = normal size, 0.5 = half size, 1.5 = 1.5x size
-    private static final float ADULT_SCALE = 1.0f;
-    private static final float BABY_SCALE = 0.55f;
+    private static final float ADULT_SCALE = 0.8f;
+    private static final float BABY_SCALE = 0.4f;
 
     private static final Map<FrenchieVariant, ResourceLocation> TEXTURE_LOCATION_BY_VARIANT =
             Util.make(Maps.newEnumMap(FrenchieVariant.class), map -> {
