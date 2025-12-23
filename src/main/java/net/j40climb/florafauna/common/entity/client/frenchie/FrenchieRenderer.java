@@ -18,9 +18,9 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
     private static final Map<FrenchieVariant, ResourceLocation> TEXTURE_LOCATION_BY_VARIANT =
             Util.make(Maps.newEnumMap(FrenchieVariant.class), map -> {
                 map.put(FrenchieVariant.FAWN,
-                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/frenchie/frenchie.png"));
+                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/frenchie/frenchie_fawn_texture.png"));
                 map.put(FrenchieVariant.BRINDLE,
-                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/frenchie/frenchie_brindle.png"));
+                        ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/frenchie/frenchie_brindle_texture.png"));
             });
 
     public FrenchieRenderer(EntityRendererProvider.Context context) {

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.CustomBlockOutlineRenderer;
+import net.j40climb.florafauna.client.renderer.BackpackRenderStateManager;
 import net.j40climb.florafauna.common.block.custom.CopperGolemBarrierBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -24,6 +25,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class RenderEvents {
@@ -145,5 +147,24 @@ public class RenderEvents {
                             .setNormal(pose, f, f1, f2);
                 }
         );
+    }
+
+    /**
+     * Extracts backpack data from player attachments during client tick.
+     * This allows the FrenchieBackpackLayer to access the attachment data
+     * via the BackpackRenderStateManager cache.
+     *
+     * Note: In Minecraft 1.21+, the rendering system uses RenderState objects
+     * which don't contain entity references, so we extract data here during tick.
+     */
+    @SubscribeEvent
+    public static void onClientPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof Player player) {
+            // Only run on client side
+            if (player.level().isClientSide()) {
+                // Extract and cache backpack data for this player
+                BackpackRenderStateManager.extractFromPlayer(player);
+            }
+        }
     }
 }
