@@ -32,7 +32,7 @@ public enum DashPayload implements CustomPacketPayload {
     public static void dash(Player player) {
         int multiplier = 3;
         // Get the player's looking direction as a vector
-        Vec3 lookDirection = player.getViewVector(1.0F);
+            Vec3 lookDirection = player.getViewVector(1.0F);
         // Define the strength of the burst, adjust this value to change how strong the burst should be
         double addedStrength = (double) multiplier / 2;
         double burstStrength = 1.5 + addedStrength;

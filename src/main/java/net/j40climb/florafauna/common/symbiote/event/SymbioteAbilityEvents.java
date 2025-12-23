@@ -11,6 +11,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
@@ -141,8 +142,29 @@ public class SymbioteAbilityEvents {
             // Higher jumpHeight = stronger boost per tick
             double boostPerTick = (symbioteData.jumpHeight() / 4.0) * 0.065;
 
-            // Apply upward velocity
-            player.setDeltaMovement(player.getDeltaMovement().x, player.getDeltaMovement().y + boostPerTick, player.getDeltaMovement().z);
+            // Get current movement direction (horizontal only - x and z)
+            Vec3 currentMovement = player.getDeltaMovement();
+            double horizontalSpeed = Math.sqrt(currentMovement.x * currentMovement.x + currentMovement.z * currentMovement.z);
+
+            // Apply upward velocity boost
+            double newY = currentMovement.y + boostPerTick;
+
+            // Apply horizontal boost in the direction player is moving (if moving)
+            double newX = currentMovement.x;
+            double newZ = currentMovement.z;
+
+            if (horizontalSpeed > 0.001) {
+                // Normalize horizontal direction and apply boost
+                // Boost scales proportionally with vertical boost divided by 7 so it's more high and not a dash
+                double horizontalBoost = boostPerTick / 7;
+                double directionX = currentMovement.x / horizontalSpeed;
+                double directionZ = currentMovement.z / horizontalSpeed;
+
+                newX += directionX * horizontalBoost;
+                newZ += directionZ * horizontalBoost;
+            }
+
+            player.setDeltaMovement(newX, newY, newZ);
             ((ServerPlayer) player).connection.send(new ClientboundSetEntityMotionPacket(player));
             player.resetFallDistance();
             jumpTicksMap.put(playerUUID, jumpTicks + 1);
