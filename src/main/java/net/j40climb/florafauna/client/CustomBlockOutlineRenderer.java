@@ -2,7 +2,7 @@ package net.j40climb.florafauna.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.j40climb.florafauna.common.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -38,7 +38,7 @@ public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client
         double d2 = vec3.z();
 
         // Mining mode outline rendering
-        if (player.getMainHandItem().get(ModDataComponentTypes.MINING_MODE_DATA) != null) {
+        if (player.getMainHandItem().get(RegisterDataComponentTypes.MINING_MODE_DATA) != null) {
             Set<BlockPos> breakBlockPositions = BlockBreakUtils.getBlocksToBeBrokenWithMiningMode(targetPos, player);
 
             for (BlockPos blockPos : breakBlockPositions) {

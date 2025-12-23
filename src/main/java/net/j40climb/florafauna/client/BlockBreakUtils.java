@@ -1,8 +1,8 @@
 package net.j40climb.florafauna.client;
 
-import net.j40climb.florafauna.common.component.MiningModeData;
-import net.j40climb.florafauna.common.component.MiningShape;
-import net.j40climb.florafauna.common.component.ModDataComponentTypes;
+import net.j40climb.florafauna.common.RegisterDataComponentTypes;
+import net.j40climb.florafauna.common.item.energyhammer.MiningModeData;
+import net.j40climb.florafauna.common.item.energyhammer.MiningShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
@@ -83,7 +83,7 @@ public class BlockBreakUtils {
 
         switch (traceResult.getType()) {
             case HitResult.Type.BLOCK:
-                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(ModDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
+                MiningModeData miningModeData = player.getMainHandItem().getOrDefault(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
                 switch (miningModeData.shape()) {
                     case MiningShape.SINGLE -> positions.add(initalBlockPos);
                     case MiningShape.FLAT_3X3, MiningShape.FLAT_5X5, MiningShape.FLAT_7X7 -> positions = findSurroundingBlocksInFlatSquare(player, initalBlockPos, traceResult, miningModeData.radius());
@@ -191,7 +191,7 @@ public class BlockBreakUtils {
 
     public static void breakWithMiningMode(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level) {
         // Does the item have the MiningMode component
-        if(mainHandItem.get(ModDataComponentTypes.MINING_MODE_DATA) != null ) {
+        if(mainHandItem.get(RegisterDataComponentTypes.MINING_MODE_DATA) != null ) {
             // Don't havest the block twice
             if (HARVESTED_BLOCKS.contains(initialBlockPos)) {
                 return;

@@ -19,7 +19,6 @@ public class ModTags {
 
     public static class Items {
         public static final TagKey<Item> PAXELS = createTag("paxels");
-        public static final TagKey<Item> HAMMERS = createTag("hammers");
 
         private static TagKey<Item> createTag(String name) {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, name));

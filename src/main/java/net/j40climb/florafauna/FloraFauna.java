@@ -1,20 +1,20 @@
 package net.j40climb.florafauna;
 
 import com.mojang.logging.LogUtils;
-import net.j40climb.florafauna.client.screen.ModMenuTypes;
-import net.j40climb.florafauna.client.screen.custom.ContainmentChamberScreen;
-import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
-import net.j40climb.florafauna.common.block.ModBlocks;
-import net.j40climb.florafauna.common.block.entity.ModBlockEntities;
-import net.j40climb.florafauna.common.command.SymbioteCommand;
-import net.j40climb.florafauna.common.component.ModDataComponentTypes;
-import net.j40climb.florafauna.common.datagen.DataGenerators;
-import net.j40climb.florafauna.common.entity.ModEntities;
-import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieRenderer;
-import net.j40climb.florafauna.common.entity.client.gecko.GeckoRenderer;
-import net.j40climb.florafauna.common.entity.client.lizard.LizardRenderer;
-import net.j40climb.florafauna.common.item.ModCreativeModeTabs;
-import net.j40climb.florafauna.common.item.ModItems;
+import net.j40climb.florafauna.common.RegisterAttachmentTypes;
+import net.j40climb.florafauna.common.RegisterDataComponentTypes;
+import net.j40climb.florafauna.common.RegisterMenus;
+import net.j40climb.florafauna.common.block.RegisterBlockEntities;
+import net.j40climb.florafauna.common.block.RegisterBlocks;
+import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
+import net.j40climb.florafauna.common.datagen.RegisterDataGenerators;
+import net.j40climb.florafauna.common.entity.RegisterEntities;
+import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
+import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
+import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
+import net.j40climb.florafauna.common.item.RegisterCreativeModeTabs;
+import net.j40climb.florafauna.common.item.RegisterItems;
+import net.j40climb.florafauna.common.item.symbiote.SymbioteCommand;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -44,18 +44,18 @@ public class FloraFauna {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-        ModCreativeModeTabs.register(modEventBus);
-        ModBlocks.register(modEventBus);
-        ModItems.register(modEventBus);
-        ModDataComponentTypes.register(modEventBus);
-        ModAttachmentTypes.register(modEventBus);
-        ModEntities.register(modEventBus);
-        ModBlockEntities.register(modEventBus);
-        ModMenuTypes.register(modEventBus);
+        RegisterCreativeModeTabs.register(modEventBus);
+        RegisterBlocks.register(modEventBus);
+        RegisterItems.register(modEventBus);
+        RegisterDataComponentTypes.register(modEventBus);
+        RegisterAttachmentTypes.register(modEventBus);
+        RegisterEntities.register(modEventBus);
+        RegisterBlockEntities.register(modEventBus);
+        RegisterMenus.register(modEventBus);
 
         // Register datagen events on the mod bus
-        modEventBus.addListener(DataGenerators::gatherClientData);
-        modEventBus.addListener(DataGenerators::gatherServerData);
+        modEventBus.addListener(RegisterDataGenerators::gatherClientData);
+        modEventBus.addListener(RegisterDataGenerators::gatherServerData);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
@@ -92,14 +92,14 @@ public class FloraFauna {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            EntityRenderers.register(ModEntities.GECKO.get(), GeckoRenderer::new);
-            EntityRenderers.register(ModEntities.LIZARD.get(), LizardRenderer::new);
-            EntityRenderers.register(ModEntities.FRENCHIE.get(), FrenchieRenderer::new);
+            EntityRenderers.register(RegisterEntities.GECKO.get(), GeckoRenderer::new);
+            EntityRenderers.register(RegisterEntities.LIZARD.get(), LizardRenderer::new);
+            EntityRenderers.register(RegisterEntities.FRENCHIE.get(), FrenchieRenderer::new);
         }
 
         @SubscribeEvent
         public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
-            event.register(ModMenuTypes.CONTAINMENT_CHAMBER.get(),
+            event.register(RegisterMenus.CONTAINMENT_CHAMBER.get(),
                     ContainmentChamberScreen::new);
         }
     }
