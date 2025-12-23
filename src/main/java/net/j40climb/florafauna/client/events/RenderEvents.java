@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.CustomBlockOutlineRenderer;
-import net.j40climb.florafauna.client.renderer.BackpackRenderStateManager;
+import net.j40climb.florafauna.client.renderer.FrontpackRenderStateManager;
 import net.j40climb.florafauna.common.block.custom.CopperGolemBarrierBlock;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -150,9 +150,9 @@ public class RenderEvents {
     }
 
     /**
-     * Extracts backpack data from player attachments during client tick.
-     * This allows the FrenchieBackpackLayer to access the attachment data
-     * via the BackpackRenderStateManager cache.
+     * Extracts frontpack data from player attachments during client tick.
+     * This allows the FrenchFrontpackLayer to access the attachment data
+     * via the FrontpackRenderStateManager cache.
      *
      * Note: In Minecraft 1.21+, the rendering system uses RenderState objects
      * which don't contain entity references, so we extract data here during tick.
@@ -162,8 +162,8 @@ public class RenderEvents {
         if (event.getEntity() instanceof Player player) {
             // Only run on client side
             if (player.level().isClientSide()) {
-                // Extract and cache backpack data for this player
-                BackpackRenderStateManager.extractFromPlayer(player);
+                // Extract and cache frontpack data for this player
+                FrontpackRenderStateManager.extractFromPlayer(player);
             }
         }
     }

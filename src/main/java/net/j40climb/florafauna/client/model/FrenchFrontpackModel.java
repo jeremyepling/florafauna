@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.client.model;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -8,16 +9,20 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.AnimationState;
 
 /**
- * Model for the Frenchie backpack that renders on players.
+ * Model for the Frenchie frontpack that renders on players.
  * This model will be positioned on the player's front.
  *
  */
-public class FrenchieBackpackModel extends EntityModel<AvatarRenderState> {
+public class FrenchFrontpackModel extends EntityModel<AvatarRenderState> {
 
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie_backpack"), "main");
+            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "french_frontpack"), "main");
+
+    private final KeyframeAnimation idlingAnimation;
+    private final AnimationState idleAnimationState = new AnimationState();
 
     private final ModelPart root;
     private final ModelPart carrier;
@@ -37,7 +42,7 @@ public class FrenchieBackpackModel extends EntityModel<AvatarRenderState> {
     private final ModelPart leg_back_left;
     private final ModelPart leg_back_right;
 
-    public FrenchieBackpackModel(ModelPart root) {
+    public FrenchFrontpackModel(ModelPart root) {
         super(root);
         this.root = root.getChild("root");
         this.carrier = this.root.getChild("carrier");
@@ -56,6 +61,12 @@ public class FrenchieBackpackModel extends EntityModel<AvatarRenderState> {
         this.leg_front_right = this.body.getChild("leg_front_right");
         this.leg_back_left = this.body.getChild("leg_back_left");
         this.leg_back_right = this.body.getChild("leg_back_right");
+
+        // Bake the idle animation - converts the AnimationDefinition to a KeyframeAnimation
+        this.idlingAnimation = FrenchFrontpackAnimations.ANIM_IDLE.bake(root);
+
+        // Start the animation state so it's always active
+        this.idleAnimationState.start(0);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -119,7 +130,9 @@ public class FrenchieBackpackModel extends EntityModel<AvatarRenderState> {
     @Override
     public void setupAnim(AvatarRenderState renderState) {
         super.setupAnim(renderState);
-        // Static pose - no animations needed
-        // If you want to add subtle breathing animation, you can modify rotations here
+
+        // Apply the idle animation (static pose that's always active)
+        // Using the KeyframeAnimation.apply() method like in FrenchieModel
+        this.idlingAnimation.apply(this.idleAnimationState, renderState.ageInTicks, 1.0F);
     }
 }

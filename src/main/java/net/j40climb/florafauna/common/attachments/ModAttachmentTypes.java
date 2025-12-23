@@ -59,11 +59,11 @@ public class ModAttachmentTypes {
      * - frenchieNBT (full entity state)
      * - pickupTimestamp
      */
-    public static final Supplier<AttachmentType<FrenchieBackpackData>> FRENCHIE_BACKPACK_DATA =
-            ATTACHMENT_TYPES.register("frenchie_backpack_data", () ->
-                    AttachmentType.builder(() -> FrenchieBackpackData.DEFAULT)
-                            .serialize(FrenchieBackpackData.CODEC.fieldOf("frenchie_backpack_data"))
-                            .sync(FrenchieBackpackData.STREAM_CODEC)
+    public static final Supplier<AttachmentType<FrenchFrontpackData>> FRENCH_FRONTPACK_DATA =
+            ATTACHMENT_TYPES.register("french_frontpack_data", () ->
+                    AttachmentType.builder(() -> FrenchFrontpackData.DEFAULT)
+                            .serialize(FrenchFrontpackData.CODEC.fieldOf("french_frontpack_data"))
+                            .sync(FrenchFrontpackData.STREAM_CODEC)
                             .build()
             );
 

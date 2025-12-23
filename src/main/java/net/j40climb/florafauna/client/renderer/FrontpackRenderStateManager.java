@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.client.renderer;
 
-import net.j40climb.florafauna.common.attachments.FrenchieBackpackData;
+import net.j40climb.florafauna.common.attachments.FrenchFrontpackData;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieVariant;
 import net.minecraft.world.entity.player.Player;
@@ -9,26 +9,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Client-side manager for caching backpack render state data extracted from player attachments.
+ * Client-side manager for caching frontpack render state data extracted from player attachments.
  * This bridges the gap between the attachment system and the render layer,
  * since AvatarRenderState doesn't contain a direct player reference.
  */
-public class BackpackRenderStateManager {
+public class FrontpackRenderStateManager {
 
     // Use entity ID as key since AvatarRenderState has 'id' field
-    private static final Map<Integer, BackpackRenderState> BACKPACK_STATES = new HashMap<>();
+    private static final Map<Integer, FrontpackRenderState> FRONTPACK_STATES = new HashMap<>();
 
     /**
-     * Extracts backpack data from a player's FrenchieBackpackData attachment
+     * Extracts frontpack data from a player's FrenchFrontpackData attachment
      * and caches it for rendering.
      */
     public static void extractFromPlayer(Player player) {
-        FrenchieBackpackData data = player.getData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA);
+        FrenchFrontpackData data = player.getData(ModAttachmentTypes.FRENCH_FRONTPACK_DATA);
 
-        BackpackRenderState state = new BackpackRenderState();
-        state.hasBackpack = data.hasCarriedFrenchie();
+        FrontpackRenderState state = new FrontpackRenderState();
+        state.hasFrontpack = data.hasCarriedFrenchie();
 
-        if (state.hasBackpack && data.frenchieNBT() != null) {
+        if (state.hasFrontpack && data.frenchieNBT() != null) {
             // Extract variant ID from NBT (matches how FrenchieEntity stores it)
             // getInt returns Optional<Integer> in newer versions
             int variantId = data.frenchieNBT().getInt("Variant").orElse(0);
@@ -38,22 +38,22 @@ public class BackpackRenderStateManager {
             state.variant = FrenchieVariant.FAWN;
         }
 
-        BACKPACK_STATES.put(player.getId(), state);
+        FRONTPACK_STATES.put(player.getId(), state);
     }
 
     /**
-     * Gets the cached backpack render state for a player by entity ID.
+     * Gets the cached frontpack render state for a player by entity ID.
      * Returns a default empty state if no data is cached.
      */
-    public static BackpackRenderState getState(int entityId) {
-        return BACKPACK_STATES.getOrDefault(entityId, new BackpackRenderState());
+    public static FrontpackRenderState getState(int entityId) {
+        return FRONTPACK_STATES.getOrDefault(entityId, new FrontpackRenderState());
     }
 
     /**
-     * Simple data holder for backpack render state.
+     * Simple data holder for frontpack render state.
      */
-    public static class BackpackRenderState {
-        public boolean hasBackpack = false;
+    public static class FrontpackRenderState {
+        public boolean hasFrontpack = false;
         public FrenchieVariant variant = FrenchieVariant.FAWN;
     }
 }

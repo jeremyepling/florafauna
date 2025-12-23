@@ -14,7 +14,7 @@ import net.minecraft.network.codec.StreamCodec;
  * When hasCarriedFrenchie=true, the frenchieNBT contains the full entity state
  * (variant, health, age, pose, etc.) and the Frenchie entity is despawned.
  */
-public record FrenchieBackpackData(
+public record FrenchFrontpackData(
     boolean hasCarriedFrenchie,
     CompoundTag frenchieNBT,
     long pickupTimestamp
@@ -22,26 +22,26 @@ public record FrenchieBackpackData(
     /**
      * Codec for NBT persistence (disk save/load).
      */
-    public static final Codec<FrenchieBackpackData> CODEC = RecordCodecBuilder.create(builder ->
+    public static final Codec<FrenchFrontpackData> CODEC = RecordCodecBuilder.create(builder ->
         builder.group(
-            Codec.BOOL.fieldOf("hasCarriedFrenchie").forGetter(FrenchieBackpackData::hasCarriedFrenchie),
-            CompoundTag.CODEC.fieldOf("frenchieNBT").forGetter(FrenchieBackpackData::frenchieNBT),
-            Codec.LONG.fieldOf("pickupTimestamp").forGetter(FrenchieBackpackData::pickupTimestamp)
-        ).apply(builder, FrenchieBackpackData::new)
+            Codec.BOOL.fieldOf("hasCarriedFrenchie").forGetter(FrenchFrontpackData::hasCarriedFrenchie),
+            CompoundTag.CODEC.fieldOf("frenchieNBT").forGetter(FrenchFrontpackData::frenchieNBT),
+            Codec.LONG.fieldOf("pickupTimestamp").forGetter(FrenchFrontpackData::pickupTimestamp)
+        ).apply(builder, FrenchFrontpackData::new)
     );
 
     /**
      * StreamCodec for network synchronization (client-server sync).
      */
-    public static final StreamCodec<ByteBuf, FrenchieBackpackData> STREAM_CODEC = StreamCodec.composite(
-        ByteBufCodecs.BOOL, FrenchieBackpackData::hasCarriedFrenchie,
-        ByteBufCodecs.COMPOUND_TAG, FrenchieBackpackData::frenchieNBT,
-        ByteBufCodecs.VAR_LONG, FrenchieBackpackData::pickupTimestamp,
-        FrenchieBackpackData::new
+    public static final StreamCodec<ByteBuf, FrenchFrontpackData> STREAM_CODEC = StreamCodec.composite(
+        ByteBufCodecs.BOOL, FrenchFrontpackData::hasCarriedFrenchie,
+        ByteBufCodecs.COMPOUND_TAG, FrenchFrontpackData::frenchieNBT,
+        ByteBufCodecs.VAR_LONG, FrenchFrontpackData::pickupTimestamp,
+        FrenchFrontpackData::new
     );
 
     /**
      * Default state: not carrying any Frenchie.
      */
-    public static final FrenchieBackpackData DEFAULT = new FrenchieBackpackData(false, new CompoundTag(), 0L);
+    public static final FrenchFrontpackData DEFAULT = new FrenchFrontpackData(false, new CompoundTag(), 0L);
 }

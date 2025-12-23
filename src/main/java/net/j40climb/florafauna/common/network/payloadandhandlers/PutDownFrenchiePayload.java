@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.network.payloadandhandlers;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.attachments.FrenchieBackpackData;
+import net.j40climb.florafauna.common.attachments.FrenchFrontpackData;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.entity.ModEntities;
 import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieEntity;
@@ -36,8 +36,8 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         Player player = context.player();
 
         // Check if player is carrying a Frenchie
-        FrenchieBackpackData backpackData = player.getData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA);
-        if (!backpackData.hasCarriedFrenchie()) return;
+        FrenchFrontpackData frontpackData = player.getData(ModAttachmentTypes.FRENCH_FRONTPACK_DATA);
+        if (!frontpackData.hasCarriedFrenchie()) return;
 
         // Spawn Frenchie in front of player
         Vec3 spawnPos = player.position().add(player.getLookAngle().scale(2.0));
@@ -49,7 +49,7 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         ValueInput input = TagValueInput.create(
             ProblemReporter.DISCARDING,
             player.level().registryAccess(),
-            backpackData.frenchieNBT()
+            frontpackData.frenchieNBT()
         );
         frenchie.load(input);
         frenchie.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0f);
@@ -57,7 +57,7 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         player.level().addFreshEntity(frenchie);
 
         // Clear attachment
-        player.setData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA, FrenchieBackpackData.DEFAULT);
+        player.setData(ModAttachmentTypes.FRENCH_FRONTPACK_DATA, FrenchFrontpackData.DEFAULT);
 
         // Play sound
         player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0f, 1.0f);

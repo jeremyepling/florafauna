@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.event;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.attachments.FrenchieBackpackData;
+import net.j40climb.florafauna.common.attachments.FrenchFrontpackData;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
 import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.network.payloadandhandlers.PutDownFrenchiePayload;
@@ -24,7 +24,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * Put down: Shift-right-click air while carrying a Frenchie
  */
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
-public class FrenchieBackpackEvents {
+public class FrenchFrontpackEvents {
 
     /**
      * Handle shift-right-click on Frenchie to pick it up.
@@ -42,7 +42,7 @@ public class FrenchieBackpackEvents {
         if (frenchie.isBaby()) return;
 
         // Check if already carrying a Frenchie
-        FrenchieBackpackData currentData = player.getData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA);
+        FrenchFrontpackData currentData = player.getData(ModAttachmentTypes.FRENCH_FRONTPACK_DATA);
         if (currentData.hasCarriedFrenchie()) return;
 
         // Client: just cancel event and return success
@@ -60,13 +60,13 @@ public class FrenchieBackpackEvents {
         frenchie.saveWithoutId(output);
         CompoundTag frenchieNBT = output.buildResult();
 
-        FrenchieBackpackData newData = new FrenchieBackpackData(
+        FrenchFrontpackData newData = new FrenchFrontpackData(
             true,
             frenchieNBT,
             player.level().getGameTime()
         );
 
-        player.setData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA, newData);
+        player.setData(ModAttachmentTypes.FRENCH_FRONTPACK_DATA, newData);
 
         // Despawn the entity
         frenchie.discard();
@@ -88,7 +88,7 @@ public class FrenchieBackpackEvents {
 
         if (!player.isShiftKeyDown()) return;
 
-        FrenchieBackpackData data = player.getData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA);
+        FrenchFrontpackData data = player.getData(ModAttachmentTypes.FRENCH_FRONTPACK_DATA);
         if (!data.hasCarriedFrenchie()) return;
 
         // Send packet to server to handle put-down

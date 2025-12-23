@@ -15,6 +15,11 @@ import java.util.Map;
 
 public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRenderState, FrenchieModel> {
 
+    // Scale factors for Frenchie entity - adjust these to resize the model
+    // 1.0 = normal size, 0.5 = half size, 1.5 = 1.5x size
+    private static final float ADULT_SCALE = 1.0f;
+    private static final float BABY_SCALE = 0.55f;
+
     private static final Map<FrenchieVariant, ResourceLocation> TEXTURE_LOCATION_BY_VARIANT =
             Util.make(Maps.newEnumMap(FrenchieVariant.class), map -> {
                 map.put(FrenchieVariant.FAWN,
@@ -35,9 +40,9 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
     @Override
     public void submit(FrenchieRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
         if(renderState.isBaby) {
-            poseStack.scale(0.55f, 0.55f, 0.55f);
+            poseStack.scale(BABY_SCALE, BABY_SCALE, BABY_SCALE);
         } else {
-            poseStack.scale(1f, 1f, 1f);
+            poseStack.scale(ADULT_SCALE, ADULT_SCALE, ADULT_SCALE);
         }
         super.submit(renderState, poseStack, submitNodeCollector, cameraRenderState);
     }
