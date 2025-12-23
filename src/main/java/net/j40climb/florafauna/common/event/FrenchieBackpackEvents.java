@@ -1,0 +1,97 @@
+package net.j40climb.florafauna.common.event;
+
+import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.attachments.FrenchieBackpackData;
+import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
+import net.j40climb.florafauna.common.entity.client.frenchie.FrenchieEntity;
+import net.j40climb.florafauna.common.network.payloadandhandlers.PutDownFrenchiePayload;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+
+/**
+ * Event handler for Frenchie frontpack pickup/putdown interactions.
+ *
+ * Pickup: Shift-right-click on tamed Frenchie (owned by you)
+ * Put down: Shift-right-click air while carrying a Frenchie
+ */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID)
+public class FrenchieBackpackEvents {
+
+    /**
+     * Handle shift-right-click on Frenchie to pick it up.
+     */
+    @SubscribeEvent
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        Player player = event.getEntity();
+        Entity target = event.getTarget();
+
+        // Pickup conditions
+        if (!player.isShiftKeyDown()) return;
+        if (!(target instanceof FrenchieEntity frenchie)) return;
+        if (!frenchie.isTame()) return;
+        if (!frenchie.isOwnedBy(player)) return;
+        if (frenchie.isBaby()) return;
+
+        // Check if already carrying a Frenchie
+        FrenchieBackpackData currentData = player.getData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA);
+        if (currentData.hasCarriedFrenchie()) return;
+
+        // Client: just cancel event and return success
+        if (player.level().isClientSide()) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            return;
+        }
+
+        // Server: serialize Frenchie to NBT and store in attachment
+        TagValueOutput output = TagValueOutput.createWithContext(
+            ProblemReporter.DISCARDING,
+            player.level().registryAccess()
+        );
+        frenchie.saveWithoutId(output);
+        CompoundTag frenchieNBT = output.buildResult();
+
+        FrenchieBackpackData newData = new FrenchieBackpackData(
+            true,
+            frenchieNBT,
+            player.level().getGameTime()
+        );
+
+        player.setData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA, newData);
+
+        // Despawn the entity
+        frenchie.discard();
+
+        // Play pickup sound
+        player.playSound(SoundEvents.ITEM_PICKUP, 1.0f, 1.0f);
+
+        event.setCanceled(true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+    }
+
+    /**
+     * Handle shift-right-click air to put down Frenchie.
+     * This only fires on client, so we send a packet to server.
+     */
+    @SubscribeEvent
+    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
+        Player player = event.getEntity();
+
+        if (!player.isShiftKeyDown()) return;
+
+        FrenchieBackpackData data = player.getData(ModAttachmentTypes.FRENCHIE_BACKPACK_DATA);
+        if (!data.hasCarriedFrenchie()) return;
+
+        // Send packet to server to handle put-down
+        ClientPacketDistributor.sendToServer(PutDownFrenchiePayload.INSTANCE);
+    }
+}

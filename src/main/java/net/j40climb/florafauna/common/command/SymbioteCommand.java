@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.common.attachments.ModAttachmentTypes;
@@ -24,6 +25,7 @@ import net.minecraft.world.item.ItemStack;
  *   /symbiote unbond - Unbond the symbiote from the player (returns item with memory intact)
  *   /symbiote reset - Reset the symbiote completely (for testing, no item created)
  *   /symbiote toggle <ability> - Toggle an ability (dash, featherFalling, speed)
+ *   /symbiote setJumpHeight <0-4> - Set jump height ability (0=off, 4=max 4 blocks)
  */
 public class SymbioteCommand {
     /**
@@ -51,6 +53,9 @@ public class SymbioteCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(SymbioteCommand::toggleAbility)))
+                        .then(Commands.literal("setJumpHeight")
+                                .then(Commands.argument("height", IntegerArgumentType.integer(0, 4))
+                                        .executes(SymbioteCommand::setJumpHeight)))
         );
     }
 
@@ -92,6 +97,8 @@ public class SymbioteCommand {
                     formatEnabledDisabled(data.featherFalling())), false);
             source.sendSuccess(() -> formatField("command.florafauna.symbiote.speed",
                     formatEnabledDisabled(data.speed())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.jump_height",
+                    String.valueOf(data.jumpHeight())), false);
         }
 
         return 1;
@@ -123,7 +130,7 @@ public class SymbioteCommand {
                 true,
                 player.level().getGameTime(),
                 1,
-                false, false, false
+                false, false, false, 0
         );
         player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
 
@@ -172,7 +179,8 @@ public class SymbioteCommand {
                 currentData.tier(),         // preserve tier
                 currentData.dash(),         // preserve abilities
                 currentData.featherFalling(),
-                currentData.speed()
+                currentData.speed(),
+                currentData.jumpHeight()
         );
         symbioteItem.set(ModDataComponentTypes.SYMBIOTE_DATA, unbondedData);
 
@@ -257,7 +265,8 @@ public class SymbioteCommand {
                         currentData.tier(),
                         !currentData.dash(),
                         currentData.featherFalling(),
-                        currentData.speed()
+                        currentData.speed(),
+                        currentData.jumpHeight()
                 );
                 break;
             case "featherfalling":
@@ -267,7 +276,8 @@ public class SymbioteCommand {
                         currentData.tier(),
                         currentData.dash(),
                         !currentData.featherFalling(),
-                        currentData.speed()
+                        currentData.speed(),
+                        currentData.jumpHeight()
                 );
                 break;
             case "speed":
@@ -277,7 +287,8 @@ public class SymbioteCommand {
                         currentData.tier(),
                         currentData.dash(),
                         currentData.featherFalling(),
-                        !currentData.speed()
+                        !currentData.speed(),
+                        currentData.jumpHeight()
                 );
                 break;
             default:
@@ -300,6 +311,48 @@ public class SymbioteCommand {
                         "command.florafauna.symbiote.enabled" :
                         "command.florafauna.symbiote.disabled")
         ).withStyle(style -> style.withColor(0xF39C12)), false);
+
+        return 1;
+    }
+
+    /**
+     * Executes the setJumpHeight command to set the jump height value.
+     *
+     * @param context the command context
+     * @return 1 if successful
+     */
+    private static int setJumpHeight(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        SymbioteData currentData = player.getData(ModAttachmentTypes.SYMBIOTE_DATA);
+
+        if (!currentData.bonded()) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
+            return 0;
+        }
+
+        int height = IntegerArgumentType.getInteger(context, "height");
+
+        // Create new data with updated jump height
+        SymbioteData newData = new SymbioteData(
+                currentData.bonded(),
+                currentData.bondTime(),
+                currentData.tier(),
+                currentData.dash(),
+                currentData.featherFalling(),
+                currentData.speed(),
+                height
+        );
+
+        player.setData(ModAttachmentTypes.SYMBIOTE_DATA, newData);
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_height_set",
+                height).withStyle(style -> style.withColor(0xF39C12)), false);
 
         return 1;
     }

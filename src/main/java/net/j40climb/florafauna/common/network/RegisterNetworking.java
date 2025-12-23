@@ -18,5 +18,7 @@ public class RegisterNetworking {
         registrar.playToServer(ToggleFortureAndSilkTouchPayload.TYPE, ToggleFortureAndSilkTouchPayload.STREAM_CODEC, ToggleFortureAndSilkTouchPayload::onServerReceived);
         registrar.playToServer(SetMiningSpeedPayload.TYPE, SetMiningSpeedPayload.STREAM_CODEC, SetMiningSpeedPayload::onServerReceived);
         registrar.playToServer(DashPayload.TYPE, DashPayload.STREAM_CODEC, DashPayload::onServerReceived);
+        registrar.playToServer(PutDownFrenchiePayload.TYPE, PutDownFrenchiePayload.STREAM_CODEC, PutDownFrenchiePayload::onServerReceived);
+        registrar.playToServer(JumpStatePayload.TYPE, JumpStatePayload.STREAM_CODEC, JumpStatePayload::onServerReceived);
     }
 }

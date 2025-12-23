@@ -39,10 +39,8 @@ public enum DashPayload implements CustomPacketPayload {
         // Set the player's motion based on the look direction and burst strength
         player.setDeltaMovement(lookDirection.x * burstStrength, lookDirection.y * burstStrength, lookDirection.z * burstStrength);
         ((ServerPlayer) player).connection.send(new ClientboundSetEntityMotionPacket(player));
-        //player.hurtMarked = true; //This tells the server to move the client
         player.resetFallDistance();
         // Optionally, you could add some effects or sounds here
-        //damageTool(itemStack, player, Ability.AIRBURST, multiplier);
         //PacketDistributor.sendToPlayer((ServerPlayer) player, new ClientSoundPayload(SoundEvents.FIRECHARGE_USE.getLocation(), 0.5f, 0.125f));
         //level.playSound(player, player.getOnPos(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 0.5f, 0.125f);
     }

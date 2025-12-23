@@ -134,7 +134,8 @@ public class SymbioteItem extends Item {
                     itemData.tier(),             // tier from item
                     itemData.dash(),             // dash from item
                     itemData.featherFalling(),   // featherFalling from item
-                    itemData.speed()             // speed from item
+                    itemData.speed(),            // speed from item
+                    itemData.jumpHeight()        // jumpHeight from item
             );
 
             player.setData(ModAttachmentTypes.SYMBIOTE_DATA, bondedData);

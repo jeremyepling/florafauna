@@ -51,6 +51,23 @@ public class ModAttachmentTypes {
             );
 
     /**
+     * Frenchie frontpack data attachment for players.
+     * Stores the NBT data of a carried Frenchie (despawned entity).
+     * Used for the frontpack carrying feature - shift-right-click to pickup/put down.
+     * Includes:
+     * - hasCarriedFrenchie flag
+     * - frenchieNBT (full entity state)
+     * - pickupTimestamp
+     */
+    public static final Supplier<AttachmentType<FrenchieBackpackData>> FRENCHIE_BACKPACK_DATA =
+            ATTACHMENT_TYPES.register("frenchie_backpack_data", () ->
+                    AttachmentType.builder(() -> FrenchieBackpackData.DEFAULT)
+                            .serialize(FrenchieBackpackData.CODEC.fieldOf("frenchie_backpack_data"))
+                            .sync(FrenchieBackpackData.STREAM_CODEC)
+                            .build()
+            );
+
+    /**
      * Registers all attachment types to the mod event bus.
      *
      * @param eventBus the mod event bus
