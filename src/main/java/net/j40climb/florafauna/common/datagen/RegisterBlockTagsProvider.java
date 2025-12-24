@@ -18,7 +18,7 @@ public class RegisterBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        this.tag(ModTags.Blocks.MINEABLE_WITH_PAXEL)
+        this.tag(ModTags.Blocks.MINEABLE_WITH_HAMMER)
                 .addTag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .addTag(BlockTags.MINEABLE_WITH_AXE)
                 .addTag(BlockTags.MINEABLE_WITH_SHOVEL);

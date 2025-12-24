@@ -14,12 +14,13 @@ public class InventoryRenderHelper {
     private static final int INVENTORY_ROWS = 3;
     private static final int INVENTORY_COLS = 9;
     private static final int HOTBAR_SLOTS = 9;
-    private static final int SLOT_SIZE = 18;
-    private static final int HOTBAR_SPACING = 4; // Space between inventory and hotbar
+    private static final int SLOT_SIZE = 18; // Slot spacing (18 pixels between slot positions)
+    private static final int HOTBAR_Y_OFFSET = 58; // Y offset from inventory start to hotbar (matches vanilla)
 
     // Slot rendering colors
     private static final int SLOT_BACKGROUND_COLOR = 0x8B000000; // Semi-transparent black
     private static final int SLOT_BORDER_COLOR = 0xFF8B8B8B; // Light gray border
+    private static final int SLOT_HOVER_COLOR = 0x80FFFFFF; // Semi-transparent white for hover
 
     /**
      * Renders the full player inventory (3x9 grid) and hotbar (1x9 grid) centered at the given position.
@@ -32,7 +33,7 @@ public class InventoryRenderHelper {
      */
     public static void renderPlayerInventory(GuiGraphics guiGraphics, Font font, Inventory inventory, int centerX, int startY) {
         renderInventoryGrid(guiGraphics, font, inventory, centerX, startY);
-        int hotbarY = startY + (INVENTORY_ROWS * SLOT_SIZE) + HOTBAR_SPACING;
+        int hotbarY = startY + HOTBAR_Y_OFFSET;
         renderHotbar(guiGraphics, font, inventory, centerX, hotbarY);
     }
 
@@ -75,18 +76,16 @@ public class InventoryRenderHelper {
     }
 
     /**
-     * Renders a single inventory slot with background and item.
+     * Renders a single inventory slot with item.
+     * X and Y should be the slot position where the item will be rendered.
      *
      * @param guiGraphics the graphics context
      * @param font the font renderer
      * @param itemStack the item to render in the slot
-     * @param x the X position
-     * @param y the Y position
+     * @param x the X position where the item should be rendered
+     * @param y the Y position where the item should be rendered
      */
     public static void renderSlot(GuiGraphics guiGraphics, Font font, ItemStack itemStack, int x, int y) {
-        // Draw slot background (16x16 for the item)
-        guiGraphics.fill(x, y, x + 16, y + 16, SLOT_BACKGROUND_COLOR);
-
         // Draw item if present
         if (!itemStack.isEmpty()) {
             guiGraphics.renderItem(itemStack, x, y);
@@ -100,7 +99,7 @@ public class InventoryRenderHelper {
      * @return total height in pixels
      */
     public static int getInventoryHeight() {
-        return (INVENTORY_ROWS * SLOT_SIZE) + HOTBAR_SPACING + SLOT_SIZE;
+        return HOTBAR_Y_OFFSET + SLOT_SIZE;
     }
 
     /**
@@ -120,5 +119,102 @@ public class InventoryRenderHelper {
      */
     public static int getBottomInventoryY(int screenHeight) {
         return screenHeight - getInventoryHeight() - 10; // 10px padding from bottom
+    }
+
+    /**
+     * Renders the player inventory with hover support.
+     *
+     * @param guiGraphics the graphics context
+     * @param font the font renderer
+     * @param inventory the player's inventory
+     * @param centerX the center X position
+     * @param startY the top Y position
+     * @param mouseX the mouse X position
+     * @param mouseY the mouse Y position
+     * @return the ItemStack being hovered, or ItemStack.EMPTY if none
+     */
+    public static ItemStack renderPlayerInventoryWithHover(GuiGraphics guiGraphics, Font font, Inventory inventory, int centerX, int startY, int mouseX, int mouseY) {
+        ItemStack hoveredItem = renderInventoryGridWithHover(guiGraphics, font, inventory, centerX, startY, mouseX, mouseY);
+
+        int hotbarY = startY + HOTBAR_Y_OFFSET;
+        ItemStack hotbarHovered = renderHotbarWithHover(guiGraphics, font, inventory, centerX, hotbarY, mouseX, mouseY);
+
+        return hoveredItem.isEmpty() ? hotbarHovered : hoveredItem;
+    }
+
+    /**
+     * Renders the inventory grid with hover support.
+     *
+     * @return the ItemStack being hovered, or ItemStack.EMPTY if none
+     */
+    public static ItemStack renderInventoryGridWithHover(GuiGraphics guiGraphics, Font font, Inventory inventory, int centerX, int startY, int mouseX, int mouseY) {
+        ItemStack hoveredItem = ItemStack.EMPTY;
+
+        for (int row = 0; row < INVENTORY_ROWS; row++) {
+            for (int col = 0; col < INVENTORY_COLS; col++) {
+                int slotIndex = col + (row + 1) * INVENTORY_COLS;
+                int x = centerX - (INVENTORY_COLS * SLOT_SIZE / 2) + col * SLOT_SIZE;
+                int y = startY + row * SLOT_SIZE;
+
+                ItemStack itemStack = inventory.getItem(slotIndex);
+                // Check hover over the item area (16x16 pixels)
+                boolean isHovered = isMouseOver(mouseX, mouseY, x, y, 16, 16);
+
+                renderSlotWithHover(guiGraphics, font, itemStack, x, y, isHovered);
+
+                if (isHovered && !itemStack.isEmpty()) {
+                    hoveredItem = itemStack;
+                }
+            }
+        }
+
+        return hoveredItem;
+    }
+
+    /**
+     * Renders the hotbar with hover support.
+     *
+     * @return the ItemStack being hovered, or ItemStack.EMPTY if none
+     */
+    public static ItemStack renderHotbarWithHover(GuiGraphics guiGraphics, Font font, Inventory inventory, int centerX, int startY, int mouseX, int mouseY) {
+        ItemStack hoveredItem = ItemStack.EMPTY;
+
+        for (int col = 0; col < HOTBAR_SLOTS; col++) {
+            int x = centerX - (HOTBAR_SLOTS * SLOT_SIZE / 2) + col * SLOT_SIZE;
+            ItemStack itemStack = inventory.getItem(col);
+            // Check hover over the item area (16x16 pixels)
+            boolean isHovered = isMouseOver(mouseX, mouseY, x, startY, 16, 16);
+
+            renderSlotWithHover(guiGraphics, font, itemStack, x, startY, isHovered);
+
+            if (isHovered && !itemStack.isEmpty()) {
+                hoveredItem = itemStack;
+            }
+        }
+
+        return hoveredItem;
+    }
+
+    /**
+     * Renders a single slot with hover highlight.
+     */
+    public static void renderSlotWithHover(GuiGraphics guiGraphics, Font font, ItemStack itemStack, int x, int y, boolean isHovered) {
+        // Draw item
+        if (!itemStack.isEmpty()) {
+            guiGraphics.renderItem(itemStack, x, y);
+            guiGraphics.renderItemDecorations(font, itemStack, x, y);
+        }
+
+        // Draw hover highlight over the item area (16x16)
+        if (isHovered) {
+            guiGraphics.fill(x, y, x + 16, y + 16, SLOT_HOVER_COLOR);
+        }
+    }
+
+    /**
+     * Checks if the mouse is over a rectangular area.
+     */
+    public static boolean isMouseOver(int mouseX, int mouseY, int x, int y, int width, int height) {
+        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 }

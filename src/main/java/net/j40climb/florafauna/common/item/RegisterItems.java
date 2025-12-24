@@ -54,7 +54,6 @@ public class RegisterItems {
     */
     public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", properties ->
             new EnergyHammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -2.4f, 0)));
-    // TODO should this be mineable with paxel?
 
     /*
     / Custom Items

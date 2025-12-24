@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.Block;
 
 public class ModTags {
     public static class Blocks {
-        public static final TagKey<Block> MINEABLE_WITH_PAXEL = createTag("mineable/paxel");
+        public static final TagKey<Block> MINEABLE_WITH_HAMMER = createTag("mineable/hammer");
 
         private static TagKey<Block> createTag(String name) {
             return BlockTags.create(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, name));
@@ -18,7 +18,7 @@ public class ModTags {
     }
 
     public static class Items {
-        public static final TagKey<Item> PAXELS = createTag("paxels");
+        public static final TagKey<Item> HAMMERS = createTag("hammers");
 
         private static TagKey<Item> createTag(String name) {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, name));

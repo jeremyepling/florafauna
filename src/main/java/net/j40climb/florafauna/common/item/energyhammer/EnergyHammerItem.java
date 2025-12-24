@@ -1,17 +1,21 @@
 package net.j40climb.florafauna.common.item.energyhammer;
 
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -25,15 +29,16 @@ import java.util.function.Consumer;
 public class EnergyHammerItem extends Item {
     /**
      * The tool material configuration for the Energy Hammer.
-     * Uses netherite-level tool material with custom durability and mining speed settings.
+     * Note: Durability and enchantability are unused since the hammer is unbreakable and not enchantable.
+     * Attack damage and speed are set via .tool() in RegisterItems.
      */
     public static final ToolMaterial HAMMER_MATERIAL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, // What can't be mined
-            59, // Durability
-            2.0F, // Mining speed
-            0.0F, // Attack damage bonus
-            15, // Enchantability
-            ItemTags.NETHERITE_TOOL_MATERIALS // Repair ingredient
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, // What can't be mined (netherite tier)
+            1, // Durability (unused - item is unbreakable)
+            1.0F, // Base mining speed (overridden by getDestroySpeed)
+            0.0F, // Attack damage bonus (base damage set in .tool())
+            1, // Enchantability (minimum required, but ENCHANTABLE component is removed)
+            ItemTags.NETHERITE_TOOL_MATERIALS // Repair ingredient (unused - item is unbreakable)
     );
 
     /**
@@ -43,10 +48,36 @@ public class EnergyHammerItem extends Item {
      * @param properties the item properties to configure this hammer
      */
     public EnergyHammerItem(Properties properties) {
-        super(properties
+        super(removeEnchantable(properties)
                 .component(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
                 .component(RegisterDataComponentTypes.ENERGY_HAMMER_CONFIG, EnergyHammerConfig.DEFAULT)
+                .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
         );
+    }
+
+    /**
+     * Removes the ENCHANTABLE component from properties to prevent enchanting via table/anvil.
+     * This is called before the parent constructor to strip out the enchantability added by .tool().
+     *
+     * @param properties the item properties
+     * @return properties with ENCHANTABLE component removed
+     */
+    private static Properties removeEnchantable(Properties properties) {
+        return properties.component(DataComponents.ENCHANTABLE, null);
+    }
+
+    /**
+     * Prevents any enchantments from being applied to the Energy Hammer.
+     * This blocks the /enchant command and other programmatic enchantment attempts.
+     * The hammer has its own built-in Fortune/Silk Touch toggle instead.
+     *
+     * @param stack the item stack
+     * @param enchantment the enchantment being checked
+     * @return false to reject all enchantments
+     */
+    @Override
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        return false;
     }
 
     /**

@@ -22,17 +22,17 @@ public class RegisterItemTagsProvider extends ItemTagsProvider {
     protected void addTags(HolderLookup.Provider provider) {
         tag(ItemTags.PICKAXES)
                 .add(RegisterItems.ENERGY_HAMMER.get())
-                .addTag(ModTags.Items.PAXELS);
+                .addTag(ModTags.Items.HAMMERS);
         tag(ItemTags.SHOVELS)
-                .addTag(ModTags.Items.PAXELS);
+                .addTag(ModTags.Items.HAMMERS);
         tag(ItemTags.AXES)
-                .addTag(ModTags.Items.PAXELS);
+                .addTag(ModTags.Items.HAMMERS);
         tag(ItemTags.HOES)
-                .addTag(ModTags.Items.PAXELS);
+                .addTag(ModTags.Items.HAMMERS);
 
-        // Create my own tags and add my custom items to them
-        tag(ModTags.Items.PAXELS)
-                .add(RegisterItems.ENERGY_HAMMER.get()); // This allows all the enchantments to work
+        // Create custom hammer tag for multi-tool functionality
+        tag(ModTags.Items.HAMMERS)
+                .add(RegisterItems.ENERGY_HAMMER.get());
 
         // Wood block items - add to appropriate tags
         for (ModWoodType woodType : ModWoodType.values()) {
