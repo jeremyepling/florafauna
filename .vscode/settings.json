@@ -1,3 +1,66 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "editor.fontFamily": "'Cascadia Code', Consolas, 'Courier New', monospace",
+    "editor.fontLigatures": true,
+    "editor.fontSize": 14,
+    "editor.lineHeight": 1.6,
+    "editor.letterSpacing": 0,
+    "editor.fontWeight": "400",
+    "editor.renderWhitespace": "none",
+    "editor.semanticHighlighting.enabled": true,
+    "files.exclude": {
+        "**/build/": true,
+        "**/bin/": true,
+        "**/.gradle/": true,
+        "**/run/": true,
+        "**/.idea/": true,
+        "**/gradle/": true,
+        "**/.eclipse/": true,
+        "net/": true
+    },
+    "files.watcherExclude": {
+        "**/build/**": true,
+        "**/bin/**": true,
+        "**/.gradle/**": true,
+        "**/run/**": true
+    },
+    "openInExternalApp.openMapper": [
+        {
+            "extensionName": "png",
+            "apps": [
+                {
+                    "title": "Aseprite",
+                    "openCommand": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Aseprite\\Aseprite.exe"
+                }
+            ]
+        }
+    ],
+    "workbench.colorCustomizations": {
+        "[Monokai Pro]": {
+            "editor.background": "#2d2a2e"
+        }
+    },
+    "editor.tokenColorCustomizations": {
+        "[Monokai Pro]": {
+            "textMateRules": [
+                {
+                    "scope": [
+                        "variable.parameter"
+                    ],
+                    "settings": {
+                        "fontStyle": ""
+                    }
+                },
+                {
+                    "scope": [
+                        "keyword.control",
+                        "storage.modifier"
+                    ],
+                    "settings": {
+                        "fontStyle": ""
+                    }
+                }
+            ]
+        }
+    }
 }

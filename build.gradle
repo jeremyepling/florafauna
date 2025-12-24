@@ -216,5 +216,9 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+        // Use Gradle's output directories instead of IntelliJ's default bin/ directory
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/java/main")
+        testOutputDir = file("$buildDir/classes/java/test")
     }
 }

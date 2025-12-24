@@ -19,6 +19,7 @@ build
 
 # other
 eclipse
+.eclipse
 run
 runs
 run-data
@@ -28,4 +29,4 @@ repo
 /src/generated/
 /gradle/gradle-daemon-jvm.properties
 /.claude/settings.local.json
-/net/minecraft/
+/net/
