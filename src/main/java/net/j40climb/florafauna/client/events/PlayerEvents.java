@@ -24,7 +24,7 @@ public class PlayerEvents {
 
         Player player = event.getEntity();
 
-        if (itemStack.get(RegisterDataComponentTypes.MINING_MODE_DATA) != null && player instanceof ServerPlayer serverPlayer) {
+        if (itemStack.get(RegisterDataComponentTypes.MINING_MODE_DATA) != null && player instanceof ServerPlayer) {
             BlockBreakUtils.doExtraCrumblings(event);
         }
     }

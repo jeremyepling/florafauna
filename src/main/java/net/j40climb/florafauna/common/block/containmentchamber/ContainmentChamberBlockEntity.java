@@ -63,9 +63,6 @@ public class ContainmentChamberBlockEntity extends BlockEntity implements MenuPr
         }
     };
 
-    private static final int INPUT_SLOT = 0;
-    private static final int OUTPUT_SLOT = 1;
-
     protected final ContainerData data;
     private int progress = 0;
     private int maxProgress = 72;
@@ -85,8 +82,8 @@ public class ContainmentChamberBlockEntity extends BlockEntity implements MenuPr
             @Override
             public void set(int i, int value) {
                 switch (i) {
-                    case 0: ContainmentChamberBlockEntity.this.progress = value;
-                    case 1: ContainmentChamberBlockEntity.this.maxProgress = value;
+                    case 0 -> ContainmentChamberBlockEntity.this.progress = value;
+                    case 1 -> ContainmentChamberBlockEntity.this.maxProgress = value;
                 }
             }
 
@@ -154,11 +151,6 @@ public class ContainmentChamberBlockEntity extends BlockEntity implements MenuPr
 //        } else {
 //            resetProgress();
 //        }
-    }
-
-    private void resetProgress() {
-        progress = 0;
-        maxProgress = 72;
     }
 
     @Override

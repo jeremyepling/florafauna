@@ -35,7 +35,6 @@ public enum TeleportToSurfacePayload implements CustomPacketPayload {
 
         BlockPos playerPos = player.blockPosition();
         BlockPos.MutableBlockPos scanPos = playerPos.mutable();
-        BlockPos solidBlockPos;
 
         // Scan upward for the surface. Start by looking at the block above the player's head (i.e., +2)
         for (int y = playerPos.getY() + 2; y < level.getHeight(); y++) {

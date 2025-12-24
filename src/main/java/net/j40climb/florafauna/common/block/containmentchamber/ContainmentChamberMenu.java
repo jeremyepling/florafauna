@@ -13,7 +13,6 @@ import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 public class ContainmentChamberMenu extends AbstractContainerMenu {
     public final ContainmentChamberBlockEntity blockEntity;
-    private final ContainerData data;
     private final Level level;
 
 
@@ -33,7 +32,6 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
 
         this.blockEntity = ((ContainmentChamberBlockEntity) entity);
         this.level = playerInventory.player.level();
-        this.data = data;
 
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);

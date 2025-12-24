@@ -1,6 +1,5 @@
 [
   {
-    "key": "f12",
     "command": "workbench.action.tasks.runTask",
     "args": "Open in Aseprite",
     "when": "resourceExtname == .png"

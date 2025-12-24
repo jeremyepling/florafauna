@@ -94,6 +94,6 @@ public class RegisterModelProvider extends ModelProvider {
 
     @Override
     protected Stream<? extends Holder<Item>> getKnownItems() {
-        return RegisterItems.ITEMS.getEntries().stream().filter(x -> !x.is(RegisterItems.ENERGY_HAMMER));
+        return RegisterItems.ITEMS.getEntries().stream().filter(x -> !x.equals(RegisterItems.ENERGY_HAMMER));
     }
 }

@@ -3,11 +3,32 @@
 NeoForge 1.21.10 Minecraft mod.
 
 ## Build & Run
+
+### Command Line (Gradle)
 ```bash
 ./gradlew build          # Build the mod
 ./gradlew runClient      # Run Minecraft client with mod
-./gradlew runData        # Run data generation
+./gradlew runServer      # Run Minecraft server with mod
+./gradlew runData        # Run data generation (client + server)
 ```
+
+### IDE Debugging
+
+The project is configured to work in both **IntelliJ IDEA** and **Cursor (VS Code)**:
+
+**IntelliJ IDEA:**
+- Run configurations are in `.run/` directory
+- Use the Run/Debug dropdown to select: Client, Server, Build, or Data Generation
+- Click the debug button (🐞) to start debugging
+- All configurations use Gradle tasks for compatibility
+
+**Cursor / VS Code:**
+- Debug configurations are in `.vscode/launch.json`
+- Press F5 or click "Run and Debug" in the sidebar
+- Select from: Client, ClientData, Server, ServerData, or GameTestServer
+- All configs auto-build before launching (`preLaunchTask: gradle-build`)
+
+**Important:** Both IDEs use the same output directory: `build/classes/java/main`
 
 ## Project Structure
 

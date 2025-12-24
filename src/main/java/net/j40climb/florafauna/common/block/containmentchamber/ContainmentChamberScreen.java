@@ -12,9 +12,6 @@ public class ContainmentChamberScreen extends AbstractContainerScreen<Containmen
     private static final ResourceLocation GUI_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/containment_chamber/convert_item_gui.png");
 
-    private static final ResourceLocation ARROW_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID,"textures/gui/arrow_progress.png");
-
     public ContainmentChamberScreen(ContainmentChamberMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
     }
