@@ -34,19 +34,19 @@ public class KeyMappings {
             CATEGORY
     ));
 
-    public static final Lazy<KeyMapping> TOGGLE_FORTUNE_AND_SILK_TOUCH = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.toggle_fortune_and_silk_touch",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.MOUSE,
-            GLFW.GLFW_MOUSE_BUTTON_5,
-            CATEGORY
-    ));
-
     public static final Lazy<KeyMapping> DASH_KEY = Lazy.of(() -> new KeyMapping(
             "key.florafauna.dash",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.MOUSE,
             GLFW.GLFW_MOUSE_BUTTON_4,
+            CATEGORY
+    ));
+
+    public static final Lazy<KeyMapping> ENERGY_HAMMER_CONFIG_KEY = Lazy.of(() -> new KeyMapping(
+            "key.florafauna.energy_hammer_config",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_P,
             CATEGORY
     ));
 
@@ -57,7 +57,7 @@ public class KeyMappings {
 
         event.register(SUMMON_LIGHTNING_KEY.get());
         event.register(TELEPORT_SURFACE_KEY.get());
-        event.register(TOGGLE_FORTUNE_AND_SILK_TOUCH.get());
         event.register(DASH_KEY.get());
+        event.register(ENERGY_HAMMER_CONFIG_KEY.get());
     }
 }

@@ -45,7 +45,7 @@ public class EnergyHammerItem extends Item {
     public EnergyHammerItem(Properties properties) {
         super(properties
                 .component(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
-                .component(RegisterDataComponentTypes.MINING_SPEED, MiningSpeed.EFFICIENCY)
+                .component(RegisterDataComponentTypes.ENERGY_HAMMER_CONFIG, EnergyHammerConfig.DEFAULT)
         );
     }
 
@@ -109,13 +109,12 @@ public class EnergyHammerItem extends Item {
      */
     @Override
     public float getDestroySpeed(ItemStack itemStack, BlockState blockState) {
-        return switch (itemStack.getOrDefault(RegisterDataComponentTypes.MINING_SPEED, 2)) {
+        EnergyHammerConfig config = itemStack.getOrDefault(RegisterDataComponentTypes.ENERGY_HAMMER_CONFIG, EnergyHammerConfig.DEFAULT);
+        return switch (config.miningSpeed()) {
             case MiningSpeed.STANDARD ->
                     (blockState.is(BlockTags.MINEABLE_WITH_PICKAXE) || blockState.is(BlockTags.MINEABLE_WITH_SHOVEL) || blockState.is(BlockTags.MINEABLE_WITH_AXE)) ? super.getDestroySpeed(itemStack, Blocks.COBBLESTONE.defaultBlockState()) : 1.0F;
             case MiningSpeed.EFFICIENCY -> 35.0F;
             case MiningSpeed.INSTABREAK -> 100.0F;
-            default ->
-                    throw new IllegalStateException("Unexpected value: " + itemStack.get(RegisterDataComponentTypes.MINING_SPEED));
         };
     }
 

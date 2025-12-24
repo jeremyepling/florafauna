@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.RegisterMenus;
+import net.j40climb.florafauna.common.RegisterNetworking;
 import net.j40climb.florafauna.common.block.RegisterBlockEntities;
 import net.j40climb.florafauna.common.block.RegisterBlocks;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
@@ -52,6 +53,9 @@ public class FloraFauna {
         RegisterEntities.register(modEventBus);
         RegisterBlockEntities.register(modEventBus);
         RegisterMenus.register(modEventBus);
+
+        // Register network payloads
+        modEventBus.addListener(RegisterNetworking::register);
 
         // Register datagen events on the mod bus
         modEventBus.addListener(RegisterDataGenerators::gatherClientData);

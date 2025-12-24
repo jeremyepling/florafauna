@@ -5,9 +5,9 @@ import net.j40climb.florafauna.client.ClientUtils;
 import net.j40climb.florafauna.client.KeyMappings;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.item.RegisterItems;
+import net.j40climb.florafauna.common.item.energyhammer.EnergyHammerConfigScreen;
 import net.j40climb.florafauna.common.item.energyhammer.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.energyhammer.networking.TeleportToSurfacePayload;
-import net.j40climb.florafauna.common.item.energyhammer.networking.ToggleFortureAndSilkTouchPayload;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.networking.DashPayload;
 import net.j40climb.florafauna.common.item.symbiote.networking.JumpStatePayload;
@@ -46,14 +46,14 @@ public class KeyInputEvents {
                 ClientPacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
             }
         }
-        while (KeyMappings.TOGGLE_FORTUNE_AND_SILK_TOUCH.get().consumeClick()) {
-            if (itemStack.is(RegisterItems.ENERGY_HAMMER.get())) {
-                ClientPacketDistributor.sendToServer(ToggleFortureAndSilkTouchPayload.INSTANCE);
-            }
-        }
         while (KeyMappings.TELEPORT_SURFACE_KEY.get().consumeClick()) {
             if (itemStack.is(RegisterItems.ENERGY_HAMMER.get())) {
                 ClientPacketDistributor.sendToServer(TeleportToSurfacePayload.INSTANCE);
+            }
+        }
+        while (KeyMappings.ENERGY_HAMMER_CONFIG_KEY.get().consumeClick()) {
+            if (itemStack.is(RegisterItems.ENERGY_HAMMER.get())) {
+                mc.setScreen(new EnergyHammerConfigScreen());
             }
         }
         while (KeyMappings.DASH_KEY.get().consumeClick()) {

@@ -18,10 +18,19 @@
   "entity.florafauna.lizard": "Lizard",
   "container.florafauna.lizard": "Lizard",
 
+  "key.florafauna.summon_lightning": "Summon Lightning",
   "key.florafauna.throw_hammer": "Throw Hammer",
   "key.florafauna.teleport_surface": "Teleport to Surface",
   "key.florafauna.dash": "Dash",
-  "key.florafauna.toggle_fortune_and_silk_touch": "Toggle Mining Mode",
+  "key.florafauna.energy_hammer_config": "Energy Hammer Config",
+
+  "gui.florafauna.energy_hammer_config.enchantment": "Enchantment:",
+  "gui.florafauna.energy_hammer_config.mining_speed": "Mining Speed:",
+  "gui.florafauna.energy_hammer_config.enchantment.fortune": "Fortune III",
+  "gui.florafauna.energy_hammer_config.enchantment.silk_touch": "Silk Touch",
+  "gui.florafauna.energy_hammer_config.speed.standard": "Standard",
+  "gui.florafauna.energy_hammer_config.speed.efficiency": "Efficiency",
+  "gui.florafauna.energy_hammer_config.speed.instabreak": "Instabreak",
 
   "mode.florafauna.single_block" : "Single Block Mining",
   "mode.florafauna.mode_3x3": "3x3 Mining",

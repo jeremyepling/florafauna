@@ -257,6 +257,25 @@ modEventBus.addListener(RegisterDataGenerators::gatherServerData);
 ### Lang
 - `assets/florafauna/lang/en_us.json` - English translations
 
+**IMPORTANT: Always use translatable text**
+- **Never** hardcode user-facing strings in Java code (e.g., `Component.literal("Enchantment:")`)
+- **Always** use translation keys with `Component.translatable()`
+- Add translation keys to `assets/florafauna/lang/en_us.json`
+
+**Example:**
+```java
+// BAD - hardcoded string
+guiGraphics.drawString(this.font, "Enchantment:", x, y, color);
+
+// GOOD - translatable
+guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.energy_hammer_config.enchantment"), x, y, color);
+```
+
+Then add to `en_us.json`:
+```json
+"gui.florafauna.energy_hammer_config.enchantment": "Enchantment:"
+```
+
 ## Event Handlers
 
 Events use `@EventBusSubscriber` for auto-discovery:
