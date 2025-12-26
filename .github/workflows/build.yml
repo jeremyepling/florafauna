@@ -27,12 +27,12 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon --stacktrace -Dorg.gradle.java.home="${JAVA_HOME}"
+        run: ./gradlew build --no-daemon --stacktrace
         env:
           # Apply JVM args (adjusted for CI memory limits)
           GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
 
       - name: Validate data generation
-        run: ./gradlew runData --no-daemon --stacktrace -Dorg.gradle.java.home="${JAVA_HOME}"
+        run: ./gradlew runData --no-daemon --stacktrace
         env:
           GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
