@@ -31,8 +31,12 @@ jobs:
         env:
           # Apply JVM args (adjusted for CI memory limits)
           GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
+          # Override gradle.properties Java home to use GitHub runner's Java
+          ORG_GRADLE_PROJECT_org.gradle.java.home: ${{ env.JAVA_HOME }}
 
       - name: Validate data generation
         run: ./gradlew runData --no-daemon --stacktrace
         env:
           GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
+          # Override gradle.properties Java home to use GitHub runner's Java
+          ORG_GRADLE_PROJECT_org.gradle.java.home: ${{ env.JAVA_HOME }}
