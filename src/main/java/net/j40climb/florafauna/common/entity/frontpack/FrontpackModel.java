@@ -31,7 +31,7 @@ public class FrenchFrontpackModel extends EntityModel<AvatarRenderState> {
         this.root = root.getChild("root");
 
         // Bake the idle animation - converts the AnimationDefinition to a KeyframeAnimation
-        this.idlingAnimation = FrenchFrontpackAnimations.ANIM_IDLE.bake(root);
+        this.idlingAnimation = FrontpackAnimations.ANIM_IDLE.bake(root);
 
         // Start the animation state so it's always active
         this.idleAnimationState.start(0);

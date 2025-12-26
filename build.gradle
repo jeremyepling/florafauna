@@ -207,6 +207,15 @@ tasks.register('runData') {
     description = 'Runs all data generation (models, recipes, tags, loot tables)'
 }
 
+// Copy compiled classes to bin/main for VS Code launch configs
+// NeoForge's moddev plugin generates launch.json pointing to bin/main
+tasks.register('makeBin', Copy) {
+    from sourceSets.main.output
+    into layout.projectDirectory.dir('bin/main')
+}
+
+tasks.named('classes').configure { it.finalizedBy(tasks.named('makeBin')) }
+
 
 // https://discord.com/channels/313125603924639766/1185197721477468160/1330729872213151806
 // Thats basically for libraries that upload their sources into their maven, if u are on intellij when u

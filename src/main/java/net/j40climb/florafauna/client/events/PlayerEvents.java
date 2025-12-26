@@ -3,8 +3,6 @@ package net.j40climb.florafauna.client.events;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.BlockBreakUtils;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -22,9 +20,7 @@ public class PlayerEvents {
     public static void LeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         ItemStack itemStack = event.getItemStack();
 
-        Player player = event.getEntity();
-
-        if (itemStack.get(RegisterDataComponentTypes.MINING_MODE_DATA) != null && player instanceof ServerPlayer) {
+        if (itemStack.get(RegisterDataComponentTypes.MINING_MODE_DATA) != null) {
             BlockBreakUtils.doExtraCrumblings(event);
         }
     }

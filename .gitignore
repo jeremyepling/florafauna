@@ -29,4 +29,5 @@ repo
 /src/generated/
 /gradle/gradle-daemon-jvm.properties
 /.claude/settings.local.json
+/.claude/blockbench-config.json
 /net/
