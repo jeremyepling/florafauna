@@ -24,8 +24,8 @@ public class FrontpackRendererEvents {
     @SubscribeEvent
     public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(
-                FrenchFrontpackModel.LAYER_LOCATION,
-                FrenchFrontpackModel::createBodyLayer
+                FrontpackModel.LAYER_LOCATION,
+                FrontpackModel::createBodyLayer
         );
     }
 
@@ -42,7 +42,7 @@ public class FrontpackRendererEvents {
             AvatarRenderer<AbstractClientPlayer> renderer = event.getPlayerRenderer(skinType);
             if (renderer != null) {
                 // Add the Frenchie frontpack layer to this player renderer
-                renderer.addLayer(new FrenchFrontpackLayer(renderer, modelSet));
+                renderer.addLayer(new FrontpackLayer(renderer, modelSet));
             }
         }
     }

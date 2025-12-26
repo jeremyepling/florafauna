@@ -22,9 +22,9 @@ import java.util.Map;
  * Uses variant-specific textures for fawn and brindle Frenchies.
  * The texture for this model is the same as the frenchie entity
  */
-public class FrenchFrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
+public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
 
-    private final FrenchFrontpackModel frontpackModel;
+    private final FrontpackModel frontpackModel;
 
     // Variant-specific textures for the entire frontpack model
     private static final ResourceLocation FAWN_TEXTURE =
@@ -35,12 +35,12 @@ public class FrenchFrontpackLayer extends RenderLayer<AvatarRenderState, PlayerM
             ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID,
                     "textures/entity/frenchie/frenchie_brindle_texture.png");
 
-    public FrenchFrontpackLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet modelSet) {
+    public FrontpackLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet modelSet) {
         super(parent);
 
         // Bake the frontpack model from registered layer definition
-        this.frontpackModel = new FrenchFrontpackModel(
-                modelSet.bakeLayer(FrenchFrontpackModel.LAYER_LOCATION)
+        this.frontpackModel = new FrontpackModel(
+                modelSet.bakeLayer(FrontpackModel.LAYER_LOCATION)
         );
     }
 
@@ -106,7 +106,7 @@ public class FrenchFrontpackLayer extends RenderLayer<AvatarRenderState, PlayerM
          * and caches it for rendering.
          */
         public static void extractFromPlayer(Player player) {
-            FrenchFrontpackData data = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
+            FrontpackData data = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
     
             FrontpackRenderState state = new FrontpackRenderState();
             state.hasFrontpack = data.hasCarriedFrenchie();

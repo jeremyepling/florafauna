@@ -16,7 +16,7 @@ import net.minecraft.world.entity.AnimationState;
  * This model will be positioned on the player's front.
  *
  */
-public class FrenchFrontpackModel extends EntityModel<AvatarRenderState> {
+public class FrontpackModel extends EntityModel<AvatarRenderState> {
 
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "french_frontpack"), "main");
@@ -26,7 +26,7 @@ public class FrenchFrontpackModel extends EntityModel<AvatarRenderState> {
 
     private final ModelPart root;
 
-    public FrenchFrontpackModel(ModelPart root) {
+    public FrontpackModel(ModelPart root) {
         super(root);
         this.root = root.getChild("root");
 

@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.CustomBlockOutlineRenderer;
 import net.j40climb.florafauna.common.block.CopperGolemBarrierBlock;
-import net.j40climb.florafauna.common.entity.frontpack.FrenchFrontpackLayer;
+import net.j40climb.florafauna.common.entity.frontpack.FrontpackLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -163,7 +163,7 @@ public class RenderEvents {
             // Only run on client side
             if (player.level().isClientSide()) {
                 // Extract and cache frontpack data for this player
-                FrenchFrontpackLayer.FrontpackRenderStateManager.extractFromPlayer(player);
+                FrontpackLayer.FrontpackRenderStateManager.extractFromPlayer(player);
             }
         }
     }

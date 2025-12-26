@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.frontpack.FrenchFrontpackData;
+import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.tracking.SymbioteEventTracker;
 import net.neoforged.bus.api.IEventBus;
@@ -61,11 +61,11 @@ public class RegisterAttachmentTypes {
      * - frenchieNBT (full entity state)
      * - pickupTimestamp
      */
-    public static final Supplier<AttachmentType<FrenchFrontpackData>> FRENCH_FRONTPACK_DATA =
+    public static final Supplier<AttachmentType<FrontpackData>> FRENCH_FRONTPACK_DATA =
             ATTACHMENT_TYPES.register("french_frontpack_data", () ->
-                    AttachmentType.builder(() -> FrenchFrontpackData.DEFAULT)
-                            .serialize(FrenchFrontpackData.CODEC.fieldOf("french_frontpack_data"))
-                            .sync(FrenchFrontpackData.STREAM_CODEC)
+                    AttachmentType.builder(() -> FrontpackData.DEFAULT)
+                            .serialize(FrontpackData.CODEC.fieldOf("french_frontpack_data"))
+                            .sync(FrontpackData.STREAM_CODEC)
                             .build()
             );
 

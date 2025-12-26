@@ -23,7 +23,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * Put down: Shift-right-click air while carrying a Frenchie
  */
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
-public class FrenchFrontpackEvents {
+public class FrontpackEvents {
 
     /**
      * Handle shift-right-click on Frenchie to pick it up.
@@ -41,7 +41,7 @@ public class FrenchFrontpackEvents {
         if (frenchie.isBaby()) return;
 
         // Check if already carrying a Frenchie
-        FrenchFrontpackData currentData = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
+        FrontpackData currentData = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
         if (currentData.hasCarriedFrenchie()) return;
 
         // Client: just cancel event and return success
@@ -59,7 +59,7 @@ public class FrenchFrontpackEvents {
         frenchie.saveWithoutId(output);
         CompoundTag frenchieNBT = output.buildResult();
 
-        FrenchFrontpackData newData = new FrenchFrontpackData(
+        FrontpackData newData = new FrontpackData(
             true,
             frenchieNBT,
             player.level().getGameTime()
@@ -87,7 +87,7 @@ public class FrenchFrontpackEvents {
 
         if (!player.isShiftKeyDown()) return;
 
-        FrenchFrontpackData data = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
+        FrontpackData data = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
         if (!data.hasCarriedFrenchie()) return;
 
         // Send packet to server to handle put-down
