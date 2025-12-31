@@ -43,14 +43,14 @@ public class FrontpackModel extends EntityModel<AvatarRenderState> {
 
         PartDefinition root = partdefinition.addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
 
-        PartDefinition carrier = root.addOrReplaceChild("carrier", CubeListBuilder.create().texOffs(45, 0).addBox(-5.7F, 2.0F, -2.9F, 6.0F, 6.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(2.7F, -9.0F, -1.1F));
+        PartDefinition carrier = root.addOrReplaceChild("carrier", CubeListBuilder.create().texOffs(44, 0).addBox(-6.2F, 2.0F, -2.9F, 7.0F, 6.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offset(2.7F, -9.0F, -1.1F));
 
-        carrier.addOrReplaceChild("strap_left", CubeListBuilder.create().texOffs(49, 2).addBox(-1.0F, -3.1F, -0.2F, 1.0F, 5.1F, 0.2F, new CubeDeformation(0.0F))
-                .texOffs(47, 1).addBox(-1.0F, -3.3F, -0.2F, 1.0F, 0.2F, 4.6F, new CubeDeformation(0.0F))
+        carrier.addOrReplaceChild("strap_left", CubeListBuilder.create().texOffs(49, 2).addBox(-1.0F, -2.6F, -0.45F, 1.0F, 5.1F, 0.2F, new CubeDeformation(0.0F))
+                .texOffs(47, 1).addBox(-1.0F, -2.8F, -0.2F, 1.0F, 0.2F, 4.6F, new CubeDeformation(0.0F))
                 .texOffs(55, 0).addBox(-1.0F, -3.1F, 4.2F, 1.0F, 9.1F, 0.2F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
 
-        carrier.addOrReplaceChild("strap_right", CubeListBuilder.create().texOffs(49, 2).addBox(-1.2F, -3.1F, -0.2F, 1.0F, 5.1F, 0.2F, new CubeDeformation(0.0F))
-                .texOffs(47, 1).addBox(-1.2F, -3.3F, -0.2F, 1.0F, 0.2F, 4.6F, new CubeDeformation(0.0F))
+        carrier.addOrReplaceChild("strap_right", CubeListBuilder.create().texOffs(49, 2).addBox(-1.2F, -2.6F, -0.7F, 1.0F, 5.1F, 0.2F, new CubeDeformation(0.0F))
+                .texOffs(47, 1).addBox(-1.2F, -2.8F, -0.2F, 1.0F, 0.2F, 4.6F, new CubeDeformation(0.0F))
                 .texOffs(55, 0).addBox(-1.2F, -3.1F, 4.2F, 1.0F, 9.1F, 0.2F, new CubeDeformation(0.0F)), PartPose.offset(-4.2F, 0.0F, 0.0F));
 
         carrier.addOrReplaceChild("strap_waist", CubeListBuilder.create().texOffs(47, 1).addBox(-0.2F, -1.0F, -3.3F, 0.2F, 1.0F, 4.6F, new CubeDeformation(0.0F))
