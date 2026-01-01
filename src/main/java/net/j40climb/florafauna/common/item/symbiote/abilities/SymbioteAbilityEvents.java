@@ -1,27 +1,21 @@
-package net.j40climb.florafauna.common.item.symbiote.event;
+package net.j40climb.florafauna.common.item.symbiote.abilities;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Event handler for symbiote abilities.
@@ -29,25 +23,6 @@ import java.util.UUID;
  */
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public class SymbioteAbilityEvents {
-
-    // Track jump state for each player: UUID -> ticks since jump started
-    private static final Map<UUID, Integer> jumpTicksMap = new HashMap<>();
-    // Track whether player is holding jump key: UUID -> isJumping
-    private static final Map<UUID, Boolean> playerJumpingMap = new HashMap<>();
-
-    /**
-     * Set the jump state for a player (called from network packet handler)
-     */
-    public static void setPlayerJumping(ServerPlayer player, boolean isJumping) {
-        playerJumpingMap.put(player.getUUID(), isJumping);
-    }
-
-    /**
-     * Get whether a player is currently holding the jump key
-     */
-    private static boolean isPlayerJumping(ServerPlayer player) {
-        return playerJumpingMap.getOrDefault(player.getUUID(), false);
-    }
 
     /**
      * Handle player tick events for abilities that need periodic checking
@@ -77,100 +52,9 @@ public class SymbioteAbilityEvents {
             applySpeedEffect(serverPlayer);
         }
 
-        // Handle variable jump boost
-        handleVariableJump(serverPlayer, symbioteData);
-    }
-
-    /**
-     * Handle jump event to initialize jump tracking
-     */
-    @SubscribeEvent
-    public static void onLivingJump(LivingEvent.LivingJumpEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
-            return;
-        }
-
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
-        if (!symbioteData.bonded() || symbioteData.jumpHeight() <= 0) {
-            return;
-        }
-
-        // Initialize jump tracking
-        jumpTicksMap.put(player.getUUID(), 0);
-    }
-
-    /**
-     * Handles variable jump height based on how long jump is held
-     * Max jump height: 4 blocks (jumpHeight determines strength)
-     */
-    private static void handleVariableJump(ServerPlayer player, SymbioteData symbioteData) {
-        UUID playerUUID = player.getUUID();
-
-        // Only process if player has jump height ability
-        if (symbioteData.jumpHeight() <= 0) {
-            jumpTicksMap.remove(playerUUID);
-            return;
-        }
-
-        // Check if player is currently in a jump
-        if (!jumpTicksMap.containsKey(playerUUID)) {
-            return;
-        }
-
-        int jumpTicks = jumpTicksMap.get(playerUUID);
-
-        // If player is on ground AND has been airborne for at least 1 tick, reset jump tracking
-        // This prevents immediately canceling the jump
-        if (player.onGround() && jumpTicks > 0) {
-            jumpTicksMap.remove(playerUUID);
-            return;
-        }
-
-        // If player released jump key, stop boosting immediately
-        if (!isPlayerJumping(player)) {
-            jumpTicksMap.remove(playerUUID);
-            return;
-        }
-
-        // Calculate boost based on jumpHeight (max 4 blocks)
-        // Normal jump is ~1.25 blocks, we want up to 4 blocks total
-        // Apply boost for up to 15 ticks (0.75 seconds) to allow reaching 4 blocks
-        int maxBoostTicks = 15;
-
-        if (jumpTicks < maxBoostTicks) {
-            // Scale boost by jumpHeight (1-4 blocks max)
-            // Higher jumpHeight = stronger boost per tick
-            double boostPerTick = (symbioteData.jumpHeight() / 4.0) * 0.065;
-
-            // Get current movement direction (horizontal only - x and z)
-            Vec3 currentMovement = player.getDeltaMovement();
-            double horizontalSpeed = Math.sqrt(currentMovement.x * currentMovement.x + currentMovement.z * currentMovement.z);
-
-            // Apply upward velocity boost
-            double newY = currentMovement.y + boostPerTick;
-
-            // Apply horizontal boost in the direction player is moving (if moving)
-            double newX = currentMovement.x;
-            double newZ = currentMovement.z;
-
-            if (horizontalSpeed > 0.001) {
-                // Normalize horizontal direction and apply boost
-                // Boost scales proportionally with vertical boost divided by 7 so it's more high and not a dash
-                double horizontalBoost = boostPerTick / 7;
-                double directionX = currentMovement.x / horizontalSpeed;
-                double directionZ = currentMovement.z / horizontalSpeed;
-
-                newX += directionX * horizontalBoost;
-                newZ += directionZ * horizontalBoost;
-            }
-
-            player.setDeltaMovement(newX, newY, newZ);
-            ((ServerPlayer) player).connection.send(new ClientboundSetEntityMotionPacket(player));
-            player.resetFallDistance();
-            jumpTicksMap.put(playerUUID, jumpTicks + 1);
-        } else {
-            // Max boost reached, stop tracking
-            jumpTicksMap.remove(playerUUID);
+        // Apply jump boost effect when enabled
+        if (symbioteData.jumpBoost() > 0) {
+            applyJumpBoostEffect(serverPlayer, symbioteData.jumpBoost());
         }
     }
 
@@ -241,6 +125,23 @@ public class SymbioteAbilityEvents {
                 false  // showParticles
         );
         player.addEffect(speedEffect);
+    }
+
+    /**
+     * Applies Jump Boost effect to the player based on jumpBoost level
+     * jumpBoost 1 = Jump Boost I, jumpBoost 2 = Jump Boost II, etc.
+     */
+    private static void applyJumpBoostEffect(ServerPlayer player, int jumpBoost) {
+        // Apply Jump Boost for 2 seconds (40 ticks), refresh every tick
+        // Amplifier is jumpBoost - 1 (jumpBoost 1 = amplifier 0 = Jump Boost I)
+        MobEffectInstance jumpEffect = new MobEffectInstance(
+                MobEffects.JUMP_BOOST,
+                40,             // duration: 2 seconds
+                jumpBoost - 1,  // amplifier: jumpBoost - 1
+                true,           // ambient
+                false           // showParticles
+        );
+        player.addEffect(jumpEffect);
     }
 
     /**

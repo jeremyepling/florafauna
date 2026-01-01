@@ -1,0 +1,12 @@
+{
+  "lines": [
+    {
+      "key": "symbiote.voice.bonding.established",
+      "tier": "TIER_2_BREAKTHROUGH",
+      "category": "bonding",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import net.j40climb.florafauna.common.item.energyhammer.EnergyHammerConfig;
 import net.j40climb.florafauna.common.item.energyhammer.MiningModeData;
 import net.j40climb.florafauna.common.item.energyhammer.MiningSpeed;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
-import net.j40climb.florafauna.common.item.symbiote.tracking.SymbioteEventTracker;
+import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.neoforged.bus.api.IEventBus;
@@ -23,7 +23,7 @@ public class RegisterDataComponentTypes {
 
     // Symbiote item data components
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<SymbioteData>> SYMBIOTE_DATA = DATA_COMPONENT_TYPES.registerComponentType("symbiote_data", builder -> builder.persistent(SymbioteData.CODEC).networkSynchronized(SymbioteData.STREAM_CODEC));
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SymbioteEventTracker>> SYMBIOTE_EVENT_TRACKER = DATA_COMPONENT_TYPES.registerComponentType("symbiote_event_tracker", builder -> builder.persistent(SymbioteEventTracker.CODEC).networkSynchronized(SymbioteEventTracker.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS = DATA_COMPONENT_TYPES.registerComponentType("symbiote_progress", builder -> builder.persistent(ProgressSignalTracker.CODEC).networkSynchronized(ProgressSignalTracker.STREAM_CODEC));
 
     public static void register(IEventBus eventBus) {
         DATA_COMPONENT_TYPES.register(eventBus);

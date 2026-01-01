@@ -17,9 +17,6 @@ public class InventoryRenderHelper {
     private static final int SLOT_SIZE = 18; // Slot spacing (18 pixels between slot positions)
     private static final int HOTBAR_Y_OFFSET = 58; // Y offset from inventory start to hotbar (matches vanilla)
 
-    // Slot rendering colors
-    private static final int SLOT_BACKGROUND_COLOR = 0x8B000000; // Semi-transparent black
-    private static final int SLOT_BORDER_COLOR = 0xFF8B8B8B; // Light gray border
     private static final int SLOT_HOVER_COLOR = 0x80FFFFFF; // Semi-transparent white for hover
 
     /**

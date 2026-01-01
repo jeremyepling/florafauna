@@ -16,6 +16,8 @@ import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
 import net.j40climb.florafauna.common.item.RegisterCreativeModeTabs;
 import net.j40climb.florafauna.common.item.RegisterItems;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteCommand;
+import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueLoader;
+import net.j40climb.florafauna.test.FloraFaunaGameTests;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -65,6 +67,15 @@ public class FloraFauna {
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
+
+        // Register symbiote dialogue loader for datapack reloading
+        NeoForge.EVENT_BUS.addListener(SymbioteDialogueLoader::registerReloadListener);
+
+        // Register game tests only when gametest namespace is enabled
+        String enabledNamespaces = System.getProperty("neoforge.enabledGameTestNamespaces", "");
+        if (enabledNamespaces.contains(MOD_ID)) {
+            FloraFaunaGameTests.register(modEventBus);
+        }
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);

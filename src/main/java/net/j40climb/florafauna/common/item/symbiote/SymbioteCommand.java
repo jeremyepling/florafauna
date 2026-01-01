@@ -7,14 +7,22 @@ import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.RegisterItems;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogue;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueTrigger;
-import net.j40climb.florafauna.common.item.symbiote.tracking.SymbioteEventTracker;
+import net.j40climb.florafauna.common.item.symbiote.dream.DreamInsightEngine;
+import net.j40climb.florafauna.common.item.symbiote.dream.DreamLevel;
+import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
+import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
+import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
+import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalUpdater;
+import net.j40climb.florafauna.common.item.symbiote.progress.SignalState;
+import net.j40climb.florafauna.common.item.symbiote.voice.SymbioteVoiceService;
+import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.Map;
 
 /**
  * Commands for managing symbiote attachment data.
@@ -24,7 +32,12 @@ import net.minecraft.world.item.ItemStack;
  *   /symbiote unbond - Unbond the symbiote from the player (returns item with memory intact)
  *   /symbiote reset - Reset the symbiote completely (for testing, no item created)
  *   /symbiote toggle <ability> - Toggle an ability (dash, featherFalling, speed)
- *   /symbiote setJumpHeight <0-4> - Set jump height ability (0=off, 4=max 4 blocks)
+ *   /symbiote setJumpBoost <0-4> - Set jump boost level (0=off, 1-4=Jump Boost I-IV)
+ *   /symbiote dream - Trigger a dream insight
+ *   /symbiote dream force <1-3> - Force a dream at a specific level
+ *   /symbiote cooldown reset - Reset all voice cooldowns
+ *   /symbiote progress - Show progress signals
+ *   /symbiote progress set <concept> <state> - Set a progress state
  */
 public class SymbioteCommand {
     /**
@@ -52,9 +65,31 @@ public class SymbioteCommand {
                                             return builder.buildFuture();
                                         })
                                         .executes(SymbioteCommand::toggleAbility)))
-                        .then(Commands.literal("setJumpHeight")
-                                .then(Commands.argument("height", IntegerArgumentType.integer(0, 4))
-                                        .executes(SymbioteCommand::setJumpHeight)))
+                        .then(Commands.literal("setJumpBoost")
+                                .then(Commands.argument("level", IntegerArgumentType.integer(0, 4))
+                                        .executes(SymbioteCommand::setJumpBoost)))
+                        // Dream commands
+                        .then(Commands.literal("dream")
+                                .executes(SymbioteCommand::triggerDream)
+                                .then(Commands.literal("force")
+                                        .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
+                                                .executes(SymbioteCommand::forceDream))))
+                        // Voice system debug commands
+                        .then(Commands.literal("cooldown")
+                                .then(Commands.literal("reset")
+                                        .executes(SymbioteCommand::resetCooldowns)))
+                        .then(Commands.literal("progress")
+                                .executes(SymbioteCommand::showProgress)
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("concept", StringArgumentType.word())
+                                                .then(Commands.argument("state", StringArgumentType.word())
+                                                        .suggests((context, builder) -> {
+                                                            for (SignalState state : SignalState.values()) {
+                                                                builder.suggest(state.name().toLowerCase());
+                                                            }
+                                                            return builder.buildFuture();
+                                                        })
+                                                        .executes(SymbioteCommand::setProgressState)))))
         );
     }
 
@@ -96,8 +131,8 @@ public class SymbioteCommand {
                     formatEnabledDisabled(data.featherFalling())), false);
             source.sendSuccess(() -> formatField("command.florafauna.symbiote.speed",
                     formatEnabledDisabled(data.speed())), false);
-            source.sendSuccess(() -> formatField("command.florafauna.symbiote.jump_height",
-                    String.valueOf(data.jumpHeight())), false);
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.jump_boost",
+                    String.valueOf(data.jumpBoost())), false);
         }
 
         return 1;
@@ -132,9 +167,13 @@ public class SymbioteCommand {
                 false, false, false, 0
         );
         player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, newData);
+        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
+        player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
-        // Trigger bonding dialogue
-        SymbioteDialogue.forceTrigger(player, SymbioteDialogueTrigger.BONDED);
+        // Trigger bonding observation - BONDING_MILESTONE is Tier 2 breakthrough
+        ObservationArbiter.observe(player, ObservationCategory.BONDING_MILESTONE, 100, Map.of(
+                "event", "bonded"
+        ));
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.bonded_success")
                 .withStyle(style -> style.withColor(0x2ECC71)), false);
@@ -143,6 +182,7 @@ public class SymbioteCommand {
 
     /**
      * Executes the unbond command to remove the symbiote from the player.
+     * Creates an item with the symbiote's memory/progress preserved.
      *
      * @param context the command context
      * @return 1 if successful
@@ -162,11 +202,8 @@ public class SymbioteCommand {
             return 0;
         }
 
-        // Trigger unbonding dialogue
-        SymbioteDialogue.forceTrigger(player, SymbioteDialogueTrigger.UNBONDED);
-
         // Read current player state
-        SymbioteEventTracker eventTracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_EVENT_TRACKER);
+        ProgressSignalTracker progressTracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
 
         // Create symbiote item with current player state
         ItemStack symbioteItem = new ItemStack(RegisterItems.SYMBIOTE.get());
@@ -179,12 +216,12 @@ public class SymbioteCommand {
                 currentData.dash(),         // preserve abilities
                 currentData.featherFalling(),
                 currentData.speed(),
-                currentData.jumpHeight()
+                currentData.jumpBoost()
         );
         symbioteItem.set(RegisterDataComponentTypes.SYMBIOTE_DATA, unbondedData);
 
-        // Copy event tracker to item (memory persists)
-        symbioteItem.set(RegisterDataComponentTypes.SYMBIOTE_EVENT_TRACKER, eventTracker);
+        // Copy progress tracker to item (memory persists)
+        symbioteItem.set(RegisterDataComponentTypes.SYMBIOTE_PROGRESS, progressTracker);
 
         // Give item to player
         if (!player.getInventory().add(symbioteItem)) {
@@ -194,7 +231,8 @@ public class SymbioteCommand {
 
         // Unbond the symbiote (reset player attachments to default)
         player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_EVENT_TRACKER, SymbioteEventTracker.DEFAULT);
+        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
+        player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.unbonded_success")
                 .withStyle(style -> style.withColor(0xE74C3C)), false);
@@ -223,9 +261,10 @@ public class SymbioteCommand {
             return 0;
         }
 
-        // Full reset - clear both attachments without creating an item
+        // Full reset - clear all symbiote attachments without creating an item
         player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_EVENT_TRACKER, SymbioteEventTracker.DEFAULT);
+        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
+        player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.reset_success")
                 .withStyle(style -> style.withColor(0xF39C12)), false);
@@ -265,7 +304,7 @@ public class SymbioteCommand {
                         !currentData.dash(),
                         currentData.featherFalling(),
                         currentData.speed(),
-                        currentData.jumpHeight()
+                        currentData.jumpBoost()
                 );
                 break;
             case "featherfalling":
@@ -276,7 +315,7 @@ public class SymbioteCommand {
                         currentData.dash(),
                         !currentData.featherFalling(),
                         currentData.speed(),
-                        currentData.jumpHeight()
+                        currentData.jumpBoost()
                 );
                 break;
             case "speed":
@@ -287,7 +326,7 @@ public class SymbioteCommand {
                         currentData.dash(),
                         currentData.featherFalling(),
                         !currentData.speed(),
-                        currentData.jumpHeight()
+                        currentData.jumpBoost()
                 );
                 break;
             default:
@@ -315,12 +354,12 @@ public class SymbioteCommand {
     }
 
     /**
-     * Executes the setJumpHeight command to set the jump height value.
+     * Executes the setJumpBoost command to set the jump boost level.
      *
      * @param context the command context
      * @return 1 if successful
      */
-    private static int setJumpHeight(CommandContext<CommandSourceStack> context) {
+    private static int setJumpBoost(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
         if (!(source.getEntity() instanceof ServerPlayer player)) {
@@ -335,9 +374,9 @@ public class SymbioteCommand {
             return 0;
         }
 
-        int height = IntegerArgumentType.getInteger(context, "height");
+        int level = IntegerArgumentType.getInteger(context, "level");
 
-        // Create new data with updated jump height
+        // Create new data with updated jump boost
         SymbioteData newData = new SymbioteData(
                 currentData.bonded(),
                 currentData.bondTime(),
@@ -345,16 +384,152 @@ public class SymbioteCommand {
                 currentData.dash(),
                 currentData.featherFalling(),
                 currentData.speed(),
-                height
+                level
         );
 
         player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, newData);
 
-        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_height_set",
-                height).withStyle(style -> style.withColor(0xF39C12)), false);
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_boost_set",
+                level).withStyle(style -> style.withColor(0xF39C12)), false);
 
         return 1;
     }
+
+    // ==================== Dream Commands ====================
+
+    /**
+     * Trigger a dream for the player.
+     */
+    private static int triggerDream(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+
+        if (!currentData.bonded()) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
+            return 0;
+        }
+
+        boolean success = DreamInsightEngine.processDream(player);
+
+        if (success) {
+            source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.dream_triggered")
+                    .withStyle(style -> style.withColor(0x9B59B6)), false);
+        }
+
+        return success ? 1 : 0;
+    }
+
+    /**
+     * Force a dream at a specific level.
+     */
+    private static int forceDream(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+
+        if (!currentData.bonded()) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
+            return 0;
+        }
+
+        int levelNum = IntegerArgumentType.getInteger(context, "level");
+        DreamLevel level = DreamLevel.fromOrdinal(levelNum - 1); // Convert 1-3 to 0-2
+
+        boolean success = DreamInsightEngine.forceDream(player, level);
+
+        if (success) {
+            source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.dream_forced", level.name())
+                    .withStyle(style -> style.withColor(0x9B59B6)), false);
+        }
+
+        return success ? 1 : 0;
+    }
+
+    // ==================== Voice Debug Commands ====================
+
+    /**
+     * Reset all voice cooldowns.
+     */
+    private static int resetCooldowns(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        SymbioteVoiceService.resetCooldowns(player);
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.cooldowns_reset")
+                .withStyle(style -> style.withColor(0x2ECC71)), false);
+        return 1;
+    }
+
+    /**
+     * Show progress signals.
+     */
+    private static int showProgress(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        String summary = ProgressSignalUpdater.getProgressSummary(player);
+
+        // Split by newlines and send each line
+        for (String line : summary.split("\n")) {
+            if (!line.isBlank()) {
+                source.sendSuccess(() -> Component.literal(line)
+                        .withStyle(style -> style.withColor(0x9B59B6)), false);
+            }
+        }
+
+        return 1;
+    }
+
+    /**
+     * Set a progress signal state.
+     */
+    private static int setProgressState(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
+            return 0;
+        }
+
+        String concept = StringArgumentType.getString(context, "concept");
+        String stateStr = StringArgumentType.getString(context, "state");
+
+        SignalState state;
+        try {
+            state = SignalState.valueOf(stateStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            source.sendFailure(Component.translatable("command.florafauna.symbiote.invalid_state", stateStr));
+            return 0;
+        }
+
+        ProgressSignalUpdater.forceState(player, concept, state);
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.progress_set", concept, state.name())
+                .withStyle(style -> style.withColor(0x2ECC71)), false);
+        return 1;
+    }
+
+    // ==================== Formatting Helpers ====================
 
     /**
      * Formats a field with its translated label and value.

@@ -2,9 +2,10 @@ package net.j40climb.florafauna.common.item.symbiote;
 
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogue;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueTrigger;
-import net.j40climb.florafauna.common.item.symbiote.tracking.SymbioteEventTracker;
+import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
+import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
+import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
+import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -19,23 +20,37 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
  * A consumable item that bonds a symbiote to the player.
  * When consumed, it attaches symbiote data to the player and initiates the bonding process.
+ *
+ * <h2>Bonding Process</h2>
+ * <ol>
+ *   <li>Player right-clicks with symbiote item</li>
+ *   <li>2-second consumption animation plays</li>
+ *   <li>On completion, symbiote data is copied from item to player attachments</li>
+ *   <li>Bonding observation triggers a Tier 2 breakthrough moment</li>
+ *   <li>Item is consumed</li>
+ * </ol>
+ *
+ * <h2>Data Persistence</h2>
+ * The symbiote remembers its experiences. When unbonded, progress is saved to the item
+ * and restored when re-bonded to any player.
  */
 public class SymbioteItem extends Item {
     /**
      * Constructs a new SymbioteItem with the specified properties.
-     * Sets default components for symbiote data and event tracking.
+     * Sets default components for symbiote data and progress tracking.
      *
      * @param properties the item properties
      */
     public SymbioteItem(Properties properties) {
         super(properties
                 .component(RegisterDataComponentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT)
-                .component(RegisterDataComponentTypes.SYMBIOTE_EVENT_TRACKER, SymbioteEventTracker.DEFAULT)
+                .component(RegisterDataComponentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT)
         );
     }
 
@@ -57,7 +72,8 @@ public class SymbioteItem extends Item {
             if (level.isClientSide()) {
                 // Show message on client side for immediate feedback
                 player.displayClientMessage(
-                        Component.literal("You already have a bonded symbiote!").withStyle(style -> style.withColor(0xFF6B6B)),
+                        Component.translatable("symbiote.florafauna.already_bonded")
+                                .withStyle(style -> style.withColor(0xFF6B6B)),
                         true // actionBar = true for less intrusive message
                 );
             }
@@ -110,7 +126,8 @@ public class SymbioteItem extends Item {
             // Check if player already has a bonded symbiote
             if (currentData.bonded()) {
                 player.displayClientMessage(
-                        Component.literal("You already have a bonded symbiote!").withStyle(style -> style.withColor(0xFF6B6B)),
+                        Component.translatable("symbiote.florafauna.already_bonded")
+                                .withStyle(style -> style.withColor(0xFF6B6B)),
                         false
                 );
                 return itemStack; // Don't consume the item
@@ -121,9 +138,9 @@ public class SymbioteItem extends Item {
                     RegisterDataComponentTypes.SYMBIOTE_DATA,
                     SymbioteData.DEFAULT
             );
-            SymbioteEventTracker eventTracker = itemStack.getOrDefault(
-                    RegisterDataComponentTypes.SYMBIOTE_EVENT_TRACKER,
-                    SymbioteEventTracker.DEFAULT
+            ProgressSignalTracker progressTracker = itemStack.getOrDefault(
+                    RegisterDataComponentTypes.SYMBIOTE_PROGRESS,
+                    ProgressSignalTracker.DEFAULT
             );
 
             // Bond the symbiote - copy item state to player attachments and set bonded=true
@@ -134,18 +151,22 @@ public class SymbioteItem extends Item {
                     itemData.dash(),             // dash from item
                     itemData.featherFalling(),   // featherFalling from item
                     itemData.speed(),            // speed from item
-                    itemData.jumpHeight()        // jumpHeight from item
+                    itemData.jumpBoost()         // jumpBoost from item
             );
 
             player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, bondedData);
-            player.setData(RegisterAttachmentTypes.SYMBIOTE_EVENT_TRACKER, eventTracker);
+            player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, progressTracker);
+            player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
-            // Trigger bonding dialogue
-            SymbioteDialogue.forceTrigger((ServerPlayer) player, SymbioteDialogueTrigger.BONDED);
+            // Trigger bonding observation - this is a BONDING_MILESTONE (Tier 2 breakthrough)
+            ServerPlayer serverPlayer = (ServerPlayer) player;
+            ObservationArbiter.observe(serverPlayer, ObservationCategory.BONDING_MILESTONE, 100, Map.of(
+                    "event", "bonded"
+            ));
 
             // Display success message
             player.displayClientMessage(
-                    Component.literal("Symbiote bonded! You feel a presence merging with your body...")
+                    Component.translatable("symbiote.florafauna.bonded_success")
                             .withStyle(style -> style.withColor(0x9B59B6)),
                     false
             );
@@ -157,6 +178,7 @@ public class SymbioteItem extends Item {
         return itemStack;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         tooltipComponents.accept(Component.translatable("tooltip.florafauna.symbiote"));

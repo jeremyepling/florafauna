@@ -9,8 +9,7 @@ import net.j40climb.florafauna.common.item.energyhammer.EnergyHammerConfigScreen
 import net.j40climb.florafauna.common.item.energyhammer.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.energyhammer.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
-import net.j40climb.florafauna.common.item.symbiote.networking.DashPayload;
-import net.j40climb.florafauna.common.item.symbiote.networking.JumpStatePayload;
+import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -26,9 +25,6 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class KeyInputEvents {
-
-    // Track previous jump key state to detect changes
-    private static boolean wasJumping = false;
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -61,24 +57,6 @@ public class KeyInputEvents {
             SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
             if (symbioteData.bonded() && symbioteData.dash()) {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
-            }
-        }
-
-        // Track jump key state for variable jump height
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
-        if (symbioteData.bonded() && symbioteData.jumpHeight() > 0) {
-            // Check current jump key state
-            boolean isJumping = mc.options.keyJump.isDown();
-
-            // If state changed, send packet to server
-            if (isJumping != wasJumping) {
-                ClientPacketDistributor.sendToServer(new JumpStatePayload(isJumping));
-                wasJumping = isJumping;
-            }
-        } else {
-            // Reset state if symbiote is not bonded or jumpHeight is 0
-            if (wasJumping) {
-                wasJumping = false;
             }
         }
     }

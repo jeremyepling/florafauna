@@ -1,0 +1,68 @@
+{
+  "lines": [
+    {
+      "key": "symbiote.voice.combat.hit_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 0,
+      "severity_max": 40,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.hit_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 0,
+      "severity_max": 40,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.hit_3",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 0,
+      "severity_max": 40,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.hurt_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 41,
+      "severity_max": 70,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.hurt_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 41,
+      "severity_max": 70,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.severe_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 71,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.severe_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "combat",
+      "severity_min": 71,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.combat.first_hit",
+      "tier": "TIER_2_BREAKTHROUGH",
+      "category": "combat",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    }
+  ]
+}

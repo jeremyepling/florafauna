@@ -16,7 +16,7 @@ import net.minecraft.network.codec.StreamCodec;
  * Stores bonding status, evolution tier, and ability toggles.
  */
 public record SymbioteData(boolean bonded, long bondTime, int tier, boolean dash,
-                           boolean featherFalling, boolean speed, int jumpHeight) {
+                           boolean featherFalling, boolean speed, int jumpBoost) {
     /**
      * Codec for NBT persistence (disk save/load).
      */
@@ -28,7 +28,7 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, boolean dash
                     Codec.BOOL.fieldOf("dash").forGetter(SymbioteData::dash),
                     Codec.BOOL.fieldOf("featherFalling").forGetter(SymbioteData::featherFalling),
                     Codec.BOOL.fieldOf("speed").forGetter(SymbioteData::speed),
-                    Codec.INT.fieldOf("jumpHeight").forGetter(SymbioteData::jumpHeight)
+                    Codec.INT.fieldOf("jumpBoost").forGetter(SymbioteData::jumpBoost)
             ).apply(builder, SymbioteData::new));
 
     /**
@@ -41,7 +41,7 @@ public record SymbioteData(boolean bonded, long bondTime, int tier, boolean dash
             ByteBufCodecs.BOOL, SymbioteData::dash,
             ByteBufCodecs.BOOL, SymbioteData::featherFalling,
             ByteBufCodecs.BOOL, SymbioteData::speed,
-            ByteBufCodecs.INT, SymbioteData::jumpHeight,
+            ByteBufCodecs.INT, SymbioteData::jumpBoost,
             SymbioteData::new
     );
 

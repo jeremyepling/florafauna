@@ -325,3 +325,81 @@ Central networking registration is in `common/RegisterNetworking.java`.
 Utility classes go in `common/util/`:
 - General-purpose helper classes
 - Shared utilities used across features
+
+## GameTest Framework
+
+The mod uses NeoForge's GameTest framework for automated testing of game logic.
+
+### Running Tests
+
+```bash
+# Run all game tests (headless server, exits with test results)
+./gradlew runGameTestServer
+
+# In-game during regular gameplay
+/test runall                    # Run all tests
+/test run florafauna:<name>     # Run specific test
+/test runfailed                 # Re-run failed tests
+```
+
+### Test Organization
+
+Tests are in `test/FloraFaunaGameTests.java`:
+- **Registration**: `FloraFaunaGameTests.register(modEventBus)` called from `FloraFauna.java`
+- **Structure**: Uses `empty_1x1x1.nbt` minimal structure template
+- **Environment**: Tests run in `florafauna:default` test environment
+
+### Current Tests (14 total)
+
+**VoiceCooldownState (5 tests)** - Cooldown logic for symbiote voice system:
+- `voice_cooldown_initial_state` - Fresh state allows speaking
+- `voice_cooldown_tier1_can_speak` - Cooldown blocks then expires
+- `voice_cooldown_tier1_blocked_during_cooldown` - Blocked during cooldown window
+- `voice_cooldown_tier2_lockout` - Tier 2 locks out Tier 1
+- `voice_cooldown_category_dampening` - Category dampening works
+
+**ProgressSignalTracker (4 tests)** - State machine for concept progress:
+- `progress_signal_initial_state` - Empty tracker defaults
+- `progress_signal_state_transitions` - Signal increments and state changes
+- `progress_signal_stall_detection` - Stall score calculation
+- `progress_signal_dream_state_tracking` - Dream state updates
+
+**ChaosSuppressor (2 tests)** - Damage-based voice suppression:
+- `chaos_suppressor_initial_state` - Fresh player not suppressed
+- `chaos_suppressor_threshold` - 5 damage events triggers suppression
+
+**SymbioteLineRepository (2 tests)** - Voice line selection:
+- `line_repository_empty_returns_empty` - Empty repository behavior
+- `line_repository_dream_selection` - Repository construction
+
+### Adding New Tests
+
+1. Add test method in `FloraFaunaGameTests.java`:
+```java
+private static void testMyFeature(GameTestHelper helper) {
+    // Test logic here
+    if (somethingWrong) {
+        throw helper.assertionException("Description of failure");
+    }
+    helper.succeed();  // Must call this if test passes
+}
+```
+
+2. Register the test in the appropriate `register*Tests` method:
+```java
+registerTest(event, env, "my_feature_test", FloraFaunaGameTests::testMyFeature);
+```
+
+### Key Test Utilities
+
+- `helper.makeMockServerPlayerInLevel()` - Create a mock player for testing
+- `helper.succeed()` - Mark test as passed
+- `helper.assertionException("message")` - Create failure exception
+- `helper.getLevel()` - Get the ServerLevel
+- `helper.spawn(EntityType, BlockPos)` - Spawn entities
+
+### Test Files
+
+- `test/FloraFaunaGameTests.java` - Main test class with all tests
+- `test/SimpleGameTestInstance.java` - Custom GameTestInstance wrapper
+- `resources/data/florafauna/structure/empty_1x1x1.nbt` - Minimal structure template

@@ -5,8 +5,7 @@ import net.j40climb.florafauna.common.item.energyhammer.networking.SetMiningSpee
 import net.j40climb.florafauna.common.item.energyhammer.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.energyhammer.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.energyhammer.networking.UpdateEnergyHammerConfigPayload;
-import net.j40climb.florafauna.common.item.symbiote.networking.DashPayload;
-import net.j40climb.florafauna.common.item.symbiote.networking.JumpStatePayload;
+import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
@@ -20,6 +19,5 @@ public class RegisterNetworking {
         registrar.playToServer(UpdateEnergyHammerConfigPayload.TYPE, UpdateEnergyHammerConfigPayload.STREAM_CODEC, UpdateEnergyHammerConfigPayload::onServerReceived);
         registrar.playToServer(DashPayload.TYPE, DashPayload.STREAM_CODEC, DashPayload::onServerReceived);
         registrar.playToServer(PutDownFrenchiePayload.TYPE, PutDownFrenchiePayload.STREAM_CODEC, PutDownFrenchiePayload::onServerReceived);
-        registrar.playToServer(JumpStatePayload.TYPE, JumpStatePayload.STREAM_CODEC, JumpStatePayload::onServerReceived);
     }
 }

@@ -3,7 +3,8 @@ package net.j40climb.florafauna.common;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
-import net.j40climb.florafauna.common.item.symbiote.tracking.SymbioteEventTracker;
+import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
+import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -40,19 +41,6 @@ public class RegisterAttachmentTypes {
             );
 
     /**
-     * Symbiote event tracker for dialogue triggers.
-     * Tracks which first-time events have been triggered.
-     * Persists across bonding/unbonding cycles - the symbiote "remembers" experiences.
-     */
-    public static final Supplier<AttachmentType<SymbioteEventTracker>> SYMBIOTE_EVENT_TRACKER =
-            ATTACHMENT_TYPES.register("symbiote_event_tracker", () ->
-                    AttachmentType.builder(() -> SymbioteEventTracker.DEFAULT)
-                            .serialize(SymbioteEventTracker.CODEC.fieldOf("symbiote_event_tracker"))
-                            .sync(SymbioteEventTracker.STREAM_CODEC)
-                            .build()
-            );
-
-    /**
      * Frenchie frontpack data attachment for players.
      * Stores the NBT data of a carried Frenchie (despawned entity).
      * Used for the frontpack carrying feature - shift-right-click to pickup/put down.
@@ -66,6 +54,32 @@ public class RegisterAttachmentTypes {
                     AttachmentType.builder(() -> FrontpackData.DEFAULT)
                             .serialize(FrontpackData.CODEC.fieldOf("french_frontpack_data"))
                             .sync(FrontpackData.STREAM_CODEC)
+                            .build()
+            );
+
+    /**
+     * Symbiote progress signal tracker for dream/commentary system.
+     * Tracks concept states (SEEN, TOUCHED, STABILIZED, INTEGRATED, NEGLECTED),
+     * dream escalation level, and stall detection metrics.
+     */
+    public static final Supplier<AttachmentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS =
+            ATTACHMENT_TYPES.register("symbiote_progress", () ->
+                    AttachmentType.builder(() -> ProgressSignalTracker.DEFAULT)
+                            .serialize(ProgressSignalTracker.CODEC.fieldOf("symbiote_progress"))
+                            .sync(ProgressSignalTracker.STREAM_CODEC)
+                            .build()
+            );
+
+    /**
+     * Voice cooldown state for tiered commentary system.
+     * Tracks global tier cooldowns, per-category dampening, and post-tier-2 lockout.
+     * Ensures the symbiote voice remains rare and impactful.
+     */
+    public static final Supplier<AttachmentType<VoiceCooldownState>> VOICE_COOLDOWNS =
+            ATTACHMENT_TYPES.register("voice_cooldowns", () ->
+                    AttachmentType.builder(() -> VoiceCooldownState.DEFAULT)
+                            .serialize(VoiceCooldownState.CODEC.fieldOf("voice_cooldowns"))
+                            .sync(VoiceCooldownState.STREAM_CODEC)
                             .build()
             );
 

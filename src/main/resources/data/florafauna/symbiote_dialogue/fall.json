@@ -1,0 +1,52 @@
+{
+  "lines": [
+    {
+      "key": "symbiote.voice.fall.minor_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "fall",
+      "severity_min": 0,
+      "severity_max": 30,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.fall.minor_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "fall",
+      "severity_min": 0,
+      "severity_max": 30,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.fall.moderate_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "fall",
+      "severity_min": 31,
+      "severity_max": 60,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.fall.moderate_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "fall",
+      "severity_min": 31,
+      "severity_max": 60,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.fall.severe_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "fall",
+      "severity_min": 61,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.fall.severe_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "fall",
+      "severity_min": 61,
+      "severity_max": 100,
+      "weight": 100
+    }
+  ]
+}

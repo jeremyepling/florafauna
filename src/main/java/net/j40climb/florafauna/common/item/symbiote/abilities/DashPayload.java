@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.symbiote.networking;
+package net.j40climb.florafauna.common.item.symbiote.abilities;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;

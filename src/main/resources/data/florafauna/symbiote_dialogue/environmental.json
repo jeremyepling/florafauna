@@ -1,0 +1,44 @@
+{
+  "lines": [
+    {
+      "key": "symbiote.voice.environmental.cold_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "environmental",
+      "severity_min": 0,
+      "severity_max": 50,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.environmental.cold_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "environmental",
+      "severity_min": 0,
+      "severity_max": 50,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.environmental.cold_severe",
+      "tier": "TIER_1_AMBIENT",
+      "category": "environmental",
+      "severity_min": 51,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.environmental.drowning_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "environmental",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.voice.environmental.drowning_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "environmental",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    }
+  ]
+}

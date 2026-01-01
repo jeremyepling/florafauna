@@ -1,0 +1,84 @@
+{
+  "lines": [
+    {
+      "key": "symbiote.dream.reflective.general_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_reflective",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.reflective.general_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_reflective",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.reflective.general_3",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_reflective",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.reflective.stalled_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_reflective",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 80
+    },
+    {
+      "key": "symbiote.dream.directional.general_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_directional",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.directional.general_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_directional",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.directional.progress_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_directional",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 80
+    },
+    {
+      "key": "symbiote.dream.anchored.general_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_anchored",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.anchored.general_2",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_anchored",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 100
+    },
+    {
+      "key": "symbiote.dream.anchored.integration_1",
+      "tier": "TIER_1_AMBIENT",
+      "category": "dream_anchored",
+      "severity_min": 0,
+      "severity_max": 100,
+      "weight": 80
+    }
+  ]
+}

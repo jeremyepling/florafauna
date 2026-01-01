@@ -57,14 +57,15 @@ neoForge {
             // Auto-load into world (replace "New World" with your world name from saves folder)
             programArguments.addAll '--quickPlaySingleplayer', 'New World'
 
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Gametests disabled in client/server - use gameTestServer run config instead
+            // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // Gametests disabled - use gameTestServer run config instead
+            // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.

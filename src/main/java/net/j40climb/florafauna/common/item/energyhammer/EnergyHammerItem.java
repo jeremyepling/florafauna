@@ -158,6 +158,7 @@ public class EnergyHammerItem extends Item {
      * @param tooltipComponents consumer to accept tooltip components
      * @param tooltipFlag flags controlling tooltip behavior
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         MiningModeData miningModeData = itemStack.getOrDefault(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);

@@ -26,6 +26,9 @@ public class RegisterDataGenerators {
         generator.addProvider(true, new RegisterBlockTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new RegisterItemTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new RegisterRecipeProvider(packOutput, lookupProvider));
+
+        // Test structures for GameTest
+        generator.addProvider(true, new TestStructureProvider(packOutput, lookupProvider));
     }
 
     public static void gatherServerData(GatherDataEvent.Server event) {

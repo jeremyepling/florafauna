@@ -72,12 +72,57 @@
   "command.florafauna.symbiote.reset_success": "Symbiote reset successfully!",
   "command.florafauna.symbiote.toggle_success": "Toggled %s to %s",
   "command.florafauna.symbiote.invalid_ability": "Invalid ability: %s. Valid abilities: dash, featherFalling, speed",
+  "command.florafauna.symbiote.jump_boost": "Jump Boost",
+  "command.florafauna.symbiote.jump_boost_set": "Jump boost set to %s",
+  "command.florafauna.symbiote.dream_triggered": "Dream triggered...",
+  "command.florafauna.symbiote.dream_forced": "Forced dream at level: %s",
+  "command.florafauna.symbiote.cooldowns_reset": "Voice cooldowns reset",
+  "command.florafauna.symbiote.progress_set": "Set %s to state: %s",
+  "command.florafauna.symbiote.invalid_state": "Invalid state: %s",
 
-  "symbiote.dialogue.bonded": "We are one now. I will protect you, and you will give me purpose.",
-  "symbiote.dialogue.unbonded": "Our bond... is severed. I will await another host.",
-  "symbiote.dialogue.cold_water": "This water is freezing! I can sense your cells struggling. We should get somewhere warm.",
-  "symbiote.dialogue.fall_damage": "That was quite a drop! Next time, let me cushion your fall.",
-  "symbiote.dialogue.drowning": "You need air! Your lungs are failing. Surface now!",
-  "symbiote.dialogue.mob_attack": "We've been attacked! I can feel your pain. Let me help you fight back.",
-  "symbiote.dialogue.sleeping": "Rest now, host. I will keep watch while you regenerate."
+
+  "symbiote.dialogue.bonded": "I was hoping you'd hesitate. You did not. Now it's permanent.",
+  "symbiote.dialogue.unbonded": "The bond is severed. I will… adjust my expectations.",
+  "symbiote.dialogue.cold_water": "This environment is aggressively unwelcoming. You noticed, I assume.",
+  "symbiote.dialogue.fall_damage": "An ambitious relationship with gravity.",
+  "symbiote.dialogue.drowning": "You require oxygen. An old favorite.",
+  "symbiote.dialogue.mob_attack": "You've attracted attention. Unhelpful attention.",
+  "symbiote.dialogue.sleeping": "Rest. I'll remain here, doing nothing visibly productive.",
+
+  "symbiote.voice.environmental.cold_1": "Your warmth is making a quiet exit.",
+  "symbiote.voice.environmental.cold_2": "This temperature disagrees with us.",
+  "symbiote.voice.environmental.cold_severe": "Thermal stability has left the conversation.",
+  "symbiote.voice.environmental.drowning_1": "Air is becoming a limited resource.",
+  "symbiote.voice.environmental.drowning_2": "This strategy has a short timeline.",
+
+  "symbiote.voice.combat.hit_1": "A minor complaint.",
+  "symbiote.voice.combat.hit_2": "Duly noted.",
+  "symbiote.voice.combat.hit_3": "You're developing a pattern.",
+  "symbiote.voice.combat.hurt_1": "That one earned its place.",
+  "symbiote.voice.combat.hurt_2": "Your body is filing objections.",
+  "symbiote.voice.combat.severe_1": "That was not superficial.",
+  "symbiote.voice.combat.severe_2": "We should pretend this was intentional.",
+  "symbiote.voice.combat.first_hit": "Unexpected resistance. How refreshing.",
+
+  "symbiote.voice.fall.minor_1": "Gravity remains very committed.",
+  "symbiote.voice.fall.minor_2": "That could have gone better.",
+  "symbiote.voice.fall.moderate_1": "Ah. Physics again.",
+  "symbiote.voice.fall.moderate_2": "Your structure held. Let’s not celebrate.",
+  "symbiote.voice.fall.severe_1": "That was excessive by most standards.",
+  "symbiote.voice.fall.severe_2": "I would prefer you remain in one piece.",
+
+  "symbiote.voice.bonding.established": "The arrangement is active. I suggest we make it worthwhile.",
+
+  "symbiote.dream.reflective.general_1": "Fragments surface. None seem eager to cooperate.",
+  "symbiote.dream.reflective.general_2": "Something unresolved continues to avoid your attention.",
+  "symbiote.dream.reflective.general_3": "Forward exists. So does confusion.",
+  "symbiote.dream.reflective.stalled_1": "Several processes remain incomplete. They are quietly undermining you.",
+
+  "symbiote.dream.directional.general_1": "You are expanding impressively. Unfortunately, without cohesion.",
+  "symbiote.dream.directional.general_2": "You are searching elsewhere for something already nearby.",
+  "symbiote.dream.directional.progress_1": "Progress tends to favor follow-through.",
+
+  "symbiote.dream.anchored.general_1": "Completion is approaching. You seem hesitant to meet it.",
+  "symbiote.dream.anchored.general_2": "Wholeness is available. It requires effort.",
+  "symbiote.dream.anchored.integration_1": "Integration is possible. The components are present. The connection is conspicuously absent."
 }

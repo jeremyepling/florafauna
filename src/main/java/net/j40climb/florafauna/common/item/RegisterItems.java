@@ -40,6 +40,7 @@ public class RegisterItems {
                             .build()
             )) {
                 // Using an anonymous class to create a tooltip inline instead of using a full class in ModItems
+                @SuppressWarnings("deprecation")
                 @Override
                 public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
                     tooltipComponents.accept(Component.translatable("tooltip.florafauna.tomato"));
