@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class LizardRenderer extends MobRenderer<LizardEntity, LizardRenderState, LizardModel> {
 
@@ -15,11 +15,11 @@ public class LizardRenderer extends MobRenderer<LizardEntity, LizardRenderState,
     }
 
     @Override
-    public ResourceLocation getTextureLocation(LizardRenderState renderState) {
+    public Identifier getTextureLocation(LizardRenderState renderState) {
         if(renderState.isSaddled) {
-            return ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/lizard/lizard_saddled.png");
+            return Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/lizard/lizard_saddled.png");
         } else {
-            return ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/lizard/lizard.png");
+            return Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/entity/lizard/lizard.png");
         }
     }
 

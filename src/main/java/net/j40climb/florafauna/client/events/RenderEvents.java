@@ -8,7 +8,7 @@ import net.j40climb.florafauna.common.block.CopperGolemBarrierBlock;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -55,7 +55,7 @@ public class RenderEvents {
         Vec3 cameraPos = event.getLevelRenderState().cameraRenderState.pos;
 
         BlockPos playerPos = player.blockPosition();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.lines());
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
 
         // Scan a 20-block radius cube around the player
         int radius = 20;

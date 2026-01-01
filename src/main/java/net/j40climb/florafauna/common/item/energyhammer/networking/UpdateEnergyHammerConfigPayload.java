@@ -8,7 +8,7 @@ import net.j40climb.florafauna.common.item.energyhammer.EnergyHammerConfig;
 import net.minecraft.core.Holder;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -23,7 +23,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public record UpdateEnergyHammerConfigPayload(EnergyHammerConfig config) implements CustomPacketPayload {
 
     public static final Type<UpdateEnergyHammerConfigPayload> TYPE = new Type<>(
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "update_energy_hammer_config")
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "update_energy_hammer_config")
     );
 
     public static final StreamCodec<ByteBuf, UpdateEnergyHammerConfigPayload> STREAM_CODEC = StreamCodec.composite(

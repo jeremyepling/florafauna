@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.BlockOutlineRenderState;
 import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.core.BlockPos;
@@ -45,7 +45,7 @@ public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client
                 if (blockPos.equals(targetPos)) {
                     continue; //Let the original event draw this one!
                 }
-                VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.lines());
+                VertexConsumer vertexConsumer = buffer.getBuffer(RenderTypes.lines());
                 renderHitOutline(poseStack, vertexConsumer, player, d0, d1, d2, level, blockPos, level.getBlockState(blockPos));
             }
         }

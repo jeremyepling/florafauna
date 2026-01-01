@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -20,7 +20,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public enum TeleportToSurfacePayload implements CustomPacketPayload {
     INSTANCE;
 
-    public static final Type<TeleportToSurfacePayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "teleport_to_surface_payload"));
+    public static final Type<TeleportToSurfacePayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "teleport_to_surface_payload"));
     public static final StreamCodec<ByteBuf, TeleportToSurfacePayload> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
     public static void onServerReceived(final TeleportToSurfacePayload data, final IPayloadContext context) {

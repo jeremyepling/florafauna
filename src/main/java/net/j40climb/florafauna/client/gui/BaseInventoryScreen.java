@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Base class for screens that display the standard GUI layout but blank.
@@ -15,8 +15,8 @@ import net.minecraft.resources.ResourceLocation;
  */
 public abstract class BaseInventoryScreen extends Screen {
     // Default GUI texture with empty top area
-    protected static final ResourceLocation DEFAULT_GUI_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/base_gui.png");
+    protected static final Identifier DEFAULT_GUI_TEXTURE =
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/base_gui.png");
 
     // Standard Minecraft GUI dimensions
     protected static final int IMAGE_WIDTH = 176;
@@ -32,7 +32,7 @@ public abstract class BaseInventoryScreen extends Screen {
     protected static final int TITLE_Y = 6;
 
     // GUI texture to use (can be overridden by subclass)
-    protected final ResourceLocation guiTexture;
+    protected final Identifier guiTexture;
 
     // GUI position (calculated in init)
     protected int leftPos;
@@ -53,7 +53,7 @@ public abstract class BaseInventoryScreen extends Screen {
      * @param title the screen title
      * @param guiTexture the texture to use (should be 176x166 with standard slot layout)
      */
-    protected BaseInventoryScreen(Component title, ResourceLocation guiTexture) {
+    protected BaseInventoryScreen(Component title, Identifier guiTexture) {
         super(title);
         this.guiTexture = guiTexture;
     }

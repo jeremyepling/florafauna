@@ -6,7 +6,7 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import net.j40climb.florafauna.FloraFauna;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -33,11 +33,11 @@ public class SymbioteDialogueLoader extends SimplePreparableReloadListener<List<
 
         // Find all JSON files in data/*/symbiote_dialogue/
         String path = DIRECTORY;
-        Map<ResourceLocation, Resource> resources = resourceManager.listResources(path,
+        Map<Identifier, Resource> resources = resourceManager.listResources(path,
                 location -> location.getPath().endsWith(".json"));
 
-        for (Map.Entry<ResourceLocation, Resource> entry : resources.entrySet()) {
-            ResourceLocation location = entry.getKey();
+        for (Map.Entry<Identifier, Resource> entry : resources.entrySet()) {
+            Identifier location = entry.getKey();
             Resource resource = entry.getValue();
 
             try (Reader reader = resource.openAsReader()) {
@@ -63,7 +63,7 @@ public class SymbioteDialogueLoader extends SimplePreparableReloadListener<List<
     /**
      * Parse a JSON file that may contain a single entry or a "lines" array
      */
-    private void parseJsonFile(JsonElement json, ResourceLocation source, List<SymbioteDialogueEntry> entries) {
+    private void parseJsonFile(JsonElement json, Identifier source, List<SymbioteDialogueEntry> entries) {
         if (!json.isJsonObject()) {
             LOGGER.warn("Expected JSON object in {}", source);
             return;
@@ -90,7 +90,7 @@ public class SymbioteDialogueLoader extends SimplePreparableReloadListener<List<
     /**
      * Parse a single entry from JSON
      */
-    private void parseEntry(JsonElement json, ResourceLocation source, List<SymbioteDialogueEntry> entries) {
+    private void parseEntry(JsonElement json, Identifier source, List<SymbioteDialogueEntry> entries) {
         var result = SymbioteDialogueEntry.CODEC.parse(JsonOps.INSTANCE, json);
 
         result.resultOrPartial(error ->
@@ -101,7 +101,7 @@ public class SymbioteDialogueLoader extends SimplePreparableReloadListener<List<
     /**
      * Resource location for this reload listener
      */
-    private static final ResourceLocation LISTENER_ID = ResourceLocation.fromNamespaceAndPath(
+    private static final Identifier LISTENER_ID = Identifier.fromNamespaceAndPath(
             FloraFauna.MOD_ID, "symbiote_dialogue"
     );
 

@@ -5,7 +5,7 @@ import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +16,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SpawnLightningPayload(BlockPos targetPos) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<SpawnLightningPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "spawn_lightning_payload"));
+    public static final CustomPacketPayload.Type<SpawnLightningPayload> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "spawn_lightning_payload"));
     public static final StreamCodec<ByteBuf, SpawnLightningPayload> STREAM_CODEC = StreamCodec.composite(
             BlockPos.STREAM_CODEC,
             SpawnLightningPayload::targetPos,

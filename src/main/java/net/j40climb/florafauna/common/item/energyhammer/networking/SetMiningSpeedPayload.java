@@ -7,7 +7,7 @@ import net.j40climb.florafauna.common.item.energyhammer.MiningSpeed;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -21,7 +21,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record SetMiningSpeedPayload(MiningSpeed miningSpeed) implements CustomPacketPayload {
 
-    public static final CustomPacketPayload.Type<SetMiningSpeedPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "set_mining_speed_payload"));
+    public static final CustomPacketPayload.Type<SetMiningSpeedPayload> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "set_mining_speed_payload"));
     public static final StreamCodec<ByteBuf, SetMiningSpeedPayload> STREAM_CODEC = StreamCodec.composite(
             MiningSpeed.STREAM_CODEC,
             SetMiningSpeedPayload::miningSpeed,

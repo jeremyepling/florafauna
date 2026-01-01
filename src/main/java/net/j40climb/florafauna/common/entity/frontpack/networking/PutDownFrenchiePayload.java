@@ -8,7 +8,7 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -27,7 +27,7 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
     INSTANCE;
 
     public static final Type<PutDownFrenchiePayload> TYPE =
-        new Type<>(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "put_down_frenchie"));
+        new Type<>(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "put_down_frenchie"));
 
     public static final StreamCodec<ByteBuf, PutDownFrenchiePayload> STREAM_CODEC =
         StreamCodec.unit(INSTANCE);

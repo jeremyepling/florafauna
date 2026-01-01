@@ -4,13 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieVariant;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.HashMap;
@@ -27,12 +27,12 @@ public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
     private final FrontpackModel frontpackModel;
 
     // Variant-specific textures for the entire frontpack model
-    private static final ResourceLocation FAWN_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID,
+    private static final Identifier FAWN_TEXTURE =
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID,
                     "textures/entity/frenchie/frenchie_fawn_texture.png");
 
-    private static final ResourceLocation BRINDLE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID,
+    private static final Identifier BRINDLE_TEXTURE =
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID,
                     "textures/entity/frenchie/frenchie_brindle_texture.png");
 
     public FrontpackLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet modelSet) {
@@ -63,7 +63,7 @@ public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
         }
 
         // Select the appropriate texture based on the Frenchie variant
-        ResourceLocation texture = frontpackState.variant == FrenchieVariant.BRINDLE
+        Identifier texture = frontpackState.variant == FrenchieVariant.BRINDLE
                 ? BRINDLE_TEXTURE
                 : FAWN_TEXTURE; // Default to fawn for any other variant
 

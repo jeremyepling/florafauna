@@ -1,6 +1,6 @@
 # Flora Fauna Mod
 
-NeoForge 1.21.10 Minecraft mod.
+NeoForge 1.21.11 Minecraft mod.
 
 ## Build & Run
 
@@ -108,7 +108,7 @@ src/main/java/net/j40climb/florafauna/
 
 The decompiled Minecraft and NeoForge source code is available in:
 ```
-C:\Users\jerem\IdeaProjects\florafauna\build\moddev\artifacts\neoforge-21.10.64-merged.jar
+C:\Users\jerem\IdeaProjects\florafauna\build\moddev\artifacts\neoforge-21.11.13-beta-merged.jar
 ```
 
 This JAR contains:
@@ -124,10 +124,10 @@ This JAR contains:
 **Example usage:**
 ```bash
 # List all entity classes
-jar tf build/moddev/artifacts/neoforge-21.10.64-merged.jar | grep "net/minecraft/world/entity/"
+jar tf build/moddev/artifacts/neoforge-21.11.13-beta-merged.jar | grep "net/minecraft/world/entity/"
 
 # Extract a specific class for reference
-jar xf build/moddev/artifacts/neoforge-21.10.64-merged.jar net/minecraft/world/entity/Entity.class
+jar xf build/moddev/artifacts/neoforge-21.11.13-beta-merged.jar net/minecraft/world/entity/Entity.class
 ```
 
 ## Block Registration

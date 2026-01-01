@@ -7,13 +7,13 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 public class GeckoModel extends EntityModel<GeckoRenderState> {
 
     public static final ModelLayerLocation GECKO =
-            new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "gecko"), "gecko"); // is path is folder under textures/entity?
+            new ModelLayerLocation(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "gecko"), "gecko"); // is path is folder under textures/entity?
 
     private final ModelPart root;
     private final ModelPart head;

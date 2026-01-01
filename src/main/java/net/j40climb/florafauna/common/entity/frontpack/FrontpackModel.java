@@ -8,7 +8,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.AnimationState;
 
 /**
@@ -19,7 +19,7 @@ import net.minecraft.world.entity.AnimationState;
 public class FrontpackModel extends EntityModel<AvatarRenderState> {
 
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "french_frontpack"), "main");
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "french_frontpack"), "main");
 
     private final KeyframeAnimation idlingAnimation;
     private final AnimationState idleAnimationState = new AnimationState();

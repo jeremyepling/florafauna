@@ -48,7 +48,7 @@ public class RegisterModelProvider extends ModelProvider {
                 ),
                 // Defines some settings to use during the rendering process
                 new ClientItem.Properties(
-                    true, false
+                    true, false, 1.0F
                 )
             )
         );

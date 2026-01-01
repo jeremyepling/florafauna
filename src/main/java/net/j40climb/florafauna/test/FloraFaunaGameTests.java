@@ -12,9 +12,10 @@ import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.item.symbiote.voice.VoiceTier;
 import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GlobalTestReporter;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Rotation;
 import net.neoforged.bus.api.IEventBus;
@@ -40,12 +41,15 @@ public class FloraFaunaGameTests {
         modEventBus.addListener(FloraFaunaGameTests::registerTests);
     }
 
-    private static final ResourceLocation EMPTY_STRUCTURE = ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "empty_1x1x1");
+    private static final Identifier EMPTY_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "empty_1x1x1");
 
     private static void registerTests(RegisterGameTestsEvent event) {
+        // Install our colored test reporter for better visibility
+        GlobalTestReporter.replaceWith(new ColoredTestReporter());
+
         // Register a minimal test environment
         Holder<TestEnvironmentDefinition> defaultEnv = event.registerEnvironment(
-                ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "default"),
+                Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "default"),
                 new TestEnvironmentDefinition.AllOf()
         );
 
@@ -343,7 +347,7 @@ public class FloraFaunaGameTests {
             String name,
             Consumer<GameTestHelper> testFunction
     ) {
-        ResourceLocation testId = ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, name);
+        Identifier testId = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name);
 
         TestData<Holder<TestEnvironmentDefinition>> testData = new TestData<>(
                 env,

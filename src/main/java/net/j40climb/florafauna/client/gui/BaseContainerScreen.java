@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 
@@ -18,8 +18,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
  */
 public abstract class BaseContainerScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
     // Default GUI texture with empty top area and standard inventory/hotbar slots
-    protected static final ResourceLocation DEFAULT_GUI_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/inventory_hotbar_base_gui.png");
+    protected static final Identifier DEFAULT_GUI_TEXTURE =
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/inventory_hotbar_base_gui.png");
 
     // Standard Minecraft GUI dimensions (inherited from AbstractContainerScreen as imageWidth/imageHeight)
     // These constants are provided for reference and use in subclasses
@@ -40,7 +40,7 @@ public abstract class BaseContainerScreen<T extends AbstractContainerMenu> exten
     public static final int TITLE_Y = 6;
 
     // GUI texture to use
-    protected final ResourceLocation guiTexture;
+    protected final Identifier guiTexture;
 
     /**
      * Creates a container screen with the default GUI texture.
@@ -54,7 +54,7 @@ public abstract class BaseContainerScreen<T extends AbstractContainerMenu> exten
      *
      * @param guiTexture the texture to use (should be 176x166 with standard slot layout)
      */
-    protected BaseContainerScreen(T menu, Inventory playerInventory, Component title, ResourceLocation guiTexture) {
+    protected BaseContainerScreen(T menu, Inventory playerInventory, Component title, Identifier guiTexture) {
         super(menu, playerInventory, title);
         this.guiTexture = guiTexture;
     }
