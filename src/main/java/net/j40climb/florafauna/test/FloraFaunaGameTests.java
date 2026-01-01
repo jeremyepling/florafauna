@@ -48,7 +48,7 @@ public class FloraFaunaGameTests {
         GlobalTestReporter.replaceWith(new ColoredTestReporter());
 
         // Register a minimal test environment
-        Holder<TestEnvironmentDefinition> defaultEnv = event.registerEnvironment(
+        Holder<TestEnvironmentDefinition<?>> defaultEnv = event.registerEnvironment(
                 Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "default"),
                 new TestEnvironmentDefinition.AllOf()
         );
@@ -62,7 +62,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Voice Cooldown Tests ====================
 
-    private static void registerVoiceCooldownTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerVoiceCooldownTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "voice_cooldown_initial_state", FloraFaunaGameTests::testVoiceCooldownInitialState);
         registerTest(event, env, "voice_cooldown_tier1_can_speak", FloraFaunaGameTests::testVoiceCooldownTier1CanSpeak);
         registerTest(event, env, "voice_cooldown_tier1_blocked_during_cooldown", FloraFaunaGameTests::testVoiceCooldownTier1BlockedDuringCooldown);
@@ -152,7 +152,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Progress Signal Tests ====================
 
-    private static void registerProgressSignalTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerProgressSignalTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "progress_signal_initial_state", FloraFaunaGameTests::testProgressSignalInitialState);
         registerTest(event, env, "progress_signal_state_transitions", FloraFaunaGameTests::testProgressSignalStateTransitions);
         registerTest(event, env, "progress_signal_stall_detection", FloraFaunaGameTests::testProgressSignalStallDetection);
@@ -243,7 +243,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Chaos Suppressor Tests ====================
 
-    private static void registerChaosSuppressorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerChaosSuppressorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "chaos_suppressor_initial_state", FloraFaunaGameTests::testChaosSuppressorInitialState);
         registerTest(event, env, "chaos_suppressor_threshold", FloraFaunaGameTests::testChaosSuppressorThreshold);
     }
@@ -284,7 +284,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Dialogue Repository Tests ====================
 
-    private static void registerDialogueRepositoryTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerDialogueRepositoryTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "dialogue_repository_empty_returns_empty", FloraFaunaGameTests::testDialogueRepositoryEmptyReturnsEmpty);
         registerTest(event, env, "dialogue_repository_dream_selection", FloraFaunaGameTests::testDialogueRepositoryDreamSelection);
     }
@@ -343,13 +343,13 @@ public class FloraFaunaGameTests {
      */
     private static void registerTest(
             RegisterGameTestsEvent event,
-            Holder<TestEnvironmentDefinition> env,
+            Holder<TestEnvironmentDefinition<?>> env,
             String name,
             Consumer<GameTestHelper> testFunction
     ) {
         Identifier testId = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name);
 
-        TestData<Holder<TestEnvironmentDefinition>> testData = new TestData<>(
+        TestData<Holder<TestEnvironmentDefinition<?>>> testData = new TestData<>(
                 env,
                 EMPTY_STRUCTURE,
                 100, // maxTicks

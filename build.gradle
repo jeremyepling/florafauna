@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.120'
+    id 'net.neoforged.moddev' version '2.0.136'
     id 'idea'
 }
 
@@ -25,17 +25,14 @@ base {
     archivesName = mod_id
 }
 
-// Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Mojang ships Java 25 to end users starting in 26.1, so mods should target Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
 
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
+    // Parchment removed - Mojang now provides parameter names directly (no obfuscation in 26.1+)
 
     // This line is optional. Access Transformers are automatically detected
     // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
@@ -50,7 +47,7 @@ neoForge {
             programArguments.addAll '--width', '1920', '--height', '1080'
 
             // Auto-load into world (replace "New World" with your world name from saves folder)
-            programArguments.addAll '--quickPlaySingleplayer', 'New World'
+            programArguments.addAll '--quickPlaySingleplayer', '26_1'
 
             // Gametests disabled in client/server - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id

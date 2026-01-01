@@ -1,6 +1,6 @@
 # Flora Fauna Mod
 
-NeoForge 1.21.11 Minecraft mod.
+NeoForge 26.1 Snapshot Minecraft mod (Minecraft 26.1-snapshot-1).
 
 ## Build & Run
 
@@ -108,7 +108,7 @@ src/main/java/net/j40climb/florafauna/
 
 The decompiled Minecraft and NeoForge source code is available in:
 ```
-C:\Users\jerem\IdeaProjects\florafauna\build\moddev\artifacts\neoforge-21.11.13-beta-merged.jar
+C:\Users\jerem\IdeaProjects\florafauna\build\moddev\artifacts\minecraft-patched-26.1.0.0-alpha.3+snapshot-1-merged.jar
 ```
 
 This JAR contains:
@@ -124,10 +124,10 @@ This JAR contains:
 **Example usage:**
 ```bash
 # List all entity classes
-jar tf build/moddev/artifacts/neoforge-21.11.13-beta-merged.jar | grep "net/minecraft/world/entity/"
+jar tf build/moddev/artifacts/minecraft-patched-26.1.0.0-alpha.3+snapshot-1-merged.jar | grep "net/minecraft/world/entity/"
 
 # Extract a specific class for reference
-jar xf build/moddev/artifacts/neoforge-21.11.13-beta-merged.jar net/minecraft/world/entity/Entity.class
+jar xf build/moddev/artifacts/minecraft-patched-26.1.0.0-alpha.3+snapshot-1-merged.jar net/minecraft/world/entity/Entity.class
 ```
 
 ## Block Registration
