@@ -103,10 +103,12 @@ public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client
                     f2 /= f3;
                     pConsumer.addVertex(pose.pose(), (float) (p_234280_ + pX), (float) (p_234281_ + pY), (float) (p_234282_ + pZ))
                             .setColor(pRed, pGreen, pBlue, pAlpha)
-                            .setNormal(pose, f, f1, f2);
+                            .setNormal(pose, f, f1, f2)
+                            .setLineWidth(2.0f);
                     pConsumer.addVertex(pose.pose(), (float) (p_234283_ + pX), (float) (p_234284_ + pY), (float) (p_234285_ + pZ))
                             .setColor(pRed, pGreen, pBlue, pAlpha)
-                            .setNormal(pose, f, f1, f2);
+                            .setNormal(pose, f, f1, f2)
+                            .setLineWidth(2.0f);
                 }
         );
     }

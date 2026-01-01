@@ -39,6 +39,8 @@
   "mode.florafauna.directional": "Directional Mining",
   "mode.florafauna.tunnel_up": "Tunnel Up",
   "mode.florafauna.tunnel_down": "Tunnel Down",
+  "mode.florafauna.stairs_up": "Stairs Up",
+  "mode.florafauna.stairs_down": "Stairs Down",
 
   "block.florafauna.teal_moss_block": "Teal Moss Block",
   "block.florafauna.containment_chamber": "Symbiote Containment Chamber",

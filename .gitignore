@@ -31,3 +31,4 @@ repo
 /.claude/settings.local.json
 /.claude/blockbench-config.json
 /net/
+/build_output.txt

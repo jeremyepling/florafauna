@@ -17,7 +17,9 @@ public enum MiningShape implements StringRepresentable {
     FLAT_3X3(1, "flat_3x3", 1),
     FLAT_5X5(2, "flat_5x5", 2),
     FLAT_7X7(3, "flat_7x7", 3),
-    SHAPELESS(4, "shapeless", 1);
+    SHAPELESS(4, "shapeless", 1),
+    STAIRS_UP(5, "stairs_up", 0),
+    STAIRS_DOWN(6, "stairs_down", 0);
 
     private static final IntFunction<MiningShape> BY_ID = ByIdMap.continuous(
             p_348119_ -> p_348119_.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO
