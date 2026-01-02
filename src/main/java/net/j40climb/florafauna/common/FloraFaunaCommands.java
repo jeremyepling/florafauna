@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.client.DebugOverlay;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteBindingHelper;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteState;
@@ -24,6 +26,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -39,7 +45,7 @@ import java.util.Map;
  *   /florafauna symbiote reset - Reset the symbiote completely
  *   /florafauna symbiote toggle <ability> - Toggle an ability
  *   /florafauna symbiote setJumpBoost <0-4> - Set jump boost level
- *   /florafauna symbiote dream - Trigger a dream insight
+ *   /florafauna symbiote dreamo - Trigger a dream insight
  *   /florafauna symbiote dream force <1-3> - Force a dream at a specific level
  *   /florafauna symbiote cooldown reset - Reset all voice cooldowns
  *   /florafauna symbiote progress - Show progress signals
@@ -466,5 +472,56 @@ public class FloraFaunaCommands {
         }
         String dimName = dim.identifier().getPath();
         return String.format("%d, %d, %d (%s)", pos.getX(), pos.getY(), pos.getZ(), dimName);
+    }
+
+    // ==================== Client Commands ====================
+
+    /**
+     * Client-side commands that only affect client state.
+     * Registered via event subscriber for Dist.CLIENT.
+     *
+     * Usage:
+     *   /florafauna debug - Toggle debug overlay
+     *   /florafauna debug on - Enable debug overlay
+     *   /florafauna debug off - Disable debug overlay
+     */
+    @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+    public static class ClientCommands {
+
+        @SubscribeEvent
+        public static void registerClientCommands(RegisterClientCommandsEvent event) {
+            CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
+
+            dispatcher.register(
+                    Commands.literal("florafauna")
+                            .then(Commands.literal("debug")
+                                    .executes(context -> toggleDebug(context.getSource()))
+                                    .then(Commands.literal("on")
+                                            .executes(context -> setDebug(context.getSource(), true)))
+                                    .then(Commands.literal("off")
+                                            .executes(context -> setDebug(context.getSource(), false))))
+            );
+        }
+
+        private static int toggleDebug(CommandSourceStack source) {
+            DebugOverlay.toggle();
+            boolean newState = DebugOverlay.isEnabled();
+
+            source.sendSuccess(() -> Component.translatable(
+                    newState ? "command.florafauna.symbiote.debug_enabled" : "command.florafauna.symbiote.debug_disabled"
+            ).withStyle(style -> style.withColor(newState ? 0x2ECC71 : 0xE74C3C)), false);
+
+            return 1;
+        }
+
+        private static int setDebug(CommandSourceStack source, boolean enabled) {
+            DebugOverlay.setEnabled(enabled);
+
+            source.sendSuccess(() -> Component.translatable(
+                    enabled ? "command.florafauna.symbiote.debug_enabled" : "command.florafauna.symbiote.debug_disabled"
+            ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
+
+            return 1;
+        }
     }
 }

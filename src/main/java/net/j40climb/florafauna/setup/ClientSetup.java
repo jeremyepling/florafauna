@@ -2,7 +2,7 @@ package net.j40climb.florafauna.setup;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.SymbioteDebugOverlay;
+import net.j40climb.florafauna.client.DebugOverlay;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
@@ -117,6 +117,6 @@ public class ClientSetup {
      * Register GUI layers (HUD overlays).
      */
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
-        event.registerAboveAll(SYMBIOTE_DEBUG_LAYER_ID, (GuiLayer) new SymbioteDebugOverlay());
+        event.registerAboveAll(SYMBIOTE_DEBUG_LAYER_ID, (GuiLayer) new DebugOverlay());
     }
 }

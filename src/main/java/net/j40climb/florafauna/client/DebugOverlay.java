@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
  * Debug overlay that displays symbiote state information on screen.
  * Toggle with /symbiote_debug command.
  */
-public class SymbioteDebugOverlay implements GuiLayer {
+public class DebugOverlay implements GuiLayer {
     public static final Identifier LAYER_ID = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_debug");
 
     private static boolean enabled = false;
@@ -41,7 +41,7 @@ public class SymbioteDebugOverlay implements GuiLayer {
      * Registers the GUI layer. Called from FloraFauna mod event bus.
      */
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
-        event.registerAboveAll(LAYER_ID, new SymbioteDebugOverlay());
+        event.registerAboveAll(LAYER_ID, new DebugOverlay());
     }
 
     @Override
