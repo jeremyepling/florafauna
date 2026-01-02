@@ -3,7 +3,7 @@ package net.j40climb.florafauna.common.block.cocoonchamber;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload.CocoonAction;
-import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

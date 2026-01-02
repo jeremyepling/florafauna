@@ -44,7 +44,7 @@ src/main/java/net/j40climb/florafauna/
 │   └── ClientSetup.java         # Client setup (renderers, screens, key bindings)
 ├── client/                      # Client-only code
 │   ├── ClientUtils.java         # Client utilities
-│   ├── SymbioteDebugOverlay.java # Debug HUD overlay
+│   ├── DebugOverlay.java        # Debug HUD overlay
 │   ├── events/                  # Client event handlers
 │   │   ├── KeyInputEvents.java  # Input event handlers
 │   │   └── RenderEvents.java    # Rendering event handlers
@@ -53,7 +53,7 @@ src/main/java/net/j40climb/florafauna/
 │       ├── BaseInventoryScreen.java
 │       └── InventoryRenderHelper.java
 ├── common/                      # Shared/server code
-│   ├── ModCommands.java         # /symbiote command
+│   ├── FloraFaunaCommands.java  # /florafauna command tree
 │   ├── block/                   # Block features
 │   │   ├── CopperGolemBarrierBlock.java
 │   │   ├── containmentchamber/  # Feature directory
@@ -68,8 +68,17 @@ src/main/java/net/j40climb/florafauna/
 │   │   └── frontpack/           # Frontpack carrying system
 │   ├── item/                    # Item features
 │   │   ├── abilities/           # Shared tool abilities
-│   │   ├── hammer/              # Hammer tool
-│   │   └── symbiote/            # Symbiote system
+│   │   └── hammer/              # Hammer tool
+│   ├── symbiote/                # Symbiote system (full player feature)
+│   │   ├── item/                # DormantSymbioteItem, SymbioteStewItem
+│   │   ├── data/                # SymbioteData, PlayerSymbioteData, SymbioteState
+│   │   ├── binding/             # SymbioteBindingHelper, SymbiotePreparedEffect
+│   │   ├── abilities/           # DashPayload, SymbioteAbilityEvents
+│   │   ├── voice/               # Voice system (cooldowns, tiers)
+│   │   ├── observation/         # Event observation & routing
+│   │   ├── progress/            # Progress state machine
+│   │   ├── dream/               # Dream insight system
+│   │   └── dialogue/            # Data-driven dialogue
 │   ├── datagen/                 # Data generation providers
 │   │   ├── FloraFaunaDataGenerators.java
 │   │   ├── FloraFaunaModelProvider.java
@@ -219,47 +228,55 @@ hammer/
 - Teleport to surface (M key)
 - Data components: MINING_MODE_DATA, MINING_SPEED, HAMMER_CONFIG
 
-### Symbiote Item
+### Symbiote System
 
-The Symbiote is a complex consumable item with AI-driven behavior, located in `common/item/symbiote/`:
+The Symbiote is a full player system with AI-driven behavior, located in `common/symbiote/`:
 
 **Structure:**
 ```
 symbiote/
-├── SymbioteItem.java          # Main item class (consumable)
-├── SymbioteData.java          # Bonding status, tier, energy, health
-├── SymbioteCommand.java       # /symbiote command
-├── abilities/                 # Dash ability
-│   └── DashPayload.java
-├── dialogue/                  # Dialogue system (5 files)
-│   ├── DialogueEntry.java
-│   ├── DialogueLoader.java
-│   ├── DialogueRepository.java
-│   ├── SelectionContext.java
-│   └── DialogueEvents.java
-├── dream/                     # Dream system (3 files)
-│   ├── DreamContext.java
-│   ├── DreamInsightEngine.java
-│   └── DreamLevel.java
-├── observation/               # Observation tracking (4 files)
-│   ├── ObservationArbiter.java
-│   ├── ChaosSuppressor.java
-│   ├── ObservationCategory.java
-│   └── ObservationEvents.java
-├── progress/                  # Progress tracking (4 files)
-│   ├── ProgressSignalTracker.java
-│   ├── ProgressSignalUpdater.java
-│   ├── ConceptSignal.java
-│   └── SignalState.java
-└── voice/                     # Voice cooldowns (3 files)
-    ├── SymbioteVoiceService.java
-    ├── VoiceCooldownState.java
-    └── VoiceTier.java
+├── item/                      # Item classes
+│   ├── DormantSymbioteItem.java   # Dormant symbiote for binding
+│   └── SymbioteStewItem.java      # Consumable to become bindable
+├── data/                      # Data structures
+│   ├── SymbioteData.java          # Item data component
+│   ├── PlayerSymbioteData.java    # Player attachment
+│   └── SymbioteState.java         # State enum (UNBOUND, BONDED, etc.)
+├── binding/                   # Binding logic
+│   ├── SymbioteBindingHelper.java # Bind/unbind operations
+│   ├── SymbiotePreparedEffect.java# Mob effect
+│   └── SymbioteEffectEvents.java  # Effect event handlers
+├── abilities/                 # Player abilities
+│   ├── DashPayload.java           # Network packet
+│   └── SymbioteAbilityEvents.java # Ability event handlers
+├── voice/                     # Voice output system
+│   ├── SymbioteVoiceService.java  # Cooldown enforcement
+│   ├── VoiceCooldownState.java    # Cooldown tracking
+│   └── VoiceTier.java             # Tier enum
+├── observation/               # Event observation & routing
+│   ├── ObservationArbiter.java    # Routes events to responses
+│   ├── ObservationCategory.java   # Category enum
+│   ├── ObservationEvents.java     # Event handlers
+│   └── ChaosSuppressor.java       # Damage-based suppression
+├── progress/                  # Progress state machine
+│   ├── ProgressSignalTracker.java # Main tracker
+│   ├── ProgressSignalUpdater.java # State transitions
+│   ├── ConceptSignal.java         # Single concept
+│   └── SignalState.java           # State enum
+├── dream/                     # Dream insight system
+│   ├── DreamInsightEngine.java    # Dream processing
+│   ├── DreamLevel.java            # Level enum
+│   └── DreamContext.java          # Context data
+└── dialogue/                  # Data-driven dialogue
+    ├── SymbioteDialogueRepository.java
+    ├── SymbioteDialogueEntry.java
+    ├── SymbioteDialogueLoader.java
+    ├── DialogueSelectionContext.java
+    └── SymbioteDialogueEvents.java
 ```
 
 **Features:**
-- Consumable item (2-second drink animation)
-- Bonds to player on consumption
+- Binding via Cocoon Chamber (consume stew, then bind item)
 - Voice cooldown tiers (Tier 1: 5min, Tier 2: 30min)
 - Dream escalation levels
 - Progress signal tracking

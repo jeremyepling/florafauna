@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.client;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;

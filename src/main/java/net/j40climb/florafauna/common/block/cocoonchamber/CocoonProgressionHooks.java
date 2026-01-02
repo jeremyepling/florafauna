@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.cocoonchamber;
 
-import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
-import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
+import net.j40climb.florafauna.common.symbiote.observation.ObservationArbiter;
+import net.j40climb.florafauna.common.symbiote.observation.ObservationCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 

@@ -9,8 +9,8 @@ import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchi
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
-import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueLoader;
+import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueLoader;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;

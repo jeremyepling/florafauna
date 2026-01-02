@@ -1,15 +1,15 @@
 package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueEntry;
-import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueRepository;
-import net.j40climb.florafauna.common.item.symbiote.observation.ChaosSuppressor;
-import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
-import net.j40climb.florafauna.common.item.symbiote.progress.ConceptSignal;
-import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
-import net.j40climb.florafauna.common.item.symbiote.progress.SignalState;
-import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
-import net.j40climb.florafauna.common.item.symbiote.voice.VoiceTier;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
+import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
+import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
+import net.j40climb.florafauna.common.symbiote.observation.ObservationCategory;
+import net.j40climb.florafauna.common.symbiote.progress.ConceptSignal;
+import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
+import net.j40climb.florafauna.common.symbiote.progress.SignalState;
+import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
+import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
 import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GlobalTestReporter;

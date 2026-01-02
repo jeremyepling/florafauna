@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.mixin;
 
-import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteState;
+import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;

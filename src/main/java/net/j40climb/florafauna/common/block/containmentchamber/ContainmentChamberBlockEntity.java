@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
-import net.j40climb.florafauna.common.item.symbiote.DormantSymbioteItem;
+import net.j40climb.florafauna.common.symbiote.item.DormantSymbioteItem;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
