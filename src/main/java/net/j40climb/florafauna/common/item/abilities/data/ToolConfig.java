@@ -92,4 +92,8 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
         };
         return new ToolConfig(fortune, silkTouch, prev);
     }
+
+    public String getMiningSppedString() {
+        return "Mining Speed: " + this.miningSpeed().name();
+    }
 }

@@ -29,7 +29,7 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
             currentShapeIndex = 0;
         } else currentShapeIndex++;
         MiningShape miningShape = MiningShape.getShapeByID(currentShapeIndex);
-        return new MiningModeData(miningShape, miningShape.getRadius(), 64);
+        return new MiningModeData(miningShape, miningShape.getRadius(), this.maxBlocksToBreak());
     }
 
     public String getMiningModeString() {

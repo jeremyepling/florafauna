@@ -52,7 +52,7 @@ public class HammerItem extends Item {
     public HammerItem(Properties properties) {
         super(removeEnchantable(properties)
                 // Tool ability components (composable - these enable the abilities)
-                .component(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
+                .component(RegisterDataComponentTypes.MULTI_BLOCK_MINING, MiningModeData.DEFAULT)
                 .component(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT)
                 .component(RegisterDataComponentTypes.LIGHTNING_ABILITY, Unit.INSTANCE)
                 .component(RegisterDataComponentTypes.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
@@ -102,13 +102,13 @@ public class HammerItem extends Item {
 
                 // Go to next shape
                 hammerItemStack.update(
-                        RegisterDataComponentTypes.MINING_MODE_DATA,
+                        RegisterDataComponentTypes.MULTI_BLOCK_MINING,
                         MiningModeData.DEFAULT,
                         MiningModeData::getNextMode
                 );
 
                 // Output the new shape and default was set via Update so a get() instead of getOrDefault()
-                MiningModeData currentMiningMode = hammerItemStack.get(RegisterDataComponentTypes.MINING_MODE_DATA);
+                MiningModeData currentMiningMode = hammerItemStack.get(RegisterDataComponentTypes.MULTI_BLOCK_MINING);
                 player.displayClientMessage(Component.literal(currentMiningMode.getMiningModeString()), true);
             }
         }
@@ -141,8 +141,10 @@ public class HammerItem extends Item {
     @SuppressWarnings("deprecation")
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        MiningModeData miningModeData = itemStack.getOrDefault(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT);
+        MiningModeData miningModeData = itemStack.getOrDefault(RegisterDataComponentTypes.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
         tooltipComponents.accept(Component.literal(miningModeData.getMiningModeString()));
+        ToolConfig toolConfig = itemStack.getOrDefault(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT);
+        tooltipComponents.accept(Component.literal(toolConfig.getMiningSppedString()));
         super.appendHoverText(itemStack, context, tooltipDisplay, tooltipComponents, tooltipFlag);
     }
 

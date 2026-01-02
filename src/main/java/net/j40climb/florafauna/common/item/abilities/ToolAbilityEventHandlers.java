@@ -4,6 +4,9 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockBreaker;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockOutlineRenderer;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockVisualFeedback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -25,7 +28,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 public class ToolAbilityEventHandlers {
     @SubscribeEvent
     public static void extractBlockOutlineRenderStateEvent(ExtractBlockOutlineRenderStateEvent event) {
-        event.addCustomRenderer(new MiningModeBlockOutlineRenderer());
+        event.addCustomRenderer(new MultiBlockOutlineRenderer());
     }
 
     @SubscribeEvent
@@ -39,7 +42,7 @@ public class ToolAbilityEventHandlers {
         // It's on the server and the action isn't restricted, like Spectator mode
         if (player instanceof ServerPlayer serverPlayer &&
                 !serverPlayer.blockActionRestricted(level, initialBlockPos, type)) {
-            boolean cancelEvent = MiningModeBlockInteractions.breakWithMiningMode(mainHandItem, initialBlockPos, serverPlayer, level);
+            boolean cancelEvent = MultiBlockBreaker.breakBlocks(mainHandItem, initialBlockPos, serverPlayer, level);
             if (cancelEvent) {
                 // This is needed to not delete the stairs that were placed
                 event.setCanceled(true);
@@ -51,9 +54,9 @@ public class ToolAbilityEventHandlers {
     public static void LeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
         ItemStack itemStack = event.getItemStack();
 
-        // Component-based check - works with any item that has MINING_MODE_DATA
-        if (itemStack.has(RegisterDataComponentTypes.MINING_MODE_DATA)) {
-            MiningModeBlockInteractions.doExtraCrumblings(event);
+        // Component-based check - works with any item that has MULTI_BLOCK_MINING
+        if (itemStack.has(RegisterDataComponentTypes.MULTI_BLOCK_MINING)) {
+            MultiBlockVisualFeedback.processLeftClickBlock(event);
         }
     }
 
