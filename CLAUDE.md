@@ -71,12 +71,12 @@ src/main/java/net/j40climb/florafauna/
 │   │   ├── hammer/              # Hammer tool
 │   │   └── symbiote/            # Symbiote system
 │   ├── datagen/                 # Data generation providers
-│   │   ├── RegisterDataGenerators.java
-│   │   ├── RegisterModelProvider.java
-│   │   ├── RegisterBlockTagsProvider.java
-│   │   ├── RegisterItemTagsProvider.java
-│   │   ├── RegisterBlockLootTableProvider.java
-│   │   ├── RegisterRecipeProvider.java
+│   │   ├── FloraFaunaDataGenerators.java
+│   │   ├── FloraFaunaModelProvider.java
+│   │   ├── FloraFaunaBlockTagsProvider.java
+│   │   ├── FloraFaunaItemTagsProvider.java
+│   │   ├── FloraFaunaBlockLootTableProvider.java
+│   │   ├── FloraFaunaRecipeProvider.java
 │   │   └── TestStructureProvider.java
 │   └── util/                    # Utility classes
 └── test/                        # GameTest framework
@@ -134,10 +134,10 @@ public static final DeferredBlock<Block> TEAL_MOSS_BLOCK = registerBlock("teal_m
 - `ModRegistry.TEAL_MOSS_BLOCK` - Get DeferredBlock (for creative tabs, recipes, etc.)
 
 ### Wood Blocks (Enum-driven)
-Wood blocks use a special pattern where the `ModWoodType` enum handles registration automatically.
+Wood blocks use a special pattern where the `WoodType` enum handles registration automatically.
 
 **To add a new wood type:**
-1. Add enum entry in `common/wood/ModWoodType.java`:
+1. Add enum entry in `common/block/wood/WoodType.java`:
    ```java
    DRIFTWOOD("driftwood"),
    MAPLE("maple");  // Just add this!
@@ -145,8 +145,8 @@ Wood blocks use a special pattern where the `ModWoodType` enum handles registrat
 2. Add lang entries in `en_us.json`
 3. Add textures (see Textures section)
 
-**Files involved** (`common/wood/`):
-- `ModWoodType.java` - Enum that triggers registration (add new wood types here)
+**Files involved** (`common/block/wood/`):
+- `WoodType.java` - Enum that triggers registration (add new wood types here)
 - `WoodBlockSet.java` - Record holding all blocks for a wood type
 - `WoodBlockRegistration.java` - Creates all wood block variants
 - `WoodStripping.java` - Event handler for axe stripping behavior
@@ -156,17 +156,17 @@ Wood blocks use a special pattern where the `ModWoodType` enum handles registrat
 
 **Access wood blocks:**
 ```java
-ModWoodType.DRIFTWOOD.getBlockSet().log()         // DeferredBlock
-ModWoodType.DRIFTWOOD.getBlockSet().log().get()   // Block instance
-ModWoodType.DRIFTWOOD.getBlockSet().planks()      // Planks block
-ModWoodType.DRIFTWOOD.getBlockSet().slab()        // Slab block
-ModWoodType.DRIFTWOOD.getBlockSet().fence()       // Fence block
-ModWoodType.DRIFTWOOD.getBlockSet().fenceGate()   // Fence Gate block
+WoodType.DRIFTWOOD.getBlockSet().log()         // DeferredBlock
+WoodType.DRIFTWOOD.getBlockSet().log().get()   // Block instance
+WoodType.DRIFTWOOD.getBlockSet().planks()      // Planks block
+WoodType.DRIFTWOOD.getBlockSet().slab()        // Slab block
+WoodType.DRIFTWOOD.getBlockSet().fence()       // Fence block
+WoodType.DRIFTWOOD.getBlockSet().fenceGate()   // Fence Gate block
 ```
 
 **Iterate all wood types:**
 ```java
-for (ModWoodType woodType : ModWoodType.values()) {
+for (WoodType woodType : WoodType.values()) {
     WoodBlockSet wood = woodType.getBlockSet();
     // wood.log(), wood.planks(), wood.slab(), etc.
 }
@@ -329,7 +329,7 @@ All data components and attachments are registered in `setup/ModRegistry.java`.
 
 ## Creative Tabs
 
-Creative tabs are defined in `setup/ModSetup.java`. Wood blocks iterate via `ModWoodType.values()`.
+Creative tabs are defined in `setup/ModSetup.java`. Wood blocks iterate via `WoodType.values()`.
 
 ## Registration Order
 
@@ -371,18 +371,18 @@ Central registration: `setup/ModSetup.java` (registerNetworking method)
 Run `./gradlew runData` to generate JSON files.
 
 **Data providers** (in `common/datagen/`):
-- `RegisterModelProvider.java` - Block/item models (wood blocks iterate via enum)
-- `RegisterBlockTagsProvider.java` - Block tags (logs, planks, mineable)
-- `RegisterItemTagsProvider.java` - Item tags
-- `RegisterBlockLootTableProvider.java` - Loot tables (drop self)
-- `RegisterRecipeProvider.java` - Crafting recipes (planks from logs, wood from logs)
+- `FloraFaunaModelProvider.java` - Block/item models (wood blocks iterate via enum)
+- `FloraFaunaBlockTagsProvider.java` - Block tags (logs, planks, mineable)
+- `FloraFaunaItemTagsProvider.java` - Item tags
+- `FloraFaunaBlockLootTableProvider.java` - Loot tables (drop self)
+- `FloraFaunaRecipeProvider.java` - Crafting recipes (planks from logs, wood from logs)
 - `TestStructureProvider.java` - Test structure generation for GameTest
-- `RegisterDataGenerators.java` - Event handlers for data generation
+- `FloraFaunaDataGenerators.java` - Event handlers for data generation
 
 Data providers are registered in `FloraFauna.java` via:
 ```java
-modEventBus.addListener(RegisterDataGenerators::gatherClientData);
-modEventBus.addListener(RegisterDataGenerators::gatherServerData);
+modEventBus.addListener(FloraFaunaDataGenerators::gatherClientData);
+modEventBus.addListener(FloraFaunaDataGenerators::gatherServerData);
 ```
 
 ## Assets & Resources
