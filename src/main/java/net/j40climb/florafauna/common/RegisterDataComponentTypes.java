@@ -1,13 +1,15 @@
 package net.j40climb.florafauna.common;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.item.hammer.data.MiningModeData;
-import net.j40climb.florafauna.common.item.hammer.data.MiningSpeed;
-import net.j40climb.florafauna.common.item.hammer.menu.HammerConfig;
+import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Unit;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -16,10 +18,14 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class RegisterDataComponentTypes {
     public static final DeferredRegister.DataComponents DATA_COMPONENT_TYPES = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FloraFauna.MOD_ID);
 
-    //// Energy hammer data components Data components to register
+    // Tool ability data components (composable - can be added to any item)
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MiningSpeed>> MINING_SPEED = DATA_COMPONENT_TYPES.registerComponentType("mining_speed", builder -> builder.persistent(MiningSpeed.CODEC).networkSynchronized(MiningSpeed.STREAM_CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MiningModeData>> MINING_MODE_DATA = DATA_COMPONENT_TYPES.registerComponentType("mining_mode", builder -> builder.persistent(MiningModeData.CODEC).networkSynchronized(MiningModeData.STREAM_CODEC));
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<HammerConfig>> HAMMER_CONFIG = DATA_COMPONENT_TYPES.registerComponentType("hammer_config", builder -> builder.persistent(HammerConfig.CODEC).networkSynchronized(HammerConfig.STREAM_CODEC));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ToolConfig>> TOOL_CONFIG = DATA_COMPONENT_TYPES.registerComponentType("tool_config", builder -> builder.persistent(ToolConfig.CODEC).networkSynchronized(ToolConfig.STREAM_CODEC));
+
+    // Marker components for abilities (Unit type - presence = has ability)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Unit>> LIGHTNING_ABILITY = DATA_COMPONENT_TYPES.registerComponentType("lightning_ability", builder -> builder.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE)));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Unit>> TELEPORT_SURFACE_ABILITY = DATA_COMPONENT_TYPES.registerComponentType("teleport_surface_ability", builder -> builder.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE)));
 
     // Symbiote item data components
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<SymbioteData>> SYMBIOTE_DATA = DATA_COMPONENT_TYPES.registerComponentType("symbiote_data", builder -> builder.persistent(SymbioteData.CODEC).networkSynchronized(SymbioteData.STREAM_CODEC));

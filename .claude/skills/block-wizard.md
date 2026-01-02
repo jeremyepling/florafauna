@@ -61,7 +61,7 @@ Run `./gradlew runData` to generate JSON files.
 **Simple Block:** Just one block (e.g., Teal Moss Block)
 **Block Set:** Multiple related blocks (e.g., stairs, slab, wall from same base)
 **Block Entity:** Functional block with tile entity (e.g., Containment Chamber)
-**Wood Set:** Use the Wood system (separate workflow - see ModWoodType)
+**Wood Set:** Use the Wood system in `common/wood/` (see ModWoodType enum - adds 8 blocks automatically)
 
 ## Phase 3: Register Block
 

@@ -41,6 +41,8 @@ Before asking the user for a Blockbench export path, ALWAYS first read the confi
      - Follow the naming convention: `{EntityName}Model.java`
    - **Animation Files (.json or .java):** Copy to feature directory
      - Entity animations: `common/entity/{entity_name}/{EntityName}Animations.java`
+   - **RenderState Files:** Create if not existing
+     - Entity render state: `common/entity/{entity_name}/{EntityName}RenderState.java`
    - **Texture Files (.png):** Copy to assets directory
      - Entity textures: `assets/florafauna/textures/entity/{entity_name}/`
      - Block textures: `assets/florafauna/textures/block/`
@@ -52,6 +54,7 @@ Before asking the user for a Blockbench export path, ALWAYS first read the confi
      - Create or update entity class in feature directory
      - Add registration entry to `RegisterEntities.java`
      - Add renderer registration to `FloraFauna.ClientModEvents.onClientSetup()`
+     - Add layer definition registration to `RegisterEntityEvents.onRegisterLayerDefinitions()`
      - Create spawn egg item in `RegisterItems.java`
      - Add RenderState class if needed
      - Add Renderer class that references the model and animations

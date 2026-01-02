@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.hammer.data;
+package net.j40climb.florafauna.common.item.abilities.data;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
@@ -31,19 +31,12 @@ public enum MiningSpeed implements StringRepresentable {
         this.id = id;
     }
 
-    // Static map for lookup by id
     private static final Map<Integer, MiningSpeed> speedByID = new HashMap<>();
 
-    // Static block to populate the map
     static {
         for (MiningSpeed shape : values()) {
             speedByID.put(shape.id, shape);
         }
-    }
-
-    // TODO I think I can delete this
-    public int getId() {
-        return this.id;
     }
 
     public int id() {

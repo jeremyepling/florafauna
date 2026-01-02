@@ -1,58 +1,55 @@
-package net.j40climb.florafauna.common.item.hammer.menu;
+package net.j40climb.florafauna.common.item.abilities.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import net.j40climb.florafauna.common.item.hammer.data.MiningSpeed;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Configuration data for the Energy Hammer tool.
+ * Configuration data for tools with configurable enchantments and mining speed.
  * Stores settings for fortune, silk touch, and mining speed.
  * Note: fortune and silkTouch are mutually exclusive - exactly one must be true at all times.
  */
-public record HammerConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed) {
+public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed) {
 
-    public static final HammerConfig DEFAULT = new HammerConfig(true, false, MiningSpeed.EFFICIENCY);
+    public static final ToolConfig DEFAULT = new ToolConfig(true, false, MiningSpeed.EFFICIENCY);
 
     /**
      * Ensures exactly one of fortune or silkTouch is enabled.
      */
-    public HammerConfig {
+    public ToolConfig {
         if (fortune == silkTouch) {
             throw new IllegalArgumentException("Exactly one of Fortune or Silk Touch must be enabled");
         }
     }
 
-    public static final Codec<HammerConfig> CODEC = RecordCodecBuilder.create(instance ->
+    public static final Codec<ToolConfig> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.BOOL.fieldOf("fortune").forGetter(HammerConfig::fortune),
-                    Codec.BOOL.fieldOf("silkTouch").forGetter(HammerConfig::silkTouch),
-                    MiningSpeed.CODEC.fieldOf("miningSpeed").forGetter(HammerConfig::miningSpeed)
-            ).apply(instance, HammerConfig::new)
+                    Codec.BOOL.fieldOf("fortune").forGetter(ToolConfig::fortune),
+                    Codec.BOOL.fieldOf("silkTouch").forGetter(ToolConfig::silkTouch),
+                    MiningSpeed.CODEC.fieldOf("miningSpeed").forGetter(ToolConfig::miningSpeed)
+            ).apply(instance, ToolConfig::new)
     );
 
-    public static final StreamCodec<ByteBuf, HammerConfig> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<ByteBuf, ToolConfig> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL,
-            HammerConfig::fortune,
+            ToolConfig::fortune,
             ByteBufCodecs.BOOL,
-            HammerConfig::silkTouch,
+            ToolConfig::silkTouch,
             MiningSpeed.STREAM_CODEC,
-            HammerConfig::miningSpeed,
-            HammerConfig::new
+            ToolConfig::miningSpeed,
+            ToolConfig::new
     );
 
     /**
-     * Toggles between Fortune 3 <-> Silk Touch
+     * Toggles between Fortune 3 and Silk Touch
      */
-    public HammerConfig withToggledEnchantment() {
+    public ToolConfig withToggledEnchantment() {
         if (fortune) {
-            // Fortune -> Silk Touch
-            return new HammerConfig(false, true, miningSpeed);
+            return new ToolConfig(false, true, miningSpeed);
         } else {
-            // Silk Touch -> Fortune
-            return new HammerConfig(true, false, miningSpeed);
+            return new ToolConfig(true, false, miningSpeed);
         }
     }
 
@@ -68,31 +65,31 @@ public record HammerConfig(boolean fortune, boolean silkTouch, MiningSpeed minin
     /**
      * Creates a new config with the specified mining speed.
      */
-    public HammerConfig withMiningSpeed(MiningSpeed speed) {
-        return new HammerConfig(fortune, silkTouch, speed);
+    public ToolConfig withMiningSpeed(MiningSpeed speed) {
+        return new ToolConfig(fortune, silkTouch, speed);
     }
 
     /**
      * Cycles to the next mining speed value.
      */
-    public HammerConfig withNextMiningSpeed() {
+    public ToolConfig withNextMiningSpeed() {
         MiningSpeed next = switch (miningSpeed) {
             case STANDARD -> MiningSpeed.EFFICIENCY;
             case EFFICIENCY -> MiningSpeed.INSTABREAK;
             case INSTABREAK -> MiningSpeed.STANDARD;
         };
-        return new HammerConfig(fortune, silkTouch, next);
+        return new ToolConfig(fortune, silkTouch, next);
     }
 
     /**
      * Cycles to the previous mining speed value.
      */
-    public HammerConfig withPreviousMiningSpeed() {
+    public ToolConfig withPreviousMiningSpeed() {
         MiningSpeed prev = switch (miningSpeed) {
             case STANDARD -> MiningSpeed.INSTABREAK;
             case EFFICIENCY -> MiningSpeed.STANDARD;
             case INSTABREAK -> MiningSpeed.EFFICIENCY;
         };
-        return new HammerConfig(fortune, silkTouch, prev);
+        return new ToolConfig(fortune, silkTouch, prev);
     }
 }

@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.hammer.abilities;
+package net.j40climb.florafauna.common.item.abilities.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
@@ -24,21 +24,18 @@ public record SpawnLightningPayload(BlockPos targetPos) implements CustomPacketP
     );
 
     public static void onServerReceived(final SpawnLightningPayload data, final IPayloadContext context) {
-        // Do something with the data, on the main thread
         Level level = context.player().level();
         spawnLightningBolt(level, data.targetPos());
     }
 
     public static void spawnLightningBolt(Level level, BlockPos targetPos) {
         if (!(level instanceof ServerLevel serverLevel)) {
-            return; // Only proceed on the server side
+            return;
         }
 
-        // Create the lightning bolt
         LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
         if (lightningBolt != null) {
-            lightningBolt.setPos(Vec3.atBottomCenterOf(targetPos)); // TODO not sure if this is correct. had to update for 1.21.5
-            // Summon the lightning bolt
+            lightningBolt.setPos(Vec3.atBottomCenterOf(targetPos));
             serverLevel.addFreshEntity(lightningBolt);
         }
     }

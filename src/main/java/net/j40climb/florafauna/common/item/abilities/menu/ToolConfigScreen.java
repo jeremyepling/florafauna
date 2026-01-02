@@ -1,8 +1,9 @@
-package net.j40climb.florafauna.common.item.hammer.menu;
+package net.j40climb.florafauna.common.item.abilities.menu;
 
 import net.j40climb.florafauna.client.gui.BaseInventoryScreen;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.hammer.abilities.UpdateHammerConfigPayload;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -12,28 +13,28 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
- * Configuration screen for the Energy Hammer.
- * Allows players to configure fortune, silk touch, and mining speed settings.
+ * Configuration screen for tools with configurable enchantments and mining speed.
+ * Works with any item that has the TOOL_CONFIG data component.
  */
-public class HammerConfigScreen extends BaseInventoryScreen {
+public class ToolConfigScreen extends BaseInventoryScreen {
     private static final int BUTTON_WIDTH = 100;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_SPACING = 24;
 
-    private HammerConfig config;
+    private ToolConfig config;
     private Button enchantmentButton;
     private Button miningSpeedButton;
 
-    public HammerConfigScreen() {
-        super(Component.translatable("gui.florafauna.hammer_config.title"));
+    public ToolConfigScreen() {
+        super(Component.translatable("gui.florafauna.tool_config.title"));
 
         // Get the current config from the player's held item
         Player player = Minecraft.getInstance().player;
         if (player != null) {
             ItemStack heldItem = player.getMainHandItem();
-            this.config = heldItem.getOrDefault(RegisterDataComponentTypes.HAMMER_CONFIG, HammerConfig.DEFAULT);
+            this.config = heldItem.getOrDefault(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT);
         } else {
-            this.config = HammerConfig.DEFAULT;
+            this.config = ToolConfig.DEFAULT;
         }
     }
 
@@ -64,8 +65,8 @@ public class HammerConfigScreen extends BaseInventoryScreen {
         int startY = getContentY() + 2;
 
         // Draw static labels to the left of buttons
-        guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.hammer_config.enchantment"), labelX, startY + 6, 0x404040);
-        guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.hammer_config.mining_speed"), labelX, startY + BUTTON_SPACING + 6, 0x404040);
+        guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.tool_config.enchantment"), labelX, startY + 6, 0x404040);
+        guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.tool_config.mining_speed"), labelX, startY + BUTTON_SPACING + 6, 0x404040);
     }
 
     private void toggleEnchantment() {
@@ -87,21 +88,21 @@ public class HammerConfigScreen extends BaseInventoryScreen {
 
     private Component getEnchantmentName() {
         if (config.fortune()) {
-            return Component.translatable("gui.florafauna.hammer_config.enchantment.fortune");
+            return Component.translatable("gui.florafauna.tool_config.enchantment.fortune");
         } else {
-            return Component.translatable("gui.florafauna.hammer_config.enchantment.silk_touch");
+            return Component.translatable("gui.florafauna.tool_config.enchantment.silk_touch");
         }
     }
 
     private Component getMiningSpeedName() {
         return switch (config.miningSpeed()) {
-            case STANDARD -> Component.translatable("gui.florafauna.hammer_config.speed.standard");
-            case EFFICIENCY -> Component.translatable("gui.florafauna.hammer_config.speed.efficiency");
-            case INSTABREAK -> Component.translatable("gui.florafauna.hammer_config.speed.instabreak");
+            case STANDARD -> Component.translatable("gui.florafauna.tool_config.speed.standard");
+            case EFFICIENCY -> Component.translatable("gui.florafauna.tool_config.speed.efficiency");
+            case INSTABREAK -> Component.translatable("gui.florafauna.tool_config.speed.instabreak");
         };
     }
 
     private void sendConfigUpdate() {
-        ClientPacketDistributor.sendToServer(new UpdateHammerConfigPayload(config));
+        ClientPacketDistributor.sendToServer(new UpdateToolConfigPayload(config));
     }
 }

@@ -1,10 +1,9 @@
-package net.j40climb.florafauna.common.item.hammer.abilities;
+package net.j40climb.florafauna.common.item.abilities.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.RegisterItems;
-import net.j40climb.florafauna.common.item.hammer.menu.HammerConfig;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.minecraft.core.Holder;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -17,36 +16,37 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * Network packet to update the Energy Hammer configuration.
+ * Network packet to update tool configuration.
  * Sent from client to server when the player changes config settings.
+ * Works with any item that has the TOOL_CONFIG data component.
  */
-public record UpdateHammerConfigPayload(HammerConfig config) implements CustomPacketPayload {
+public record UpdateToolConfigPayload(ToolConfig config) implements CustomPacketPayload {
 
-    public static final Type<UpdateHammerConfigPayload> TYPE = new Type<>(
-            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "update_hammer_config")
+    public static final Type<UpdateToolConfigPayload> TYPE = new Type<>(
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "update_tool_config")
     );
 
-    public static final StreamCodec<ByteBuf, UpdateHammerConfigPayload> STREAM_CODEC = StreamCodec.composite(
-            HammerConfig.STREAM_CODEC,
-            UpdateHammerConfigPayload::config,
-            UpdateHammerConfigPayload::new
+    public static final StreamCodec<ByteBuf, UpdateToolConfigPayload> STREAM_CODEC = StreamCodec.composite(
+            ToolConfig.STREAM_CODEC,
+            UpdateToolConfigPayload::config,
+            UpdateToolConfigPayload::new
     );
 
-    public static void onServerReceived(final UpdateHammerConfigPayload data, final IPayloadContext context) {
+    public static void onServerReceived(final UpdateToolConfigPayload data, final IPayloadContext context) {
         Player player = context.player();
         ItemStack heldItem = player.getMainHandItem();
 
-        // Verify the player is holding an hammer
-        if (heldItem.is(RegisterItems.HAMMER.get())) {
+        // Check if the held item has the TOOL_CONFIG component (component-based check)
+        if (heldItem.has(RegisterDataComponentTypes.TOOL_CONFIG)) {
             // Update the config on the held item
-            heldItem.set(RegisterDataComponentTypes.HAMMER_CONFIG, data.config);
+            heldItem.set(RegisterDataComponentTypes.TOOL_CONFIG, data.config);
 
             // Apply enchantments based on config
             applyEnchantments(heldItem, data.config, player);
         }
     }
 
-    private static void applyEnchantments(ItemStack itemStack, HammerConfig config, Player player) {
+    private static void applyEnchantments(ItemStack itemStack, ToolConfig config, Player player) {
         Holder<Enchantment> silkTouchHolder = player.level().registryAccess().holderOrThrow(Enchantments.SILK_TOUCH);
         Holder<Enchantment> fortuneHolder = player.level().registryAccess().holderOrThrow(Enchantments.FORTUNE);
 

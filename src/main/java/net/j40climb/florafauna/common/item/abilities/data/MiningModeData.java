@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.hammer.data;
+package net.j40climb.florafauna.common.item.abilities.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,8 +10,8 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
     public static final Codec<MiningModeData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
                     MiningShape.CODEC.fieldOf("shape").forGetter(MiningModeData::shape),
-                    Codec.INT.fieldOf("radius").forGetter(MiningModeData::radius), // radius of mineable area
-                    Codec.INT.fieldOf("maxBlocksToBreak").forGetter(MiningModeData::maxBlocksToBreak) // not used yet
+                    Codec.INT.fieldOf("radius").forGetter(MiningModeData::radius),
+                    Codec.INT.fieldOf("maxBlocksToBreak").forGetter(MiningModeData::maxBlocksToBreak)
             ).apply(builder, MiningModeData::new));
 
     public static final StreamCodec<ByteBuf, MiningModeData> STREAM_CODEC = StreamCodec.composite(
@@ -21,7 +21,6 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
             MiningModeData::new
     );
 
-    // Default mining mode instead of a contstructor like the Neoforge example https://docs.neoforged.net/docs/1.21.1/items/datacomponents#adding-default-data-components-to-items
     public static final MiningModeData DEFAULT = new MiningModeData(MiningShape.SINGLE, 0, 64);
 
     public MiningModeData getNextMode() {
@@ -30,7 +29,7 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
             currentShapeIndex = 0;
         } else currentShapeIndex++;
         MiningShape miningShape = MiningShape.getShapeByID(currentShapeIndex);
-        return new MiningModeData(miningShape,  miningShape.getRadius(), 64);
+        return new MiningModeData(miningShape, miningShape.getRadius(), 64);
     }
 
     public String getMiningModeString() {

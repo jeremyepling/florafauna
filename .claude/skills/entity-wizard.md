@@ -228,7 +228,9 @@ event.enqueueWork(() -> {
 });
 ```
 
-And in `ClientModEvents.onRegisterLayerDefinitions()`:
+**Update:** `src/main/java/net/j40climb/florafauna/common/entity/RegisterEntityEvents.java`
+
+In `onRegisterLayerDefinitions()`:
 ```java
 event.registerLayerDefinition({EntityName}Model.LAYER_LOCATION, {EntityName}Model::createBodyLayer);
 ```

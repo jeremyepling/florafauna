@@ -1,9 +1,8 @@
 package net.j40climb.florafauna.common.item.hammer;
 
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.hammer.data.MiningModeData;
-import net.j40climb.florafauna.common.item.hammer.data.MiningSpeed;
-import net.j40climb.florafauna.common.item.hammer.menu.HammerConfig;
+import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -19,7 +18,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,11 +32,12 @@ public class HammerItem extends Item {
      * The tool material configuration for the Energy Hammer.
      * Note: Durability and enchantability are unused since the hammer is unbreakable and not enchantable.
      * Attack damage and speed are set via .tool() in RegisterItems.
+     * Mining speed is controlled by ToolAbilityEventHandlers via the TOOL_CONFIG component.
      */
     public static final ToolMaterial HAMMER_MATERIAL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, // What can't be mined (netherite tier)
             1, // Durability (unused - item is unbreakable)
-            1.0F, // Base mining speed (overridden by getDestroySpeed)
+            1.0F, // Base mining speed (modified by ToolAbilityEventHandlers)
             0.0F, // Attack damage bonus (base damage set in .tool())
             1, // Enchantability (minimum required, but ENCHANTABLE component is removed)
             ItemTags.NETHERITE_TOOL_MATERIALS // Repair ingredient (unused - item is unbreakable)
@@ -52,8 +51,11 @@ public class HammerItem extends Item {
      */
     public HammerItem(Properties properties) {
         super(removeEnchantable(properties)
+                // Tool ability components (composable - these enable the abilities)
                 .component(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
-                .component(RegisterDataComponentTypes.HAMMER_CONFIG, HammerConfig.DEFAULT)
+                .component(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT)
+                .component(RegisterDataComponentTypes.LIGHTNING_ABILITY, Unit.INSTANCE)
+                .component(RegisterDataComponentTypes.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
                 .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
         );
     }
@@ -125,31 +127,6 @@ public class HammerItem extends Item {
     public boolean isCorrectToolForDrops(ItemStack itemStack, BlockState blockState) {
         // TODO what is the downside of just returning true?
         return (blockState.is(BlockTags.MINEABLE_WITH_PICKAXE) || blockState.is(BlockTags.MINEABLE_WITH_SHOVEL) || blockState.is(BlockTags.MINEABLE_WITH_AXE) || blockState.is(BlockTags.MINEABLE_WITH_HOE) || blockState.is(BlockTags.SWORD_EFFICIENT));
-    }
-
-    /**
-     * Gets the mining speed for this hammer based on its current mining speed setting.
-     * The speed varies depending on the mining speed data component:
-     * <ul>
-     *   <li>STANDARD: Uses default speed for mineable blocks, 1.0F otherwise</li>
-     *   <li>EFFICIENCY: Returns 35.0F for fast mining</li>
-     *   <li>INSTABREAK: Returns 100.0F for instant breaking</li>
-     * </ul>
-     *
-     * @param itemStack the hammer item stack
-     * @param blockState the block state being mined
-     * @return the mining speed multiplier
-     * @throws IllegalStateException if the mining speed component has an unexpected value
-     */
-    @Override
-    public float getDestroySpeed(ItemStack itemStack, BlockState blockState) {
-        HammerConfig config = itemStack.getOrDefault(RegisterDataComponentTypes.HAMMER_CONFIG, HammerConfig.DEFAULT);
-        return switch (config.miningSpeed()) {
-            case MiningSpeed.STANDARD ->
-                    (blockState.is(BlockTags.MINEABLE_WITH_PICKAXE) || blockState.is(BlockTags.MINEABLE_WITH_SHOVEL) || blockState.is(BlockTags.MINEABLE_WITH_AXE)) ? super.getDestroySpeed(itemStack, Blocks.COBBLESTONE.defaultBlockState()) : 1.0F;
-            case MiningSpeed.EFFICIENCY -> 35.0F;
-            case MiningSpeed.INSTABREAK -> 100.0F;
-        };
     }
 
     /**

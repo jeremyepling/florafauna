@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.hammer;
+package net.j40climb.florafauna.common.item.abilities;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -38,20 +38,19 @@ public class MiningModeBlockOutlineRenderer implements CustomBlockOutlineRendere
         double d1 = vec3.y();
         double d2 = vec3.z();
 
-        // Mining mode outline rendering
-        if (player.getMainHandItem().get(RegisterDataComponentTypes.MINING_MODE_DATA) != null) {
+        // Mining mode outline rendering - checks for component, not item type
+        if (player.getMainHandItem().has(RegisterDataComponentTypes.MINING_MODE_DATA)) {
             Set<BlockPos> breakBlockPositions = MiningModeBlockInteractions.getBlocksToBeBrokenWithMiningMode(targetPos, player);
 
             for (BlockPos blockPos : breakBlockPositions) {
                 if (blockPos.equals(targetPos)) {
-                    continue; //Let the original event draw this one!
+                    continue;
                 }
                 VertexConsumer vertexConsumer = buffer.getBuffer(RenderTypes.lines());
                 renderHitOutline(poseStack, vertexConsumer, player, d0, d1, d2, level, blockPos, level.getBlockState(blockPos));
             }
         }
 
-        // Always let minecraft draw outline and just draw over it
         return false;
     }
 
