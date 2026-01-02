@@ -31,4 +31,6 @@ repo
 /.claude/settings.local.json
 /.claude/blockbench-config.json
 /net/
+/assets/
 /build_output.txt
+/temp_jar_list.txt
