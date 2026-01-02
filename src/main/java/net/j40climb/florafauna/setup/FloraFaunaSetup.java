@@ -73,7 +73,7 @@ public class FloraFaunaSetup {
     // ==================== NETWORKING ====================
 
     /**
-     * Registers all network payloads.
+     * Registerhs all network payloads.
      */
     public static void registerNetworking(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");

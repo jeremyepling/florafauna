@@ -2,6 +2,14 @@
 
 NeoForge 1.21.11 Minecraft mod.
 
+## Environment Note
+
+This project runs on **Windows with Git Bash**. Prefer built-in Claude tools over bash equivalents:
+- Use **Edit tool** instead of `sed`
+- Use **Grep tool** instead of `grep`/`rg`
+- Use **Read tool** instead of `cat`/`head`/`tail`
+- Keep bash commands simple - avoid complex pipes and multi-expression sed
+
 ## Build & Run
 
 ### Command Line (Gradle)
