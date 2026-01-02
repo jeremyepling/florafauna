@@ -18,18 +18,18 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.j40climb.florafauna.client.ClientUtils.raycastFromPlayer;
 
 public class BlockBreakUtils {
     private static final Set<BlockPos> HARVESTED_BLOCKS = new HashSet<>();
+    private static final Set<BlockPos> POTENTIAL_STAIR_BLOCKS = new HashSet<>();
     public static BlockPos destroyPos = BlockPos.ZERO;
     public static int gameTicksMining = 0;
+    private static final int STAIR_STEPS = 5;
+    private static final int STAIR_HEIGHT = 5;
 
     public static void doExtraCrumblings(PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
@@ -94,8 +94,8 @@ public class BlockBreakUtils {
                         BlockState blockState = player.level().getBlockState(traceResult.getBlockPos());
                         positions = findSurroundingSameBlocksShapeless(player, blockState, initalBlockPos, miningModeData.maxBlocksToBreak(), miningModeData.radius());
                     }
-                    case MiningShape.STAIRS_UP -> positions = findStairPatternBlocks(player, initalBlockPos, traceResult, true);
-                    case MiningShape.STAIRS_DOWN -> positions = findStairPatternBlocks(player, initalBlockPos, traceResult, false);
+                    case MiningShape.TUNNEL_UP -> positions = findTunnelPatternBlocks(player, initalBlockPos, traceResult, true);
+                    case MiningShape.TUNNEL_DOWN -> positions = findTunnelPatternBlocks(player, initalBlockPos, traceResult, false);
                 }
             case HitResult.Type.ENTITY:
                 // Handle entity hit
@@ -180,14 +180,76 @@ public class BlockBreakUtils {
         return foundBlocks;
     }
 
+    public record TunnelLogic(boolean buildTunnel, int yOffset) {};
+
+    public static TunnelLogic getTunnelYLogic(BlockHitResult hitResult, boolean ascending) {
+        boolean hitFromTop = hitResult.getDirection() == Direction.UP;
+        boolean hitFromBottom = hitResult.getDirection() == Direction.DOWN;
+        boolean hitFromSide = !hitFromTop && !hitFromBottom;
+
+        if (ascending) {
+            if (hitFromSide) return new TunnelLogic(true, -1);
+            if (hitFromTop || hitFromBottom) return new TunnelLogic(false, 0);
+        }
+        // If descending tunnel
+        else {
+            if (hitFromSide) return new TunnelLogic(true, -2);
+            if (hitFromTop) return new TunnelLogic(true, 0);
+            if (hitFromBottom) return new TunnelLogic(false, 0);
+        }
+        return new TunnelLogic(false, 0);
+    }
+
+    /**
+     * Finds blocks to break for a stair pattern (either ascending or descending).
+     * Creates a 1-wide, 4-tall opening that ascends/descends by 1 block for each step forward.
+     * The opening is 1 below and 2 above the targeted block.
+     *
+     * @param player The player mining
+     * @param initialBlockPos The starting block position
+     * @param hitResult The raycast hit result
+     * @param ascending True for stairs going up, false for stairs going down
+     * @return Set of block positions to break
+     */
+    private static Set<BlockPos> findTunnelPatternBlocks(Player player, BlockPos initialBlockPos, BlockHitResult hitResult, boolean ascending) {
+        Set<BlockPos> foundBlocks = new HashSet<>();
+        Direction horizontalDir = getHorizontalMiningDirection(player, hitResult);
+
+        // fast fail if a tunnel can't be mined from this face
+        if (!getTunnelYLogic(hitResult, ascending).buildTunnel) return Collections.singleton(initialBlockPos);
+
+        for (int step = 0; step < STAIR_STEPS; step++) {
+            int yFlip = ascending ? step : -step;
+            int yOffset = getTunnelYLogic(hitResult, ascending).yOffset;
+            int floorY = initialBlockPos.getY() + yOffset + yFlip;
+
+            BlockPos stepBase = initialBlockPos.relative(horizontalDir, step);
+            stepBase = new BlockPos(stepBase.getX(), floorY, stepBase.getZ());
+
+            for (int h = 0; h < STAIR_HEIGHT; h++) {
+                BlockPos blockToBreak = stepBase.above(h);
+                if (isValidToMine(player, blockToBreak)) {
+                    foundBlocks.add(blockToBreak);
+                }
+            }
+        }
+
+        return foundBlocks;
+    }
+
     private static boolean isValidToMine(Player player, BlockPos blockPosToCheck) {
         BlockState blockStateToCheck = player.level().getBlockState(blockPosToCheck);
         // Are the surrounding blocks mineable
         return player.getMainHandItem().isCorrectToolForDrops(blockStateToCheck) && !blockStateToCheck.isAir();
     }
 
-    private static final int STAIR_STEPS = 5;
-    private static final int STAIR_HEIGHT = 4;
+    private static int generatePosHash(BlockPos blockPos) {
+        return (31 * 31 * blockPos.getX()) + (31 * blockPos.getY()) + blockPos.getZ(); //For now this is probably good enough, will add more randomness if needed
+    }
+
+    private static void sendDestroyBlockProgress(int pBreakerId, BlockPos pPos, int pProgress, ServerPlayer serverPlayer) {
+        serverPlayer.connection.send(new ClientboundBlockDestructionPacket(pBreakerId, pPos, pProgress));
+    }
 
     /**
      * Gets the horizontal direction for stair mining based on the hit face or player look direction.
@@ -204,101 +266,29 @@ public class BlockBreakUtils {
     }
 
     /**
-     * Finds blocks to break for a stair pattern (either ascending or descending).
-     * Creates a 1-wide, 4-tall opening that ascends/descends by 1 block for each step forward.
-     * The opening is 1 below and 2 above the targeted block.
-     *
-     * @param player The player mining
-     * @param initialBlockPos The starting block position
-     * @param hitResult The raycast hit result
-     * @param ascending True for stairs going up, false for stairs going down
-     * @return Set of block positions to break
+     * Breaks blocks according to the mining mode and places stairs if applicable.
+     * @return true if the event should be canceled (stair placed at initialBlockPos)
      */
-    private static Set<BlockPos> findStairPatternBlocks(Player player, BlockPos initialBlockPos, BlockHitResult hitResult, boolean ascending) {
-        Set<BlockPos> foundBlocks = new HashSet<>();
-        Direction horizontalDir = getHorizontalMiningDirection(player, hitResult);
-
-        int baseY = initialBlockPos.getY();
-        BlockPos currentBase = initialBlockPos;
-
-        for (int step = 0; step < STAIR_STEPS; step++) {
-            int yOffset = ascending ? step : -step;
-            // Shift down by 1: floor is 1 below the targeted block
-            int floorY = baseY + yOffset - 1;
-
-            BlockPos stepBase = currentBase.relative(horizontalDir, step);
-            stepBase = new BlockPos(stepBase.getX(), floorY, stepBase.getZ());
-
-            for (int h = 0; h < STAIR_HEIGHT; h++) {
-                BlockPos blockToBreak = stepBase.above(h);
-                if (isValidToMine(player, blockToBreak)) {
-                    foundBlocks.add(blockToBreak);
-                }
-            }
-        }
-
-        return foundBlocks;
-    }
-
-    /**
-     * Places cobblestone stairs at the floor positions of a stair pattern.
-     * Should be called after blocks have been broken.
-     *
-     * @param level The world level
-     * @param initialBlockPos The starting block position
-     * @param horizontalDir The direction to place stairs (computed before blocks were broken)
-     * @param ascending True for stairs going up, false for stairs going down
-     */
-    public static void placeStairsForPattern(Level level, BlockPos initialBlockPos, Direction horizontalDir, boolean ascending) {
-        int baseY = initialBlockPos.getY();
-        BlockPos currentBase = initialBlockPos;
-
-        // Stairs up: face direction of travel; Stairs down: face opposite
-        Direction stairFacing = ascending ? horizontalDir : horizontalDir.getOpposite();
-
-        for (int step = 0; step < STAIR_STEPS; step++) {
-            int yOffset = ascending ? step : -step;
-            // Shift down by 1 to match breaking pattern
-            int floorY = baseY + yOffset - 1;
-
-            BlockPos stepBase = currentBase.relative(horizontalDir, step);
-            BlockPos stairPos = new BlockPos(stepBase.getX(), floorY, stepBase.getZ());
-
-            if (level.getBlockState(stairPos).isAir()) {
-                BlockState stairState = Blocks.COBBLESTONE_STAIRS.defaultBlockState()
-                        .setValue(StairBlock.FACING, stairFacing)
-                        .setValue(StairBlock.HALF, Half.BOTTOM);
-                level.setBlock(stairPos, stairState, 3);
-            }
-        }
-    }
-
-    private static int generatePosHash(BlockPos blockPos) {
-        return (31 * 31 * blockPos.getX()) + (31 * blockPos.getY()) + blockPos.getZ(); //For now this is probably good enough, will add more randomness if needed
-    }
-
-    private static void sendDestroyBlockProgress(int pBreakerId, BlockPos pPos, int pProgress, ServerPlayer serverPlayer) {
-        serverPlayer.connection.send(new ClientboundBlockDestructionPacket(pBreakerId, pPos, pProgress));
-    }
-
-    public static void breakWithMiningMode(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level) {
+    public static boolean breakWithMiningMode(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level) {
         // Does the item have the MiningMode component
         MiningModeData miningModeData = mainHandItem.get(RegisterDataComponentTypes.MINING_MODE_DATA);
+        BlockHitResult hitResult = null;
+
         if(miningModeData != null ) {
             // Don't havest the block twice
             if (HARVESTED_BLOCKS.contains(initialBlockPos)) {
-                return;
+                return false;
             }
 
             // Only do a MiningMode if the block being mined is the correct tool
             if (mainHandItem.isCorrectToolForDrops(level.getBlockState(initialBlockPos))) {
                 // Compute direction BEFORE breaking blocks (for stair placement)
-                Direction horizontalDir = null;
-                if (miningModeData.shape() == MiningShape.STAIRS_UP || miningModeData.shape() == MiningShape.STAIRS_DOWN) {
+                Direction horizontalDirForTunnel = null;
+                if (miningModeData.shape() == MiningShape.TUNNEL_UP || miningModeData.shape() == MiningShape.TUNNEL_DOWN) {
                     float maxDistance = 6f;
-                    BlockHitResult hitResult = (BlockHitResult) raycastFromPlayer(serverPlayer, maxDistance);
+                    hitResult = (BlockHitResult) raycastFromPlayer(serverPlayer, maxDistance);
                     if (hitResult.getType() == HitResult.Type.BLOCK) {
-                        horizontalDir = getHorizontalMiningDirection(serverPlayer, hitResult);
+                        horizontalDirForTunnel = getHorizontalMiningDirection(serverPlayer, hitResult);
                     }
                 }
 
@@ -309,6 +299,7 @@ public class BlockBreakUtils {
                     }
 
                     HARVESTED_BLOCKS.add(blockPos);
+                    POTENTIAL_STAIR_BLOCKS.add(blockPos);
                     // Call destroy which runs this event again so we need the fast return above in if(HARVESTED_BLOCKS.contains(initialBlockPos))
                     // If not, it would keep deleting and not move through the set, creating an infinite loop
                     // https://courses.kaupenjoe.net/courses/modding-by-kaupenjoe-neoforge-modding-for-minecraft-1-21-x/lectures/55341862 at 10min in
@@ -317,14 +308,51 @@ public class BlockBreakUtils {
                 }
 
                 // Place stairs after all blocks are broken for stair mining modes
-                if (horizontalDir != null) {
-                    if (miningModeData.shape() == MiningShape.STAIRS_UP) {
-                        placeStairsForPattern(level, initialBlockPos, horizontalDir, true);
-                    } else if (miningModeData.shape() == MiningShape.STAIRS_DOWN) {
-                        placeStairsForPattern(level, initialBlockPos, horizontalDir, false);
+                if (horizontalDirForTunnel != null) {
+                    boolean ascending = miningModeData.shape() == MiningShape.TUNNEL_UP;
+                    if (getTunnelYLogic(hitResult, ascending).buildTunnel) {
+                        placeStairsForPattern(level, initialBlockPos, horizontalDirForTunnel, hitResult, ascending);
+                        // Cancel or stairs will be broken after they're placed
+                        return true;
                     }
                 }
             }
         }
+        return false;
     }
+
+    /**
+     * Places cobblestone stairs at the floor positions of a stair pattern.
+     * Should be called after blocks have been broken.
+     *
+     * @param level The world level
+     * @param initialBlockPos The starting block position
+     * @param horizontalDir The direction to place stairs (computed before blocks were broken)
+     * @param hitFace The face that was hit (UP means hit from top)
+     * @param ascending True for stairs going up, false for stairs going down
+     */
+    public static void placeStairsForPattern(Level level, BlockPos initialBlockPos, Direction horizontalDir, BlockHitResult hitResult, boolean ascending) {
+
+        for (int step = 0; step < STAIR_STEPS; step++) {
+
+            int yFlip = ascending ? step : -step;
+            int yOffset = getTunnelYLogic(hitResult, ascending).yOffset;
+            int floorY = initialBlockPos.getY() + yOffset + yFlip;
+
+            BlockPos stepBase = initialBlockPos.relative(horizontalDir, step);
+            BlockPos stairPos = new BlockPos(stepBase.getX(), floorY, stepBase.getZ());
+
+            // Always place stairs descending even if there is an air gap but only place ascending stairs if blocks were broken so they aren't placed in air gaps or above the surface
+            if ((level.getBlockState(stairPos).isAir() && !ascending) || (level.getBlockState(stairPos).isAir() && ascending && POTENTIAL_STAIR_BLOCKS.contains(stairPos))) {
+                // Stairs up: face direction of travel; Stairs down: face opposite
+                Direction stairFacing = ascending ? horizontalDir : horizontalDir.getOpposite();
+
+                BlockState stairState = Blocks.COBBLESTONE_STAIRS.defaultBlockState()
+                        .setValue(StairBlock.FACING, stairFacing)
+                        .setValue(StairBlock.HALF, Half.BOTTOM);
+                level.setBlock(stairPos, stairState, 3);
+            }
+        }
+    }
+
 }

@@ -26,7 +26,11 @@ public class EnergyHammerEvents {
         // It's on the server and the action isn't restricted, like Spectator mode
         if (player instanceof ServerPlayer serverPlayer &&
                 !serverPlayer.blockActionRestricted(level, initialBlockPos, type)) {
-            BlockBreakUtils.breakWithMiningMode(mainHandItem, initialBlockPos, serverPlayer, level);
+            boolean cancelEvent = BlockBreakUtils.breakWithMiningMode(mainHandItem, initialBlockPos, serverPlayer, level);
+            if (cancelEvent) {
+                // This is needed to not delete the stairs that were placed
+                event.setCanceled(true);
+            }
         }
     }
 }
