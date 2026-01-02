@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
 import net.j40climb.florafauna.common.block.RegisterBlockEntities;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteItem;
+import net.j40climb.florafauna.common.item.symbiote.DormantSymbioteItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -37,9 +37,9 @@ public class ContainmentChamberBlockEntity extends BlockEntity implements MenuPr
     public final ItemStacksResourceHandler handler = new ItemStacksResourceHandler(2) {
         @Override
         public boolean isValid(int index, ItemResource resource) {
-            // Slot 0 only accepts SymbioteItem
+            // Slot 0 only accepts DormantSymbioteItem
             if (index == 0) {
-                return resource.getItem() instanceof SymbioteItem;
+                return resource.getItem() instanceof DormantSymbioteItem;
             }
             return true;
         }

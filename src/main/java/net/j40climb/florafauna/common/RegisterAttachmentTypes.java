@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
 import net.neoforged.bus.api.IEventBus;
@@ -24,19 +24,18 @@ public class RegisterAttachmentTypes {
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, FloraFauna.MOD_ID);
 
     /**
-     * Symbiote data attachment for players.
-     * Stores the current state of a player's bonded symbiote including:
-     * - Bonding status
-     * - Evolution tier
-     * - Energy and health
-     * - Bond time
-     * - Ability toggles (dash, featherFalling, speed)
+     * Player symbiote data attachment.
+     * Combines symbiote bond state with cocoon chamber state:
+     * - Bonding status, evolution tier, bond time, ability toggles
+     * - Cocoon spawn position/dimension
+     * - Previous bed spawn (for restoration)
+     * - Progression flags
      */
-    public static final Supplier<AttachmentType<SymbioteData>> SYMBIOTE_DATA =
-            ATTACHMENT_TYPES.register("symbiote_data", () ->
-                    AttachmentType.builder(() -> SymbioteData.DEFAULT)
-                            .serialize(SymbioteData.CODEC.fieldOf("symbiote_data"))
-                            .sync(SymbioteData.STREAM_CODEC)
+    public static final Supplier<AttachmentType<PlayerSymbioteData>> PLAYER_SYMBIOTE_DATA =
+            ATTACHMENT_TYPES.register("player_symbiote_data", () ->
+                    AttachmentType.builder(() -> PlayerSymbioteData.DEFAULT)
+                            .serialize(PlayerSymbioteData.CODEC.fieldOf("player_symbiote_data"))
+                            .sync(PlayerSymbioteData.STREAM_CODEC)
                             .build()
             );
 

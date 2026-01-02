@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.item.symbiote.dream;
 
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.item.symbiote.voice.SymbioteVoiceService;
@@ -34,7 +34,7 @@ public class DreamInsightEngine {
      */
     public static boolean processDream(ServerPlayer player) {
         // Must be bonded
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return false;
         }
@@ -67,7 +67,7 @@ public class DreamInsightEngine {
      * @return true if delivered
      */
     public static boolean forceDream(ServerPlayer player, DreamLevel level) {
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return false;
         }

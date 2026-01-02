@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.symbiote.abilities;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -36,7 +36,7 @@ public class SymbioteAbilityEvents {
             return;
         }
 
-        SymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }
@@ -154,7 +154,7 @@ public class SymbioteAbilityEvents {
             return;
         }
 
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }

@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.block;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,6 +21,15 @@ public class RegisterBlockEntities {
                             ContainmentChamberBlockEntity::new,
                             false,
                             RegisterBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get()
+                    )
+            );
+
+    public static final Supplier<BlockEntityType<CocoonChamberBlockEntity>> COCOON_CHAMBER = BLOCK_ENTITIES.register(
+            "cocoon_chamber",
+            () -> new BlockEntityType<>(
+                            CocoonChamberBlockEntity::new,
+                            false,
+                            RegisterBlocks.COCOON_CHAMBER.get()
                     )
             );
 

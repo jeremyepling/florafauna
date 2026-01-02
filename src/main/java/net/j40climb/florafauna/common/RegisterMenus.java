@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberMenu;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -17,6 +18,9 @@ public class RegisterMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER =
             registerMenuType("containment_chamber", ContainmentChamberMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<CocoonChamberMenu>> COCOON_CHAMBER =
+            registerMenuType("cocoon_chamber", CocoonChamberMenu::new);
 
     private static <T extends AbstractContainerMenu>DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(String name, IContainerFactory<T> factory) {
         return MENUS.register(name, () -> IMenuTypeExtension.create(factory));

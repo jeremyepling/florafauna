@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.block;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.item.RegisterItems;
@@ -46,6 +47,16 @@ public class RegisterBlocks {
                             .requiresCorrectToolForDrops()
                             .sound(SoundType.METAL)
                             .lightLevel(state -> 5)
+                            .noOcclusion()
+                    ));
+
+    public static final DeferredBlock<CocoonChamberBlock> COCOON_CHAMBER =
+            registerBlock("cocoon_chamber",
+                    props -> new CocoonChamberBlock(props
+                            .strength(5f, 6f)
+                            .requiresCorrectToolForDrops()
+                            .sound(SoundType.SCULK)
+                            .lightLevel(state -> 7)
                             .noOcclusion()
                     ));
 

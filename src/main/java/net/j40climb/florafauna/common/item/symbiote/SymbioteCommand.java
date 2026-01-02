@@ -5,8 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.RegisterItems;
 import net.j40climb.florafauna.common.item.symbiote.dream.DreamInsightEngine;
 import net.j40climb.florafauna.common.item.symbiote.dream.DreamLevel;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
@@ -109,7 +107,7 @@ public class SymbioteCommand {
         }
 
         // Get the player's symbiote data
-        SymbioteData data = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         // Display the header
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.header")
@@ -152,7 +150,7 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         if (currentData.bonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.already_bonded"));
@@ -160,13 +158,13 @@ public class SymbioteCommand {
         }
 
         // Bond the symbiote
-        SymbioteData newData = new SymbioteData(
+        PlayerSymbioteData newData = currentData.withBond(
                 true,
                 player.level().getGameTime(),
                 1,
                 false, false, false, 0
         );
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, newData);
+        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
         player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
         player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
@@ -195,44 +193,19 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        // Use the binding helper for unbinding
+        SymbioteBindingHelper.UnbindResult result = SymbioteBindingHelper.unbindSymbiote(player);
 
-        if (!currentData.bonded()) {
+        if (!result.success()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
 
-        // Read current player state
-        ProgressSignalTracker progressTracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
-
-        // Create symbiote item with current player state
-        ItemStack symbioteItem = new ItemStack(RegisterItems.SYMBIOTE.get());
-
-        // Copy player state to item components (set bonded=false since it's an item now)
-        SymbioteData unbondedData = new SymbioteData(
-                false,                      // bonded = false (it's an item now)
-                0L,                         // bondTime = 0 (not bonded)
-                currentData.tier(),         // preserve tier
-                currentData.dash(),         // preserve abilities
-                currentData.featherFalling(),
-                currentData.speed(),
-                currentData.jumpBoost()
-        );
-        symbioteItem.set(RegisterDataComponentTypes.SYMBIOTE_DATA, unbondedData);
-
-        // Copy progress tracker to item (memory persists)
-        symbioteItem.set(RegisterDataComponentTypes.SYMBIOTE_PROGRESS, progressTracker);
-
         // Give item to player
-        if (!player.getInventory().add(symbioteItem)) {
+        if (!player.getInventory().add(result.symbioteItem())) {
             // If inventory is full, drop at player's feet
-            player.drop(symbioteItem, false);
+            player.drop(result.symbioteItem(), false);
         }
-
-        // Unbond the symbiote (reset player attachments to default)
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
-        player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.unbonded_success")
                 .withStyle(style -> style.withColor(0xE74C3C)), false);
@@ -254,15 +227,16 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.bonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
 
-        // Full reset - clear all symbiote attachments without creating an item
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+        // Full reset - clear symbiote bond while preserving cocoon state
+        PlayerSymbioteData resetData = currentData.withSymbioteReset();
+        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, resetData);
         player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
         player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
@@ -285,7 +259,7 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.bonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -293,11 +267,11 @@ public class SymbioteCommand {
         }
 
         String ability = StringArgumentType.getString(context, "ability");
-        SymbioteData newData;
+        PlayerSymbioteData newData;
 
         switch (ability.toLowerCase()) {
             case "dash":
-                newData = new SymbioteData(
+                newData = currentData.withBond(
                         currentData.bonded(),
                         currentData.bondTime(),
                         currentData.tier(),
@@ -308,7 +282,7 @@ public class SymbioteCommand {
                 );
                 break;
             case "featherfalling":
-                newData = new SymbioteData(
+                newData = currentData.withBond(
                         currentData.bonded(),
                         currentData.bondTime(),
                         currentData.tier(),
@@ -319,7 +293,7 @@ public class SymbioteCommand {
                 );
                 break;
             case "speed":
-                newData = new SymbioteData(
+                newData = currentData.withBond(
                         currentData.bonded(),
                         currentData.bondTime(),
                         currentData.tier(),
@@ -334,7 +308,7 @@ public class SymbioteCommand {
                 return 0;
         }
 
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, newData);
+        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
 
         boolean newState = switch (ability.toLowerCase()) {
             case "dash" -> newData.dash();
@@ -367,7 +341,7 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.bonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -377,7 +351,7 @@ public class SymbioteCommand {
         int level = IntegerArgumentType.getInteger(context, "level");
 
         // Create new data with updated jump boost
-        SymbioteData newData = new SymbioteData(
+        PlayerSymbioteData newData = currentData.withBond(
                 currentData.bonded(),
                 currentData.bondTime(),
                 currentData.tier(),
@@ -387,7 +361,7 @@ public class SymbioteCommand {
                 level
         );
 
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_DATA, newData);
+        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_boost_set",
                 level).withStyle(style -> style.withColor(0xF39C12)), false);
@@ -408,7 +382,7 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.bonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -436,7 +410,7 @@ public class SymbioteCommand {
             return 0;
         }
 
-        SymbioteData currentData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.bonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));

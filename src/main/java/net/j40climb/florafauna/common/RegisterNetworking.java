@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.common;
 
+import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
@@ -17,5 +18,6 @@ public class RegisterNetworking {
         registrar.playToServer(UpdateToolConfigPayload.TYPE, UpdateToolConfigPayload.STREAM_CODEC, UpdateToolConfigPayload::onServerReceived);
         registrar.playToServer(DashPayload.TYPE, DashPayload.STREAM_CODEC, DashPayload::onServerReceived);
         registrar.playToServer(PutDownFrenchiePayload.TYPE, PutDownFrenchiePayload.STREAM_CODEC, PutDownFrenchiePayload::onServerReceived);
+        registrar.playToServer(CocoonActionPayload.TYPE, CocoonActionPayload.STREAM_CODEC, CocoonActionPayload::onServerReceived);
     }
 }

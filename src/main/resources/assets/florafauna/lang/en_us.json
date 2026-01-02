@@ -7,8 +7,10 @@
 
   "item.florafauna.hammer": "Hammer",
 
-  "item.florafauna.symbiote": "Symbiote",
-  "tooltip.florafauna.symbiote": "A mysterious alien lifeform",
+  "item.florafauna.dormant_symbiote": "Dormant Symbiote",
+  "tooltip.florafauna.dormant_symbiote": "A mysterious alien lifeform, waiting to be awakened",
+  "item.florafauna.symbiote_stew": "Symbiote Stew",
+  "tooltip.florafauna.symbiote_stew": "A strange concoction that prepares you for symbiosis",
 
   "item.florafauna.frenchie_spawn_egg": "Frenchie Spawn Egg",
   "entity.florafauna.frenchie": "Frenchie",
@@ -47,6 +49,12 @@
 
   "block.florafauna.teal_moss_block": "Teal Moss Block",
   "block.florafauna.containment_chamber": "Symbiote Containment Chamber",
+  "block.florafauna.cocoon_chamber": "Cocoon Chamber",
+  "gui.florafauna.cocoon.title": "Cocoon Chamber",
+  "gui.florafauna.cocoon.set_spawn": "Set Spawn",
+  "gui.florafauna.cocoon.clear_spawn": "Clear Spawn",
+  "gui.florafauna.cocoon.bind": "Bind Symbiote",
+  "gui.florafauna.cocoon.unbind": "Unbind Symbiote",
   "block.florafauna.copper_golem_barrier": "Copper Golem Barrier",
 
   "block.florafauna.driftwood_log": "Driftwood Log",
@@ -129,5 +137,19 @@
 
   "symbiote.dream.anchored.general_1": "Completion is approaching. You seem hesitant to meet it.",
   "symbiote.dream.anchored.general_2": "Wholeness is available. It requires effort.",
-  "symbiote.dream.anchored.integration_1": "Integration is possible. The components are present. The connection is conspicuously absent."
+  "symbiote.dream.anchored.integration_1": "Integration is possible. The components are present. The connection is conspicuously absent.",
+
+  "symbiote.florafauna.use_cocoon": "Use the Cocoon Chamber to bond with me...",
+  "symbiote.florafauna.spawn_set": "Cocoon spawn point set",
+  "symbiote.florafauna.spawn_cleared": "Cocoon spawn point cleared",
+  "symbiote.florafauna.no_cocoon_spawn": "No cocoon spawn set",
+  "symbiote.florafauna.not_bindable": "You must consume Symbiote Stew first",
+  "symbiote.florafauna.no_dormant_symbiote": "You need a Dormant Symbiote in your inventory",
+  "symbiote.florafauna.already_bonded": "You already have a bonded symbiote",
+  "symbiote.florafauna.not_bonded": "You don't have a bonded symbiote",
+  "symbiote.florafauna.invalid_item": "Invalid symbiote item",
+  "symbiote.florafauna.bonded_success": "The symbiote has bonded with you",
+  "symbiote.florafauna.unbonded_success": "The symbiote has been released",
+  "symbiote.florafauna.cocoon_destroyed": "Your cocoon spawn has been destroyed, restoring previous spawn",
+  "symbiote.florafauna.stew_consumed": "You feel... different. The cocoon beckons."
 }

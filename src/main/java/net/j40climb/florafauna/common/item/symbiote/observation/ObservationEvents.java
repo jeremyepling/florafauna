@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.symbiote.observation;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -45,7 +45,7 @@ public class ObservationEvents {
             return;
         }
 
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }
@@ -101,7 +101,7 @@ public class ObservationEvents {
             return;
         }
 
-        SymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }
@@ -132,7 +132,7 @@ public class ObservationEvents {
             return;
         }
 
-        SymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }

@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.RegisterMenus;
 import net.j40climb.florafauna.common.RegisterNetworking;
 import net.j40climb.florafauna.common.block.RegisterBlockEntities;
 import net.j40climb.florafauna.common.block.RegisterBlocks;
+import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
 import net.j40climb.florafauna.common.datagen.RegisterDataGenerators;
 import net.j40climb.florafauna.common.entity.RegisterEntities;
@@ -116,6 +117,8 @@ public class FloraFauna {
         public static void registerScreens(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent event) {
             event.register(RegisterMenus.CONTAINMENT_CHAMBER.get(),
                     ContainmentChamberScreen::new);
+            event.register(RegisterMenus.COCOON_CHAMBER.get(),
+                    CocoonChamberScreen::new);
         }
     }
 }

@@ -3,7 +3,8 @@ package net.j40climb.florafauna.common.item;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.RegisterEntities;
 import net.j40climb.florafauna.common.item.hammer.HammerItem;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteItem;
+import net.j40climb.florafauna.common.item.symbiote.DormantSymbioteItem;
+import net.j40climb.florafauna.common.item.symbiote.SymbioteStewItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -59,8 +60,11 @@ public class RegisterItems {
     /*
     / Custom Items
      */
-    public static final DeferredItem<Item> SYMBIOTE = ITEMS.registerItem("symbiote", properties ->
-            new SymbioteItem(properties.component(DataComponents.CONSUMABLE,
+    public static final DeferredItem<Item> DORMANT_SYMBIOTE = ITEMS.registerItem("dormant_symbiote", properties ->
+            new DormantSymbioteItem(properties));
+
+    public static final DeferredItem<Item> SYMBIOTE_STEW = ITEMS.registerItem("symbiote_stew", properties ->
+            new SymbioteStewItem(properties.component(DataComponents.CONSUMABLE,
                     Consumable.builder()
                             .consumeSeconds(2.0f) // 40 ticks = 2 seconds
                             .animation(ItemUseAnimation.DRINK)

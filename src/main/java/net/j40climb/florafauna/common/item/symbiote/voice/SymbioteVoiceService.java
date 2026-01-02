@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.item.symbiote.voice;
 
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
 import net.minecraft.network.chat.Component;
@@ -37,7 +37,7 @@ public class SymbioteVoiceService {
             String lineKey
     ) {
         // Must be bonded to hear the symbiote
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return false;
         }
@@ -75,7 +75,7 @@ public class SymbioteVoiceService {
      */
     public static void forceSpeak(ServerPlayer player, String lineKey) {
         // Must be bonded to hear the symbiote
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }

@@ -8,7 +8,7 @@ import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -57,7 +57,7 @@ public class KeyInputEvents {
         }
         while (KeyMappings.DASH_KEY.get().consumeClick()) {
             // Check if player has a bonded symbiote
-            SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+            PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
             if (symbioteData.bonded() && symbioteData.dash()) {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
             }

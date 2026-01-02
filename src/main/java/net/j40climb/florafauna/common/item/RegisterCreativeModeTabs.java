@@ -24,7 +24,8 @@ public class RegisterCreativeModeTabs {
                     .displayItems((pParameters, output) -> {
                         output.accept(RegisterItems.TOMATO);
                         output.accept(RegisterItems.HAMMER);
-                        output.accept(RegisterItems.SYMBIOTE);
+                        output.accept(RegisterItems.DORMANT_SYMBIOTE);
+                        output.accept(RegisterItems.SYMBIOTE_STEW);
 
                         output.accept(RegisterItems.GECKO_SPAWN_EGG);
                         output.accept(RegisterItems.LIZARD_SPAWN_EGG);
@@ -32,6 +33,7 @@ public class RegisterCreativeModeTabs {
 
                         output.accept(RegisterBlocks.TEAL_MOSS_BLOCK);
                         output.accept(RegisterBlocks.SYMBIOTE_CONTAINMENT_CHAMBER);
+                        output.accept(RegisterBlocks.COCOON_CHAMBER);
                         output.accept(RegisterBlocks.COPPER_GOLEM_BARRIER);
 
                         // Wood blocks - iterates through all wood types

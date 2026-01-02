@@ -31,7 +31,8 @@ public class RegisterModelProvider extends ModelProvider {
         ///  ITEM MODELS
 
         itemModels.generateFlatItem(RegisterItems.TOMATO.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RegisterItems.SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RegisterItems.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RegisterItems.SYMBIOTE_STEW.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RegisterItems.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RegisterItems.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RegisterItems.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
@@ -57,6 +58,7 @@ public class RegisterModelProvider extends ModelProvider {
 
         blockModels.createTrivialCube(RegisterBlocks.TEAL_MOSS_BLOCK.get());
         blockModels.createTrivialCube(RegisterBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
+        blockModels.createTrivialCube(RegisterBlocks.COCOON_CHAMBER.get());
 
         // Copper Golem Barrier - invisible block, model not actually rendered
         blockModels.createTrivialCube(RegisterBlocks.COPPER_GOLEM_BARRIER.get());

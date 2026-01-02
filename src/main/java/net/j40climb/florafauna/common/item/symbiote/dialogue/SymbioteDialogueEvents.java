@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.symbiote.dialogue;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
-import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
@@ -48,7 +48,7 @@ public class SymbioteDialogueEvents {
             return;
         }
 
-        SymbioteData symbioteData = player.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }
@@ -104,7 +104,7 @@ public class SymbioteDialogueEvents {
             return;
         }
 
-        SymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }
@@ -135,7 +135,7 @@ public class SymbioteDialogueEvents {
             return;
         }
 
-        SymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.bonded()) {
             return;
         }
