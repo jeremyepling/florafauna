@@ -1,10 +1,9 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.RegisterBlocks;
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
-import net.j40climb.florafauna.common.item.RegisterItems;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
@@ -30,21 +29,20 @@ public class RegisterModelProvider extends ModelProvider {
 
         ///  ITEM MODELS
 
-        itemModels.generateFlatItem(RegisterItems.TOMATO.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RegisterItems.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RegisterItems.SYMBIOTE_STEW.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RegisterItems.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RegisterItems.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RegisterItems.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModRegistry.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModRegistry.SYMBIOTE_STEW.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModRegistry.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(ModRegistry.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.itemModelOutput.register(
-            RegisterItems.HAMMER.get(),
+            ModRegistry.HAMMER.get(),
             new ClientItem(
                 // Defines the model to render
                 new BlockModelWrapper.Unbaked(
                     // Points to a model JSON relative to the 'models' directory
                     // Located at 'assets/examplemod/models/item/example_item.json'
-                    ModelLocationUtils.getModelLocation(RegisterItems.HAMMER.get()),
+                    ModelLocationUtils.getModelLocation(ModRegistry.HAMMER.get()),
                     Collections.emptyList()
                 ),
                 // Defines some settings to use during the rendering process
@@ -56,12 +54,15 @@ public class RegisterModelProvider extends ModelProvider {
 
         ///  BLOCK MODELS
 
-        blockModels.createTrivialCube(RegisterBlocks.TEAL_MOSS_BLOCK.get());
-        blockModels.createTrivialCube(RegisterBlocks.SYMBIOTE_CONTAINMENT_CHAMBER.get());
-        blockModels.createTrivialCube(RegisterBlocks.COCOON_CHAMBER.get());
+        blockModels.createTrivialCube(ModRegistry.TEAL_MOSS_BLOCK.get());
+        blockModels.createTrivialCube(ModRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
+        blockModels.createTrivialCube(ModRegistry.COCOON_CHAMBER.get());
 
         // Copper Golem Barrier - invisible block, model not actually rendered
-        blockModels.createTrivialCube(RegisterBlocks.COPPER_GOLEM_BARRIER.get());
+        blockModels.createTrivialCube(ModRegistry.COPPER_GOLEM_BARRIER.get());
+
+        // Husk block - uses a simple cube for now (blockstate variants handled by json)
+        blockModels.createTrivialCube(ModRegistry.HUSK.get());
 
         // Wood blocks - iterate through all wood types
         for (ModWoodType woodType : ModWoodType.values()) {
@@ -96,6 +97,6 @@ public class RegisterModelProvider extends ModelProvider {
 
     @Override
     protected Stream<? extends Holder<Item>> getKnownItems() {
-        return RegisterItems.ITEMS.getEntries().stream().filter(x -> !x.equals(RegisterItems.HAMMER));
+        return ModRegistry.ITEMS.getEntries().stream().filter(x -> !x.equals(ModRegistry.HAMMER));
     }
 }

@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.item.symbiote;
 
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,8 +30,8 @@ public class DormantSymbioteItem extends Item {
 
     public DormantSymbioteItem(Properties properties) {
         super(properties
-                .component(RegisterDataComponentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT)
-                .component(RegisterDataComponentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT)
+                .component(ModRegistry.SYMBIOTE_DATA, SymbioteData.DEFAULT)
+                .component(ModRegistry.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT)
         );
     }
 
@@ -59,7 +59,7 @@ public class DormantSymbioteItem extends Item {
         tooltipComponents.accept(Component.translatable("tooltip.florafauna.dormant_symbiote"));
 
         // Show tier if advanced
-        SymbioteData data = itemStack.getOrDefault(RegisterDataComponentTypes.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+        SymbioteData data = itemStack.getOrDefault(ModRegistry.SYMBIOTE_DATA, SymbioteData.DEFAULT);
         if (data.tier() > 1) {
             tooltipComponents.accept(Component.translatable("tooltip.florafauna.symbiote_tier", data.tier())
                     .withStyle(style -> style.withColor(0x9B59B6)));

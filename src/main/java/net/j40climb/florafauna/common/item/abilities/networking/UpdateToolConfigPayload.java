@@ -2,8 +2,8 @@ package net.j40climb.florafauna.common.item.abilities.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -37,9 +37,9 @@ public record UpdateToolConfigPayload(ToolConfig config) implements CustomPacket
         ItemStack heldItem = player.getMainHandItem();
 
         // Check if the held item has the TOOL_CONFIG component (component-based check)
-        if (heldItem.has(RegisterDataComponentTypes.TOOL_CONFIG)) {
+        if (heldItem.has(ModRegistry.TOOL_CONFIG)) {
             // Update the config on the held item
-            heldItem.set(RegisterDataComponentTypes.TOOL_CONFIG, data.config);
+            heldItem.set(ModRegistry.TOOL_CONFIG, data.config);
 
             // Apply enchantments based on config
             applyEnchantments(heldItem, data.config, player);

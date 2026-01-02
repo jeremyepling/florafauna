@@ -1,10 +1,10 @@
 package net.j40climb.florafauna.common.item.symbiote.dream;
 
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.item.symbiote.voice.SymbioteVoiceService;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
@@ -24,7 +24,6 @@ public class DreamInsightEngine {
      * Tick threshold for dream reset (5 in-game days = 120000 ticks)
      */
     private static final long RESET_WINDOW_TICKS = 120000L;
-
     /**
      * Process a dream request from the player.
      * Called when the player uses the /symbiote dream command.
@@ -34,12 +33,12 @@ public class DreamInsightEngine {
      */
     public static boolean processDream(ServerPlayer player) {
         // Must be bonded
-        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
-        if (!symbioteData.bonded()) {
+        PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        if (!symbioteData.symbioteState().isBonded()) {
             return false;
         }
 
-        ProgressSignalTracker progress = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker progress = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         // Calculate dream level based on escalation rules
@@ -54,7 +53,7 @@ public class DreamInsightEngine {
         // Update dream tracking state
         int newDreamLevel = level.ordinal() + 1; // Store as 1-indexed for next calculation
         ProgressSignalTracker updated = progress.withDreamState(currentTick, newDreamLevel);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, updated);
+        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, updated);
 
         return true;
     }
@@ -67,12 +66,12 @@ public class DreamInsightEngine {
      * @return true if delivered
      */
     public static boolean forceDream(ServerPlayer player, DreamLevel level) {
-        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
-        if (!symbioteData.bonded()) {
+        PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        if (!symbioteData.symbioteState().isBonded()) {
             return false;
         }
 
-        ProgressSignalTracker progress = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker progress = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         DreamContext context = DreamContext.fromTracker(progress, currentTick, level);
@@ -149,7 +148,7 @@ public class DreamInsightEngine {
      * Get the current dream level for a player (for display).
      */
     public static DreamLevel getCurrentDreamLevel(ServerPlayer player) {
-        ProgressSignalTracker progress = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker progress = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
         return calculateDreamLevel(progress, currentTick);
     }

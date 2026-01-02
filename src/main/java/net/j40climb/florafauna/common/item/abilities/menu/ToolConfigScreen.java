@@ -1,9 +1,9 @@
 package net.j40climb.florafauna.common.item.abilities.menu;
 
 import net.j40climb.florafauna.client.gui.BaseInventoryScreen;
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -32,7 +32,7 @@ public class ToolConfigScreen extends BaseInventoryScreen {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
             ItemStack heldItem = player.getMainHandItem();
-            this.config = heldItem.getOrDefault(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT);
+            this.config = heldItem.getOrDefault(ModRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
         } else {
             this.config = ToolConfig.DEFAULT;
         }

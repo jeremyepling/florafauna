@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.item.symbiote.progress;
 
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -29,7 +29,7 @@ public class ProgressSignalUpdater {
      * @param conceptId The concept identifier
      */
     public static void recordObservation(ServerPlayer player, String conceptId) {
-        ProgressSignalTracker tracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker tracker = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         var existingSignal = tracker.getSignal(conceptId);
@@ -48,7 +48,7 @@ public class ProgressSignalUpdater {
                 .withSignalUpdated(conceptId, updated)
                 .withProgressTick(currentTick);
 
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, newTracker);
+        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, newTracker);
     }
 
     /**
@@ -80,7 +80,7 @@ public class ProgressSignalUpdater {
      * @param player The player
      */
     public static void checkForStalls(ServerPlayer player) {
-        ProgressSignalTracker tracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker tracker = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         boolean anyChanges = false;
@@ -97,7 +97,7 @@ public class ProgressSignalUpdater {
         }
 
         if (anyChanges) {
-            player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, updated);
+            player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, updated);
         }
     }
 
@@ -109,7 +109,7 @@ public class ProgressSignalUpdater {
      * @param state The target state
      */
     public static void forceState(ServerPlayer player, String conceptId, SignalState state) {
-        ProgressSignalTracker tracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker tracker = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         ConceptSignal signal = tracker.getSignal(conceptId)
@@ -118,14 +118,14 @@ public class ProgressSignalUpdater {
         ConceptSignal updated = signal.withState(state, currentTick);
 
         ProgressSignalTracker newTracker = tracker.withSignalUpdated(conceptId, updated);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, newTracker);
+        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, newTracker);
     }
 
     /**
      * Get a summary of progress for debugging.
      */
     public static String getProgressSummary(ServerPlayer player) {
-        ProgressSignalTracker tracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker tracker = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         StringBuilder sb = new StringBuilder();

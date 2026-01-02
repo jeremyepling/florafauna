@@ -32,15 +32,19 @@ The project is configured to work in both **IntelliJ IDEA** and **Cursor (VS Cod
 
 ## Project Structure
 
-The mod is organized using **feature-based architecture** where related code is grouped together:
+The mod is organized using **feature-based architecture** with **centralized registration**:
 
 ```
 src/main/java/net/j40climb/florafauna/
-├── FloraFauna.java              # Main mod class
+├── FloraFauna.java              # Main mod class (simplified)
 ├── Config.java                  # Mod configuration
+├── setup/                       # Centralized setup and registration
+│   ├── ModRegistry.java        # ALL registries consolidated
+│   ├── ModSetup.java            # Common setup (networking, creative tabs, events)
+│   └── ClientSetup.java         # Client setup (renderers, screens, key bindings)
 ├── client/                      # Client-only code
-│   ├── KeyMappings.java         # Key bindings (R, M, P, Mouse4)
 │   ├── ClientUtils.java         # Client utilities
+│   ├── SymbioteDebugOverlay.java # Debug HUD overlay
 │   ├── events/                  # Client event handlers
 │   │   ├── KeyInputEvents.java  # Input event handlers
 │   │   └── RenderEvents.java    # Rendering event handlers
@@ -49,62 +53,24 @@ src/main/java/net/j40climb/florafauna/
 │       ├── BaseInventoryScreen.java
 │       └── InventoryRenderHelper.java
 ├── common/                      # Shared/server code
-│   ├── Register*.java           # Top-level registries
-│   │   ├── RegisterAttachmentTypes.java   # Player attachment data (4 types)
-│   │   ├── RegisterDataComponentTypes.java # Item data components (5 types)
-│   │   ├── RegisterMenus.java             # Container menus
-│   │   └── RegisterNetworking.java        # Network payload registration
-│   ├── block/                   # Block feature
-│   │   ├── RegisterBlocks.java            # Block registry (3 misc blocks + wood)
-│   │   ├── RegisterBlockEntities.java     # Block entity registry
+│   ├── ModCommands.java         # /symbiote command
+│   ├── block/                   # Block features
 │   │   ├── CopperGolemBarrierBlock.java
-│   │   └── containmentchamber/            # Feature directory
-│   │       ├── ContainmentChamberBlock.java
-│   │       ├── ContainmentChamberBlockEntity.java
-│   │       ├── ContainmentChamberMenu.java
-│   │       └── ContainmentChamberScreen.java
-│   ├── wood/                    # Wood block system
-│   │   ├── ModWoodType.java               # Enum (DRIFTWOOD)
-│   │   ├── WoodBlockSet.java              # Record holding 8 block types
-│   │   ├── WoodBlockRegistration.java     # Auto-registers all wood blocks
-│   │   └── WoodStripping.java             # Axe stripping behavior
-│   ├── entity/                  # Entity feature
-│   │   ├── RegisterEntities.java          # Entity registry (3 entities)
-│   │   ├── RegisterEntityEvents.java      # Spawn placement & attributes
-│   │   ├── frenchie/                      # Frenchie entity (6 files)
-│   │   ├── gecko/                         # Gecko entity (6 files)
-│   │   ├── lizard/                        # Lizard entity (5 files)
-│   │   └── frontpack/                     # Frontpack carrying system (8 files)
-│   │       ├── FrontpackData.java
-│   │       ├── FrontpackEvents.java
-│   │       ├── FrontpackLayer.java
-│   │       ├── FrontpackModel.java
-│   │       ├── FrontpackAnimations.java
-│   │       ├── FrontpackRendererEvents.java
-│   │       └── networking/
-│   │           └── PutDownFrenchiePayload.java
-│   ├── item/                    # Item feature
-│   │   ├── RegisterItems.java             # Item registry (6 items)
-│   │   ├── RegisterCreativeModeTabs.java  # Creative tab
-│   │   ├── hammer/                        # Hammer tool (13 files)
-│   │   │   ├── HammerItem.java
-│   │   │   ├── HammerEventHandlers.java
-│   │   │   ├── MiningModeBlockInteractions.java
-│   │   │   ├── MiningModeBlockOutlineRenderer.java
-│   │   │   ├── abilities/                 # Network payloads
-│   │   │   ├── data/                      # Data classes
-│   │   │   └── menu/                      # Config screen
-│   │   └── symbiote/                      # Symbiote item (22 files)
-│   │       ├── SymbioteItem.java
-│   │       ├── SymbioteData.java
-│   │       ├── SymbioteCommand.java
-│   │       ├── abilities/                 # Dash ability
-│   │       ├── dialogue/                  # Dialogue system (5 files)
-│   │       ├── dream/                     # Dream system (3 files)
-│   │       ├── observation/               # Observation tracking (4 files)
-│   │       ├── progress/                  # Progress tracking (4 files)
-│   │       └── voice/                     # Voice cooldowns (3 files)
-│   ├── datagen/                 # Data generation providers (7 files)
+│   │   ├── containmentchamber/  # Feature directory
+│   │   ├── cocoonchamber/       # Feature directory
+│   │   ├── husk/                # Husk block system
+│   │   └── wood/                # Wood block system
+│   ├── entity/                  # Entity features
+│   │   ├── RegisterEntityEvents.java  # Spawn placement & attributes
+│   │   ├── frenchie/            # Frenchie entity
+│   │   ├── gecko/               # Gecko entity
+│   │   ├── lizard/              # Lizard entity
+│   │   └── frontpack/           # Frontpack carrying system
+│   ├── item/                    # Item features
+│   │   ├── abilities/           # Shared tool abilities
+│   │   ├── hammer/              # Hammer tool
+│   │   └── symbiote/            # Symbiote system
+│   ├── datagen/                 # Data generation providers
 │   │   ├── RegisterDataGenerators.java
 │   │   ├── RegisterModelProvider.java
 │   │   ├── RegisterBlockTagsProvider.java
@@ -114,16 +80,16 @@ src/main/java/net/j40climb/florafauna/
 │   │   └── TestStructureProvider.java
 │   └── util/                    # Utility classes
 └── test/                        # GameTest framework
-    ├── FloraFaunaGameTests.java           # Main test class (14 tests)
+    ├── FloraFaunaGameTests.java
     ├── ColoredTestReporter.java
     └── SimpleGameTestInstance.java
 ```
 
 **Key Principles:**
-- **`Register*` naming**: All registration classes use `Register` prefix (e.g., `RegisterBlocks`, `RegisterItems`)
+- **Centralized registration**: All registries in `setup/ModRegistry.java` - easy to see everything at a glance
+- **Separation of concerns**: `ModRegistry` (registries), `ModSetup` (common events), `ClientSetup` (client-only)
 - **Feature directories**: Complex features get their own subdirectory with all related code
 - **Client code in features**: Client-side rendering code (Models, Renderers, Screens) can live within feature directories
-- **Separate client directory**: Pure client code (key bindings, client events, utilities) goes in `client/`
 - **Networking per feature**: Network packets live in `networking/` subdirectories within their feature
 
 ## Minecraft/NeoForge Source Reference
@@ -155,17 +121,17 @@ jar xf build/moddev/artifacts/neoforge-21.11.13-beta-merged.jar net/minecraft/wo
 ## Block Registration
 
 ### Regular Blocks
-Defined in `common/block/RegisterBlocks.java`. Each block is a `public static final` field:
+Defined in `setup/ModRegistry.java`. Each block is a `public static final` field:
 ```java
 public static final DeferredBlock<Block> TEAL_MOSS_BLOCK = registerBlock("teal_moss_block",
     props -> new Block(props.strength(4f).requiresCorrectToolForDrops()));
 ```
 
-**Current blocks:** TEAL_MOSS_BLOCK, SYMBIOTE_CONTAINMENT_CHAMBER, COPPER_GOLEM_BARRIER
+**Current blocks:** TEAL_MOSS_BLOCK, SYMBIOTE_CONTAINMENT_CHAMBER, COCOON_CHAMBER, COPPER_GOLEM_BARRIER, HUSK
 
 **Access:**
-- `RegisterBlocks.TEAL_MOSS_BLOCK.get()` - Get the Block instance
-- `RegisterBlocks.TEAL_MOSS_BLOCK` - Get DeferredBlock (for creative tabs, recipes, etc.)
+- `ModRegistry.TEAL_MOSS_BLOCK.get()` - Get the Block instance
+- `ModRegistry.TEAL_MOSS_BLOCK` - Get DeferredBlock (for creative tabs, recipes, etc.)
 
 ### Wood Blocks (Enum-driven)
 Wood blocks use a special pattern where the `ModWoodType` enum handles registration automatically.
@@ -208,18 +174,18 @@ for (ModWoodType woodType : ModWoodType.values()) {
 
 ## Item Registration
 
-Items are registered in `common/item/RegisterItems.java`. BlockItems are automatically registered by `RegisterBlocks.registerBlock()`.
+Items are registered in `setup/ModRegistry.java`. BlockItems are automatically registered by `ModRegistry.registerBlock()`.
 
 ```java
-public static final DeferredItem<Item> TOMATO = ITEMS.registerItem("tomato",
-    properties -> new Item(properties));
+public static final DeferredItem<Item> HAMMER = ITEMS.registerItem("hammer",
+    properties -> new HammerItem(properties.tool(...)));
 ```
 
-**Current items:** TOMATO, HAMMER, SYMBIOTE, GECKO_SPAWN_EGG, LIZARD_SPAWN_EGG, FRENCHIE_SPAWN_EGG
+**Current items:** HAMMER, DORMANT_SYMBIOTE, SYMBIOTE_STEW, GECKO_SPAWN_EGG, LIZARD_SPAWN_EGG, FRENCHIE_SPAWN_EGG
 
 **Access:**
-- `RegisterItems.TOMATO.get()` - Get the Item instance
-- `RegisterItems.TOMATO` - Get DeferredItem
+- `ModRegistry.HAMMER.get()` - Get the Item instance
+- `ModRegistry.HAMMER` - Get DeferredItem
 
 ### Hammer Item
 
@@ -303,10 +269,10 @@ symbiote/
 
 ## Entity Registration
 
-Entities are registered in `common/entity/RegisterEntities.java`:
+Entities are registered in `setup/ModRegistry.java`:
 ```java
-public static final DeferredHolder<EntityType<?>, EntityType<GeckoEntity>> GECKO =
-    ENTITY_TYPES.register("gecko", () -> EntityType.Builder.of(...).build(...));
+public static final Supplier<EntityType<GeckoEntity>> GECKO = ENTITY_TYPES.register("gecko",
+    () -> EntityType.Builder.of(GeckoEntity::new, MobCategory.CREATURE).sized(0.5f, 0.35f).build(GECKO_KEY));
 ```
 
 **Current entities:** GECKO, LIZARD, FRENCHIE
@@ -314,7 +280,7 @@ public static final DeferredHolder<EntityType<?>, EntityType<GeckoEntity>> GECKO
 **Entity organization:**
 - Each entity gets its own directory under `common/entity/{entity_name}/`
 - Directory contains: Entity class, Model, Renderer, Animations, RenderState, Variant (if applicable)
-- Renderers are registered in `FloraFauna.java` ClientModEvents
+- Renderers are registered in `setup/ClientSetup.java`
 
 ### Frontpack System
 
@@ -333,7 +299,7 @@ The frontpack system allows players to carry Frenchie entities. Located in `comm
 
 ## Key Bindings
 
-Defined in `client/KeyMappings.java`:
+Defined in `setup/ClientSetup.java`:
 - **R key** - Hammer: Spawn lightning at raycast position
 - **M key** - Hammer: Teleport to surface
 - **P key** - Hammer: Open config screen
@@ -341,41 +307,49 @@ Defined in `client/KeyMappings.java`:
 
 Category: `florafauna:key-category`
 
+Key input handling is in `client/events/KeyInputEvents.java`.
+
 ## Data Components & Attachments
 
+All data components and attachments are registered in `setup/ModRegistry.java`.
+
 ### Data Components (Item-specific state)
-Registered in `common/RegisterDataComponentTypes.java`:
-- `MINING_SPEED` - Hammer mining speed
-- `MINING_MODE_DATA` - Hammer mining mode state
-- `HAMMER_CONFIG` - Hammer configuration settings
+- `MULTI_BLOCK_MINING` - Mining mode state
+- `TOOL_CONFIG` - Tool configuration settings
+- `LIGHTNING_ABILITY` - Marker for lightning ability
+- `TELEPORT_SURFACE_ABILITY` - Marker for teleport ability
 - `SYMBIOTE_DATA` - Symbiote bonding and state data
 - `SYMBIOTE_PROGRESS` - Symbiote progress tracking
 
 ### Attachments (Player-specific state)
-Registered in `common/RegisterAttachmentTypes.java`:
-- `SYMBIOTE_DATA` - Player's symbiote bond data
+- `PLAYER_SYMBIOTE_DATA` - Player's symbiote bond data
 - `FRENCH_FRONTPACK_DATA` - Carried Frenchie data
-- `SYMBIOTE_PROGRESS` - Player's symbiote progress
+- `SYMBIOTE_PROGRESS_ATTACHMENT` - Player's symbiote progress
 - `VOICE_COOLDOWNS` - Voice system cooldowns
 
 ## Creative Tabs
 
-Creative tabs are defined in `common/item/RegisterCreativeModeTabs.java`. Wood blocks iterate via `ModWoodType.values()`.
+Creative tabs are defined in `setup/ModSetup.java`. Wood blocks iterate via `ModWoodType.values()`.
 
 ## Registration Order
 
-In `FloraFauna.java`, registries are initialized in this order:
-1. `RegisterCreativeModeTabs.register(modEventBus)`
-2. `RegisterBlocks.register(modEventBus)` - Must be before RegisterItems
-3. `RegisterItems.register(modEventBus)`
-4. `RegisterDataComponentTypes.register(modEventBus)`
-5. `RegisterAttachmentTypes.register(modEventBus)`
-6. `RegisterEntities.register(modEventBus)`
-7. `RegisterBlockEntities.register(modEventBus)`
-8. `RegisterMenus.register(modEventBus)`
-9. `RegisterNetworking.register(modEventBus)`
+In `FloraFauna.java`, setup is simplified to two calls:
+```java
+ModRegistry.init(modEventBus);  // All registries
+ModSetup.init(modEventBus);      // Networking, creative tabs, events
+```
 
-BlockItems are added during `RegisterBlocks` initialization, which is why blocks must be registered before items.
+`ModRegistry.init()` registers all DeferredRegisters in this order:
+1. BLOCKS
+2. ITEMS
+3. ENTITY_TYPES
+4. BLOCK_ENTITIES
+5. MENUS
+6. MOB_EFFECTS
+7. DATA_COMPONENTS
+8. ATTACHMENT_TYPES
+
+`ClientSetup` uses `@EventBusSubscriber` for automatic registration of renderers, screens, and key bindings.
 
 ## Networking
 
@@ -383,14 +357,14 @@ Network packets are organized per-feature in `networking/` subdirectories:
 
 | Payload | Location | Direction | Purpose |
 |---------|----------|-----------|---------|
-| SpawnLightningPayload | `item/hammer/abilities/` | Client -> Server | Spawn lightning at raycast |
-| TeleportToSurfacePayload | `item/hammer/abilities/` | Client -> Server | Teleport player to surface |
-| SetMiningSpeedPayload | `item/hammer/abilities/` | Client -> Server | Set mining speed |
-| UpdateHammerConfigPayload | `item/hammer/abilities/` | Client -> Server | Update hammer config |
+| SpawnLightningPayload | `item/abilities/networking/` | Client -> Server | Spawn lightning at raycast |
+| TeleportToSurfacePayload | `item/abilities/networking/` | Client -> Server | Teleport player to surface |
+| UpdateToolConfigPayload | `item/abilities/networking/` | Client -> Server | Update tool config |
 | DashPayload | `item/symbiote/abilities/` | Client -> Server | Dash ability |
 | PutDownFrenchiePayload | `entity/frontpack/networking/` | Client -> Server | Pick up/put down Frenchie |
+| CocoonActionPayload | `block/cocoonchamber/networking/` | Client -> Server | Cocoon chamber actions |
 
-Central registration: `common/RegisterNetworking.java`
+Central registration: `setup/ModSetup.java` (registerNetworking method)
 
 ## Data Generation
 
@@ -455,7 +429,7 @@ Events use `@EventBusSubscriber` for auto-discovery:
 
 **Common/Server events:**
 - Registered on `NeoForge.EVENT_BUS`
-- Located in feature directories (e.g., `common/wood/WoodStripping.java`)
+- Located in feature directories (e.g., `common/block/wood/WoodStripping.java`)
 - Located in `common/entity/RegisterEntityEvents.java`
 
 **Client events:**
@@ -464,8 +438,8 @@ Events use `@EventBusSubscriber` for auto-discovery:
 - Located in feature directories (e.g., `common/entity/frontpack/FrontpackRendererEvents.java`)
 
 **Mod bus events:**
-- Client setup events in `FloraFauna.ClientModEvents` static class
-- Used for entity renderer registration, screen registration, etc.
+- Client setup events in `setup/ClientSetup.java` (uses @EventBusSubscriber)
+- Used for entity renderer registration, screen registration, key binding registration, etc.
 
 **Important:** Avoid static initializers that access blocks - use lazy initialization instead, since static blocks run before registries are populated.
 
@@ -476,13 +450,13 @@ To add a new feature (e.g., a custom entity):
 1. **Create feature directory**: `common/entity/myentity/`
 2. **Add entity class**: `MyEntity.java`
 3. **Add rendering (if needed)**: `MyEntityModel.java`, `MyEntityRenderer.java`, `MyEntityRenderState.java`
-4. **Register entity**: Add to `RegisterEntities.java`
-5. **Register renderer**: Add to `FloraFauna.ClientModEvents.onClientSetup()`
-6. **Add spawn egg**: Add to `RegisterItems.java`
+4. **Register entity**: Add to `setup/ModRegistry.java` (ENTITY_TYPES)
+5. **Register renderer**: Add to `setup/ClientSetup.java` (onClientSetup method)
+6. **Add spawn egg**: Add to `setup/ModRegistry.java` (ITEMS)
 7. **Add datagen**: Add tags, loot tables, recipes in respective providers
 8. **Add assets**: Textures, models, lang entries
 9. **Add events (if needed)**: Create event handler in feature directory or `RegisterEntityEvents.java`
-10. **Add networking (if needed)**: Create `networking/` subdirectory in feature
+10. **Add networking (if needed)**: Create `networking/` subdirectory in feature and register in `ModSetup.java`
 
 ## Utilities
 

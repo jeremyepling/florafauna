@@ -2,8 +2,8 @@ package net.j40climb.florafauna.common.entity.frontpack;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieVariant;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -106,7 +106,7 @@ public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
          * and caches it for rendering.
          */
         public static void extractFromPlayer(Player player) {
-            FrontpackData data = player.getData(RegisterAttachmentTypes.FRENCH_FRONTPACK_DATA);
+            FrontpackData data = player.getData(ModRegistry.FRENCH_FRONTPACK_DATA);
     
             FrontpackRenderState state = new FrontpackRenderState();
             state.hasFrontpack = data.hasCarriedFrenchie();

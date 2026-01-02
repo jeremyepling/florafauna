@@ -1,8 +1,8 @@
 package net.j40climb.florafauna.common.item.hammer;
 
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -52,10 +52,10 @@ public class HammerItem extends Item {
     public HammerItem(Properties properties) {
         super(removeEnchantable(properties)
                 // Tool ability components (composable - these enable the abilities)
-                .component(RegisterDataComponentTypes.MULTI_BLOCK_MINING, MiningModeData.DEFAULT)
-                .component(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT)
-                .component(RegisterDataComponentTypes.LIGHTNING_ABILITY, Unit.INSTANCE)
-                .component(RegisterDataComponentTypes.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
+                .component(ModRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT)
+                .component(ModRegistry.TOOL_CONFIG, ToolConfig.DEFAULT)
+                .component(ModRegistry.LIGHTNING_ABILITY, Unit.INSTANCE)
+                .component(ModRegistry.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
                 .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
         );
     }
@@ -102,13 +102,13 @@ public class HammerItem extends Item {
 
                 // Go to next shape
                 hammerItemStack.update(
-                        RegisterDataComponentTypes.MULTI_BLOCK_MINING,
+                        ModRegistry.MULTI_BLOCK_MINING,
                         MiningModeData.DEFAULT,
                         MiningModeData::getNextMode
                 );
 
                 // Output the new shape and default was set via Update so a get() instead of getOrDefault()
-                MiningModeData currentMiningMode = hammerItemStack.get(RegisterDataComponentTypes.MULTI_BLOCK_MINING);
+                MiningModeData currentMiningMode = hammerItemStack.get(ModRegistry.MULTI_BLOCK_MINING);
                 player.displayClientMessage(Component.literal(currentMiningMode.getMiningModeString()), true);
             }
         }
@@ -141,9 +141,9 @@ public class HammerItem extends Item {
     @SuppressWarnings("deprecation")
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        MiningModeData miningModeData = itemStack.getOrDefault(RegisterDataComponentTypes.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
+        MiningModeData miningModeData = itemStack.getOrDefault(ModRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
         tooltipComponents.accept(Component.literal(miningModeData.getMiningModeString()));
-        ToolConfig toolConfig = itemStack.getOrDefault(RegisterDataComponentTypes.TOOL_CONFIG, ToolConfig.DEFAULT);
+        ToolConfig toolConfig = itemStack.getOrDefault(ModRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
         tooltipComponents.accept(Component.literal(toolConfig.getMiningSppedString()));
         super.appendHoverText(itemStack, context, tooltipDisplay, tooltipComponents, tooltipFlag);
     }

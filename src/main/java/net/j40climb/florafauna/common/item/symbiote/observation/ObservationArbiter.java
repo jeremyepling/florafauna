@@ -1,11 +1,11 @@
 package net.j40climb.florafauna.common.item.symbiote.observation;
 
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.item.symbiote.dialogue.DialogueSelectionContext;
 import net.j40climb.florafauna.common.item.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.item.symbiote.voice.SymbioteVoiceService;
 import net.j40climb.florafauna.common.item.symbiote.voice.VoiceTier;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Map;
@@ -38,7 +38,7 @@ public class ObservationArbiter {
             Map<String, Object> context
     ) {
         // Get progress tracker for tier determination and line selection
-        ProgressSignalTracker progress = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker progress = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
 
         // Determine the appropriate tier
         VoiceTier tier = determineTier(category, severity, progress);
@@ -120,7 +120,7 @@ public class ObservationArbiter {
             ObservationCategory category,
             int severity
     ) {
-        ProgressSignalTracker tracker = player.getData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS);
+        ProgressSignalTracker tracker = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         // Track first-time category experience
@@ -141,7 +141,7 @@ public class ObservationArbiter {
         // Mark progress tick
         tracker = tracker.withProgressTick(currentTick);
 
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, tracker);
+        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, tracker);
     }
 
     /**

@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.entity.frenchie;
 
-import net.j40climb.florafauna.common.entity.RegisterEntities;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -111,7 +111,7 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     public AgeableMob getBreedOffspring(@NotNull ServerLevel level, AgeableMob otherParent) {
         FrenchieVariant variant = Util.getRandom(FrenchieVariant.values(), this.random);
-        FrenchieEntity baby = RegisterEntities.FRENCHIE.get().create(level, EntitySpawnReason.BREEDING);
+        FrenchieEntity baby = ModRegistry.FRENCHIE.get().create(level, EntitySpawnReason.BREEDING);
         assert baby != null;
         baby.setVariant(variant);
         return baby;

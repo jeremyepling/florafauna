@@ -1,9 +1,10 @@
 package net.j40climb.florafauna.common.item.symbiote;
 
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonProgressionHooks;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -18,10 +19,17 @@ import java.util.function.Consumer;
 
 /**
  * A consumable item that prepares the player for symbiote binding.
- * When consumed, sets the player's symbioteBindable state to true,
+ * When consumed, applies the Symbiote Prepared effect for 10 minutes
+ * and sets the player's symbioteBindable state to true,
  * allowing them to bind with a symbiote via the Cocoon Chamber.
+ *
+ * When the effect expires, symbioteBindable is cleared if the player
+ * hasn't bonded yet.
  */
 public class SymbioteStewItem extends Item {
+
+    // 10 minutes = 12000 ticks (20 ticks per second * 60 seconds * 10 minutes)
+    public static final int EFFECT_DURATION_TICKS = 12000;
 
     public SymbioteStewItem(Properties properties) {
         super(properties);
@@ -40,7 +48,7 @@ public class SymbioteStewItem extends Item {
     @Override
     public @NotNull ItemStack finishUsingItem(ItemStack itemStack, Level level, LivingEntity livingEntity) {
         if (!level.isClientSide() && livingEntity instanceof Player player) {
-            PlayerSymbioteData data = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+            PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
             // Check if already bindable (optional: could allow re-consuming)
             if (data.symbioteBindable()) {
@@ -56,7 +64,18 @@ public class SymbioteStewItem extends Item {
             PlayerSymbioteData newData = data
                     .withSymbioteBindable(true)
                     .withSymbioteStewConsumedOnce(true);
-            player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
+            player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
+
+            // Apply the Symbiote Prepared effect (10 minutes)
+            // showParticles = true, showIcon = true
+            player.addEffect(new MobEffectInstance(
+                    ModRegistry.SYMBIOTE_PREPARED,
+                    EFFECT_DURATION_TICKS,
+                    0,  // amplifier
+                    false,  // ambient (false = visible particles)
+                    true,   // visible (show particles)
+                    true    // showIcon (show in HUD)
+            ));
 
             // Trigger progression hook
             CocoonProgressionHooks.onSymbioteStewConsumed((ServerPlayer) player);

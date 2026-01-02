@@ -1,12 +1,12 @@
 package net.j40climb.florafauna.common.item.abilities;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockBreaker;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockOutlineRenderer;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockVisualFeedback;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -55,7 +55,7 @@ public class ToolAbilityEventHandlers {
         ItemStack itemStack = event.getItemStack();
 
         // Component-based check - works with any item that has MULTI_BLOCK_MINING
-        if (itemStack.has(RegisterDataComponentTypes.MULTI_BLOCK_MINING)) {
+        if (itemStack.has(ModRegistry.MULTI_BLOCK_MINING)) {
             MultiBlockVisualFeedback.processLeftClickBlock(event);
         }
     }
@@ -65,8 +65,8 @@ public class ToolAbilityEventHandlers {
         ItemStack itemStack = event.getEntity().getMainHandItem();
 
         // Component-based check - works with any item that has TOOL_CONFIG
-        if (itemStack.has(RegisterDataComponentTypes.TOOL_CONFIG)) {
-            ToolConfig config = itemStack.get(RegisterDataComponentTypes.TOOL_CONFIG);
+        if (itemStack.has(ModRegistry.TOOL_CONFIG)) {
+            ToolConfig config = itemStack.get(ModRegistry.TOOL_CONFIG);
             float newSpeed = switch (config.miningSpeed()) {
                 case MiningSpeed.STANDARD -> event.getOriginalSpeed();
                 case MiningSpeed.EFFICIENCY -> 35.0F;

@@ -15,20 +15,24 @@ import java.util.Optional;
 
 /**
  * Player attachment data for the symbiote system.
- * Combines symbiote bond state with cocoon chamber state.
+ * Combines symbiote bond state with cocoon chamber state and restoration husk tracking.
  *
  * Symbiote fields:
- * - bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost
+ * - symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost
  *
  * Cocoon fields:
  * - symbioteBindable: whether player can bind (set by consuming symbiote_stew)
  * - cocoonSpawnPos/Dim: current cocoon spawn point
  * - previousBedSpawnPos/Dim: snapshot of bed spawn before setting cocoon spawn
  * - symbioteStewConsumedOnce, cocoonSpawnSetOnce: progression flags
+ *
+ * Restoration Husk fields:
+ * - restorationHuskPos/Dim: location of the player's restoration husk
+ * - restorationHuskActive: whether the husk is still active
  */
 public record PlayerSymbioteData(
         // Symbiote bond state
-        boolean bonded,
+        SymbioteState symbioteState,
         long bondTime,
         int tier,
         boolean dash,
@@ -42,41 +46,72 @@ public record PlayerSymbioteData(
         @Nullable BlockPos previousBedSpawnPos,
         @Nullable ResourceKey<Level> previousBedSpawnDim,
         boolean symbioteStewConsumedOnce,
-        boolean cocoonSpawnSetOnce
+        boolean cocoonSpawnSetOnce,
+        // Restoration Husk tracking
+        @Nullable BlockPos restorationHuskPos,
+        @Nullable ResourceKey<Level> restorationHuskDim,
+        boolean restorationHuskActive
 ) {
+    /**
+     * Helper record for serializing position + dimension pairs as a single optional field.
+     */
+    private record DimensionPos(BlockPos pos, ResourceKey<Level> dim) {
+        static final Codec<DimensionPos> CODEC = RecordCodecBuilder.create(b -> b.group(
+                BlockPos.CODEC.fieldOf("pos").forGetter(DimensionPos::pos),
+                ResourceKey.codec(Registries.DIMENSION).fieldOf("dim").forGetter(DimensionPos::dim)
+        ).apply(b, DimensionPos::new));
+    }
+
     public static final Codec<PlayerSymbioteData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
-                    // Symbiote fields
-                    Codec.BOOL.fieldOf("bonded").forGetter(PlayerSymbioteData::bonded),
+                    // Symbiote fields (7)
+                    SymbioteState.CODEC.fieldOf("symbioteState").forGetter(PlayerSymbioteData::symbioteState),
                     Codec.LONG.fieldOf("bondTime").forGetter(PlayerSymbioteData::bondTime),
                     Codec.INT.fieldOf("tier").forGetter(PlayerSymbioteData::tier),
                     Codec.BOOL.fieldOf("dash").forGetter(PlayerSymbioteData::dash),
                     Codec.BOOL.fieldOf("featherFalling").forGetter(PlayerSymbioteData::featherFalling),
                     Codec.BOOL.fieldOf("speed").forGetter(PlayerSymbioteData::speed),
                     Codec.INT.fieldOf("jumpBoost").forGetter(PlayerSymbioteData::jumpBoost),
-                    // Cocoon fields
+                    // Cocoon fields (5)
                     Codec.BOOL.fieldOf("symbioteBindable").forGetter(PlayerSymbioteData::symbioteBindable),
-                    BlockPos.CODEC.optionalFieldOf("cocoonSpawnPos").forGetter(d -> Optional.ofNullable(d.cocoonSpawnPos)),
-                    ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("cocoonSpawnDim").forGetter(d -> Optional.ofNullable(d.cocoonSpawnDim)),
-                    BlockPos.CODEC.optionalFieldOf("previousBedSpawnPos").forGetter(d -> Optional.ofNullable(d.previousBedSpawnPos)),
-                    ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("previousBedSpawnDim").forGetter(d -> Optional.ofNullable(d.previousBedSpawnDim)),
+                    DimensionPos.CODEC.optionalFieldOf("cocoonSpawn").forGetter(d ->
+                            d.cocoonSpawnPos != null && d.cocoonSpawnDim != null
+                                    ? Optional.of(new DimensionPos(d.cocoonSpawnPos, d.cocoonSpawnDim))
+                                    : Optional.empty()),
+                    DimensionPos.CODEC.optionalFieldOf("previousBedSpawn").forGetter(d ->
+                            d.previousBedSpawnPos != null && d.previousBedSpawnDim != null
+                                    ? Optional.of(new DimensionPos(d.previousBedSpawnPos, d.previousBedSpawnDim))
+                                    : Optional.empty()),
                     Codec.BOOL.fieldOf("symbioteStewConsumedOnce").forGetter(PlayerSymbioteData::symbioteStewConsumedOnce),
-                    Codec.BOOL.fieldOf("cocoonSpawnSetOnce").forGetter(PlayerSymbioteData::cocoonSpawnSetOnce)
-            ).apply(builder, PlayerSymbioteData::fromOptionals));
+                    Codec.BOOL.fieldOf("cocoonSpawnSetOnce").forGetter(PlayerSymbioteData::cocoonSpawnSetOnce),
+                    // Restoration Husk fields (2)
+                    DimensionPos.CODEC.optionalFieldOf("restorationHusk").forGetter(d ->
+                            d.restorationHuskPos != null && d.restorationHuskDim != null
+                                    ? Optional.of(new DimensionPos(d.restorationHuskPos, d.restorationHuskDim))
+                                    : Optional.empty()),
+                    Codec.BOOL.fieldOf("restorationHuskActive").forGetter(PlayerSymbioteData::restorationHuskActive)
+            ).apply(builder, PlayerSymbioteData::fromCodec));
 
-    private static PlayerSymbioteData fromOptionals(
-            boolean bonded, long bondTime, int tier, boolean dash, boolean featherFalling, boolean speed, int jumpBoost,
+    private static PlayerSymbioteData fromCodec(
+            SymbioteState symbioteState, long bondTime, int tier, boolean dash, boolean featherFalling, boolean speed, int jumpBoost,
             boolean symbioteBindable,
-            Optional<BlockPos> cocoonSpawnPos, Optional<ResourceKey<Level>> cocoonSpawnDim,
-            Optional<BlockPos> previousBedSpawnPos, Optional<ResourceKey<Level>> previousBedSpawnDim,
-            boolean symbioteStewConsumedOnce, boolean cocoonSpawnSetOnce
+            Optional<DimensionPos> cocoonSpawn,
+            Optional<DimensionPos> previousBedSpawn,
+            boolean symbioteStewConsumedOnce, boolean cocoonSpawnSetOnce,
+            Optional<DimensionPos> restorationHusk,
+            boolean restorationHuskActive
     ) {
         return new PlayerSymbioteData(
-                bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable,
-                cocoonSpawnPos.orElse(null), cocoonSpawnDim.orElse(null),
-                previousBedSpawnPos.orElse(null), previousBedSpawnDim.orElse(null),
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce
+                cocoonSpawn.map(DimensionPos::pos).orElse(null),
+                cocoonSpawn.map(DimensionPos::dim).orElse(null),
+                previousBedSpawn.map(DimensionPos::pos).orElse(null),
+                previousBedSpawn.map(DimensionPos::dim).orElse(null),
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHusk.map(DimensionPos::pos).orElse(null),
+                restorationHusk.map(DimensionPos::dim).orElse(null),
+                restorationHuskActive
         );
     }
 
@@ -84,7 +119,7 @@ public record PlayerSymbioteData(
         @Override
         public PlayerSymbioteData decode(ByteBuf buffer) {
             // Symbiote fields
-            boolean bonded = ByteBufCodecs.BOOL.decode(buffer);
+            SymbioteState symbioteState = SymbioteState.STREAM_CODEC.decode(buffer);
             long bondTime = ByteBufCodecs.VAR_LONG.decode(buffer);
             int tier = ByteBufCodecs.INT.decode(buffer);
             boolean dash = ByteBufCodecs.BOOL.decode(buffer);
@@ -106,18 +141,25 @@ public record PlayerSymbioteData(
             boolean symbioteStewConsumedOnce = ByteBufCodecs.BOOL.decode(buffer);
             boolean cocoonSpawnSetOnce = ByteBufCodecs.BOOL.decode(buffer);
 
+            // Restoration Husk fields
+            boolean hasRestorationHusk = ByteBufCodecs.BOOL.decode(buffer);
+            BlockPos restorationHuskPos = hasRestorationHusk ? BlockPos.STREAM_CODEC.decode(buffer) : null;
+            ResourceKey<Level> restorationHuskDim = hasRestorationHusk ? ResourceKey.streamCodec(Registries.DIMENSION).decode(buffer) : null;
+            boolean restorationHuskActive = ByteBufCodecs.BOOL.decode(buffer);
+
             return new PlayerSymbioteData(
-                    bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                    symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                     symbioteBindable, cocoonSpawnPos, cocoonSpawnDim,
                     previousBedSpawnPos, previousBedSpawnDim,
-                    symbioteStewConsumedOnce, cocoonSpawnSetOnce
+                    symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                    restorationHuskPos, restorationHuskDim, restorationHuskActive
             );
         }
 
         @Override
         public void encode(ByteBuf buffer, PlayerSymbioteData data) {
             // Symbiote fields
-            ByteBufCodecs.BOOL.encode(buffer, data.bonded);
+            SymbioteState.STREAM_CODEC.encode(buffer, data.symbioteState);
             ByteBufCodecs.VAR_LONG.encode(buffer, data.bondTime);
             ByteBufCodecs.INT.encode(buffer, data.tier);
             ByteBufCodecs.BOOL.encode(buffer, data.dash);
@@ -144,103 +186,151 @@ public record PlayerSymbioteData(
 
             ByteBufCodecs.BOOL.encode(buffer, data.symbioteStewConsumedOnce);
             ByteBufCodecs.BOOL.encode(buffer, data.cocoonSpawnSetOnce);
+
+            // Restoration Husk fields
+            boolean hasRestorationHusk = data.restorationHuskPos != null && data.restorationHuskDim != null;
+            ByteBufCodecs.BOOL.encode(buffer, hasRestorationHusk);
+            if (hasRestorationHusk) {
+                BlockPos.STREAM_CODEC.encode(buffer, data.restorationHuskPos);
+                ResourceKey.streamCodec(Registries.DIMENSION).encode(buffer, data.restorationHuskDim);
+            }
+            ByteBufCodecs.BOOL.encode(buffer, data.restorationHuskActive);
         }
     };
 
     public static final PlayerSymbioteData DEFAULT = new PlayerSymbioteData(
-            false, 0L, 1, false, false, false, 0,
-            false, null, null, null, null, false, false
+            SymbioteState.UNBOUND, 0L, 1, false, false, false, 0,
+            false, null, null, null, null, false, false,
+            null, null, false
     );
 
     // Symbiote builder methods
 
     /**
-     * Creates a new PlayerSymbioteData with all symbiote bond fields.
+     * Creates a new PlayerSymbioteData with the given symbiote state.
      */
-    public PlayerSymbioteData withBond(boolean bonded, long bondTime, int tier,
-                                        boolean dash, boolean featherFalling, boolean speed, int jumpBoost) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+    public PlayerSymbioteData withSymbioteState(SymbioteState state) {
+        return new PlayerSymbioteData(state, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
-    public PlayerSymbioteData withBonded(boolean bonded, long bondTime) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+    /**
+     * Creates a new PlayerSymbioteData with all symbiote bond fields.
+     */
+    public PlayerSymbioteData withBond(SymbioteState state, long bondTime, int tier,
+                                        boolean dash, boolean featherFalling, boolean speed, int jumpBoost) {
+        return new PlayerSymbioteData(state, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withTier(int tier) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withDash(boolean dash) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withFeatherFalling(boolean featherFalling) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withSpeed(boolean speed) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withJumpBoost(int jumpBoost) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     // Cocoon builder methods
 
     public PlayerSymbioteData withSymbioteBindable(boolean bindable) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 bindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withSymbioteStewConsumedOnce(boolean consumed) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                consumed, cocoonSpawnSetOnce);
+                consumed, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withCocoonSpawn(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, pos, dim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withPreviousBedSpawn(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, pos, dim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce);
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
     }
 
     public PlayerSymbioteData withCocoonSpawnSetOnce(boolean set) {
-        return new PlayerSymbioteData(bonded, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, set);
+                symbioteStewConsumedOnce, set,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+    }
+
+    // Restoration Husk builder methods
+
+    /**
+     * Sets the restoration husk location.
+     */
+    public PlayerSymbioteData withRestorationHusk(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim, boolean active) {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                pos, dim, active);
+    }
+
+    /**
+     * Clears the restoration husk tracking.
+     */
+    public PlayerSymbioteData clearRestorationHusk() {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                null, null, false);
     }
 
     /**
      * Creates a PlayerSymbioteData from an item's SymbioteData (for binding).
-     * Preserves cocoon state from existing player data.
+     * Preserves cocoon state and restoration husk state from existing player data.
      */
     public PlayerSymbioteData withSymbioteFromItem(SymbioteData itemData, long currentGameTime) {
         return new PlayerSymbioteData(
-                true, currentGameTime, itemData.tier(), itemData.dash(), itemData.featherFalling(), itemData.speed(), itemData.jumpBoost(),
+                SymbioteState.BONDED_ACTIVE, currentGameTime, itemData.tier(), itemData.dash(), itemData.featherFalling(), itemData.speed(), itemData.jumpBoost(),
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive
         );
     }
 
@@ -252,13 +342,14 @@ public record PlayerSymbioteData(
     }
 
     /**
-     * Resets symbiote bond state while preserving cocoon state.
+     * Resets symbiote bond state while preserving cocoon state and restoration husk state.
      */
     public PlayerSymbioteData withSymbioteReset() {
         return new PlayerSymbioteData(
-                false, 0L, 1, false, false, false, 0,
+                SymbioteState.UNBOUND, 0L, 1, false, false, false, 0,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
-                symbioteStewConsumedOnce, cocoonSpawnSetOnce
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive
         );
     }
 }

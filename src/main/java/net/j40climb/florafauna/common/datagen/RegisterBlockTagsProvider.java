@@ -4,6 +4,7 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.util.ModTags;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
@@ -22,6 +23,10 @@ public class RegisterBlockTagsProvider extends BlockTagsProvider {
                 .addTag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .addTag(BlockTags.MINEABLE_WITH_AXE)
                 .addTag(BlockTags.MINEABLE_WITH_SHOVEL);
+
+        // Husk block - mineable with pickaxe
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .add(ModRegistry.HUSK.get());
 
         // Wood blocks - add to appropriate tags
         for (ModWoodType woodType : ModWoodType.values()) {

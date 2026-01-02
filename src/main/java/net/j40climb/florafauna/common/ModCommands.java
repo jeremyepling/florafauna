@@ -1,10 +1,12 @@
-package net.j40climb.florafauna.common.item.symbiote;
+package net.j40climb.florafauna.common;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.SymbioteBindingHelper;
+import net.j40climb.florafauna.common.item.symbiote.SymbioteState;
 import net.j40climb.florafauna.common.item.symbiote.dream.DreamInsightEngine;
 import net.j40climb.florafauna.common.item.symbiote.dream.DreamLevel;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
@@ -14,111 +16,113 @@ import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalUpdat
 import net.j40climb.florafauna.common.item.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.item.symbiote.voice.SymbioteVoiceService;
 import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 /**
- * Commands for managing symbiote attachment data.
+ * Centralized command registration for the FloraFauna mod.
+ * All commands use /florafauna as the base command.
+ *
  * Usage:
- *   /symbiote check - Display current symbiote data
- *   /symbiote bond - Bond a symbiote to the player
- *   /symbiote unbond - Unbond the symbiote from the player (returns item with memory intact)
- *   /symbiote reset - Reset the symbiote completely (for testing, no item created)
- *   /symbiote toggle <ability> - Toggle an ability (dash, featherFalling, speed)
- *   /symbiote setJumpBoost <0-4> - Set jump boost level (0=off, 1-4=Jump Boost I-IV)
- *   /symbiote dream - Trigger a dream insight
- *   /symbiote dream force <1-3> - Force a dream at a specific level
- *   /symbiote cooldown reset - Reset all voice cooldowns
- *   /symbiote progress - Show progress signals
- *   /symbiote progress set <concept> <state> - Set a progress state
+ *   /florafauna symbiote check - Display current symbiote data
+ *   /florafauna symbiote bond - Bond a symbiote to the player
+ *   /florafauna symbiote unbond - Unbond the symbiote from the player
+ *   /florafauna symbiote reset - Reset the symbiote completely
+ *   /florafauna symbiote toggle <ability> - Toggle an ability
+ *   /florafauna symbiote setJumpBoost <0-4> - Set jump boost level
+ *   /florafauna symbiote dream - Trigger a dream insight
+ *   /florafauna symbiote dream force <1-3> - Force a dream at a specific level
+ *   /florafauna symbiote cooldown reset - Reset all voice cooldowns
+ *   /florafauna symbiote progress - Show progress signals
+ *   /florafauna symbiote progress set <concept> <state> - Set a progress state
  */
-public class SymbioteCommand {
+public class ModCommands {
+
     /**
-     * Registers the symbiote command.
+     * Registers all mod commands.
      *
      * @param dispatcher the command dispatcher
      */
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
-                Commands.literal("symbiote")
-                        .then(Commands.literal("check")
-                                .executes(SymbioteCommand::checkSymbiote))
-                        .then(Commands.literal("bond")
-                                .executes(SymbioteCommand::bondSymbiote))
-                        .then(Commands.literal("unbond")
-                                .executes(SymbioteCommand::unbondSymbiote))
-                        .then(Commands.literal("reset")
-                                .executes(SymbioteCommand::resetSymbiote))
-                        .then(Commands.literal("toggle")
-                                .then(Commands.argument("ability", StringArgumentType.word())
-                                        .suggests((context, builder) -> {
-                                            builder.suggest("dash");
-                                            builder.suggest("featherFalling");
-                                            builder.suggest("speed");
-                                            return builder.buildFuture();
-                                        })
-                                        .executes(SymbioteCommand::toggleAbility)))
-                        .then(Commands.literal("setJumpBoost")
-                                .then(Commands.argument("level", IntegerArgumentType.integer(0, 4))
-                                        .executes(SymbioteCommand::setJumpBoost)))
-                        // Dream commands
-                        .then(Commands.literal("dream")
-                                .executes(SymbioteCommand::triggerDream)
-                                .then(Commands.literal("force")
-                                        .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
-                                                .executes(SymbioteCommand::forceDream))))
-                        // Voice system debug commands
-                        .then(Commands.literal("cooldown")
+                Commands.literal("florafauna")
+                        .then(Commands.literal("symbiote")
+                                .then(Commands.literal("check")
+                                        .executes(ModCommands::checkSymbiote))
+                                .then(Commands.literal("bond")
+                                        .executes(ModCommands::bondSymbiote))
+                                .then(Commands.literal("unbond")
+                                        .executes(ModCommands::unbondSymbiote))
                                 .then(Commands.literal("reset")
-                                        .executes(SymbioteCommand::resetCooldowns)))
-                        .then(Commands.literal("progress")
-                                .executes(SymbioteCommand::showProgress)
-                                .then(Commands.literal("set")
-                                        .then(Commands.argument("concept", StringArgumentType.word())
-                                                .then(Commands.argument("state", StringArgumentType.word())
-                                                        .suggests((context, builder) -> {
-                                                            for (SignalState state : SignalState.values()) {
-                                                                builder.suggest(state.name().toLowerCase());
-                                                            }
-                                                            return builder.buildFuture();
-                                                        })
-                                                        .executes(SymbioteCommand::setProgressState)))))
+                                        .executes(ModCommands::resetSymbiote))
+                                .then(Commands.literal("toggle")
+                                        .then(Commands.argument("ability", StringArgumentType.word())
+                                                .suggests((context, builder) -> {
+                                                    builder.suggest("dash");
+                                                    builder.suggest("featherFalling");
+                                                    builder.suggest("speed");
+                                                    return builder.buildFuture();
+                                                })
+                                                .executes(ModCommands::toggleAbility)))
+                                .then(Commands.literal("setJumpBoost")
+                                        .then(Commands.argument("level", IntegerArgumentType.integer(0, 4))
+                                                .executes(ModCommands::setJumpBoost)))
+                                .then(Commands.literal("dream")
+                                        .executes(ModCommands::triggerDream)
+                                        .then(Commands.literal("force")
+                                                .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
+                                                        .executes(ModCommands::forceDream))))
+                                .then(Commands.literal("cooldown")
+                                        .then(Commands.literal("reset")
+                                                .executes(ModCommands::resetCooldowns)))
+                                .then(Commands.literal("progress")
+                                        .executes(ModCommands::showProgress)
+                                        .then(Commands.literal("set")
+                                                .then(Commands.argument("concept", StringArgumentType.word())
+                                                        .then(Commands.argument("state", StringArgumentType.word())
+                                                                .suggests((context, builder) -> {
+                                                                    for (SignalState state : SignalState.values()) {
+                                                                        builder.suggest(state.name().toLowerCase());
+                                                                    }
+                                                                    return builder.buildFuture();
+                                                                })
+                                                                .executes(ModCommands::setProgressState))))))
         );
     }
 
-    /**
-     * Executes the check command to display symbiote data.
-     *
-     * @param context the command context
-     * @return 1 if successful
-     */
+    // ==================== Symbiote Commands ====================
+
     private static int checkSymbiote(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
-        // Check if the command was run by a player
         if (!(source.getEntity() instanceof ServerPlayer player)) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.player_only"));
             return 0;
         }
 
-        // Get the player's symbiote data
-        PlayerSymbioteData data = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Display the header
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.header")
                 .withStyle(style -> style.withColor(0x9B59B6).withBold(true)), false);
 
-        // Display bonded status
-        source.sendSuccess(() -> formatField("command.florafauna.symbiote.bonded",
-                formatBoolean(data.bonded())), false);
+        // Display symbiote state
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.state",
+                data.symbioteState().getSerializedName()), false);
 
-        // Display all other fields if bonded
-        if (data.bonded()) {
+        // Display all bond fields if bonded
+        if (data.symbioteState().isBonded()) {
+            source.sendSuccess(() -> formatField("command.florafauna.symbiote.abilities_active",
+                    formatBoolean(data.symbioteState().areAbilitiesActive())), false);
             source.sendSuccess(() -> formatField("command.florafauna.symbiote.bond_time",
                     String.valueOf(data.bondTime())), false);
             source.sendSuccess(() -> formatField("command.florafauna.symbiote.tier",
@@ -133,15 +137,33 @@ public class SymbioteCommand {
                     String.valueOf(data.jumpBoost())), false);
         }
 
+        // Display cocoon state section
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.cocoon_header")
+                .withStyle(style -> style.withColor(0x9B59B6).withBold(true)), false);
+
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.bindable",
+                formatBoolean(data.symbioteBindable())), false);
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.stew_consumed",
+                formatBoolean(data.symbioteStewConsumedOnce())), false);
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.cocoon_set",
+                formatBoolean(data.cocoonSpawnSetOnce())), false);
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.cocoon_spawn",
+                formatPosAndDim(data.cocoonSpawnPos(), data.cocoonSpawnDim())), false);
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.previous_bed",
+                formatPosAndDim(data.previousBedSpawnPos(), data.previousBedSpawnDim())), false);
+
+        // Display restoration husk section
+        source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.husk_header")
+                .withStyle(style -> style.withColor(0x9B59B6).withBold(true)), false);
+
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.husk_active",
+                formatBoolean(data.restorationHuskActive())), false);
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.husk_position",
+                formatPosAndDim(data.restorationHuskPos(), data.restorationHuskDim())), false);
+
         return 1;
     }
 
-    /**
-     * Executes the bond command to bond a symbiote to the player.
-     *
-     * @param context the command context
-     * @return 1 if successful
-     */
     private static int bondSymbiote(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -150,25 +172,23 @@ public class SymbioteCommand {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
-        if (currentData.bonded()) {
+        if (currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.already_bonded"));
             return 0;
         }
 
-        // Bond the symbiote
         PlayerSymbioteData newData = currentData.withBond(
-                true,
+                SymbioteState.BONDED_ACTIVE,
                 player.level().getGameTime(),
                 1,
                 false, false, false, 0
         );
-        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
-        player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
-        // Trigger bonding observation - BONDING_MILESTONE is Tier 2 breakthrough
         ObservationArbiter.observe(player, ObservationCategory.BONDING_MILESTONE, 100, Map.of(
                 "event", "bonded"
         ));
@@ -178,13 +198,6 @@ public class SymbioteCommand {
         return 1;
     }
 
-    /**
-     * Executes the unbond command to remove the symbiote from the player.
-     * Creates an item with the symbiote's memory/progress preserved.
-     *
-     * @param context the command context
-     * @return 1 if successful
-     */
     private static int unbondSymbiote(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -193,7 +206,6 @@ public class SymbioteCommand {
             return 0;
         }
 
-        // Use the binding helper for unbinding
         SymbioteBindingHelper.UnbindResult result = SymbioteBindingHelper.unbindSymbiote(player);
 
         if (!result.success()) {
@@ -201,9 +213,7 @@ public class SymbioteCommand {
             return 0;
         }
 
-        // Give item to player
         if (!player.getInventory().add(result.symbioteItem())) {
-            // If inventory is full, drop at player's feet
             player.drop(result.symbioteItem(), false);
         }
 
@@ -212,13 +222,6 @@ public class SymbioteCommand {
         return 1;
     }
 
-    /**
-     * Executes the reset command to fully reset the symbiote (for testing).
-     * This does a complete reset of all symbiote data without creating an item.
-     *
-     * @param context the command context
-     * @return 1 if successful
-     */
     private static int resetSymbiote(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -227,30 +230,23 @@ public class SymbioteCommand {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
-        if (!currentData.bonded()) {
+        if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
 
-        // Full reset - clear symbiote bond while preserving cocoon state
         PlayerSymbioteData resetData = currentData.withSymbioteReset();
-        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, resetData);
-        player.setData(RegisterAttachmentTypes.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT);
-        player.setData(RegisterAttachmentTypes.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, resetData);
+        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.reset_success")
                 .withStyle(style -> style.withColor(0xF39C12)), false);
         return 1;
     }
 
-    /**
-     * Executes the toggle command to toggle an ability.
-     *
-     * @param context the command context
-     * @return 1 if successful
-     */
     private static int toggleAbility(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -259,9 +255,9 @@ public class SymbioteCommand {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
-        if (!currentData.bonded()) {
+        if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
@@ -271,44 +267,20 @@ public class SymbioteCommand {
 
         switch (ability.toLowerCase()) {
             case "dash":
-                newData = currentData.withBond(
-                        currentData.bonded(),
-                        currentData.bondTime(),
-                        currentData.tier(),
-                        !currentData.dash(),
-                        currentData.featherFalling(),
-                        currentData.speed(),
-                        currentData.jumpBoost()
-                );
+                newData = currentData.withDash(!currentData.dash());
                 break;
             case "featherfalling":
-                newData = currentData.withBond(
-                        currentData.bonded(),
-                        currentData.bondTime(),
-                        currentData.tier(),
-                        currentData.dash(),
-                        !currentData.featherFalling(),
-                        currentData.speed(),
-                        currentData.jumpBoost()
-                );
+                newData = currentData.withFeatherFalling(!currentData.featherFalling());
                 break;
             case "speed":
-                newData = currentData.withBond(
-                        currentData.bonded(),
-                        currentData.bondTime(),
-                        currentData.tier(),
-                        currentData.dash(),
-                        currentData.featherFalling(),
-                        !currentData.speed(),
-                        currentData.jumpBoost()
-                );
+                newData = currentData.withSpeed(!currentData.speed());
                 break;
             default:
                 source.sendFailure(Component.translatable("command.florafauna.symbiote.invalid_ability", ability));
                 return 0;
         }
 
-        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
+        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         boolean newState = switch (ability.toLowerCase()) {
             case "dash" -> newData.dash();
@@ -327,12 +299,6 @@ public class SymbioteCommand {
         return 1;
     }
 
-    /**
-     * Executes the setJumpBoost command to set the jump boost level.
-     *
-     * @param context the command context
-     * @return 1 if successful
-     */
     private static int setJumpBoost(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -341,27 +307,16 @@ public class SymbioteCommand {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
-        if (!currentData.bonded()) {
+        if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
 
         int level = IntegerArgumentType.getInteger(context, "level");
-
-        // Create new data with updated jump boost
-        PlayerSymbioteData newData = currentData.withBond(
-                currentData.bonded(),
-                currentData.bondTime(),
-                currentData.tier(),
-                currentData.dash(),
-                currentData.featherFalling(),
-                currentData.speed(),
-                level
-        );
-
-        player.setData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA, newData);
+        PlayerSymbioteData newData = currentData.withJumpBoost(level);
+        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_boost_set",
                 level).withStyle(style -> style.withColor(0xF39C12)), false);
@@ -371,9 +326,6 @@ public class SymbioteCommand {
 
     // ==================== Dream Commands ====================
 
-    /**
-     * Trigger a dream for the player.
-     */
     private static int triggerDream(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -382,9 +334,9 @@ public class SymbioteCommand {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
-        if (!currentData.bonded()) {
+        if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
@@ -399,9 +351,6 @@ public class SymbioteCommand {
         return success ? 1 : 0;
     }
 
-    /**
-     * Force a dream at a specific level.
-     */
     private static int forceDream(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -410,15 +359,15 @@ public class SymbioteCommand {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
-        if (!currentData.bonded()) {
+        if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
             return 0;
         }
 
         int levelNum = IntegerArgumentType.getInteger(context, "level");
-        DreamLevel level = DreamLevel.fromOrdinal(levelNum - 1); // Convert 1-3 to 0-2
+        DreamLevel level = DreamLevel.fromOrdinal(levelNum - 1);
 
         boolean success = DreamInsightEngine.forceDream(player, level);
 
@@ -432,9 +381,6 @@ public class SymbioteCommand {
 
     // ==================== Voice Debug Commands ====================
 
-    /**
-     * Reset all voice cooldowns.
-     */
     private static int resetCooldowns(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -450,9 +396,6 @@ public class SymbioteCommand {
         return 1;
     }
 
-    /**
-     * Show progress signals.
-     */
     private static int showProgress(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -463,7 +406,6 @@ public class SymbioteCommand {
 
         String summary = ProgressSignalUpdater.getProgressSummary(player);
 
-        // Split by newlines and send each line
         for (String line : summary.split("\n")) {
             if (!line.isBlank()) {
                 source.sendSuccess(() -> Component.literal(line)
@@ -474,9 +416,6 @@ public class SymbioteCommand {
         return 1;
     }
 
-    /**
-     * Set a progress signal state.
-     */
     private static int setProgressState(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -505,39 +444,27 @@ public class SymbioteCommand {
 
     // ==================== Formatting Helpers ====================
 
-    /**
-     * Formats a field with its translated label and value.
-     *
-     * @param labelKey the translation key for the field label
-     * @param value the value to display
-     * @return a formatted Component
-     */
     private static Component formatField(String labelKey, String value) {
         return Component.translatable(labelKey).append(": " + value);
     }
 
-    /**
-     * Formats a boolean as Yes/No using translation keys.
-     *
-     * @param value the boolean value
-     * @return the translated yes/no string
-     */
     private static String formatBoolean(boolean value) {
         return Component.translatable(value ?
                 "command.florafauna.symbiote.yes" :
                 "command.florafauna.symbiote.no").getString();
     }
 
-    /**
-     * Formats a boolean as Enabled/Disabled using translation keys.
-     *
-     * @param value the boolean value
-     * @return the translated enabled/disabled string
-     */
     private static String formatEnabledDisabled(boolean value) {
         return Component.translatable(value ?
                 "command.florafauna.symbiote.enabled" :
                 "command.florafauna.symbiote.disabled").getString();
     }
 
+    private static String formatPosAndDim(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
+        if (pos == null || dim == null) {
+            return Component.translatable("command.florafauna.symbiote.none").getString();
+        }
+        String dimName = dim.identifier().getPath();
+        return String.format("%d, %d, %d (%s)", pos.getX(), pos.getY(), pos.getZ(), dimName);
+    }
 }

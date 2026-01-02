@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
-import net.j40climb.florafauna.common.block.RegisterBlockEntities;
 import net.j40climb.florafauna.common.item.symbiote.DormantSymbioteItem;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -68,7 +68,7 @@ public class ContainmentChamberBlockEntity extends BlockEntity implements MenuPr
     private int maxProgress = 72;
 
     public ContainmentChamberBlockEntity(BlockPos pos, BlockState blockState) {
-        super(RegisterBlockEntities.SYMBIOTE_CONTAINMENT_CHAMBER.get(), pos, blockState);
+        super(ModRegistry.CONTAINMENT_CHAMBER_BE.get(), pos, blockState);
         data = new ContainerData() {
             @Override
             public int get(int i) {

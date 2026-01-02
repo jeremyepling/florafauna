@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.abilities.multiblock;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.j40climb.florafauna.common.RegisterDataComponentTypes;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -35,7 +35,7 @@ public class MultiBlockOutlineRenderer implements CustomBlockOutlineRenderer {
         }
 
         // Only render outlines if the held item has multi-block mining capability
-        if (!player.getMainHandItem().has(RegisterDataComponentTypes.MULTI_BLOCK_MINING)) {
+        if (!player.getMainHandItem().has(ModRegistry.MULTI_BLOCK_MINING)) {
             return false;
         }
 

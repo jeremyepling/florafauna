@@ -1,10 +1,10 @@
 package net.j40climb.florafauna.common.block.cocoonchamber;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload.CocoonAction;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -83,7 +83,7 @@ public class CocoonChamberScreen extends AbstractContainerScreen<CocoonChamberMe
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        PlayerSymbioteData data = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Clear spawn is only active if cocoon spawn is set
         clearSpawnButton.active = data.cocoonSpawnPos() != null;
@@ -92,10 +92,10 @@ public class CocoonChamberScreen extends AbstractContainerScreen<CocoonChamberMe
         // - Player is bindable (consumed stew)
         // - Player is not already bonded
         // (We don't check inventory client-side - server will validate)
-        bindButton.active = data.symbioteBindable() && !data.bonded();
+        bindButton.active = data.symbioteBindable() && !data.symbioteState().isBonded();
 
         // Unbind is only active if player is bonded
-        unbindButton.active = data.bonded();
+        unbindButton.active = data.symbioteState().isBonded();
     }
 
     private void onSetSpawn(Button button) {

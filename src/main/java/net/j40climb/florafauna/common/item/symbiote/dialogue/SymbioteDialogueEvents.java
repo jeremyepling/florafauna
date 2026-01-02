@@ -1,11 +1,11 @@
 package net.j40climb.florafauna.common.item.symbiote.dialogue;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationArbiter;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -48,8 +48,8 @@ public class SymbioteDialogueEvents {
             return;
         }
 
-        PlayerSymbioteData symbioteData = player.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
-        if (!symbioteData.bonded()) {
+        PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        if (!symbioteData.symbioteState().isBonded()) {
             return;
         }
 
@@ -104,8 +104,8 @@ public class SymbioteDialogueEvents {
             return;
         }
 
-        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
-        if (!symbioteData.bonded()) {
+        PlayerSymbioteData symbioteData = serverPlayer.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        if (!symbioteData.symbioteState().isBonded()) {
             return;
         }
 
@@ -135,8 +135,8 @@ public class SymbioteDialogueEvents {
             return;
         }
 
-        PlayerSymbioteData symbioteData = serverPlayer.getData(RegisterAttachmentTypes.PLAYER_SYMBIOTE_DATA);
-        if (!symbioteData.bonded()) {
+        PlayerSymbioteData symbioteData = serverPlayer.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        if (!symbioteData.symbioteState().isBonded()) {
             return;
         }
 

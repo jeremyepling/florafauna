@@ -2,9 +2,6 @@
   "key.categories.florafauna": "Flora Fauna",
   "itemGroup.florafauna.florafauna_items_tab": "Flora Fauna Items",
 
-  "item.florafauna.tomato": "Tomato",
-  "tooltip.florafauna.tomato": "Tomato; Tomato",
-
   "item.florafauna.hammer": "Hammer",
 
   "item.florafauna.dormant_symbiote": "Dormant Symbiote",
@@ -56,6 +53,7 @@
   "gui.florafauna.cocoon.bind": "Bind Symbiote",
   "gui.florafauna.cocoon.unbind": "Unbind Symbiote",
   "block.florafauna.copper_golem_barrier": "Copper Golem Barrier",
+  "block.florafauna.husk": "Husk",
 
   "block.florafauna.driftwood_log": "Driftwood Log",
   "block.florafauna.stripped_driftwood_log": "Stripped Driftwood Log",
@@ -92,7 +90,20 @@
   "command.florafauna.symbiote.cooldowns_reset": "Voice cooldowns reset",
   "command.florafauna.symbiote.progress_set": "Set %s to state: %s",
   "command.florafauna.symbiote.invalid_state": "Invalid state: %s",
-
+  "command.florafauna.symbiote.state": "State",
+  "command.florafauna.symbiote.abilities_active": "Abilities Active",
+  "command.florafauna.symbiote.cocoon_header": "Cocoon State",
+  "command.florafauna.symbiote.bindable": "Bindable",
+  "command.florafauna.symbiote.stew_consumed": "Stew Consumed",
+  "command.florafauna.symbiote.cocoon_set": "Cocoon Set",
+  "command.florafauna.symbiote.cocoon_spawn": "Cocoon Spawn",
+  "command.florafauna.symbiote.previous_bed": "Previous Bed",
+  "command.florafauna.symbiote.husk_header": "Restoration Husk",
+  "command.florafauna.symbiote.husk_active": "Active",
+  "command.florafauna.symbiote.husk_position": "Position",
+  "command.florafauna.symbiote.none": "None",
+  "command.florafauna.symbiote.debug_enabled": "Symbiote debug overlay enabled",
+  "command.florafauna.symbiote.debug_disabled": "Symbiote debug overlay disabled",
 
   "symbiote.dialogue.bonded": "I was hoping you'd hesitate. You did not. Now it's permanent.",
   "symbiote.dialogue.unbonded": "The bond is severed. I will… adjust my expectations.",
@@ -151,5 +162,12 @@
   "symbiote.florafauna.bonded_success": "The symbiote has bonded with you",
   "symbiote.florafauna.unbonded_success": "The symbiote has been released",
   "symbiote.florafauna.cocoon_destroyed": "Your cocoon spawn has been destroyed, restoring previous spawn",
-  "symbiote.florafauna.stew_consumed": "You feel... different. The cocoon beckons."
+  "symbiote.florafauna.stew_consumed": "You feel... different. The cocoon beckons.",
+  "symbiote.florafauna.already_prepared": "You are already prepared for symbiosis",
+  "symbiote.florafauna.effect_expired": "The preparation has worn off...",
+
+  "symbiote.florafauna.husk_not_owner": "This husk does not recognize you.",
+  "symbiote.florafauna.abilities_restored": "Your symbiote awakens... abilities restored.",
+
+  "effect.florafauna.symbiote_prepared": "Symbiote Prepared"
 }

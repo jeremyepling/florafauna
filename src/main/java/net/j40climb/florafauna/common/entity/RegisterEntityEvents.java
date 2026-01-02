@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.gecko.GeckoModel;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardModel;
+import net.j40climb.florafauna.setup.ModRegistry;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -28,18 +29,18 @@ public class RegisterEntityEvents {
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
-        event.put(RegisterEntities.GECKO.get(), GeckoEntity.createAttributes().build());
-        event.put(RegisterEntities.LIZARD.get(), LizardEntity.createAttributes().build());
-        event.put(RegisterEntities.FRENCHIE.get(), FrenchieEntity.createAttributes().build());
+        event.put(ModRegistry.GECKO.get(), GeckoEntity.createAttributes().build());
+        event.put(ModRegistry.LIZARD.get(), LizardEntity.createAttributes().build());
+        event.put(ModRegistry.FRENCHIE.get(), FrenchieEntity.createAttributes().build());
     }
 
     // Manually create the spawn file since I don't have worldgen. Create file in src/generated/resources/data/florafauna/neoforge/biome_modifier/spawn_gecko.json
     // https://github.com/Tutorials-By-Kaupenjoe/NeoForge-Tutorial-1.21.X/compare/40-entityVariant...41-spawnEntity
     @SubscribeEvent
     public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
-        event.register(RegisterEntities.GECKO.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        event.register(ModRegistry.GECKO.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(RegisterEntities.LIZARD.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+        event.register(ModRegistry.LIZARD.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
     }
 }
