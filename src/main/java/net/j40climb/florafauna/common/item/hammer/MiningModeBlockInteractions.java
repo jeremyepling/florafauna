@@ -1,8 +1,8 @@
-package net.j40climb.florafauna.client;
+package net.j40climb.florafauna.common.item.hammer;
 
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.energyhammer.MiningModeData;
-import net.j40climb.florafauna.common.item.energyhammer.MiningShape;
+import net.j40climb.florafauna.common.item.hammer.data.MiningModeData;
+import net.j40climb.florafauna.common.item.hammer.data.MiningShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import static net.j40climb.florafauna.client.ClientUtils.raycastFromPlayer;
 
-public class BlockBreakUtils {
+public class MiningModeBlockInteractions {
     private static final Set<BlockPos> HARVESTED_BLOCKS = new HashSet<>();
     private static final Set<BlockPos> POTENTIAL_STAIR_BLOCKS = new HashSet<>();
     public static BlockPos destroyPos = BlockPos.ZERO;

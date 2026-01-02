@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.RegisterEntities;
-import net.j40climb.florafauna.common.item.energyhammer.EnergyHammerItem;
+import net.j40climb.florafauna.common.item.hammer.HammerItem;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteItem;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -20,7 +20,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Consumer;
 
-import static net.j40climb.florafauna.common.item.energyhammer.EnergyHammerItem.HAMMER_MATERIAL;
+import static net.j40climb.florafauna.common.item.hammer.HammerItem.HAMMER_MATERIAL;
 
 public class RegisterItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FloraFauna.MOD_ID);
@@ -53,8 +53,8 @@ public class RegisterItems {
     /*
     / Tools
     */
-    public static final DeferredItem<Item> ENERGY_HAMMER = ITEMS.registerItem("energy_hammer", properties ->
-            new EnergyHammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -2.4f, 0)));
+    public static final DeferredItem<Item> HAMMER = ITEMS.registerItem("hammer", properties ->
+            new HammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -2.4f, 0)));
 
     /*
     / Custom Items

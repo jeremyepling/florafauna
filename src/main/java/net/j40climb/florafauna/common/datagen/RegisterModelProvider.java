@@ -37,13 +37,13 @@ public class RegisterModelProvider extends ModelProvider {
         itemModels.generateFlatItem(RegisterItems.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.itemModelOutput.register(
-            RegisterItems.ENERGY_HAMMER.get(),
+            RegisterItems.HAMMER.get(),
             new ClientItem(
                 // Defines the model to render
                 new BlockModelWrapper.Unbaked(
                     // Points to a model JSON relative to the 'models' directory
                     // Located at 'assets/examplemod/models/item/example_item.json'
-                    ModelLocationUtils.getModelLocation(RegisterItems.ENERGY_HAMMER.get()),
+                    ModelLocationUtils.getModelLocation(RegisterItems.HAMMER.get()),
                     Collections.emptyList()
                 ),
                 // Defines some settings to use during the rendering process
@@ -94,6 +94,6 @@ public class RegisterModelProvider extends ModelProvider {
 
     @Override
     protected Stream<? extends Holder<Item>> getKnownItems() {
-        return RegisterItems.ITEMS.getEntries().stream().filter(x -> !x.equals(RegisterItems.ENERGY_HAMMER));
+        return RegisterItems.ITEMS.getEntries().stream().filter(x -> !x.equals(RegisterItems.HAMMER));
     }
 }

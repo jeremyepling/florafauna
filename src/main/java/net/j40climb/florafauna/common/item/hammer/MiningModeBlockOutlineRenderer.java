@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.client;
+package net.j40climb.florafauna.common.item.hammer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -17,11 +17,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.client.CustomBlockOutlineRenderer;
 
 import java.util.Set;
 
-public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client.CustomBlockOutlineRenderer {
-    public CustomBlockOutlineRenderer() {
+public class MiningModeBlockOutlineRenderer implements CustomBlockOutlineRenderer {
+    public MiningModeBlockOutlineRenderer() {
     }
 
     @Override
@@ -39,7 +40,7 @@ public class CustomBlockOutlineRenderer implements net.neoforged.neoforge.client
 
         // Mining mode outline rendering
         if (player.getMainHandItem().get(RegisterDataComponentTypes.MINING_MODE_DATA) != null) {
-            Set<BlockPos> breakBlockPositions = BlockBreakUtils.getBlocksToBeBrokenWithMiningMode(targetPos, player);
+            Set<BlockPos> breakBlockPositions = MiningModeBlockInteractions.getBlocksToBeBrokenWithMiningMode(targetPos, player);
 
             for (BlockPos blockPos : breakBlockPositions) {
                 if (blockPos.equals(targetPos)) {

@@ -21,7 +21,7 @@ public class RegisterItemTagsProvider extends ItemTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(ItemTags.PICKAXES)
-                .add(RegisterItems.ENERGY_HAMMER.get())
+                .add(RegisterItems.HAMMER.get())
                 .addTag(ModTags.Items.HAMMERS);
         tag(ItemTags.SHOVELS)
                 .addTag(ModTags.Items.HAMMERS);
@@ -32,7 +32,7 @@ public class RegisterItemTagsProvider extends ItemTagsProvider {
 
         // Create custom hammer tag for multi-tool functionality
         tag(ModTags.Items.HAMMERS)
-                .add(RegisterItems.ENERGY_HAMMER.get());
+                .add(RegisterItems.HAMMER.get());
 
         // Wood block items - add to appropriate tags
         for (ModWoodType woodType : ModWoodType.values()) {

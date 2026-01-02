@@ -5,9 +5,9 @@ import net.j40climb.florafauna.client.ClientUtils;
 import net.j40climb.florafauna.client.KeyMappings;
 import net.j40climb.florafauna.common.RegisterAttachmentTypes;
 import net.j40climb.florafauna.common.item.RegisterItems;
-import net.j40climb.florafauna.common.item.energyhammer.EnergyHammerConfigScreen;
-import net.j40climb.florafauna.common.item.energyhammer.networking.SpawnLightningPayload;
-import net.j40climb.florafauna.common.item.energyhammer.networking.TeleportToSurfacePayload;
+import net.j40climb.florafauna.common.item.hammer.abilities.SpawnLightningPayload;
+import net.j40climb.florafauna.common.item.hammer.abilities.TeleportToSurfacePayload;
+import net.j40climb.florafauna.common.item.hammer.menu.HammerConfigScreen;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
 import net.minecraft.client.Minecraft;
@@ -36,20 +36,20 @@ public class KeyInputEvents {
         ItemStack itemStack = player.getMainHandItem();
         // The KeyMappings has to be consumed during the event or it will replay the event on each tick. Don't check anything for this outside of player null
         while (KeyMappings.SUMMON_LIGHTNING_KEY.get().consumeClick()) {
-            if (itemStack.is(RegisterItems.ENERGY_HAMMER.get())) {
+            if (itemStack.is(RegisterItems.HAMMER.get())) {
                 Vec3 vec3 = ClientUtils.raycastFromPlayer(player, 10).getLocation();
                 BlockPos targetPos = new BlockPos(new Vec3i((int) vec3.x, (int) vec3.y, (int) vec3.z));
                 ClientPacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
             }
         }
         while (KeyMappings.TELEPORT_SURFACE_KEY.get().consumeClick()) {
-            if (itemStack.is(RegisterItems.ENERGY_HAMMER.get())) {
+            if (itemStack.is(RegisterItems.HAMMER.get())) {
                 ClientPacketDistributor.sendToServer(TeleportToSurfacePayload.INSTANCE);
             }
         }
         while (KeyMappings.ENERGY_HAMMER_CONFIG_KEY.get().consumeClick()) {
-            if (itemStack.is(RegisterItems.ENERGY_HAMMER.get())) {
-                mc.setScreen(new EnergyHammerConfigScreen());
+            if (itemStack.is(RegisterItems.HAMMER.get())) {
+                mc.setScreen(new HammerConfigScreen());
             }
         }
         while (KeyMappings.DASH_KEY.get().consumeClick()) {

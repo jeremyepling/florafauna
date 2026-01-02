@@ -1,9 +1,9 @@
-package net.j40climb.florafauna.common.item.energyhammer.networking;
+package net.j40climb.florafauna.common.item.hammer.abilities;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
-import net.j40climb.florafauna.common.item.energyhammer.MiningSpeed;
+import net.j40climb.florafauna.common.item.hammer.data.MiningSpeed;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

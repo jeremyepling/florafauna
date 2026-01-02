@@ -1,10 +1,10 @@
 package net.j40climb.florafauna.common;
 
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
-import net.j40climb.florafauna.common.item.energyhammer.networking.SetMiningSpeedPayload;
-import net.j40climb.florafauna.common.item.energyhammer.networking.SpawnLightningPayload;
-import net.j40climb.florafauna.common.item.energyhammer.networking.TeleportToSurfacePayload;
-import net.j40climb.florafauna.common.item.energyhammer.networking.UpdateEnergyHammerConfigPayload;
+import net.j40climb.florafauna.common.item.hammer.abilities.SetMiningSpeedPayload;
+import net.j40climb.florafauna.common.item.hammer.abilities.SpawnLightningPayload;
+import net.j40climb.florafauna.common.item.hammer.abilities.TeleportToSurfacePayload;
+import net.j40climb.florafauna.common.item.hammer.abilities.UpdateHammerConfigPayload;
 import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -16,7 +16,7 @@ public class RegisterNetworking {
         registrar.playToServer(SpawnLightningPayload.TYPE, SpawnLightningPayload.STREAM_CODEC, SpawnLightningPayload::onServerReceived);
         registrar.playToServer(TeleportToSurfacePayload.TYPE, TeleportToSurfacePayload.STREAM_CODEC, TeleportToSurfacePayload::onServerReceived);
         registrar.playToServer(SetMiningSpeedPayload.TYPE, SetMiningSpeedPayload.STREAM_CODEC, SetMiningSpeedPayload::onServerReceived);
-        registrar.playToServer(UpdateEnergyHammerConfigPayload.TYPE, UpdateEnergyHammerConfigPayload.STREAM_CODEC, UpdateEnergyHammerConfigPayload::onServerReceived);
+        registrar.playToServer(UpdateHammerConfigPayload.TYPE, UpdateHammerConfigPayload.STREAM_CODEC, UpdateHammerConfigPayload::onServerReceived);
         registrar.playToServer(DashPayload.TYPE, DashPayload.STREAM_CODEC, DashPayload::onServerReceived);
         registrar.playToServer(PutDownFrenchiePayload.TYPE, PutDownFrenchiePayload.STREAM_CODEC, PutDownFrenchiePayload::onServerReceived);
     }

@@ -3,7 +3,6 @@ package net.j40climb.florafauna.client.events;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.CustomBlockOutlineRenderer;
 import net.j40climb.florafauna.common.block.CopperGolemBarrierBlock;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackLayer;
 import net.minecraft.client.Minecraft;
@@ -23,17 +22,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class RenderEvents {
-
-    @SubscribeEvent
-    public static void extractBlockOutlineRenderStateEvent(ExtractBlockOutlineRenderStateEvent event) {
-        event.addCustomRenderer(new CustomBlockOutlineRenderer());
-    }
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent.AfterTranslucentBlocks event) {

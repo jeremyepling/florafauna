@@ -43,7 +43,7 @@ public class KeyMappings {
     ));
 
     public static final Lazy<KeyMapping> ENERGY_HAMMER_CONFIG_KEY = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.energy_hammer_config",
+            "key.florafauna.hammer_config",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_P,

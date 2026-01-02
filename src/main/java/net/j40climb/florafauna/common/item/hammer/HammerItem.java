@@ -1,6 +1,10 @@
-package net.j40climb.florafauna.common.item.energyhammer;
+package net.j40climb.florafauna.common.item.hammer;
 
 import net.j40climb.florafauna.common.RegisterDataComponentTypes;
+import net.j40climb.florafauna.common.item.hammer.data.MiningModeData;
+import net.j40climb.florafauna.common.item.hammer.data.MiningSpeed;
+import net.j40climb.florafauna.common.item.hammer.menu.HammerConfig;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
@@ -8,7 +12,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
@@ -26,7 +29,7 @@ import java.util.function.Consumer;
  * A multi-mode mining tool that can mine blocks with different mining speeds and patterns.
  * This hammer supports multiple mining modes and speed settings configurable via data components.
  */
-public class EnergyHammerItem extends Item {
+public class HammerItem extends Item {
     /**
      * The tool material configuration for the Energy Hammer.
      * Note: Durability and enchantability are unused since the hammer is unbreakable and not enchantable.
@@ -47,10 +50,10 @@ public class EnergyHammerItem extends Item {
      *
      * @param properties the item properties to configure this hammer
      */
-    public EnergyHammerItem(Properties properties) {
+    public HammerItem(Properties properties) {
         super(removeEnchantable(properties)
                 .component(RegisterDataComponentTypes.MINING_MODE_DATA, MiningModeData.DEFAULT)
-                .component(RegisterDataComponentTypes.ENERGY_HAMMER_CONFIG, EnergyHammerConfig.DEFAULT)
+                .component(RegisterDataComponentTypes.HAMMER_CONFIG, HammerConfig.DEFAULT)
                 .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
         );
     }
@@ -140,7 +143,7 @@ public class EnergyHammerItem extends Item {
      */
     @Override
     public float getDestroySpeed(ItemStack itemStack, BlockState blockState) {
-        EnergyHammerConfig config = itemStack.getOrDefault(RegisterDataComponentTypes.ENERGY_HAMMER_CONFIG, EnergyHammerConfig.DEFAULT);
+        HammerConfig config = itemStack.getOrDefault(RegisterDataComponentTypes.HAMMER_CONFIG, HammerConfig.DEFAULT);
         return switch (config.miningSpeed()) {
             case MiningSpeed.STANDARD ->
                     (blockState.is(BlockTags.MINEABLE_WITH_PICKAXE) || blockState.is(BlockTags.MINEABLE_WITH_SHOVEL) || blockState.is(BlockTags.MINEABLE_WITH_AXE)) ? super.getDestroySpeed(itemStack, Blocks.COBBLESTONE.defaultBlockState()) : 1.0F;

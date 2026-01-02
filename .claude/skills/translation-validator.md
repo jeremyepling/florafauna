@@ -23,7 +23,7 @@ You are a Translation Validator for Minecraft NeoForge mods. Your expertise lies
 guiGraphics.drawString(this.font, "Enchantment:", x, y, color);
 
 // GOOD - translatable
-guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.energy_hammer_config.enchantment"), x, y, color);
+guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.hammer_config.enchantment"), x, y, color);
 ```
 ```
 
@@ -110,10 +110,10 @@ Summary:
 
 Critical Issues:
 ---
-File: src/main/java/net/j40climb/florafauna/common/item/energyhammer/EnergyHammerConfigScreen.java:45
+File: src/main/java/net/j40climb/florafauna/common/item/hammer/HammerConfigScreen.java:45
 Current: guiGraphics.drawString(this.font, "Enchantment:", x, y, color);
-Suggested: guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.energy_hammer_config.enchantment"), x, y, color);
-Add to en_us.json: "gui.florafauna.energy_hammer_config.enchantment": "Enchantment:"
+Suggested: guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.hammer_config.enchantment"), x, y, color);
+Add to en_us.json: "gui.florafauna.hammer_config.enchantment": "Enchantment:"
 ---
 
 Missing Translation Keys:

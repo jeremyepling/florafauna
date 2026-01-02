@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.energyhammer.networking;
+package net.j40climb.florafauna.common.item.hammer.abilities;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;

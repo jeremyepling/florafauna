@@ -76,8 +76,8 @@ src/main/java/net/j40climb/florafauna/
     ├── item/                    # Item feature
     │   ├── RegisterItems.java
     │   ├── RegisterCreativeModeTabs.java
-    │   ├── energyhammer/        # Custom item feature directory
-    │   │   ├── EnergyHammerItem.java
+    │   ├── hammer/        # Custom item feature directory
+    │   │   ├── HammerItem.java
     │   │   └── networking/
     │   └── symbiote/            # Complex item with multiple subsystems
     │       ├── SymbioteItem.java
@@ -268,12 +268,12 @@ modEventBus.addListener(RegisterDataGenerators::gatherServerData);
 guiGraphics.drawString(this.font, "Enchantment:", x, y, color);
 
 // GOOD - translatable
-guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.energy_hammer_config.enchantment"), x, y, color);
+guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.hammer_config.enchantment"), x, y, color);
 ```
 
 Then add to `en_us.json`:
 ```json
-"gui.florafauna.energy_hammer_config.enchantment": "Enchantment:"
+"gui.florafauna.hammer_config.enchantment": "Enchantment:"
 ```
 
 ## Event Handlers
@@ -315,7 +315,7 @@ To add a new feature (e.g., a custom entity):
 
 Network packets are organized per-feature in `networking/` subdirectories:
 - `common/entity/frontpack/networking/PutDownFrenchiePayload.java`
-- `common/item/energyhammer/networking/`
+- `common/item/hammer/networking/`
 - `common/item/symbiote/networking/`
 
 Central networking registration is in `common/RegisterNetworking.java`.

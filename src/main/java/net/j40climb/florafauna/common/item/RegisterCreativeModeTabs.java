@@ -20,10 +20,10 @@ public class RegisterCreativeModeTabs {
     public static final Supplier<CreativeModeTab> FLORAFAUNA_ITEMS_TAB =
             CREATIVE_MODE_TABS.register("florafauna_items_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.florafauna.florafauna_items_tab"))
-                    .icon(() -> new ItemStack(RegisterItems.ENERGY_HAMMER.get()))
+                    .icon(() -> new ItemStack(RegisterItems.HAMMER.get()))
                     .displayItems((pParameters, output) -> {
                         output.accept(RegisterItems.TOMATO);
-                        output.accept(RegisterItems.ENERGY_HAMMER);
+                        output.accept(RegisterItems.HAMMER);
                         output.accept(RegisterItems.SYMBIOTE);
 
                         output.accept(RegisterItems.GECKO_SPAWN_EGG);

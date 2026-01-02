@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.item.energyhammer;
+package net.j40climb.florafauna.common.item.hammer.data;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
