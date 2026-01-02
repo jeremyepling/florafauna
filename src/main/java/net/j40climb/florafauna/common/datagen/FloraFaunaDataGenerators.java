@@ -11,21 +11,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class RegisterDataGenerators {
+public class FloraFaunaDataGenerators {
     public static void gatherClientData(GatherDataEvent.Client event) {
         DataGenerator generator = event.getGenerator();
         PackOutput packOutput = generator.getPackOutput();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         // Client-side data
-        generator.addProvider(true, new RegisterModelProvider(packOutput));
+        generator.addProvider(true, new FloraFaunaModelProvider(packOutput));
 
         // Server-side data (included here so runData generates everything in one pass)
         generator.addProvider(true, new LootTableProvider(packOutput, Collections.emptySet(),
-                List.of(new LootTableProvider.SubProviderEntry(RegisterBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(true, new RegisterBlockTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new RegisterItemTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new RegisterRecipeProvider(packOutput, lookupProvider));
+                List.of(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
+        generator.addProvider(true, new FloraFaunaBlockTagsProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
 
         // Test structures for GameTest
         generator.addProvider(true, new TestStructureProvider(packOutput, lookupProvider));
@@ -38,9 +38,9 @@ public class RegisterDataGenerators {
 
         // Server-side data only (no models - those are client-side)
         generator.addProvider(true , new LootTableProvider(packOutput, Collections.emptySet(),
-                List.of(new LootTableProvider.SubProviderEntry(RegisterBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(true, new RegisterBlockTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new RegisterItemTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new RegisterRecipeProvider(packOutput, lookupProvider));
+                List.of(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
+        generator.addProvider(true, new FloraFaunaBlockTagsProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
     }
 }

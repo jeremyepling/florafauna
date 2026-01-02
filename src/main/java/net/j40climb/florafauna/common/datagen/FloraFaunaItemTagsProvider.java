@@ -1,9 +1,8 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
-import net.j40climb.florafauna.common.util.FloraFaunaTags;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -12,30 +11,26 @@ import net.neoforged.neoforge.common.data.ItemTagsProvider;
 
 import java.util.concurrent.CompletableFuture;
 
-public class RegisterItemTagsProvider extends ItemTagsProvider {
+public class FloraFaunaItemTagsProvider extends ItemTagsProvider {
 
-    public RegisterItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+    public FloraFaunaItemTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
         super(output, lookupProvider, FloraFauna.MOD_ID);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        // Hammer is a multi-tool - add to all tool tags
         tag(ItemTags.PICKAXES)
-                .add(FloraFaunaRegistry.HAMMER.get())
-                .addTag(FloraFaunaTags.Items.HAMMERS);
+                .add(FloraFaunaRegistry.HAMMER.get());
         tag(ItemTags.SHOVELS)
-                .addTag(FloraFaunaTags.Items.HAMMERS);
+                .add(FloraFaunaRegistry.HAMMER.get());
         tag(ItemTags.AXES)
-                .addTag(FloraFaunaTags.Items.HAMMERS);
+                .add(FloraFaunaRegistry.HAMMER.get());
         tag(ItemTags.HOES)
-                .addTag(FloraFaunaTags.Items.HAMMERS);
-
-        // Create custom hammer tag for multi-tool functionality
-        tag(FloraFaunaTags.Items.HAMMERS)
                 .add(FloraFaunaRegistry.HAMMER.get());
 
         // Wood block items - add to appropriate tags
-        for (ModWoodType woodType : ModWoodType.values()) {
+        for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
 
             // Logs item tag

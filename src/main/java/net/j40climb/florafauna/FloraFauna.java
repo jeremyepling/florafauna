@@ -1,7 +1,7 @@
 package net.j40climb.florafauna;
 
 import com.mojang.logging.LogUtils;
-import net.j40climb.florafauna.common.datagen.RegisterDataGenerators;
+import net.j40climb.florafauna.common.datagen.FloraFaunaDataGenerators;
 import net.j40climb.florafauna.setup.ClientSetup;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.setup.FloraFaunaSetup;
@@ -36,8 +36,8 @@ public class FloraFauna {
             ClientSetup.init(modEventBus);
         }
         // Register datagen events on the mod bus
-        modEventBus.addListener(RegisterDataGenerators::gatherClientData);
-        modEventBus.addListener(RegisterDataGenerators::gatherServerData);
+        modEventBus.addListener(FloraFaunaDataGenerators::gatherClientData);
+        modEventBus.addListener(FloraFaunaDataGenerators::gatherServerData);
 
         // Register ourselves for server events
         NeoForge.EVENT_BUS.register(this);

@@ -1,9 +1,8 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
-import net.j40climb.florafauna.common.util.FloraFaunaTags;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -12,24 +11,19 @@ import net.neoforged.neoforge.common.data.BlockTagsProvider;
 
 import java.util.concurrent.CompletableFuture;
 
-public class RegisterBlockTagsProvider extends BlockTagsProvider {
-    public RegisterBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
+    public FloraFaunaBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
         super(output, lookupProvider, FloraFauna.MOD_ID);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        this.tag(FloraFaunaTags.Blocks.MINEABLE_WITH_HAMMER)
-                .addTag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .addTag(BlockTags.MINEABLE_WITH_AXE)
-                .addTag(BlockTags.MINEABLE_WITH_SHOVEL);
-
         // Husk block - mineable with pickaxe
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(FloraFaunaRegistry.HUSK.get());
 
         // Wood blocks - add to appropriate tags
-        for (ModWoodType woodType : ModWoodType.values()) {
+        for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
 
             // Logs tag (used for smelting to charcoal, etc.)

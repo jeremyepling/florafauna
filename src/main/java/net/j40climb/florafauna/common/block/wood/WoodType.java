@@ -11,7 +11,7 @@ package net.j40climb.florafauna.common.block.wood;
  * Access blocks via: ModWoodType.DRIFTWOOD.getBlockSet().log()
  * Iterate via: ModWoodType.values()
  */
-public enum ModWoodType {
+public enum WoodType {
     DRIFTWOOD("driftwood");
     // Add more wood types here - that's all you need to do!
     // MAPLE("maple"),
@@ -20,7 +20,7 @@ public enum ModWoodType {
     private final String name;
     private final WoodBlockSet blockSet;
 
-    ModWoodType(String name) {
+    WoodType(String name) {
         this.name = name;
         this.blockSet = WoodBlockRegistration.register(name);
     }

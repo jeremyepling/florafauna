@@ -3,7 +3,7 @@ package net.j40climb.florafauna.setup;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
@@ -57,7 +57,7 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.HUSK);
 
                         // Wood blocks - iterates through all wood types
-                        for (ModWoodType woodType : ModWoodType.values()) {
+                        for (WoodType woodType : WoodType.values()) {
                             WoodBlockSet wood = woodType.getBlockSet();
                             output.accept(wood.log());
                             output.accept(wood.strippedLog());

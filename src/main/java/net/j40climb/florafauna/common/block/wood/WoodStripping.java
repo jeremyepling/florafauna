@@ -28,7 +28,7 @@ public class WoodStripping {
     private static Map<Block, Block> getStrippables() {
         if (strippables == null) {
             strippables = new HashMap<>();
-            for (ModWoodType woodType : ModWoodType.values()) {
+            for (WoodType woodType : WoodType.values()) {
                 WoodBlockSet wood = woodType.getBlockSet();
                 strippables.put(wood.log().get(), wood.strippedLog().get());
                 strippables.put(wood.wood().get(), wood.strippedWood().get());

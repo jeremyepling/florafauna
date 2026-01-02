@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.datagen;
 
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.Holder;
@@ -11,8 +11,8 @@ import net.minecraft.world.level.block.Block;
 
 import java.util.Set;
 
-public class RegisterBlockLootTableProvider extends BlockLootSubProvider {
-    protected RegisterBlockLootTableProvider(HolderLookup.Provider provider) {
+public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
+    protected FloraFaunaBlockLootTableProvider(HolderLookup.Provider provider) {
         super(Set.of(), FeatureFlags.REGISTRY.allFlags(), provider);
     }
 
@@ -27,7 +27,7 @@ public class RegisterBlockLootTableProvider extends BlockLootSubProvider {
         add(FloraFaunaRegistry.HUSK.get(), noDrop());
 
         // Wood blocks - all drop themselves (slabs use special loot table)
-        for (ModWoodType woodType : ModWoodType.values()) {
+        for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
             dropSelf(wood.log().get());
             dropSelf(wood.strippedLog().get());

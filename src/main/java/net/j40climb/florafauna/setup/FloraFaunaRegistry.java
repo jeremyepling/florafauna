@@ -11,7 +11,7 @@ import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChambe
 import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
@@ -114,7 +114,7 @@ public class FloraFaunaRegistry {
 
     // Wood blocks registered via ModWoodType enum
     static { registerWoodTypes(); }
-    private static void registerWoodTypes() { ModWoodType.values(); }
+    private static void registerWoodTypes() { WoodType.values(); }
 
     // ==================== ENTITIES ====================
     // NOTE: Entities must be declared before spawn eggs to avoid forward reference errors

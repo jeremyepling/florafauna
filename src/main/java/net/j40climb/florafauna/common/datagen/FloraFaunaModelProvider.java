@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -19,8 +19,8 @@ import net.minecraft.world.item.Item;
 import java.util.Collections;
 import java.util.stream.Stream;
 
-public class RegisterModelProvider extends ModelProvider {
-    public RegisterModelProvider(PackOutput output) {
+public class FloraFaunaModelProvider extends ModelProvider {
+    public FloraFaunaModelProvider(PackOutput output) {
         super(output, FloraFauna.MOD_ID);
     }
 
@@ -65,7 +65,7 @@ public class RegisterModelProvider extends ModelProvider {
         blockModels.createTrivialCube(FloraFaunaRegistry.HUSK.get());
 
         // Wood blocks - iterate through all wood types
-        for (ModWoodType woodType : ModWoodType.values()) {
+        for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
 
             // Logs use log column model (expects {name}.png for side, {name}_top.png for ends)

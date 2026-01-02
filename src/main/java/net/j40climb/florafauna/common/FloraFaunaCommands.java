@@ -45,7 +45,7 @@ import java.util.Map;
  *   /florafauna symbiote reset - Reset the symbiote completely
  *   /florafauna symbiote toggle <ability> - Toggle an ability
  *   /florafauna symbiote setJumpBoost <0-4> - Set jump boost level
- *   /florafauna symbiote dreamo - Trigger a dream insight
+ *   /florafauna symbiote dream - Trigger a dream insight
  *   /florafauna symbiote dream force <1-3> - Force a dream at a specific level
  *   /florafauna symbiote cooldown reset - Reset all voice cooldowns
  *   /florafauna symbiote progress - Show progress signals

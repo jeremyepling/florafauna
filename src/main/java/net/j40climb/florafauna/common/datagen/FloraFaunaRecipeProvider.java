@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.wood.ModWoodType;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -14,9 +14,9 @@ import net.minecraft.world.level.ItemLike;
 
 import java.util.concurrent.CompletableFuture;
 
-public class RegisterRecipeProvider extends RecipeProvider.Runner {
+public class FloraFaunaRecipeProvider extends RecipeProvider.Runner {
 
-    public RegisterRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+    public FloraFaunaRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         super(output, registries);
     }
 
@@ -43,7 +43,7 @@ public class RegisterRecipeProvider extends RecipeProvider.Runner {
         @Override
         public void buildRecipes() {
             // Wood recipes - iterate through all wood types
-            for (ModWoodType woodType : ModWoodType.values()) {
+            for (WoodType woodType : WoodType.values()) {
                 WoodBlockSet wood = woodType.getBlockSet();
                 String name = woodType.getName();
 
