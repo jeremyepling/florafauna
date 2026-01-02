@@ -3,7 +3,7 @@ package net.j40climb.florafauna.common.block.husk;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteState;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -44,7 +44,7 @@ public class HuskParticleHandler {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only show particles if player is weakened and has an active restoration husk
         if (data.symbioteState() != SymbioteState.BONDED_WEAKENED) {

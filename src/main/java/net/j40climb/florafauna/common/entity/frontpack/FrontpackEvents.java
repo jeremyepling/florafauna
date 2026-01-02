@@ -3,7 +3,7 @@ package net.j40climb.florafauna.common.entity.frontpack;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ProblemReporter;
@@ -41,7 +41,7 @@ public class FrontpackEvents {
         if (frenchie.isBaby()) return;
 
         // Check if already carrying a Frenchie
-        FrontpackData currentData = player.getData(ModRegistry.FRENCH_FRONTPACK_DATA);
+        FrontpackData currentData = player.getData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
         if (currentData.hasCarriedFrenchie()) return;
 
         // Client: just cancel event and return success
@@ -65,7 +65,7 @@ public class FrontpackEvents {
             player.level().getGameTime()
         );
 
-        player.setData(ModRegistry.FRENCH_FRONTPACK_DATA, newData);
+        player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, newData);
 
         // Despawn the entity
         frenchie.discard();
@@ -87,7 +87,7 @@ public class FrontpackEvents {
 
         if (!player.isShiftKeyDown()) return;
 
-        FrontpackData data = player.getData(ModRegistry.FRENCH_FRONTPACK_DATA);
+        FrontpackData data = player.getData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
         if (!data.hasCarriedFrenchie()) return;
 
         // Send packet to server to handle put-down

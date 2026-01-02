@@ -16,7 +16,7 @@ import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalUpdat
 import net.j40climb.florafauna.common.item.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.item.symbiote.voice.SymbioteVoiceService;
 import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -45,7 +45,7 @@ import java.util.Map;
  *   /florafauna symbiote progress - Show progress signals
  *   /florafauna symbiote progress set <concept> <state> - Set a progress state
  */
-public class ModCommands {
+public class FloraFaunaCommands {
 
     /**
      * Registers all mod commands.
@@ -57,13 +57,13 @@ public class ModCommands {
                 Commands.literal("florafauna")
                         .then(Commands.literal("symbiote")
                                 .then(Commands.literal("check")
-                                        .executes(ModCommands::checkSymbiote))
+                                        .executes(FloraFaunaCommands::checkSymbiote))
                                 .then(Commands.literal("bond")
-                                        .executes(ModCommands::bondSymbiote))
+                                        .executes(FloraFaunaCommands::bondSymbiote))
                                 .then(Commands.literal("unbond")
-                                        .executes(ModCommands::unbondSymbiote))
+                                        .executes(FloraFaunaCommands::unbondSymbiote))
                                 .then(Commands.literal("reset")
-                                        .executes(ModCommands::resetSymbiote))
+                                        .executes(FloraFaunaCommands::resetSymbiote))
                                 .then(Commands.literal("toggle")
                                         .then(Commands.argument("ability", StringArgumentType.word())
                                                 .suggests((context, builder) -> {
@@ -72,20 +72,20 @@ public class ModCommands {
                                                     builder.suggest("speed");
                                                     return builder.buildFuture();
                                                 })
-                                                .executes(ModCommands::toggleAbility)))
+                                                .executes(FloraFaunaCommands::toggleAbility)))
                                 .then(Commands.literal("setJumpBoost")
                                         .then(Commands.argument("level", IntegerArgumentType.integer(0, 4))
-                                                .executes(ModCommands::setJumpBoost)))
+                                                .executes(FloraFaunaCommands::setJumpBoost)))
                                 .then(Commands.literal("dream")
-                                        .executes(ModCommands::triggerDream)
+                                        .executes(FloraFaunaCommands::triggerDream)
                                         .then(Commands.literal("force")
                                                 .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
-                                                        .executes(ModCommands::forceDream))))
+                                                        .executes(FloraFaunaCommands::forceDream))))
                                 .then(Commands.literal("cooldown")
                                         .then(Commands.literal("reset")
-                                                .executes(ModCommands::resetCooldowns)))
+                                                .executes(FloraFaunaCommands::resetCooldowns)))
                                 .then(Commands.literal("progress")
-                                        .executes(ModCommands::showProgress)
+                                        .executes(FloraFaunaCommands::showProgress)
                                         .then(Commands.literal("set")
                                                 .then(Commands.argument("concept", StringArgumentType.word())
                                                         .then(Commands.argument("state", StringArgumentType.word())
@@ -95,7 +95,7 @@ public class ModCommands {
                                                                     }
                                                                     return builder.buildFuture();
                                                                 })
-                                                                .executes(ModCommands::setProgressState))))))
+                                                                .executes(FloraFaunaCommands::setProgressState))))))
         );
     }
 
@@ -109,7 +109,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Display the header
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.header")
@@ -172,7 +172,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.already_bonded"));
@@ -185,9 +185,9 @@ public class ModCommands {
                 1,
                 false, false, false, 0
         );
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
-        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
-        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         ObservationArbiter.observe(player, ObservationCategory.BONDING_MILESTONE, 100, Map.of(
                 "event", "bonded"
@@ -230,7 +230,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -238,9 +238,9 @@ public class ModCommands {
         }
 
         PlayerSymbioteData resetData = currentData.withSymbioteReset();
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, resetData);
-        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
-        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, resetData);
+        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.reset_success")
                 .withStyle(style -> style.withColor(0xF39C12)), false);
@@ -255,7 +255,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -280,7 +280,7 @@ public class ModCommands {
                 return 0;
         }
 
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         boolean newState = switch (ability.toLowerCase()) {
             case "dash" -> newData.dash();
@@ -307,7 +307,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -316,7 +316,7 @@ public class ModCommands {
 
         int level = IntegerArgumentType.getInteger(context, "level");
         PlayerSymbioteData newData = currentData.withJumpBoost(level);
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_boost_set",
                 level).withStyle(style -> style.withColor(0xF39C12)), false);
@@ -334,7 +334,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -359,7 +359,7 @@ public class ModCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));

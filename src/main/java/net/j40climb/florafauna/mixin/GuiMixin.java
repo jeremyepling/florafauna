@@ -1,0 +1,50 @@
+package net.j40climb.florafauna.mixin;
+
+import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
+import net.j40climb.florafauna.common.item.symbiote.SymbioteState;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.player.LocalPlayer;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+/**
+ * Mixin to force the locator bar to show when player has an active restoration husk.
+ */
+@Mixin(Gui.class)
+public class GuiMixin {
+
+    @Shadow
+    @Final
+    private Minecraft minecraft;
+
+    /**
+     * Inject at the head of nextContextualInfoState() to return LOCATOR
+     * when player has active restoration husk in BONDED_WEAKENED state.
+     */
+    @Inject(method = "nextContextualInfoState", at = @At("HEAD"), cancellable = true)
+    private void florafauna$forceLocatorBarForHusk(CallbackInfoReturnable<Gui.ContextualInfo> cir) {
+        LocalPlayer player = this.minecraft.player;
+        if (player == null) {
+            return;
+        }
+
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+
+        // Check conditions: active husk, BONDED_WEAKENED state, same dimension
+        if (data.restorationHuskActive() &&
+            data.symbioteState() == SymbioteState.BONDED_WEAKENED &&
+            data.restorationHuskDim() != null &&
+            data.restorationHuskPos() != null &&
+            data.restorationHuskDim().equals(player.level().dimension())) {
+
+            // Force the locator bar to show
+            cir.setReturnValue(Gui.ContextualInfo.LOCATOR);
+        }
+    }
+}

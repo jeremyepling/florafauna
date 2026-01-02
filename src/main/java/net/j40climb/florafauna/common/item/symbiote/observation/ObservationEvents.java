@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.symbiote.observation;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -45,7 +45,7 @@ public class ObservationEvents {
             return;
         }
 
-        PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().isBonded()) {
             return;
         }
@@ -101,7 +101,7 @@ public class ObservationEvents {
             return;
         }
 
-        PlayerSymbioteData symbioteData = serverPlayer.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().isBonded()) {
             return;
         }
@@ -132,7 +132,7 @@ public class ObservationEvents {
             return;
         }
 
-        PlayerSymbioteData symbioteData = serverPlayer.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = serverPlayer.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().isBonded()) {
             return;
         }

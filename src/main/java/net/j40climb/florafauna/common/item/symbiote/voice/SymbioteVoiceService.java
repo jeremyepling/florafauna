@@ -3,7 +3,7 @@ package net.j40climb.florafauna.common.item.symbiote.voice;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.common.item.symbiote.observation.ObservationCategory;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -37,7 +37,7 @@ public class SymbioteVoiceService {
             String lineKey
     ) {
         // Must be bonded to hear the symbiote
-        PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().isBonded()) {
             return false;
         }
@@ -48,7 +48,7 @@ public class SymbioteVoiceService {
         }
 
         // Get current cooldown state
-        VoiceCooldownState cooldowns = player.getData(ModRegistry.VOICE_COOLDOWNS);
+        VoiceCooldownState cooldowns = player.getData(FloraFaunaRegistry.VOICE_COOLDOWNS);
         long currentTick = player.level().getGameTime();
 
         // Check tier and category cooldowns
@@ -61,7 +61,7 @@ public class SymbioteVoiceService {
 
         // Update cooldown state
         VoiceCooldownState newState = cooldowns.afterSpeaking(tier, category, currentTick);
-        player.setData(ModRegistry.VOICE_COOLDOWNS, newState);
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, newState);
 
         return true;
     }
@@ -75,7 +75,7 @@ public class SymbioteVoiceService {
      */
     public static void forceSpeak(ServerPlayer player, String lineKey) {
         // Must be bonded to hear the symbiote
-        PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().isBonded()) {
             return;
         }
@@ -133,6 +133,6 @@ public class SymbioteVoiceService {
      * @param player The player to reset
      */
     public static void resetCooldowns(ServerPlayer player) {
-        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
     }
 }

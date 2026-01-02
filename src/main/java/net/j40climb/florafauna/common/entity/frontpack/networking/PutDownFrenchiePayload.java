@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
@@ -35,13 +35,13 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         Player player = context.player();
 
         // Check if player is carrying a Frenchie
-        FrontpackData frontpackData = player.getData(ModRegistry.FRENCH_FRONTPACK_DATA);
+        FrontpackData frontpackData = player.getData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
         if (!frontpackData.hasCarriedFrenchie()) return;
 
         // Spawn Frenchie in front of player
         Vec3 spawnPos = player.position().add(player.getLookAngle().scale(2.0));
 
-        FrenchieEntity frenchie = ModRegistry.FRENCHIE.get().create(player.level(), EntitySpawnReason.TRIGGERED);
+        FrenchieEntity frenchie = FloraFaunaRegistry.FRENCHIE.get().create(player.level(), EntitySpawnReason.TRIGGERED);
         if (frenchie == null) return;
 
         // Restore data from NBT using ValueInput
@@ -56,7 +56,7 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         player.level().addFreshEntity(frenchie);
 
         // Clear attachment
-        player.setData(ModRegistry.FRENCH_FRONTPACK_DATA, FrontpackData.DEFAULT);
+        player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, FrontpackData.DEFAULT);
 
         // Play sound
         player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0f, 1.0f);

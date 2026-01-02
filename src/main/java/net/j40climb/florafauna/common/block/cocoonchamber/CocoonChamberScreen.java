@@ -4,7 +4,7 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload.CocoonAction;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -83,7 +83,7 @@ public class CocoonChamberScreen extends AbstractContainerScreen<CocoonChamberMe
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Clear spawn is only active if cocoon spawn is set
         clearSpawnButton.active = data.cocoonSpawnPos() != null;

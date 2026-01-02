@@ -6,7 +6,7 @@ import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonProgressionHooks;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteBindingHelper;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -74,7 +74,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
     }
 
     private static void handleSetSpawn(ServerPlayer player, BlockPos chamberPos) {
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         ResourceKey<Level> currentDim = player.level().dimension();
 
         // Snapshot current bed spawn (before we change it)
@@ -99,7 +99,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
                 .withCocoonSpawn(chamberPos, currentDim)
                 .withCocoonSpawnSetOnce(true);
 
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
         // Set vanilla respawn to cocoon position (forced=true for explicit spawn point)
         LevelData.RespawnData respawnData = LevelData.RespawnData.of(currentDim, chamberPos, 0f, 0f);
@@ -117,7 +117,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
     }
 
     private static void handleClearSpawn(ServerPlayer player) {
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (data.cocoonSpawnPos() == null) {
             player.displayClientMessage(
@@ -142,7 +142,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
 
         // Clear cocoon spawn data
         PlayerSymbioteData updatedData = data.withCocoonSpawn(null, null);
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
         player.displayClientMessage(
                 Component.translatable("symbiote.florafauna.spawn_cleared")
@@ -152,7 +152,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
     }
 
     private static void handleBind(ServerPlayer player, BlockPos chamberPos) {
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Check bindable state
         if (!data.symbioteBindable()) {
@@ -180,9 +180,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
 
         if (result.success()) {
             // Clear bindable state - re-fetch data since binding may have modified it
-            PlayerSymbioteData updatedData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA)
+            PlayerSymbioteData updatedData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA)
                     .withSymbioteBindable(false);
-            player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
             // Trigger progression hook
             CocoonProgressionHooks.onSymbioteBound(player);

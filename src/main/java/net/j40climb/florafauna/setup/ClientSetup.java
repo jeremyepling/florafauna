@@ -88,17 +88,17 @@ public class ClientSetup {
      * Client setup: register entity renderers.
      */
     private static void onClientSetup(FMLClientSetupEvent event) {
-        EntityRenderers.register(ModRegistry.GECKO.get(), GeckoRenderer::new);
-        EntityRenderers.register(ModRegistry.LIZARD.get(), LizardRenderer::new);
-        EntityRenderers.register(ModRegistry.FRENCHIE.get(), FrenchieRenderer::new);
+        EntityRenderers.register(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
+        EntityRenderers.register(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);
+        EntityRenderers.register(FloraFaunaRegistry.FRENCHIE.get(), FrenchieRenderer::new);
     }
 
     /**
      * Register menu screens.
      */
     private static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(ModRegistry.CONTAINMENT_CHAMBER_MENU.get(), ContainmentChamberScreen::new);
-        event.register(ModRegistry.COCOON_CHAMBER_MENU.get(), CocoonChamberScreen::new);
+        event.register(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get(), ContainmentChamberScreen::new);
+        event.register(FloraFaunaRegistry.COCOON_CHAMBER_MENU.get(), CocoonChamberScreen::new);
     }
 
     /**

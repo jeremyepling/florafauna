@@ -2,7 +2,7 @@ package net.j40climb.florafauna.client;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -61,7 +61,7 @@ public class SymbioteDebugOverlay implements GuiLayer {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         Font font = mc.font;
 
         int x = 5;

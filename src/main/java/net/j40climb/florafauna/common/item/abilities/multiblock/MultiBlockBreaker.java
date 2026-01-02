@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.abilities.multiblock;
 
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
@@ -42,7 +42,7 @@ public final class MultiBlockBreaker {
      * @return true if the original block break event should be cancelled (for stair placement)
      */
     public static boolean breakBlocks(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level) {
-        MiningModeData miningModeData = mainHandItem.get(ModRegistry.MULTI_BLOCK_MINING);
+        MiningModeData miningModeData = mainHandItem.get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
         BlockHitResult hitResult = null;
 
         if (miningModeData == null) {

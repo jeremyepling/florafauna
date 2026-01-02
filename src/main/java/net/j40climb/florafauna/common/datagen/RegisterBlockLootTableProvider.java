@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.datagen;
 
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -18,13 +18,13 @@ public class RegisterBlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
-        dropSelf(ModRegistry.TEAL_MOSS_BLOCK.get());
-        dropSelf(ModRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
-        dropSelf(ModRegistry.COCOON_CHAMBER.get());
-        dropSelf(ModRegistry.COPPER_GOLEM_BARRIER.get());
+        dropSelf(FloraFaunaRegistry.TEAL_MOSS_BLOCK.get());
+        dropSelf(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
+        dropSelf(FloraFaunaRegistry.COCOON_CHAMBER.get());
+        dropSelf(FloraFaunaRegistry.COPPER_GOLEM_BARRIER.get());
 
         // Husk drops nothing - items are retrieved via interaction
-        add(ModRegistry.HUSK.get(), noDrop());
+        add(FloraFaunaRegistry.HUSK.get(), noDrop());
 
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (ModWoodType woodType : ModWoodType.values()) {
@@ -42,6 +42,6 @@ public class RegisterBlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return ModRegistry.BLOCKS.getEntries().stream().map(Holder::value)::iterator;
+        return FloraFaunaRegistry.BLOCKS.getEntries().stream().map(Holder::value)::iterator;
     }
 }

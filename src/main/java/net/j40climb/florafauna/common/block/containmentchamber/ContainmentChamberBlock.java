@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
 import com.mojang.serialization.MapCodec;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,7 +70,7 @@ public class ContainmentChamberBlock extends BaseEntityBlock {
             return null;
         }
 
-        return createTickerHelper(blockEntityType, ModRegistry.CONTAINMENT_CHAMBER_BE.get(),
+        return createTickerHelper(blockEntityType, FloraFaunaRegistry.CONTAINMENT_CHAMBER_BE.get(),
                 (level1, blockPos, blockState, blockEntity) -> blockEntity.tick(level1, blockPos, blockState));
     }
 }

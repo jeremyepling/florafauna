@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.block.wood;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -17,28 +17,28 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 public class WoodBlockRegistration {
 
     public static WoodBlockSet register(String name) {
-        DeferredBlock<RotatedPillarBlock> log = ModRegistry.registerBlock(name + "_log",
+        DeferredBlock<RotatedPillarBlock> log = FloraFaunaRegistry.registerBlock(name + "_log",
                 props -> new RotatedPillarBlock(props.strength(2.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<RotatedPillarBlock> strippedLog = ModRegistry.registerBlock("stripped_" + name + "_log",
+        DeferredBlock<RotatedPillarBlock> strippedLog = FloraFaunaRegistry.registerBlock("stripped_" + name + "_log",
                 props -> new RotatedPillarBlock(props.strength(2.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<RotatedPillarBlock> wood = ModRegistry.registerBlock(name + "_wood",
+        DeferredBlock<RotatedPillarBlock> wood = FloraFaunaRegistry.registerBlock(name + "_wood",
                 props -> new RotatedPillarBlock(props.strength(2.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<RotatedPillarBlock> strippedWood = ModRegistry.registerBlock("stripped_" + name + "_wood",
+        DeferredBlock<RotatedPillarBlock> strippedWood = FloraFaunaRegistry.registerBlock("stripped_" + name + "_wood",
                 props -> new RotatedPillarBlock(props.strength(2.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<Block> planks = ModRegistry.registerBlock(name + "_planks",
+        DeferredBlock<Block> planks = FloraFaunaRegistry.registerBlock(name + "_planks",
                 props -> new Block(props.strength(2.0f, 3.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<SlabBlock> slab = ModRegistry.registerBlock(name + "_slab",
+        DeferredBlock<SlabBlock> slab = FloraFaunaRegistry.registerBlock(name + "_slab",
                 props -> new SlabBlock(props.strength(2.0f, 3.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<FenceBlock> fence = ModRegistry.registerBlock(name + "_fence",
+        DeferredBlock<FenceBlock> fence = FloraFaunaRegistry.registerBlock(name + "_fence",
                 props -> new FenceBlock(props.strength(2.0f, 3.0f).sound(SoundType.WOOD).ignitedByLava()));
 
-        DeferredBlock<FenceGateBlock> fenceGate = ModRegistry.registerBlock(name + "_fence_gate",
+        DeferredBlock<FenceGateBlock> fenceGate = FloraFaunaRegistry.registerBlock(name + "_fence_gate",
                 props -> new FenceGateBlock(WoodType.OAK, props.strength(2.0f, 3.0f).sound(SoundType.WOOD).ignitedByLava()));
 
         // TODO: Future phases - Add these when ready

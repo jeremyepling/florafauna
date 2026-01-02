@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.block.cocoonchamber;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,7 +30,7 @@ public class CocoonChamberMenu extends AbstractContainerMenu {
      * Server-side constructor (called when opening menu).
      */
     public CocoonChamberMenu(int containerId, Inventory playerInventory, BlockPos pos) {
-        super(ModRegistry.COCOON_CHAMBER_MENU.get(), containerId);
+        super(FloraFaunaRegistry.COCOON_CHAMBER_MENU.get(), containerId);
         this.chamberPos = pos;
         this.level = playerInventory.player.level();
     }

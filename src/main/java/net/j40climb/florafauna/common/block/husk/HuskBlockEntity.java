@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.block.husk;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -73,7 +73,7 @@ public class HuskBlockEntity extends BlockEntity {
     private UUID ownerUUID;
 
     public HuskBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModRegistry.HUSK_BE.get(), pos, blockState);
+        super(FloraFaunaRegistry.HUSK_BE.get(), pos, blockState);
     }
 
     /**

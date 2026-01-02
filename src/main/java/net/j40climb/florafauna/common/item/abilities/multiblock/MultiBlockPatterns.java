@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.item.abilities.multiblock;
 
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -42,7 +42,7 @@ public final class MultiBlockPatterns {
         }
 
         MiningModeData miningModeData = player.getMainHandItem()
-                .getOrDefault(ModRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
+                .getOrDefault(FloraFaunaRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
 
         return switch (miningModeData.shape()) {
             case SINGLE -> Collections.singleton(initialBlockPos);

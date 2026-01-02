@@ -61,7 +61,7 @@ import static net.j40climb.florafauna.common.item.hammer.HammerItem.HAMMER_MATER
  * Central registration class for all mod content.
  * All DeferredRegisters are consolidated here for easy overview.
  */
-public class ModRegistry {
+public class FloraFaunaRegistry {
 
     // ==================== REGISTRIES ====================
 

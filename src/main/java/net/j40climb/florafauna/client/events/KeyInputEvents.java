@@ -8,7 +8,7 @@ import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfac
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.setup.ClientSetup;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -36,7 +36,7 @@ public class KeyInputEvents {
         // The key mappings have to be consumed during the event or it will replay the event on each tick. Don't check anything for this outside of player null
         while (ClientSetup.SUMMON_LIGHTNING_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has LIGHTNING_ABILITY
-            if (itemStack.has(ModRegistry.LIGHTNING_ABILITY)) {
+            if (itemStack.has(FloraFaunaRegistry.LIGHTNING_ABILITY)) {
                 Vec3 vec3 = ClientUtils.raycastFromPlayer(player, 10).getLocation();
                 BlockPos targetPos = new BlockPos(new Vec3i((int) vec3.x, (int) vec3.y, (int) vec3.z));
                 ClientPacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
@@ -44,19 +44,19 @@ public class KeyInputEvents {
         }
         while (ClientSetup.TELEPORT_SURFACE_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has TELEPORT_SURFACE_ABILITY
-            if (itemStack.has(ModRegistry.TELEPORT_SURFACE_ABILITY)) {
+            if (itemStack.has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY)) {
                 ClientPacketDistributor.sendToServer(TeleportToSurfacePayload.INSTANCE);
             }
         }
         while (ClientSetup.HAMMER_CONFIG_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has TOOL_CONFIG
-            if (itemStack.has(ModRegistry.TOOL_CONFIG)) {
+            if (itemStack.has(FloraFaunaRegistry.TOOL_CONFIG)) {
                 mc.setScreen(new ToolConfigScreen());
             }
         }
         while (ClientSetup.DASH_KEY.get().consumeClick()) {
             // Check if player has a bonded symbiote
-            PlayerSymbioteData symbioteData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+            PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
             if (symbioteData.symbioteState().areAbilitiesActive() && symbioteData.dash()) {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
             }

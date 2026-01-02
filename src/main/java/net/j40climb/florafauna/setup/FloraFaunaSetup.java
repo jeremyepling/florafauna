@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.setup;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.ModCommands;
+import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 /**
  * Handles common mod setup: networking, creative tabs, event registration.
  */
-public class ModSetup {
+public class FloraFaunaSetup {
 
     // ==================== CREATIVE TABS ====================
 
@@ -37,24 +37,24 @@ public class ModSetup {
     public static final Supplier<CreativeModeTab> FLORAFAUNA_ITEMS_TAB =
             CREATIVE_TABS.register("florafauna_items_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.florafauna.florafauna_items_tab"))
-                    .icon(() -> new ItemStack(ModRegistry.HAMMER.get()))
+                    .icon(() -> new ItemStack(FloraFaunaRegistry.HAMMER.get()))
                     .displayItems((pParameters, output) -> {
                         // Items
-                        output.accept(ModRegistry.HAMMER);
-                        output.accept(ModRegistry.DORMANT_SYMBIOTE);
-                        output.accept(ModRegistry.SYMBIOTE_STEW);
+                        output.accept(FloraFaunaRegistry.HAMMER);
+                        output.accept(FloraFaunaRegistry.DORMANT_SYMBIOTE);
+                        output.accept(FloraFaunaRegistry.SYMBIOTE_STEW);
 
                         // Spawn eggs
-                        output.accept(ModRegistry.GECKO_SPAWN_EGG);
-                        output.accept(ModRegistry.LIZARD_SPAWN_EGG);
-                        output.accept(ModRegistry.FRENCHIE_SPAWN_EGG);
+                        output.accept(FloraFaunaRegistry.GECKO_SPAWN_EGG);
+                        output.accept(FloraFaunaRegistry.LIZARD_SPAWN_EGG);
+                        output.accept(FloraFaunaRegistry.FRENCHIE_SPAWN_EGG);
 
                         // Blocks
-                        output.accept(ModRegistry.TEAL_MOSS_BLOCK);
-                        output.accept(ModRegistry.SYMBIOTE_CONTAINMENT_CHAMBER);
-                        output.accept(ModRegistry.COCOON_CHAMBER);
-                        output.accept(ModRegistry.COPPER_GOLEM_BARRIER);
-                        output.accept(ModRegistry.HUSK);
+                        output.accept(FloraFaunaRegistry.TEAL_MOSS_BLOCK);
+                        output.accept(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER);
+                        output.accept(FloraFaunaRegistry.COCOON_CHAMBER);
+                        output.accept(FloraFaunaRegistry.COPPER_GOLEM_BARRIER);
+                        output.accept(FloraFaunaRegistry.HUSK);
 
                         // Wood blocks - iterates through all wood types
                         for (ModWoodType woodType : ModWoodType.values()) {
@@ -91,7 +91,7 @@ public class ModSetup {
      * Registers mod commands.
      */
     public static void registerCommands(RegisterCommandsEvent event) {
-        ModCommands.register(event.getDispatcher());
+        FloraFaunaCommands.register(event.getDispatcher());
     }
 
     // ==================== INITIALIZATION ====================
@@ -104,10 +104,10 @@ public class ModSetup {
         CREATIVE_TABS.register(modEventBus);
 
         // Register networking to mod bus
-        modEventBus.addListener(ModSetup::registerNetworking);
+        modEventBus.addListener(FloraFaunaSetup::registerNetworking);
 
         // Register to NeoForge event bus for game events
-        NeoForge.EVENT_BUS.addListener(ModSetup::registerCommands);
+        NeoForge.EVENT_BUS.addListener(FloraFaunaSetup::registerCommands);
         NeoForge.EVENT_BUS.addListener(SymbioteDialogueLoader::registerReloadListener);
     }
 }

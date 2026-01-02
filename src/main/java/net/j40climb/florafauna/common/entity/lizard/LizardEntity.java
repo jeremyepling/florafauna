@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.entity.lizard;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -83,7 +83,7 @@ public class LizardEntity extends AbstractChestedHorse {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel pLevel, AgeableMob pOtherParent) {
-        return ModRegistry.LIZARD.get().create(pLevel, EntitySpawnReason.BREEDING);
+        return FloraFaunaRegistry.LIZARD.get().create(pLevel, EntitySpawnReason.BREEDING);
     }
 
     @Override

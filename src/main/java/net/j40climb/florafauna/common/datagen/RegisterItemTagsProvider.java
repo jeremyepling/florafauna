@@ -3,8 +3,8 @@ package net.j40climb.florafauna.common.datagen;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.wood.ModWoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
-import net.j40climb.florafauna.common.util.ModTags;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.common.util.FloraFaunaTags;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
@@ -21,18 +21,18 @@ public class RegisterItemTagsProvider extends ItemTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(ItemTags.PICKAXES)
-                .add(ModRegistry.HAMMER.get())
-                .addTag(ModTags.Items.HAMMERS);
+                .add(FloraFaunaRegistry.HAMMER.get())
+                .addTag(FloraFaunaTags.Items.HAMMERS);
         tag(ItemTags.SHOVELS)
-                .addTag(ModTags.Items.HAMMERS);
+                .addTag(FloraFaunaTags.Items.HAMMERS);
         tag(ItemTags.AXES)
-                .addTag(ModTags.Items.HAMMERS);
+                .addTag(FloraFaunaTags.Items.HAMMERS);
         tag(ItemTags.HOES)
-                .addTag(ModTags.Items.HAMMERS);
+                .addTag(FloraFaunaTags.Items.HAMMERS);
 
         // Create custom hammer tag for multi-tool functionality
-        tag(ModTags.Items.HAMMERS)
-                .add(ModRegistry.HAMMER.get());
+        tag(FloraFaunaTags.Items.HAMMERS)
+                .add(FloraFaunaRegistry.HAMMER.get());
 
         // Wood block items - add to appropriate tags
         for (ModWoodType woodType : ModWoodType.values()) {

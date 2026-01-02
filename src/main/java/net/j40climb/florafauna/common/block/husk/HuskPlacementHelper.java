@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.husk;
 
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -188,7 +188,7 @@ public final class HuskPlacementHelper {
      * Get a fallback spawn position (cocoon spawn or world spawn).
      */
     private static BlockPos getFallbackSpawn(ServerPlayer player, ServerLevel level) {
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Try cocoon spawn first
         if (data.cocoonSpawnPos() != null) {

@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.block.cocoonchamber;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 public class CocoonChamberBlockEntity extends BlockEntity implements MenuProvider {
 
     public CocoonChamberBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModRegistry.COCOON_CHAMBER_BE.get(), pos, blockState);
+        super(FloraFaunaRegistry.COCOON_CHAMBER_BE.get(), pos, blockState);
     }
 
     @Override

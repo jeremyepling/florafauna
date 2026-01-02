@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.item.symbiote;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
@@ -29,7 +29,7 @@ public class SymbioteEffectEvents {
         }
 
         // Check if this is our Symbiote Prepared effect
-        if (!effectInstance.getEffect().equals(ModRegistry.SYMBIOTE_PREPARED)) {
+        if (!effectInstance.getEffect().equals(FloraFaunaRegistry.SYMBIOTE_PREPARED)) {
             return;
         }
 
@@ -39,7 +39,7 @@ public class SymbioteEffectEvents {
         }
 
         // Get player symbiote data
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // If player is already bonded, don't clear the bindable state
         if (data.symbioteState().isBonded()) {
@@ -48,7 +48,7 @@ public class SymbioteEffectEvents {
 
         // Clear the symbioteBindable state since the effect expired without bonding
         PlayerSymbioteData newData = data.withSymbioteBindable(false);
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         // Notify the player
         player.displayClientMessage(

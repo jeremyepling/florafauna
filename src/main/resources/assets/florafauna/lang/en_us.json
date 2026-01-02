@@ -169,5 +169,7 @@
   "symbiote.florafauna.husk_not_owner": "This husk does not recognize you.",
   "symbiote.florafauna.abilities_restored": "Your symbiote awakens... abilities restored.",
 
-  "effect.florafauna.symbiote_prepared": "Symbiote Prepared"
+  "effect.florafauna.symbiote_prepared": "Symbiote Prepared",
+
+  "waypoint.florafauna.husk": "Restoration Husk"
 }

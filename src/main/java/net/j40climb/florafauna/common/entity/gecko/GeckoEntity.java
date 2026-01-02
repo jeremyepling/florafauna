@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.entity.gecko;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -65,7 +65,7 @@ public class GeckoEntity extends Animal {
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         GeckoVariant variant = Util.getRandom(GeckoVariant.values(), this.random);
-        GeckoEntity baby = ModRegistry.GECKO.get().create(level, EntitySpawnReason.BREEDING);
+        GeckoEntity baby = FloraFaunaRegistry.GECKO.get().create(level, EntitySpawnReason.BREEDING);
         baby.setVariant(variant);
         return baby;
     }

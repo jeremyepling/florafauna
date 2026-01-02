@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.item.symbiote;
 
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonProgressionHooks;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -48,7 +48,7 @@ public class SymbioteStewItem extends Item {
     @Override
     public @NotNull ItemStack finishUsingItem(ItemStack itemStack, Level level, LivingEntity livingEntity) {
         if (!level.isClientSide() && livingEntity instanceof Player player) {
-            PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+            PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
             // Check if already bindable (optional: could allow re-consuming)
             if (data.symbioteBindable()) {
@@ -64,12 +64,12 @@ public class SymbioteStewItem extends Item {
             PlayerSymbioteData newData = data
                     .withSymbioteBindable(true)
                     .withSymbioteStewConsumedOnce(true);
-            player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, newData);
+            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
             // Apply the Symbiote Prepared effect (10 minutes)
             // showParticles = true, showIcon = true
             player.addEffect(new MobEffectInstance(
-                    ModRegistry.SYMBIOTE_PREPARED,
+                    FloraFaunaRegistry.SYMBIOTE_PREPARED,
                     EFFECT_DURATION_TICKS,
                     0,  // amplifier
                     false,  // ambient (false = visible particles)

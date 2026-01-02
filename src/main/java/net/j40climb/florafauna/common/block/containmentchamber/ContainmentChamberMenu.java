@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +27,7 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
      * Server-side constructor (called when opening menu).
      */
     public ContainmentChamberMenu(int containerId, Inventory playerInventory, BlockEntity entity, ContainerData data) {
-        super(ModRegistry.CONTAINMENT_CHAMBER_MENU.get(), containerId);
+        super(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get(), containerId);
 
         this.blockEntity = ((ContainmentChamberBlockEntity) entity);
         this.level = playerInventory.player.level();
@@ -96,7 +96,7 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
     public boolean stillValid(Player player) {
         // Check if player is within 8 blocks of the chamber
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
-                player, ModRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
+                player, FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

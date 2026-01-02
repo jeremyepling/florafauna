@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.symbiote;
 
 import net.j40climb.florafauna.common.item.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.item.symbiote.voice.VoiceCooldownState;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
@@ -39,7 +39,7 @@ public final class SymbioteBindingHelper {
      */
     public static BindResult bindSymbiote(ServerPlayer player, ItemStack symbioteItem) {
         // Check if player already has a bonded symbiote
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (currentData.symbioteState().isBonded()) {
             return new BindResult(false, "symbiote.florafauna.already_bonded");
         }
@@ -51,20 +51,20 @@ public final class SymbioteBindingHelper {
 
         // Read symbiote state from item components
         SymbioteData itemData = symbioteItem.getOrDefault(
-                ModRegistry.SYMBIOTE_DATA,
+                FloraFaunaRegistry.SYMBIOTE_DATA,
                 SymbioteData.DEFAULT
         );
         ProgressSignalTracker progressTracker = symbioteItem.getOrDefault(
-                ModRegistry.SYMBIOTE_PROGRESS,
+                FloraFaunaRegistry.SYMBIOTE_PROGRESS,
                 ProgressSignalTracker.DEFAULT
         );
 
         // Bond the symbiote - use helper method to preserve cocoon state
         PlayerSymbioteData bondedData = currentData.withSymbioteFromItem(itemData, player.level().getGameTime());
 
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, bondedData);
-        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, progressTracker);
-        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bondedData);
+        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, progressTracker);
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         // Consume the item
         symbioteItem.shrink(1);
@@ -80,28 +80,28 @@ public final class SymbioteBindingHelper {
      * @return UnbindResult containing the created item (if successful)
      */
     public static UnbindResult unbindSymbiote(ServerPlayer player) {
-        PlayerSymbioteData currentData = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             return UnbindResult.failure("symbiote.florafauna.not_bonded");
         }
 
         // Read current player state (progress tracker preserves memories)
-        ProgressSignalTracker progressTracker = player.getData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        ProgressSignalTracker progressTracker = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
 
         // Create dormant symbiote item with current player state
-        ItemStack symbioteItem = new ItemStack(ModRegistry.DORMANT_SYMBIOTE.get());
+        ItemStack symbioteItem = new ItemStack(FloraFaunaRegistry.DORMANT_SYMBIOTE.get());
 
         // Copy player symbiote state to item component
         SymbioteData itemData = currentData.toItemData();
-        symbioteItem.set(ModRegistry.SYMBIOTE_DATA, itemData);
-        symbioteItem.set(ModRegistry.SYMBIOTE_PROGRESS, progressTracker);
+        symbioteItem.set(FloraFaunaRegistry.SYMBIOTE_DATA, itemData);
+        symbioteItem.set(FloraFaunaRegistry.SYMBIOTE_PROGRESS, progressTracker);
 
         // Reset symbiote bond state while preserving cocoon state
         PlayerSymbioteData unbondedData = currentData.withSymbioteReset();
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, unbondedData);
-        player.setData(ModRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
-        player.setData(ModRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, unbondedData);
+        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         return new UnbindResult(true, "symbiote.florafauna.unbonded_success", symbioteItem);
     }

@@ -3,7 +3,7 @@ package net.j40climb.florafauna.common.block.husk;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
 import net.j40climb.florafauna.common.item.symbiote.SymbioteState;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -32,7 +32,7 @@ public class HuskDeathHandler {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only process if player has a bonded symbiote
         if (!data.symbioteState().isBonded()) {
@@ -51,7 +51,7 @@ public class HuskDeathHandler {
         BlockPos huskPos = HuskPlacementHelper.findPlacementPosition(player, deathPos, level);
 
         // Place the husk block
-        BlockState huskState = ModRegistry.HUSK.get()
+        BlockState huskState = FloraFaunaRegistry.HUSK.get()
                 .defaultBlockState()
                 .setValue(HuskBlock.HUSK_TYPE, huskType);
         level.setBlock(huskPos, huskState, 3);
@@ -73,6 +73,6 @@ public class HuskDeathHandler {
             updatedData = updatedData.withRestorationHusk(huskPos, level.dimension(), true);
         }
 
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
     }
 }

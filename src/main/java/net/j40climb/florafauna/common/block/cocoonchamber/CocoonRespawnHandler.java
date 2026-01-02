@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.block.cocoonchamber;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.symbiote.PlayerSymbioteData;
-import net.j40climb.florafauna.setup.ModRegistry;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -27,7 +27,7 @@ public class CocoonRespawnHandler {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(ModRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only check if player has cocoon spawn set
         if (data.cocoonSpawnPos() == null || data.cocoonSpawnDim() == null) {
@@ -79,7 +79,7 @@ public class CocoonRespawnHandler {
 
         // Clear cocoon spawn data but preserve previous bed spawn for future use
         PlayerSymbioteData updatedData = data.withCocoonSpawn(null, null);
-        player.setData(ModRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
         // Notify player
         player.displayClientMessage(
