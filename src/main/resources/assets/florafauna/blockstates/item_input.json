@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "state=normal": {
+      "model": "florafauna:block/item_input"
+    },
+    "state=working": {
+      "model": "florafauna:block/item_input"
+    },
+    "state=blocked": {
+      "model": "florafauna:block/item_input"
+    }
+  }
+}

@@ -3,6 +3,7 @@ package net.j40climb.florafauna.setup;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
+import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
@@ -54,6 +55,11 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.COPPER_GOLEM_BARRIER);
                         output.accept(FloraFaunaRegistry.HUSK);
 
+                        // Item Input System blocks
+                        output.accept(FloraFaunaRegistry.STORAGE_ANCHOR);
+                        output.accept(FloraFaunaRegistry.ITEM_INPUT);
+                        output.accept(FloraFaunaRegistry.FIELD_RELAY);
+
                         // Wood blocks - iterates through all wood types
                         for (WoodType woodType : WoodType.values()) {
                             WoodBlockSet wood = woodType.getBlockSet();
@@ -71,7 +77,7 @@ public class FloraFaunaSetup {
     // ==================== NETWORKING ====================
 
     /**
-     * Registerhs all network payloads.
+     * Registers all network payloads.
      */
     public static void registerNetworking(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
@@ -83,6 +89,9 @@ public class FloraFaunaSetup {
         registrar.playToServer(CocoonActionPayload.TYPE, CocoonActionPayload.STREAM_CODEC, CocoonActionPayload::onServerReceived);
         registrar.playToServer(ThrowItemPayload.TYPE, ThrowItemPayload.STREAM_CODEC, ThrowItemPayload::onServerReceived);
         registrar.playToServer(CycleMiningModePayload.TYPE, CycleMiningModePayload.STREAM_CODEC, CycleMiningModePayload::onServerReceived);
+
+        // Server to client
+        registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);
     }
 
     // ==================== COMMANDS ====================

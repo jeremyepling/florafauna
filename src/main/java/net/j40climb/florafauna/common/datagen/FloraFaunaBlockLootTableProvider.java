@@ -26,6 +26,11 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         // Husk drops nothing - items are retrieved via interaction
         add(FloraFaunaRegistry.HUSK.get(), noDrop());
 
+        // Item Input System blocks
+        dropSelf(FloraFaunaRegistry.STORAGE_ANCHOR.get());
+        dropSelf(FloraFaunaRegistry.ITEM_INPUT.get());
+        dropSelf(FloraFaunaRegistry.FIELD_RELAY.get());
+
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();

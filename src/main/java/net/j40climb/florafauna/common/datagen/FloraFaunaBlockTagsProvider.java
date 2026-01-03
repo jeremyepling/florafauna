@@ -18,9 +18,14 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        // Husk block - mineable with pickaxe
+        // Mineable with pickaxe
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(FloraFaunaRegistry.HUSK.get());
+                .add(FloraFaunaRegistry.HUSK.get())
+                .add(FloraFaunaRegistry.STORAGE_ANCHOR.get());
+
+        // Mineable with axe (organic/wood-like)
+        this.tag(BlockTags.MINEABLE_WITH_AXE)
+                .add(FloraFaunaRegistry.ITEM_INPUT.get());
 
         // Wood blocks - add to appropriate tags
         for (WoodType woodType : WoodType.values()) {

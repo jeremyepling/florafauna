@@ -11,6 +11,13 @@ import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChambe
 import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
+import net.j40climb.florafauna.common.block.iteminput.ClaimedItemData;
+import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlock;
+import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlockEntity;
+import net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlock;
+import net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity;
+import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlock;
+import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
@@ -118,6 +125,31 @@ public class FloraFaunaRegistry {
                     .noOcclusion()
             ));
 
+    // Item Input System blocks
+    public static final DeferredBlock<StorageAnchorBlock> STORAGE_ANCHOR = registerBlock("storage_anchor",
+            props -> new StorageAnchorBlock(props
+                    .strength(3f, 6f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.STONE)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<ItemInputBlock> ITEM_INPUT = registerBlock("item_input",
+            props -> new ItemInputBlock(props
+                    .strength(2f, 4f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.WOOD)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<FieldRelayBlock> FIELD_RELAY = registerBlock("field_relay",
+            props -> new FieldRelayBlock(props
+                    .strength(2f, 4f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.COPPER)
+                    .noOcclusion()
+            ));
+
     // Wood blocks registered via ModWoodType enum
     static { registerWoodTypes(); }
     private static void registerWoodTypes() { WoodType.values(); }
@@ -191,6 +223,19 @@ public class FloraFaunaRegistry {
     public static final Supplier<BlockEntityType<HuskBlockEntity>> HUSK_BE = BLOCK_ENTITIES.register(
             "husk",
             () -> new BlockEntityType<>(HuskBlockEntity::new, false, HUSK.get()));
+
+    // Item Input System block entities
+    public static final Supplier<BlockEntityType<StorageAnchorBlockEntity>> STORAGE_ANCHOR_BE = BLOCK_ENTITIES.register(
+            "storage_anchor",
+            () -> new BlockEntityType<>(StorageAnchorBlockEntity::new, false, STORAGE_ANCHOR.get()));
+
+    public static final Supplier<BlockEntityType<ItemInputBlockEntity>> ITEM_INPUT_BE = BLOCK_ENTITIES.register(
+            "item_input",
+            () -> new BlockEntityType<>(ItemInputBlockEntity::new, false, ITEM_INPUT.get()));
+
+    public static final Supplier<BlockEntityType<FieldRelayBlockEntity>> FIELD_RELAY_BE = BLOCK_ENTITIES.register(
+            "field_relay",
+            () -> new BlockEntityType<>(FieldRelayBlockEntity::new, false, FIELD_RELAY.get()));
 
     // ==================== MENUS ====================
 
@@ -271,6 +316,14 @@ public class FloraFaunaRegistry {
                             .serialize(VoiceCooldownState.CODEC.fieldOf("voice_cooldowns"))
                             .sync(VoiceCooldownState.STREAM_CODEC)
                             .copyOnDeath()
+                            .build());
+
+    // Item Input System entity attachment (for ItemEntity)
+    public static final Supplier<AttachmentType<ClaimedItemData>> CLAIMED_ITEM_DATA =
+            ATTACHMENT_TYPES.register("claimed_item_data", () ->
+                    AttachmentType.builder(() -> ClaimedItemData.DEFAULT)
+                            .serialize(ClaimedItemData.CODEC.fieldOf("claimed_item_data"))
+                            .sync(ClaimedItemData.STREAM_CODEC)
                             .build());
 
     // ==================== HELPER METHODS ====================

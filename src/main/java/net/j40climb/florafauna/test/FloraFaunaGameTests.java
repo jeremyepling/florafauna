@@ -1,6 +1,8 @@
 package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.iteminput.ClaimedItemData;
+import net.j40climb.florafauna.common.block.iteminput.ItemInputBuffer;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
@@ -10,7 +12,10 @@ import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GlobalTestReporter;
 import net.minecraft.gametest.framework.TestData;
@@ -58,6 +63,10 @@ public class FloraFaunaGameTests {
         registerProgressSignalTests(event, defaultEnv);
         registerChaosSuppressorTests(event, defaultEnv);
         registerDialogueRepositoryTests(event, defaultEnv);
+
+        // Register item input system tests
+        registerItemInputBufferTests(event, defaultEnv);
+        registerClaimedItemDataTests(event, defaultEnv);
     }
 
     // ==================== Voice Cooldown Tests ====================
@@ -331,6 +340,188 @@ public class FloraFaunaGameTests {
 
         if (repo.size() != 2) {
             throw helper.assertionException("Repository should have 2 entries, got: " + repo.size());
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Item Input Buffer Tests ====================
+
+    private static void registerItemInputBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "item_buffer_initial_state", FloraFaunaGameTests::testItemBufferInitialState);
+        registerTest(event, env, "item_buffer_add_and_retrieve", FloraFaunaGameTests::testItemBufferAddAndRetrieve);
+        registerTest(event, env, "item_buffer_stack_merging", FloraFaunaGameTests::testItemBufferStackMerging);
+        registerTest(event, env, "item_buffer_full_detection", FloraFaunaGameTests::testItemBufferFullDetection);
+    }
+
+    private static void testItemBufferInitialState(GameTestHelper helper) {
+        ItemInputBuffer buffer = new ItemInputBuffer(27);
+
+        if (!buffer.isEmpty()) {
+            throw helper.assertionException("Fresh buffer should be empty");
+        }
+        if (buffer.isFull()) {
+            throw helper.assertionException("Fresh buffer should not be full");
+        }
+        if (buffer.getUsedSlots() != 0) {
+            throw helper.assertionException("Fresh buffer should have 0 used slots");
+        }
+        if (buffer.getTotalItemCount() != 0) {
+            throw helper.assertionException("Fresh buffer should have 0 items");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testItemBufferAddAndRetrieve(GameTestHelper helper) {
+        ItemInputBuffer buffer = new ItemInputBuffer(27);
+
+        // Add a stack of cobblestone
+        ItemStack toAdd = new ItemStack(Items.COBBLESTONE, 32);
+        int added = buffer.add(toAdd);
+
+        if (added != 32) {
+            throw helper.assertionException("Should have added 32 items, got: " + added);
+        }
+        if (buffer.isEmpty()) {
+            throw helper.assertionException("Buffer should not be empty after adding items");
+        }
+        if (buffer.getUsedSlots() != 1) {
+            throw helper.assertionException("Buffer should have 1 used slot, got: " + buffer.getUsedSlots());
+        }
+        if (buffer.getTotalItemCount() != 32) {
+            throw helper.assertionException("Buffer should have 32 items, got: " + buffer.getTotalItemCount());
+        }
+
+        // Poll the stack back out
+        ItemStack retrieved = buffer.poll();
+        if (retrieved.isEmpty()) {
+            throw helper.assertionException("Retrieved stack should not be empty");
+        }
+        if (retrieved.getCount() != 32) {
+            throw helper.assertionException("Retrieved stack should have 32 items, got: " + retrieved.getCount());
+        }
+        if (!buffer.isEmpty()) {
+            throw helper.assertionException("Buffer should be empty after poll");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testItemBufferStackMerging(GameTestHelper helper) {
+        ItemInputBuffer buffer = new ItemInputBuffer(27);
+
+        // Add two partial stacks of the same item
+        buffer.add(new ItemStack(Items.DIAMOND, 16));
+        buffer.add(new ItemStack(Items.DIAMOND, 16));
+
+        // Should merge into one stack
+        if (buffer.getUsedSlots() != 1) {
+            throw helper.assertionException("Same items should merge, got slots: " + buffer.getUsedSlots());
+        }
+        if (buffer.getTotalItemCount() != 32) {
+            throw helper.assertionException("Total count should be 32, got: " + buffer.getTotalItemCount());
+        }
+
+        // Add a different item type
+        buffer.add(new ItemStack(Items.GOLD_INGOT, 10));
+
+        if (buffer.getUsedSlots() != 2) {
+            throw helper.assertionException("Different items should not merge, got slots: " + buffer.getUsedSlots());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testItemBufferFullDetection(GameTestHelper helper) {
+        // Create a tiny buffer with 2 slots
+        ItemInputBuffer buffer = new ItemInputBuffer(2);
+
+        // Fill both slots completely (sticks stack to 64)
+        buffer.add(new ItemStack(Items.STICK, 64));
+        buffer.add(new ItemStack(Items.ARROW, 64));
+
+        if (!buffer.isFull()) {
+            throw helper.assertionException("Buffer with all slots at max should be full");
+        }
+
+        // Should not be able to accept more
+        if (buffer.canAccept(new ItemStack(Items.STONE, 1))) {
+            throw helper.assertionException("Full buffer should not accept new items");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Claimed Item Data Tests ====================
+
+    private static void registerClaimedItemDataTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "claimed_data_initial_state", FloraFaunaGameTests::testClaimedDataInitialState);
+        registerTest(event, env, "claimed_data_animation_progress", FloraFaunaGameTests::testClaimedDataAnimationProgress);
+        registerTest(event, env, "claimed_data_animation_completion", FloraFaunaGameTests::testClaimedDataAnimationCompletion);
+    }
+
+    private static void testClaimedDataInitialState(GameTestHelper helper) {
+        ClaimedItemData defaultData = ClaimedItemData.DEFAULT;
+
+        if (defaultData.claimed()) {
+            throw helper.assertionException("Default data should not be claimed");
+        }
+        if (defaultData.animationDuration() != 0) {
+            throw helper.assertionException("Default animation duration should be 0");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testClaimedDataAnimationProgress(GameTestHelper helper) {
+        BlockPos inputPos = new BlockPos(10, 20, 30);
+        ClaimedItemData data = ClaimedItemData.create(inputPos, 1000, 20);
+
+        // At start
+        float progressAtStart = data.getAnimationProgress(1000);
+        if (progressAtStart != 0.0f) {
+            throw helper.assertionException("Progress at start should be 0, got: " + progressAtStart);
+        }
+
+        // At halfway
+        float progressHalf = data.getAnimationProgress(1010);
+        if (Math.abs(progressHalf - 0.5f) > 0.01f) {
+            throw helper.assertionException("Progress at halfway should be 0.5, got: " + progressHalf);
+        }
+
+        // At end
+        float progressEnd = data.getAnimationProgress(1020);
+        if (progressEnd != 1.0f) {
+            throw helper.assertionException("Progress at end should be 1.0, got: " + progressEnd);
+        }
+
+        // Past end (should clamp)
+        float progressPast = data.getAnimationProgress(1030);
+        if (progressPast != 1.0f) {
+            throw helper.assertionException("Progress past end should clamp to 1.0, got: " + progressPast);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testClaimedDataAnimationCompletion(GameTestHelper helper) {
+        BlockPos inputPos = new BlockPos(0, 0, 0);
+        ClaimedItemData data = ClaimedItemData.create(inputPos, 100, 40);
+
+        // Not complete before duration
+        if (data.isAnimationComplete(120)) {
+            throw helper.assertionException("Animation should not be complete at tick 120 (20 ticks in)");
+        }
+
+        // Complete exactly at duration
+        if (!data.isAnimationComplete(140)) {
+            throw helper.assertionException("Animation should be complete at tick 140 (40 ticks in)");
+        }
+
+        // Complete past duration
+        if (!data.isAnimationComplete(200)) {
+            throw helper.assertionException("Animation should be complete past duration");
         }
 
         helper.succeed();

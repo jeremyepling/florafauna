@@ -58,6 +58,21 @@
   "block.florafauna.copper_golem_barrier": "Copper Golem Barrier",
   "block.florafauna.husk": "Husk",
 
+  "block.florafauna.storage_anchor": "Storage Anchor",
+  "block.florafauna.item_input": "Item Input",
+  "message.florafauna.item_input.status_paired": "Paired - Buffer: %s/%s slots (%s items)",
+  "message.florafauna.item_input.status_unpaired": "Not paired to a Storage Anchor",
+  "message.florafauna.item_input.paired": "Paired to Storage Anchor at %s, %s, %s",
+  "message.florafauna.item_input.unpaired": "Unpaired from Storage Anchor",
+  "message.florafauna.item_input.no_anchor": "No Storage Anchor found within range",
+
+  "block.florafauna.field_relay": "Field Relay",
+  "message.florafauna.field_relay.status_paired": "Paired - Buffer: %s/%s slots (%s items)",
+  "message.florafauna.field_relay.status_unpaired": "Not paired to a Storage Anchor",
+  "message.florafauna.field_relay.paired": "Paired to Storage Anchor at %s, %s, %s",
+  "message.florafauna.field_relay.unpaired": "Unpaired from Storage Anchor",
+  "message.florafauna.field_relay.no_anchor": "No Storage Anchor found within range",
+
   "block.florafauna.driftwood_log": "Driftwood Log",
   "block.florafauna.stripped_driftwood_log": "Stripped Driftwood Log",
   "block.florafauna.driftwood_wood": "Driftwood Wood",

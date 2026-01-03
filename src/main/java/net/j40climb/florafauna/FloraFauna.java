@@ -10,6 +10,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -25,6 +27,10 @@ public class FloraFauna {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public FloraFauna(IEventBus modEventBus, ModContainer modContainer) {
+        // Register configs
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC, "florafauna-common.toml");
+        modEventBus.addListener(this::onConfigLoad);
+
         // Initialize all registrations
         FloraFaunaRegistry.init(modEventBus);
 
@@ -52,5 +58,11 @@ public class FloraFauna {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         LOGGER.info("HELLO from server starting");
+    }
+
+    private void onConfigLoad(ModConfigEvent event) {
+        if (event.getConfig().getSpec() == Config.SPEC) {
+            Config.loadConfig();
+        }
     }
 }
