@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.common.item.abilities.multiblock;
 
+import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -16,9 +17,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static net.j40climb.florafauna.client.ClientUtils.raycastFromPlayer;
 import static net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns.*;
@@ -26,11 +32,37 @@ import static net.j40climb.florafauna.common.item.abilities.multiblock.MultiBloc
 /**
  * Handles server-side multi-block breaking operations and stair placement for tunnel modes.
  */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public final class MultiBlockBreaker {
     private static final Set<BlockPos> HARVESTED_BLOCKS = new HashSet<>();
     private static final Set<BlockPos> POTENTIAL_STAIR_BLOCKS = new HashSet<>();
 
+    // Pending stair placements with the tick they were queued on
+    // Only processed after at least one tick has passed
+    private record PendingStairPlacement(long queuedAtTick, Level level, BlockPos initialBlockPos, Direction dir, BlockHitResult hit, boolean ascending) {}
+    private static final Queue<PendingStairPlacement> PENDING_STAIR_PLACEMENTS = new ConcurrentLinkedQueue<>();
+
     private MultiBlockBreaker() {} // Utility class
+
+    /**
+     * Processes pending stair placements that were queued on a previous tick.
+     * Only runs work when queue is non-empty, and ensures at least one tick has passed.
+     */
+    @SubscribeEvent
+    public static void onServerTick(ServerTickEvent.Post event) {
+        if (PENDING_STAIR_PLACEMENTS.isEmpty()) {
+            return; // Fast exit - no work to do
+        }
+
+        long currentTick = event.getServer().getTickCount();
+
+        // Process all items queued on previous ticks (not current tick)
+        while (!PENDING_STAIR_PLACEMENTS.isEmpty() &&
+               PENDING_STAIR_PLACEMENTS.peek().queuedAtTick() < currentTick) {
+            PendingStairPlacement pending = PENDING_STAIR_PLACEMENTS.poll();
+            placeStairs(pending.level(), pending.initialBlockPos(), pending.dir(), pending.hit(), pending.ascending());
+        }
+    }
 
     /**
      * Breaks multiple blocks based on mining mode configuration.
@@ -39,28 +71,30 @@ public final class MultiBlockBreaker {
      * which checks if blocks can be mined based on the ignoreToolRestrictions flag.
      * When ignoreToolRestrictions is true, any block breakable by a netherite tool is valid.
      * The getBlocksToBreak() method uses this validation, so blocks returned are pre-validated.
+     * <p>
+     * For tunnel modes, stair placement is scheduled for the next tick to ensure all blocks
+     * are broken before stairs are placed, avoiding the need to cancel the original event.
      *
      * @param mainHandItem The item being used to break blocks
      * @param initialBlockPos The block the player targeted
      * @param serverPlayer The player breaking blocks
      * @param level The world level
-     * @return true if the original block break event should be cancelled (for stair placement)
      */
-    public static boolean breakBlocks(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level) {
+    public static void breakBlocks(ItemStack mainHandItem, BlockPos initialBlockPos, ServerPlayer serverPlayer, Level level) {
         MiningModeData miningModeData = mainHandItem.get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
         BlockHitResult hitResult = null;
 
         if (miningModeData == null) {
-            return false;
+            return;
         }
 
         if (HARVESTED_BLOCKS.contains(initialBlockPos)) {
-            return false;
+            return;
         }
 
         // Use shared validation logic (respects ignoreToolRestrictions flag)
         if (!isValidToMine(serverPlayer, initialBlockPos)) {
-            return false;
+            return;
         }
 
         Direction horizontalDirForTunnel = null;
@@ -72,15 +106,21 @@ public final class MultiBlockBreaker {
             }
         }
 
-        // getBlocksToBreak already validates blocks via isValidToMine, so just skip initial block
+        // Break all blocks in the mining pattern except initialBlockPos (handled by original event)
         for (BlockPos blockPos : getBlocksToBreak(initialBlockPos, serverPlayer)) {
+            // Skip initialBlockPos - the original BreakEvent breaks it after we return
             if (blockPos.equals(initialBlockPos)) {
                 continue;
             }
 
+            // HARVESTED_BLOCKS prevents infinite recursion: destroyBlock() triggers another
+            // BreakEvent which calls breakBlocks() again - the check at method start exits early
             HARVESTED_BLOCKS.add(blockPos);
+            // POTENTIAL_STAIR_BLOCKS tracks broken blocks for ascending tunnel stair placement
+            // (stairs only placed where blocks existed, not in pre-existing air gaps)
             POTENTIAL_STAIR_BLOCKS.add(blockPos);
             serverPlayer.gameMode.destroyBlock(blockPos);
+            // Remove after destroy so same position can be mined in future operations
             HARVESTED_BLOCKS.remove(blockPos);
         }
 
@@ -88,23 +128,14 @@ public final class MultiBlockBreaker {
             boolean ascending = miningModeData.shape() == MiningShape.TUNNEL_UP;
             TunnelLogic tunnelLogic = getTunnelYLogic(hitResult, ascending);
             if (tunnelLogic.buildTunnel()) {
-                // We must manually destroy the initial block here because:
-                // 1. The for loop above skips initialBlockPos (assuming the original event handles it)
-                // 2. For tunnel modes, we return true which CANCELS the original BreakEvent
-                // 3. We cancel because placeStairs() puts stairs where blocks were - if we don't
-                //    cancel, Minecraft's normal break logic would destroy our newly placed stairs
-                // 4. But cancelling means Minecraft won't break initialBlockPos, so we do it here
-                // 5. HARVESTED_BLOCKS guard prevents infinite recursion since destroyBlock triggers BreakEvent
-                HARVESTED_BLOCKS.add(initialBlockPos);
-                serverPlayer.gameMode.destroyBlock(initialBlockPos);
-                HARVESTED_BLOCKS.remove(initialBlockPos);
-
-                placeStairs(level, initialBlockPos, horizontalDirForTunnel, hitResult, ascending);
-                return true;
+                // Queue stair placement for next server tick - guarantees all blocks are broken first
+                PENDING_STAIR_PLACEMENTS.add(new PendingStairPlacement(
+                    level.getServer().getTickCount(),
+                    level, initialBlockPos, horizontalDirForTunnel, hitResult, ascending
+                ));
             }
         }
-        // Return false so the original BreakEvent proceeds and breaks initialBlockPos
-        return false;
+        // Original BreakEvent proceeds and breaks initialBlockPos
     }
 
     /**
