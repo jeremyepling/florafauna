@@ -24,6 +24,7 @@
   "key.florafauna.teleport_surface": "Teleport to Surface",
   "key.florafauna.dash": "Dash",
   "key.florafauna.hammer_config": "Hammer Config",
+  "key.florafauna.cycle_mining_mode": "Cycle Mining Mode",
 
   "gui.florafauna.tool_config.title": "Tool Config",
   "gui.florafauna.tool_config.enchantment": "Enchantment:",

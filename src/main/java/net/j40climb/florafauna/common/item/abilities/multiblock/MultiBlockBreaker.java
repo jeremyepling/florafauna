@@ -34,6 +34,11 @@ public final class MultiBlockBreaker {
 
     /**
      * Breaks multiple blocks based on mining mode configuration.
+     * <p>
+     * Block validation is centralized in {@link MultiBlockPatterns#isValidToMine(Player, BlockPos)},
+     * which checks if blocks can be mined based on the ignoreToolRestrictions flag.
+     * When ignoreToolRestrictions is true, any block breakable by a netherite tool is valid.
+     * The getBlocksToBreak() method uses this validation, so blocks returned are pre-validated.
      *
      * @param mainHandItem The item being used to break blocks
      * @param initialBlockPos The block the player targeted
@@ -53,7 +58,8 @@ public final class MultiBlockBreaker {
             return false;
         }
 
-        if (!mainHandItem.isCorrectToolForDrops(level.getBlockState(initialBlockPos))) {
+        // Use shared validation logic (respects ignoreToolRestrictions flag)
+        if (!isValidToMine(serverPlayer, initialBlockPos)) {
             return false;
         }
 
@@ -66,8 +72,9 @@ public final class MultiBlockBreaker {
             }
         }
 
+        // getBlocksToBreak already validates blocks via isValidToMine, so just skip initial block
         for (BlockPos blockPos : getBlocksToBreak(initialBlockPos, serverPlayer)) {
-            if (blockPos == initialBlockPos || !mainHandItem.isCorrectToolForDrops(level.getBlockState(blockPos))) {
+            if (blockPos.equals(initialBlockPos)) {
                 continue;
             }
 
@@ -81,11 +88,22 @@ public final class MultiBlockBreaker {
             boolean ascending = miningModeData.shape() == MiningShape.TUNNEL_UP;
             TunnelLogic tunnelLogic = getTunnelYLogic(hitResult, ascending);
             if (tunnelLogic.buildTunnel()) {
+                // We must manually destroy the initial block here because:
+                // 1. The for loop above skips initialBlockPos (assuming the original event handles it)
+                // 2. For tunnel modes, we return true which CANCELS the original BreakEvent
+                // 3. We cancel because placeStairs() puts stairs where blocks were - if we don't
+                //    cancel, Minecraft's normal break logic would destroy our newly placed stairs
+                // 4. But cancelling means Minecraft won't break initialBlockPos, so we do it here
+                // 5. HARVESTED_BLOCKS guard prevents infinite recursion since destroyBlock triggers BreakEvent
+                HARVESTED_BLOCKS.add(initialBlockPos);
+                serverPlayer.gameMode.destroyBlock(initialBlockPos);
+                HARVESTED_BLOCKS.remove(initialBlockPos);
+
                 placeStairs(level, initialBlockPos, horizontalDirForTunnel, hitResult, ascending);
                 return true;
             }
         }
-
+        // Return false so the original BreakEvent proceeds and breaks initialBlockPos
         return false;
     }
 

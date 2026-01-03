@@ -5,6 +5,8 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -23,7 +25,24 @@ public final class MultiBlockPatterns {
     public static final int STAIR_STEPS = 5;
     public static final int STAIR_HEIGHT = 5;
 
+    // Cached netherite tool stacks for bypass checks
+    private static final ItemStack NETHERITE_PICKAXE = new ItemStack(Items.NETHERITE_PICKAXE);
+    private static final ItemStack NETHERITE_AXE = new ItemStack(Items.NETHERITE_AXE);
+    private static final ItemStack NETHERITE_SHOVEL = new ItemStack(Items.NETHERITE_SHOVEL);
+    private static final ItemStack NETHERITE_HOE = new ItemStack(Items.NETHERITE_HOE);
+
     private MultiBlockPatterns() {} // Utility class
+
+    /**
+     * Checks if any netherite tool can break the given block state.
+     * Used by both pattern generation and block breaking to bypass tool restrictions.
+     */
+    public static boolean canNetheriteToolBreak(BlockState blockState) {
+        return NETHERITE_PICKAXE.isCorrectToolForDrops(blockState) ||
+               NETHERITE_AXE.isCorrectToolForDrops(blockState) ||
+               NETHERITE_SHOVEL.isCorrectToolForDrops(blockState) ||
+               NETHERITE_HOE.isCorrectToolForDrops(blockState);
+    }
 
     /**
      * Gets all blocks that should be broken based on the player's mining mode.
@@ -194,10 +213,23 @@ public final class MultiBlockPatterns {
 
     /**
      * Checks if a block position is valid for mining with the player's current tool.
+     * Respects the ignoreToolRestrictions flag from MiningModeData.
      */
     public static boolean isValidToMine(Player player, BlockPos blockPos) {
         BlockState blockState = player.level().getBlockState(blockPos);
-        return player.getMainHandItem().isCorrectToolForDrops(blockState) && !blockState.isAir();
+        if (blockState.isAir()) {
+            return false;
+        }
+
+        ItemStack mainHandItem = player.getMainHandItem();
+        MiningModeData miningModeData = mainHandItem.get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
+
+        // If no mining mode data or ignoreToolRestrictions is true, check if netherite can break it
+        if (miningModeData != null && miningModeData.ignoreToolRestrictions()) {
+            return canNetheriteToolBreak(blockState);
+        }
+
+        return mainHandItem.isCorrectToolForDrops(blockState);
     }
 
     /**

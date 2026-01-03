@@ -3,13 +3,10 @@ package net.j40climb.florafauna.setup;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
-import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
+import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
-import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
-import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
-import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
-import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
+import net.j40climb.florafauna.common.item.abilities.networking.*;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueLoader;
 import net.minecraft.core.registries.Registries;
@@ -85,6 +82,7 @@ public class FloraFaunaSetup {
         registrar.playToServer(PutDownFrenchiePayload.TYPE, PutDownFrenchiePayload.STREAM_CODEC, PutDownFrenchiePayload::onServerReceived);
         registrar.playToServer(CocoonActionPayload.TYPE, CocoonActionPayload.STREAM_CODEC, CocoonActionPayload::onServerReceived);
         registrar.playToServer(ThrowItemPayload.TYPE, ThrowItemPayload.STREAM_CODEC, ThrowItemPayload::onServerReceived);
+        registrar.playToServer(CycleMiningModePayload.TYPE, CycleMiningModePayload.STREAM_CODEC, CycleMiningModePayload::onServerReceived);
     }
 
     // ==================== COMMANDS ====================

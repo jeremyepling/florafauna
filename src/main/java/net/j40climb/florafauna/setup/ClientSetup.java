@@ -4,9 +4,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.AbilityDebugOverlay;
 import net.j40climb.florafauna.client.DebugOverlay;
+import net.j40climb.florafauna.client.entity.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
-import net.j40climb.florafauna.client.entity.ThrownItemRenderer;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
@@ -74,6 +74,14 @@ public class ClientSetup {
             KEY_CATEGORY
     ));
 
+    public static final Lazy<KeyMapping> CYCLE_MINING_MODE_KEY = Lazy.of(() -> new KeyMapping(
+            "key.florafauna.cycle_mining_mode",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_C,
+            KEY_CATEGORY
+    ));
+
     // ==================== GUI LAYERS ====================
 
     public static final Identifier SYMBIOTE_DEBUG_LAYER_ID = Identifier.fromNamespaceAndPath(
@@ -123,6 +131,7 @@ public class ClientSetup {
         event.register(DASH_KEY.get());
         event.register(HAMMER_CONFIG_KEY.get());
         event.register(THROW_ITEM_KEY.get());
+        event.register(CYCLE_MINING_MODE_KEY.get());
     }
 
     /**

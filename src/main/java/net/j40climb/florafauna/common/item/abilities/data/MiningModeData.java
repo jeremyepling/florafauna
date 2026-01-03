@@ -6,22 +6,24 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlocksToBreak) {
+public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlocksToBreak, boolean ignoreToolRestrictions) {
     public static final Codec<MiningModeData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
                     MiningShape.CODEC.fieldOf("shape").forGetter(MiningModeData::shape),
                     Codec.INT.fieldOf("radius").forGetter(MiningModeData::radius),
-                    Codec.INT.fieldOf("maxBlocksToBreak").forGetter(MiningModeData::maxBlocksToBreak)
+                    Codec.INT.fieldOf("maxBlocksToBreak").forGetter(MiningModeData::maxBlocksToBreak),
+                    Codec.BOOL.optionalFieldOf("ignoreToolRestrictions", true).forGetter(MiningModeData::ignoreToolRestrictions)
             ).apply(builder, MiningModeData::new));
 
     public static final StreamCodec<ByteBuf, MiningModeData> STREAM_CODEC = StreamCodec.composite(
             MiningShape.STREAM_CODEC, MiningModeData::shape,
             ByteBufCodecs.INT, MiningModeData::radius,
             ByteBufCodecs.INT, MiningModeData::maxBlocksToBreak,
+            ByteBufCodecs.BOOL, MiningModeData::ignoreToolRestrictions,
             MiningModeData::new
     );
 
-    public static final MiningModeData DEFAULT = new MiningModeData(MiningShape.SINGLE, 0, 64);
+    public static final MiningModeData DEFAULT = new MiningModeData(MiningShape.SINGLE, 0, 64, true);
 
     public MiningModeData getNextMode() {
         int currentShapeIndex = this.shape().id();
@@ -29,7 +31,7 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
             currentShapeIndex = 0;
         } else currentShapeIndex++;
         MiningShape miningShape = MiningShape.getShapeByID(currentShapeIndex);
-        return new MiningModeData(miningShape, miningShape.getRadius(), this.maxBlocksToBreak());
+        return new MiningModeData(miningShape, miningShape.getRadius(), this.maxBlocksToBreak(), this.ignoreToolRestrictions());
     }
 
     public String getMiningModeString() {

@@ -3,11 +3,12 @@ package net.j40climb.florafauna.client.events;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.ClientUtils;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
+import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
-import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
+import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.ClientSetup;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
@@ -69,6 +70,12 @@ public class KeyInputEvents {
                 // Play throw animation (arm swing)
                 player.swing(InteractionHand.MAIN_HAND);
                 ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
+            }
+        }
+        while (ClientSetup.CYCLE_MINING_MODE_KEY.get().consumeClick()) {
+            // Component-based check - works with any item that has MULTI_BLOCK_MINING
+            if (itemStack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
+                ClientPacketDistributor.sendToServer(CycleMiningModePayload.INSTANCE);
             }
         }
     }
