@@ -28,6 +28,10 @@ base {
 // Mojang ships Java 21 to end users starting in 1.20.5, so mods should target Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+// Worktree-specific run directory suffix for multi-agent parallel development
+def wt = (System.getenv("WORKTREE_ID") ?: rootProject.projectDir.name)
+        .replaceAll(/[^A-Za-z0-9._-]/, "_")
+
 neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
@@ -45,6 +49,7 @@ neoForge {
     runs {
         client {
             client()
+            gameDirectory = file("run/client-${wt}")
 
             // Set default window size
             programArguments.addAll '--width', '1920', '--height', '1080'
@@ -58,6 +63,7 @@ neoForge {
 
         server {
             server()
+            gameDirectory = file("run/server-${wt}")
             programArgument '--nogui'
             // Gametests disabled - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -68,11 +74,13 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
+            gameDirectory = file("run/gameTestServer-${wt}")
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         clientData {
             clientData()
+            gameDirectory = file("run/clientData-${wt}")
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
@@ -80,6 +88,7 @@ neoForge {
 
         serverData {
             serverData()
+            gameDirectory = file("run/serverData-${wt}")
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()

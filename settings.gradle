@@ -9,3 +9,11 @@ pluginManagement {
 plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
+
+// Per-worktree local build cache to prevent cross-tree cache interactions
+buildCache {
+    local {
+        enabled = true
+        directory = new File(rootDir, ".gradle-build-cache")
+    }
+}

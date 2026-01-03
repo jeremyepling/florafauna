@@ -27,6 +27,18 @@ nul
 
 repo
 /src/generated/
+
+# Worktree-local gradle state (agents)
+.gradle-user-home/
+
+# Optional per-worktree build cache
+.gradle-build-cache/
+
+# Optional per-worktree temp
+.tmp/
+
+# Per-worktree tools directory
+tools/
 /gradle/gradle-daemon-jvm.properties
 /.claude/settings.local.json
 /.claude/blockbench-config.json

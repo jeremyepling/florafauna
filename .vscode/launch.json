@@ -12,13 +12,13 @@
       "projectName": "florafauna",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\clientRunProgramArgs.txt"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\clientRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\clientRunVmArgs.txt",
-        "-Dfml.modFolders\u003dflorafauna%%C:\\Users\\jerem\\IdeaProjects\\florafauna\\bin\\main"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dflorafauna%%C:\\code\\florafauna-workspace\\florafauna\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}\\run",
+      "cwd": "${workspaceFolder}\\run\\client-florafauna",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -34,13 +34,13 @@
       "projectName": "florafauna",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\clientDataRunProgramArgs.txt"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\clientDataRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\clientDataRunVmArgs.txt",
-        "-Dfml.modFolders\u003dflorafauna%%C:\\Users\\jerem\\IdeaProjects\\florafauna\\bin\\main"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\clientDataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dflorafauna%%C:\\code\\florafauna-workspace\\florafauna\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}\\run",
+      "cwd": "${workspaceFolder}\\run\\clientData-florafauna",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -56,13 +56,13 @@
       "projectName": "florafauna",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\gameTestServerRunProgramArgs.txt"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\gameTestServerRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\gameTestServerRunVmArgs.txt",
-        "-Dfml.modFolders\u003dflorafauna%%C:\\Users\\jerem\\IdeaProjects\\florafauna\\bin\\main"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\gameTestServerRunVmArgs.txt",
+        "-Dfml.modFolders\u003dflorafauna%%C:\\code\\florafauna-workspace\\florafauna\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}\\run",
+      "cwd": "${workspaceFolder}\\run\\gameTestServer-florafauna",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -78,13 +78,13 @@
       "projectName": "florafauna",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\serverRunProgramArgs.txt"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\serverRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\serverRunVmArgs.txt",
-        "-Dfml.modFolders\u003dflorafauna%%C:\\Users\\jerem\\IdeaProjects\\florafauna\\bin\\main"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dflorafauna%%C:\\code\\florafauna-workspace\\florafauna\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}\\run",
+      "cwd": "${workspaceFolder}\\run\\server-florafauna",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
@@ -100,13 +100,13 @@
       "projectName": "florafauna",
       "mainClass": "net.neoforged.devlaunch.Main",
       "args": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\serverDataRunProgramArgs.txt"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\serverDataRunProgramArgs.txt"
       ],
       "vmArgs": [
-        "@C:\\Users\\jerem\\IdeaProjects\\florafauna\\build\\moddev\\serverDataRunVmArgs.txt",
-        "-Dfml.modFolders\u003dflorafauna%%C:\\Users\\jerem\\IdeaProjects\\florafauna\\bin\\main"
+        "@C:\\code\\florafauna-workspace\\florafauna\\build\\moddev\\serverDataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dflorafauna%%C:\\code\\florafauna-workspace\\florafauna\\bin\\main"
       ],
-      "cwd": "${workspaceFolder}\\run",
+      "cwd": "${workspaceFolder}\\run\\serverData-florafauna",
       "env": {},
       "console": "internalConsole",
       "shortenCommandLine": "none"
