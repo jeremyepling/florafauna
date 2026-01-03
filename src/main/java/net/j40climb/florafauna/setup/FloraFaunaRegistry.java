@@ -16,7 +16,9 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
+import net.j40climb.florafauna.common.entity.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.hammer.HammerItem;
 import net.j40climb.florafauna.common.symbiote.binding.SymbiotePreparedEffect;
@@ -139,6 +141,15 @@ public class FloraFaunaRegistry {
             () -> EntityType.Builder.of(FrenchieEntity::new, MobCategory.CREATURE)
                     .sized(0.9f, 0.9f).build(FRENCHIE_KEY));
 
+    // Projectile entity
+    public static final ResourceKey<EntityType<?>> THROWN_ITEM_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "thrown_item"));
+    public static final Supplier<EntityType<ThrownItemEntity>> THROWN_ITEM = ENTITY_TYPES.register("thrown_item",
+            () -> EntityType.Builder.<ThrownItemEntity>of(ThrownItemEntity::new, MobCategory.MISC)
+                    .sized(0.5f, 0.5f)
+                    .clientTrackingRange(4)
+                    .updateInterval(20)
+                    .build(THROWN_ITEM_KEY));
+
     // ==================== ITEMS ====================
 
     // Tools
@@ -223,6 +234,11 @@ public class FloraFaunaRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS =
             DATA_COMPONENTS.registerComponentType("symbiote_progress",
                     builder -> builder.persistent(ProgressSignalTracker.CODEC).networkSynchronized(ProgressSignalTracker.STREAM_CODEC));
+
+    // Throwable ability data component
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ThrowableAbilityData>> THROWABLE_ABILITY =
+            DATA_COMPONENTS.registerComponentType("throwable_ability",
+                    builder -> builder.persistent(ThrowableAbilityData.CODEC).networkSynchronized(ThrowableAbilityData.STREAM_CODEC));
 
     // ==================== ATTACHMENT TYPES ====================
 

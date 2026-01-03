@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.item.hammer;
 
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.Holder;
@@ -56,6 +57,7 @@ public class HammerItem extends Item {
                 .component(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT)
                 .component(FloraFaunaRegistry.LIGHTNING_ABILITY, Unit.INSTANCE)
                 .component(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
+                .component(FloraFaunaRegistry.THROWABLE_ABILITY, ThrowableAbilityData.DEFAULT)
                 .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
         );
     }

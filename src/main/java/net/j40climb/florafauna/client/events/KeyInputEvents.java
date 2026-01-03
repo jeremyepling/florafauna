@@ -5,6 +5,7 @@ import net.j40climb.florafauna.client.ClientUtils;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
+import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.setup.ClientSetup;
@@ -12,6 +13,7 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -59,6 +61,14 @@ public class KeyInputEvents {
             PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
             if (symbioteData.symbioteState().areAbilitiesActive() && symbioteData.dash()) {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
+            }
+        }
+        while (ClientSetup.THROW_ITEM_KEY.get().consumeClick()) {
+            // Component-based check - works with any item that has THROWABLE_ABILITY
+            if (itemStack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
+                // Play throw animation (arm swing)
+                player.swing(InteractionHand.MAIN_HAND);
+                ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
             }
         }
     }

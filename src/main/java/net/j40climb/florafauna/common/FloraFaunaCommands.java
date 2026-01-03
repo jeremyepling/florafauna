@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.client.AbilityDebugOverlay;
 import net.j40climb.florafauna.client.DebugOverlay;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.binding.SymbioteBindingHelper;
@@ -18,7 +19,12 @@ import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalUpdater;
 import net.j40climb.florafauna.common.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.symbiote.voice.SymbioteVoiceService;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
+import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.minecraft.util.Unit;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -102,6 +108,21 @@ public class FloraFaunaCommands {
                                                                     return builder.buildFuture();
                                                                 })
                                                                 .executes(FloraFaunaCommands::setProgressState))))))
+                        .then(Commands.literal("ability")
+                                .then(Commands.literal("lightning")
+                                        .executes(FloraFaunaCommands::toggleLightning))
+                                .then(Commands.literal("teleport")
+                                        .executes(FloraFaunaCommands::toggleTeleport))
+                                .then(Commands.literal("throw")
+                                        .executes(FloraFaunaCommands::toggleThrow))
+                                .then(Commands.literal("mining")
+                                        .executes(FloraFaunaCommands::toggleMining))
+                                .then(Commands.literal("config")
+                                        .executes(FloraFaunaCommands::toggleToolConfig))
+                                .then(Commands.literal("all")
+                                        .executes(FloraFaunaCommands::addAllAbilities))
+                                .then(Commands.literal("clear")
+                                        .executes(FloraFaunaCommands::clearAllAbilities)))
         );
     }
 
@@ -474,6 +495,114 @@ public class FloraFaunaCommands {
         return String.format("%d, %d, %d (%s)", pos.getX(), pos.getY(), pos.getZ(), dimName);
     }
 
+    // ==================== Ability Commands ====================
+
+    private static int toggleLightning(CommandContext<CommandSourceStack> context) {
+        return toggleAbilityComponent(context, "lightning",
+                FloraFaunaRegistry.LIGHTNING_ABILITY.get(), Unit.INSTANCE);
+    }
+
+    private static int toggleTeleport(CommandContext<CommandSourceStack> context) {
+        return toggleAbilityComponent(context, "teleport",
+                FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY.get(), Unit.INSTANCE);
+    }
+
+    private static int toggleThrow(CommandContext<CommandSourceStack> context) {
+        return toggleAbilityComponent(context, "throw",
+                FloraFaunaRegistry.THROWABLE_ABILITY.get(), ThrowableAbilityData.DEFAULT);
+    }
+
+    private static int toggleMining(CommandContext<CommandSourceStack> context) {
+        return toggleAbilityComponent(context, "mining",
+                FloraFaunaRegistry.MULTI_BLOCK_MINING.get(), MiningModeData.DEFAULT);
+    }
+
+    private static int toggleToolConfig(CommandContext<CommandSourceStack> context) {
+        return toggleAbilityComponent(context, "config",
+                FloraFaunaRegistry.TOOL_CONFIG.get(), ToolConfig.DEFAULT);
+    }
+
+    private static <T> int toggleAbilityComponent(CommandContext<CommandSourceStack> context,
+                                                   String abilityName,
+                                                   net.minecraft.core.component.DataComponentType<T> componentType,
+                                                   T defaultValue) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.ability.player_only"));
+            return 0;
+        }
+
+        ItemStack stack = player.getMainHandItem();
+        if (stack.isEmpty()) {
+            source.sendFailure(Component.translatable("command.florafauna.ability.no_item"));
+            return 0;
+        }
+
+        if (stack.has(componentType)) {
+            stack.remove(componentType);
+            source.sendSuccess(() -> Component.translatable("command.florafauna.ability.removed", abilityName)
+                    .withStyle(style -> style.withColor(0xE74C3C)), false);
+        } else {
+            stack.set(componentType, defaultValue);
+            source.sendSuccess(() -> Component.translatable("command.florafauna.ability.added", abilityName)
+                    .withStyle(style -> style.withColor(0x2ECC71)), false);
+        }
+        return 1;
+    }
+
+    private static int addAllAbilities(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.ability.player_only"));
+            return 0;
+        }
+
+        ItemStack stack = player.getMainHandItem();
+        if (stack.isEmpty()) {
+            source.sendFailure(Component.translatable("command.florafauna.ability.no_item"));
+            return 0;
+        }
+
+        // Add all abilities with defaults
+        stack.set(FloraFaunaRegistry.LIGHTNING_ABILITY.get(), Unit.INSTANCE);
+        stack.set(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY.get(), Unit.INSTANCE);
+        stack.set(FloraFaunaRegistry.THROWABLE_ABILITY.get(), ThrowableAbilityData.DEFAULT);
+        stack.set(FloraFaunaRegistry.MULTI_BLOCK_MINING.get(), MiningModeData.DEFAULT);
+        stack.set(FloraFaunaRegistry.TOOL_CONFIG.get(), ToolConfig.DEFAULT);
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.ability.all_added")
+                .withStyle(style -> style.withColor(0x2ECC71)), false);
+        return 1;
+    }
+
+    private static int clearAllAbilities(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.ability.player_only"));
+            return 0;
+        }
+
+        ItemStack stack = player.getMainHandItem();
+        if (stack.isEmpty()) {
+            source.sendFailure(Component.translatable("command.florafauna.ability.no_item"));
+            return 0;
+        }
+
+        // Remove all abilities
+        stack.remove(FloraFaunaRegistry.LIGHTNING_ABILITY.get());
+        stack.remove(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY.get());
+        stack.remove(FloraFaunaRegistry.THROWABLE_ABILITY.get());
+        stack.remove(FloraFaunaRegistry.MULTI_BLOCK_MINING.get());
+        stack.remove(FloraFaunaRegistry.TOOL_CONFIG.get());
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.ability.all_cleared")
+                .withStyle(style -> style.withColor(0xF39C12)), false);
+        return 1;
+    }
+
     // ==================== Client Commands ====================
 
     /**
@@ -500,6 +629,12 @@ public class FloraFaunaCommands {
                                             .executes(context -> setDebug(context.getSource(), true)))
                                     .then(Commands.literal("off")
                                             .executes(context -> setDebug(context.getSource(), false))))
+                            .then(Commands.literal("ability_debug")
+                                    .executes(context -> toggleAbilityDebug(context.getSource()))
+                                    .then(Commands.literal("on")
+                                            .executes(context -> setAbilityDebug(context.getSource(), true)))
+                                    .then(Commands.literal("off")
+                                            .executes(context -> setAbilityDebug(context.getSource(), false))))
             );
         }
 
@@ -519,6 +654,27 @@ public class FloraFaunaCommands {
 
             source.sendSuccess(() -> Component.translatable(
                     enabled ? "command.florafauna.symbiote.debug_enabled" : "command.florafauna.symbiote.debug_disabled"
+            ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
+
+            return 1;
+        }
+
+        private static int toggleAbilityDebug(CommandSourceStack source) {
+            AbilityDebugOverlay.toggle();
+            boolean newState = AbilityDebugOverlay.isEnabled();
+
+            source.sendSuccess(() -> Component.translatable(
+                    newState ? "command.florafauna.ability_debug.enabled" : "command.florafauna.ability_debug.disabled"
+            ).withStyle(style -> style.withColor(newState ? 0x2ECC71 : 0xE74C3C)), false);
+
+            return 1;
+        }
+
+        private static int setAbilityDebug(CommandSourceStack source, boolean enabled) {
+            AbilityDebugOverlay.setEnabled(enabled);
+
+            source.sendSuccess(() -> Component.translatable(
+                    enabled ? "command.florafauna.ability_debug.enabled" : "command.florafauna.ability_debug.disabled"
             ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
 
             return 1;

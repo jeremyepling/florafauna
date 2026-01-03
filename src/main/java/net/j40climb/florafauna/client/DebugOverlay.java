@@ -31,10 +31,14 @@ public class DebugOverlay implements GuiLayer {
 
     public static void setEnabled(boolean value) {
         enabled = value;
+        if (value) {
+            // Turn off ability debug overlay for mutual exclusivity
+            AbilityDebugOverlay.setEnabled(false);
+        }
     }
 
     public static void toggle() {
-        enabled = !enabled;
+        setEnabled(!enabled);
     }
 
     /**
@@ -64,14 +68,35 @@ public class DebugOverlay implements GuiLayer {
         PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         Font font = mc.font;
 
-        int x = 5;
-        int y = 5;
-        int lineHeight = 10;
-        int color = 0xFFAAAAAA; // Light gray
-        int headerColor = 0xFF9B59B6; // Purple (matches command header)
+        // Scale to half size for compact display
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().scale(0.5f, 0.5f);
+
+        // Coordinates in scaled space (divide by 0.5 to get screen position)
+        int x = 10;
+        int y = 10;
+        int lineHeight = 10;  // Tight line spacing
+        int sectionGap = 3;
+        int padding = 4;
+        int color = 0xFFF0F0F0; // Very bright gray
+        int headerColor = 0xFFCB8AFF; // Bright purple
         int valueColor = 0xFFFFFFFF; // White
-        int enabledColor = 0xFF2ECC71; // Green
-        int disabledColor = 0xFFE74C3C; // Red
+        int enabledColor = 0xFF55FF77; // Bright green
+        int disabledColor = 0xFFFF7777; // Bright red
+        int bgColor = 0xE0080808; // Near black, 88% opaque
+
+        // Calculate total height for background
+        int lineCount = 2; // Header + State
+        if (data.symbioteState().isBonded()) {
+            lineCount += 7; // Bond Time, Tier, Abilities Active, Dash, Feather, Speed, Jump
+        }
+        lineCount += 6; // Cocoon section: header + 5 lines
+        lineCount += 3; // Husk section: header + 2 lines
+        int totalHeight = lineCount * lineHeight + (sectionGap * 2) + padding * 2;
+        int maxWidth = 200; // Approximate max text width
+
+        // Draw background
+        guiGraphics.fill(x - padding, y - padding, x + maxWidth, y + totalHeight - padding, bgColor);
 
         // Header
         guiGraphics.drawString(font, "=== Symbiote Debug ===", x, y, headerColor, false);
@@ -112,7 +137,7 @@ public class DebugOverlay implements GuiLayer {
         }
 
         // Cocoon State section
-        y += 3; // Small gap
+        y += sectionGap;
         guiGraphics.drawString(font, "--- Cocoon State ---", x, y, headerColor, false);
         y += lineHeight;
 
@@ -135,7 +160,7 @@ public class DebugOverlay implements GuiLayer {
         y += lineHeight;
 
         // Restoration Husk section
-        y += 3; // Small gap
+        y += sectionGap;
         guiGraphics.drawString(font, "--- Restoration Husk ---", x, y, headerColor, false);
         y += lineHeight;
 
@@ -145,6 +170,8 @@ public class DebugOverlay implements GuiLayer {
 
         guiGraphics.drawString(font, "Pos: " + formatPosAndDim(data.restorationHuskPos(), data.restorationHuskDim()),
                 x, y, color, false);
+
+        guiGraphics.pose().popMatrix();
     }
 
     private static String formatBool(boolean value) {

@@ -16,9 +16,11 @@
   "item.florafauna.lizard_spawn_egg": "Lizard Spawn Egg",
   "entity.florafauna.lizard": "Lizard",
   "container.florafauna.lizard": "Lizard",
+  "entity.florafauna.thrown_item": "Thrown Item",
 
   "key.florafauna.summon_lightning": "Summon Lightning",
   "key.florafauna.throw_hammer": "Throw Hammer",
+  "key.florafauna.throw_item": "Throw Item",
   "key.florafauna.teleport_surface": "Teleport to Surface",
   "key.florafauna.dash": "Dash",
   "key.florafauna.hammer_config": "Hammer Config",
@@ -104,6 +106,15 @@
   "command.florafauna.symbiote.none": "None",
   "command.florafauna.symbiote.debug_enabled": "Symbiote debug overlay enabled",
   "command.florafauna.symbiote.debug_disabled": "Symbiote debug overlay disabled",
+
+  "command.florafauna.ability.player_only": "This command can only be run by a player!",
+  "command.florafauna.ability.no_item": "You must be holding an item",
+  "command.florafauna.ability.added": "Added %s ability",
+  "command.florafauna.ability.removed": "Removed %s ability",
+  "command.florafauna.ability.all_added": "Added all abilities",
+  "command.florafauna.ability.all_cleared": "Cleared all abilities",
+  "command.florafauna.ability_debug.enabled": "Ability debug overlay enabled",
+  "command.florafauna.ability_debug.disabled": "Ability debug overlay disabled",
 
   "symbiote.dialogue.bonded": "I was hoping you'd hesitate. You did not. Now it's permanent.",
   "symbiote.dialogue.unbonded": "The bond is severed. I will… adjust my expectations.",
