@@ -1,10 +1,14 @@
 package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
+import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
+import net.j40climb.florafauna.common.symbiote.item.DormantSymbioteItem;
 import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.common.symbiote.observation.ObservationCategory;
 import net.j40climb.florafauna.common.symbiote.progress.ConceptSignal;
@@ -12,6 +16,8 @@ import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
@@ -23,6 +29,7 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
@@ -47,6 +54,7 @@ public class FloraFaunaGameTests {
     }
 
     private static final Identifier EMPTY_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "empty_1x1x1");
+    private static final Identifier ITEM_INPUT_TO_CHEST_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_item_input_to_chest");
 
     private static void registerTests(RegisterGameTestsEvent event) {
         // Install our colored test reporter for better visibility
@@ -67,6 +75,15 @@ public class FloraFaunaGameTests {
         // Register item input system tests
         registerVacuumBufferTests(event, defaultEnv);
         registerClaimedItemDataTests(event, defaultEnv);
+
+        // Register mining mode tests
+        registerMiningModeTests(event, defaultEnv);
+
+        // Register containment chamber tests
+        registerContainmentChamberTests(event, defaultEnv);
+
+        // Register structure-based tests
+        registerItemInputStructureTests(event, defaultEnv);
     }
 
     // ==================== Voice Cooldown Tests ====================
@@ -352,6 +369,10 @@ public class FloraFaunaGameTests {
         registerTest(event, env, "item_buffer_add_and_retrieve", FloraFaunaGameTests::testItemBufferAddAndRetrieve);
         registerTest(event, env, "item_buffer_stack_merging", FloraFaunaGameTests::testItemBufferStackMerging);
         registerTest(event, env, "item_buffer_full_detection", FloraFaunaGameTests::testItemBufferFullDetection);
+        registerTest(event, env, "item_buffer_partial_merge_to_full", FloraFaunaGameTests::testItemBufferPartialMergeToFull);
+        registerTest(event, env, "item_buffer_overflow_to_new_slot", FloraFaunaGameTests::testItemBufferOverflowToNewSlot);
+        registerTest(event, env, "item_buffer_peek_no_remove", FloraFaunaGameTests::testItemBufferPeekNoRemove);
+        registerTest(event, env, "item_buffer_clear", FloraFaunaGameTests::testItemBufferClear);
     }
 
     private static void testItemBufferInitialState(GameTestHelper helper) {
@@ -527,7 +548,295 @@ public class FloraFaunaGameTests {
         helper.succeed();
     }
 
+    private static void testItemBufferPartialMergeToFull(GameTestHelper helper) {
+        VacuumBuffer buffer = new VacuumBuffer(27);
+
+        // Add 48 diamonds, then 32 more (48 + 32 = 80, but max stack is 64)
+        buffer.add(new ItemStack(Items.DIAMOND, 48));
+        buffer.add(new ItemStack(Items.DIAMOND, 32));
+
+        // Should have 2 slots: 64 in first, 16 in second
+        if (buffer.getUsedSlots() != 2) {
+            throw helper.assertionException("Should use 2 slots when exceeding stack size, got: " + buffer.getUsedSlots());
+        }
+        if (buffer.getTotalItemCount() != 80) {
+            throw helper.assertionException("Total count should be 80, got: " + buffer.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testItemBufferOverflowToNewSlot(GameTestHelper helper) {
+        VacuumBuffer buffer = new VacuumBuffer(27);
+
+        // Add full stack, then add more of same item
+        buffer.add(new ItemStack(Items.IRON_INGOT, 64));
+        buffer.add(new ItemStack(Items.IRON_INGOT, 10));
+
+        if (buffer.getUsedSlots() != 2) {
+            throw helper.assertionException("Adding to full stack should create new slot, got: " + buffer.getUsedSlots());
+        }
+        if (buffer.getTotalItemCount() != 74) {
+            throw helper.assertionException("Total count should be 74, got: " + buffer.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testItemBufferPeekNoRemove(GameTestHelper helper) {
+        VacuumBuffer buffer = new VacuumBuffer(27);
+        buffer.add(new ItemStack(Items.GOLD_INGOT, 20));
+
+        // Peek should return the item
+        ItemStack peeked = buffer.peek();
+        if (peeked.isEmpty() || peeked.getCount() != 20) {
+            throw helper.assertionException("Peek should return 20 gold ingots");
+        }
+
+        // Buffer should still have the items
+        if (buffer.isEmpty()) {
+            throw helper.assertionException("Buffer should not be empty after peek");
+        }
+        if (buffer.getTotalItemCount() != 20) {
+            throw helper.assertionException("Total count should still be 20 after peek, got: " + buffer.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testItemBufferClear(GameTestHelper helper) {
+        VacuumBuffer buffer = new VacuumBuffer(27);
+        buffer.add(new ItemStack(Items.EMERALD, 32));
+        buffer.add(new ItemStack(Items.REDSTONE, 64));
+
+        // Clear the buffer
+        buffer.clear();
+
+        if (!buffer.isEmpty()) {
+            throw helper.assertionException("Buffer should be empty after clear");
+        }
+        if (buffer.getUsedSlots() != 0) {
+            throw helper.assertionException("Used slots should be 0 after clear, got: " + buffer.getUsedSlots());
+        }
+        if (buffer.getTotalItemCount() != 0) {
+            throw helper.assertionException("Total count should be 0 after clear, got: " + buffer.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Mining Mode Tests ====================
+
+    private static void registerMiningModeTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "mining_mode_initial_state", FloraFaunaGameTests::testMiningModeInitialState);
+        registerTest(event, env, "mining_mode_cycling", FloraFaunaGameTests::testMiningModeCycling);
+        registerTest(event, env, "mining_mode_wrap_around", FloraFaunaGameTests::testMiningModeWrapAround);
+        registerTest(event, env, "mining_mode_radius_per_shape", FloraFaunaGameTests::testMiningModeRadiusPerShape);
+    }
+
+    private static void testMiningModeInitialState(GameTestHelper helper) {
+        MiningModeData data = MiningModeData.DEFAULT;
+
+        if (data.shape() != MiningShape.SINGLE) {
+            throw helper.assertionException("Default shape should be SINGLE, got: " + data.shape());
+        }
+        if (data.radius() != 0) {
+            throw helper.assertionException("Default radius should be 0, got: " + data.radius());
+        }
+        if (data.maxBlocksToBreak() != 64) {
+            throw helper.assertionException("Default maxBlocksToBreak should be 64, got: " + data.maxBlocksToBreak());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMiningModeCycling(GameTestHelper helper) {
+        MiningModeData data = MiningModeData.DEFAULT;
+
+        // Cycle through all shapes: SINGLE → FLAT_3X3 → FLAT_5X5 → FLAT_7X7 → SHAPELESS → TUNNEL_UP → TUNNEL_DOWN
+        MiningShape[] expectedOrder = {
+            MiningShape.FLAT_3X3,
+            MiningShape.FLAT_5X5,
+            MiningShape.FLAT_7X7,
+            MiningShape.SHAPELESS,
+            MiningShape.TUNNEL_UP,
+            MiningShape.TUNNEL_DOWN
+        };
+
+        for (MiningShape expected : expectedOrder) {
+            data = data.getNextMode();
+            if (data.shape() != expected) {
+                throw helper.assertionException("Expected " + expected + ", got: " + data.shape());
+            }
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMiningModeWrapAround(GameTestHelper helper) {
+        // Start from TUNNEL_DOWN (last shape)
+        MiningModeData data = new MiningModeData(MiningShape.TUNNEL_DOWN, 0, 64, true);
+
+        // Next mode should wrap to SINGLE
+        data = data.getNextMode();
+
+        if (data.shape() != MiningShape.SINGLE) {
+            throw helper.assertionException("After TUNNEL_DOWN should wrap to SINGLE, got: " + data.shape());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMiningModeRadiusPerShape(GameTestHelper helper) {
+        // Expected radii: SINGLE=0, FLAT_3X3=1, FLAT_5X5=2, FLAT_7X7=3, SHAPELESS=1, TUNNEL_UP=0, TUNNEL_DOWN=0
+        int[] expectedRadii = {0, 1, 2, 3, 1, 0, 0};
+        MiningShape[] shapes = MiningShape.values();
+
+        for (int i = 0; i < shapes.length; i++) {
+            int actualRadius = shapes[i].getRadius();
+            if (actualRadius != expectedRadii[i]) {
+                throw helper.assertionException(shapes[i] + " should have radius " + expectedRadii[i] + ", got: " + actualRadius);
+            }
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Containment Chamber Tests ====================
+
+    private static void registerContainmentChamberTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "containment_chamber_slot_validation", FloraFaunaGameTests::testContainmentChamberSlotValidation);
+    }
+
+    private static void testContainmentChamberSlotValidation(GameTestHelper helper) {
+        // Create a test block entity
+        ContainmentChamberBlockEntity be = new ContainmentChamberBlockEntity(BlockPos.ZERO, FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get().defaultBlockState());
+
+        // Slot 0 should reject regular items
+        ItemResource diamondResource = ItemResource.of(Items.DIAMOND);
+        if (be.handler.isValid(0, diamondResource)) {
+            throw helper.assertionException("Slot 0 should reject diamond");
+        }
+
+        ItemResource stoneResource = ItemResource.of(Items.STONE);
+        if (be.handler.isValid(0, stoneResource)) {
+            throw helper.assertionException("Slot 0 should reject stone");
+        }
+
+        // Slot 0 should accept DormantSymbioteItem
+        ItemResource symbioteResource = ItemResource.of(FloraFaunaRegistry.DORMANT_SYMBIOTE.get());
+        if (!be.handler.isValid(0, symbioteResource)) {
+            throw helper.assertionException("Slot 0 should accept DormantSymbioteItem");
+        }
+
+        // Slot 1 should accept any item (feeding slot)
+        if (!be.handler.isValid(1, diamondResource)) {
+            throw helper.assertionException("Slot 1 should accept diamond");
+        }
+        if (!be.handler.isValid(1, stoneResource)) {
+            throw helper.assertionException("Slot 1 should accept stone");
+        }
+        if (!be.handler.isValid(1, symbioteResource)) {
+            throw helper.assertionException("Slot 1 should accept symbiote too");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Item Input Structure Tests ====================
+
+    private static void registerItemInputStructureTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerStructureTest(event, env, "item_input_collects_and_transfers",
+                ITEM_INPUT_TO_CHEST_STRUCTURE, 200, FloraFaunaGameTests::testItemInputCollectsAndTransfers);
+    }
+
+    private static void testItemInputCollectsAndTransfers(GameTestHelper helper) {
+        // Structure positions (relative to structure origin)
+        BlockPos itemInputPos = new BlockPos(0, 1, 3);
+        BlockPos storageAnchorPos = new BlockPos(2, 1, 3);
+        BlockPos chestPos = new BlockPos(3, 1, 3);
+
+        // Verify structure loaded correctly
+        helper.assertBlockPresent(FloraFaunaRegistry.ITEM_INPUT.get(), itemInputPos);
+        helper.assertBlockPresent(FloraFaunaRegistry.STORAGE_ANCHOR.get(), storageAnchorPos);
+
+        // Pair the blocks programmatically (structure saves absolute positions which break on relocation)
+        var itemInput = helper.getBlockEntity(itemInputPos,
+                net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity.class);
+        var storageAnchor = helper.getBlockEntity(storageAnchorPos,
+                net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity.class);
+
+        if (itemInput == null || storageAnchor == null) {
+            throw helper.assertionException("Block entities not loaded");
+        }
+
+        // Pair Item Input → Storage Anchor (using absolute positions)
+        itemInput.pairWithAnchor(helper.absolutePos(storageAnchorPos));
+
+        // Link Chest as destination on Storage Anchor
+        storageAnchor.linkContainer(helper.absolutePos(chestPos));
+
+        // Spawn a diamond above the item input
+        BlockPos spawnPos = new BlockPos(0, 2, 3);
+        helper.spawnItem(Items.DIAMOND, spawnPos);
+
+        // Wait for: collection + animation + transfer (give plenty of time)
+        helper.runAfterDelay(150, () -> {
+            ChestBlockEntity chest = helper.getBlockEntity(chestPos, ChestBlockEntity.class);
+            if (chest == null) {
+                throw helper.assertionException("Chest not found at " + chestPos);
+            }
+
+            // Search chest inventory for diamond
+            for (int i = 0; i < chest.getContainerSize(); i++) {
+                ItemStack stack = chest.getItem(i);
+                if (stack.is(Items.DIAMOND)) {
+                    helper.succeed();
+                    return;
+                }
+            }
+
+            // If not in chest, check if it's in the Item Input buffer
+            var inputCheck = helper.getBlockEntity(itemInputPos,
+                    net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity.class);
+            if (inputCheck != null && !inputCheck.getBuffer().isEmpty()) {
+                throw helper.assertionException("Diamond stuck in Item Input buffer - pairing may have failed");
+            }
+
+            throw helper.assertionException("Diamond was not transferred to chest");
+        });
+    }
+
     // ==================== Helper Methods ====================
+
+    /**
+     * Register a test with a custom structure.
+     */
+    private static void registerStructureTest(
+            RegisterGameTestsEvent event,
+            Holder<TestEnvironmentDefinition> env,
+            String name,
+            Identifier structure,
+            int maxTicks,
+            Consumer<GameTestHelper> testFunction
+    ) {
+        Identifier testId = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name);
+
+        TestData<Holder<TestEnvironmentDefinition>> testData = new TestData<>(
+                env,
+                structure,
+                maxTicks,
+                20,   // setupTicks - give block entities time to load
+                true, // required
+                Rotation.NONE,
+                false, // manualOnly
+                1,    // maxAttempts
+                1,    // requiredSuccesses
+                false // skyAccess
+        );
+
+        event.registerTest(testId, new SimpleGameTestInstance(testData, testFunction));
+    }
 
     /**
      * Register a test with the default empty structure and settings.
