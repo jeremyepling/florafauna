@@ -36,3 +36,11 @@ jobs:
         run: ./gradlew runData --no-daemon --stacktrace
         env:
           GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
+
+      - name: Upload build artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: florafauna-mod
+          path: build/libs/*.jar
+          retention-days: 14
