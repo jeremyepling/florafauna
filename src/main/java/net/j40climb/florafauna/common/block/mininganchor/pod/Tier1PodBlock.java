@@ -18,11 +18,11 @@ import org.jetbrains.annotations.Nullable;
  * Spawned by Feral Mining Anchor when storage fills up.
  * Spills all items when broken - no item form.
  */
-public class FeralPodBlock extends BaseEntityBlock {
+public class Tier1PodBlock extends BaseEntityBlock {
 
-    public static final MapCodec<FeralPodBlock> CODEC = simpleCodec(FeralPodBlock::new);
+    public static final MapCodec<Tier1PodBlock> CODEC = simpleCodec(Tier1PodBlock::new);
 
-    public FeralPodBlock(Properties properties) {
+    public Tier1PodBlock(Properties properties) {
         super(properties);
     }
 
@@ -34,7 +34,7 @@ public class FeralPodBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new FeralPodBlockEntity(pos, state);
+        return new Tier1PodBlockEntity(pos, state);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class FeralPodBlock extends BaseEntityBlock {
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof FeralPodBlockEntity pod) {
+            if (be instanceof Tier1PodBlockEntity pod) {
                 // Spill items (unless creative mode)
                 if (!player.isCreative()) {
                     pod.onBlockBroken(level, pos, player);

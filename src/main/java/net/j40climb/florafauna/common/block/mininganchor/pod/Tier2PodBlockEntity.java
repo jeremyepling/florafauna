@@ -16,16 +16,16 @@ import java.util.List;
  * T2 (Hardened) Storage Pod block entity.
  * Keeps items when broken (like shulker boxes) - drops as item with contents.
  */
-public class HardenedPodBlockEntity extends AbstractStoragePodBlockEntity {
+public class Tier2PodBlockEntity extends AbstractStoragePodBlockEntity {
 
-    public HardenedPodBlockEntity(BlockPos pos, BlockState state) {
-        super(FloraFaunaRegistry.HARDENED_POD_BE.get(), pos, state);
+    public Tier2PodBlockEntity(BlockPos pos, BlockState state) {
+        super(FloraFaunaRegistry.TIER2_POD_BE.get(), pos, state);
     }
 
     @Override
     protected void onBlockBroken(Level level, BlockPos pos, @Nullable Player player) {
         // Drop as item with contents preserved (like shulker box)
-        ItemStack podItem = new ItemStack(FloraFaunaRegistry.HARDENED_POD.get());
+        ItemStack podItem = new ItemStack(FloraFaunaRegistry.TIER2_POD.get());
 
         // Store contents in item
         if (!podBuffer.isEmpty()) {

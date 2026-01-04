@@ -14,14 +14,14 @@ import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChambe
 import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
-import net.j40climb.florafauna.common.block.mininganchor.FeralMiningAnchorBlock;
-import net.j40climb.florafauna.common.block.mininganchor.FeralMiningAnchorBlockEntity;
-import net.j40climb.florafauna.common.block.mininganchor.HardenedMiningAnchorBlock;
-import net.j40climb.florafauna.common.block.mininganchor.HardenedMiningAnchorBlockEntity;
-import net.j40climb.florafauna.common.block.mininganchor.pod.FeralPodBlock;
-import net.j40climb.florafauna.common.block.mininganchor.pod.FeralPodBlockEntity;
-import net.j40climb.florafauna.common.block.mininganchor.pod.HardenedPodBlock;
-import net.j40climb.florafauna.common.block.mininganchor.pod.HardenedPodBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlock;
+import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.Tier2MiningAnchorBlock;
+import net.j40climb.florafauna.common.block.mininganchor.Tier2MiningAnchorBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlock;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlock;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
 import net.j40climb.florafauna.common.block.vacuum.BlockDropData;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
@@ -170,16 +170,16 @@ public class FloraFaunaRegistry {
             ));
 
     // Mining Anchor System blocks
-    public static final DeferredBlock<FeralMiningAnchorBlock> FERAL_MINING_ANCHOR = registerBlock("feral_mining_anchor",
-            props -> new FeralMiningAnchorBlock(props
+    public static final DeferredBlock<Tier1MiningAnchorBlock> TIER1_MINING_ANCHOR = registerBlock("tier1_mining_anchor",
+            props -> new Tier1MiningAnchorBlock(props
                     .strength(3f, 6f)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.SCULK)
                     .noOcclusion()
             ));
 
-    public static final DeferredBlock<HardenedMiningAnchorBlock> HARDENED_MINING_ANCHOR = registerBlock("hardened_mining_anchor",
-            props -> new HardenedMiningAnchorBlock(props
+    public static final DeferredBlock<Tier2MiningAnchorBlock> TIER2_MINING_ANCHOR = registerBlock("tier2_mining_anchor",
+            props -> new Tier2MiningAnchorBlock(props
                     .strength(5f, 10f)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.NETHERITE_BLOCK)
@@ -188,16 +188,16 @@ public class FloraFaunaRegistry {
 
     // Storage Pod blocks (for Mining Anchor system)
     // Feral Pod: spawned by anchor, no item (spills contents when broken)
-    public static final DeferredBlock<FeralPodBlock> FERAL_POD = registerBlockNoItem("feral_pod",
-            props -> new FeralPodBlock(props
+    public static final DeferredBlock<Tier1PodBlock> TIER1_POD = registerBlockNoItem("tier1_pod",
+            props -> new Tier1PodBlock(props
                     .strength(2f, 4f)
                     .sound(SoundType.SCULK)
                     .noOcclusion()
             ));
 
     // Hardened Pod: player-placeable, has item (keeps contents like shulker box)
-    public static final DeferredBlock<HardenedPodBlock> HARDENED_POD = registerBlock("hardened_pod",
-            props -> new HardenedPodBlock(props
+    public static final DeferredBlock<Tier2PodBlock> TIER2_POD = registerBlock("tier2_pod",
+            props -> new Tier2PodBlock(props
                     .strength(3f, 6f)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.NETHERITE_BLOCK)
@@ -296,22 +296,22 @@ public class FloraFaunaRegistry {
             () -> new BlockEntityType<>(FieldRelayBlockEntity::new, false, FIELD_RELAY.get()));
 
     // Mining Anchor System block entities
-    public static final Supplier<BlockEntityType<FeralMiningAnchorBlockEntity>> FERAL_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
-            "feral_mining_anchor",
-            () -> new BlockEntityType<>(FeralMiningAnchorBlockEntity::new, false, FERAL_MINING_ANCHOR.get()));
+    public static final Supplier<BlockEntityType<Tier1MiningAnchorBlockEntity>> TIER1_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
+            "tier1_mining_anchor",
+            () -> new BlockEntityType<>(Tier1MiningAnchorBlockEntity::new, false, TIER1_MINING_ANCHOR.get()));
 
-    public static final Supplier<BlockEntityType<HardenedMiningAnchorBlockEntity>> HARDENED_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
-            "hardened_mining_anchor",
-            () -> new BlockEntityType<>(HardenedMiningAnchorBlockEntity::new, false, HARDENED_MINING_ANCHOR.get()));
+    public static final Supplier<BlockEntityType<Tier2MiningAnchorBlockEntity>> TIER2_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
+            "tier2_mining_anchor",
+            () -> new BlockEntityType<>(Tier2MiningAnchorBlockEntity::new, false, TIER2_MINING_ANCHOR.get()));
 
     // Storage Pod block entities
-    public static final Supplier<BlockEntityType<FeralPodBlockEntity>> FERAL_POD_BE = BLOCK_ENTITIES.register(
-            "feral_pod",
-            () -> new BlockEntityType<>(FeralPodBlockEntity::new, false, FERAL_POD.get()));
+    public static final Supplier<BlockEntityType<Tier1PodBlockEntity>> TIER1_POD_BE = BLOCK_ENTITIES.register(
+            "tier1_pod",
+            () -> new BlockEntityType<>(Tier1PodBlockEntity::new, false, TIER1_POD.get()));
 
-    public static final Supplier<BlockEntityType<HardenedPodBlockEntity>> HARDENED_POD_BE = BLOCK_ENTITIES.register(
-            "hardened_pod",
-            () -> new BlockEntityType<>(HardenedPodBlockEntity::new, false, HARDENED_POD.get()));
+    public static final Supplier<BlockEntityType<Tier2PodBlockEntity>> TIER2_POD_BE = BLOCK_ENTITIES.register(
+            "tier2_pod",
+            () -> new BlockEntityType<>(Tier2PodBlockEntity::new, false, TIER2_POD.get()));
 
     // ==================== MENUS ====================
 

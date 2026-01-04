@@ -64,9 +64,9 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.FIELD_RELAY);
 
                         // Mining Anchor System blocks
-                        output.accept(FloraFaunaRegistry.FERAL_MINING_ANCHOR);
-                        output.accept(FloraFaunaRegistry.HARDENED_MINING_ANCHOR);
-                        output.accept(FloraFaunaRegistry.HARDENED_POD);
+                        output.accept(FloraFaunaRegistry.TIER1_MINING_ANCHOR);
+                        output.accept(FloraFaunaRegistry.TIER2_MINING_ANCHOR);
+                        output.accept(FloraFaunaRegistry.TIER2_POD);
 
                         // Wood blocks - iterates through all wood types
                         for (WoodType woodType : WoodType.values()) {

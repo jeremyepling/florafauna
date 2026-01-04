@@ -20,11 +20,11 @@ import org.jetbrains.annotations.Nullable;
  * Player-placeable pod that preserves contents when broken (like shulker boxes).
  * Can be spawned by Hardened Mining Anchor or placed manually.
  */
-public class HardenedPodBlock extends BaseEntityBlock {
+public class Tier2PodBlock extends BaseEntityBlock {
 
-    public static final MapCodec<HardenedPodBlock> CODEC = simpleCodec(HardenedPodBlock::new);
+    public static final MapCodec<Tier2PodBlock> CODEC = simpleCodec(Tier2PodBlock::new);
 
-    public HardenedPodBlock(Properties properties) {
+    public Tier2PodBlock(Properties properties) {
         super(properties);
     }
 
@@ -36,7 +36,7 @@ public class HardenedPodBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HardenedPodBlockEntity(pos, state);
+        return new Tier2PodBlockEntity(pos, state);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class HardenedPodBlock extends BaseEntityBlock {
         // Load contents from item when placed
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof HardenedPodBlockEntity pod) {
+            if (be instanceof Tier2PodBlockEntity pod) {
                 pod.loadFromItem(stack);
             }
         }
@@ -61,7 +61,7 @@ public class HardenedPodBlock extends BaseEntityBlock {
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof HardenedPodBlockEntity pod) {
+            if (be instanceof Tier2PodBlockEntity pod) {
                 // Drop as item with contents (unless creative mode)
                 if (!player.isCreative()) {
                     pod.onBlockBroken(level, pos, player);

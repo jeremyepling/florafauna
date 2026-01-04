@@ -24,20 +24,20 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * T0 (Feral) Mining Anchor block.
- * A mobile storage system for mining expeditions that vacuums block drops.
+ * T2 (Hardened) Mining Anchor block.
+ * An upgraded mobile storage system with shulker-like pods.
  *
  * Interactions:
  * - Right-click: Register as active waypoint
  * - Shift-right-click: Bind/unbind to player's symbiote
  *
- * Automatically spawns Feral Pods when storage fills up.
+ * Automatically spawns Hardened Pods which keep items when broken.
  */
-public class FeralMiningAnchorBlock extends BaseEntityBlock {
+public class Tier2MiningAnchorBlock extends BaseEntityBlock {
 
-    public static final MapCodec<FeralMiningAnchorBlock> CODEC = simpleCodec(FeralMiningAnchorBlock::new);
+    public static final MapCodec<Tier2MiningAnchorBlock> CODEC = simpleCodec(Tier2MiningAnchorBlock::new);
 
-    public FeralMiningAnchorBlock(Properties properties) {
+    public Tier2MiningAnchorBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
     }
@@ -55,7 +55,7 @@ public class FeralMiningAnchorBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new FeralMiningAnchorBlockEntity(pos, state);
+        return new Tier2MiningAnchorBlockEntity(pos, state);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class FeralMiningAnchorBlock extends BaseEntityBlock {
         }
 
         BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof FeralMiningAnchorBlockEntity anchor)) {
+        if (!(be instanceof Tier2MiningAnchorBlockEntity anchor)) {
             return InteractionResult.PASS;
         }
 
@@ -114,7 +114,7 @@ public class FeralMiningAnchorBlock extends BaseEntityBlock {
             return null;
         }
 
-        return createTickerHelper(blockEntityType, FloraFaunaRegistry.FERAL_MINING_ANCHOR_BE.get(),
+        return createTickerHelper(blockEntityType, FloraFaunaRegistry.TIER2_MINING_ANCHOR_BE.get(),
                 (level1, blockPos, blockState, blockEntity) -> blockEntity.tick(level1, blockPos, blockState));
     }
 

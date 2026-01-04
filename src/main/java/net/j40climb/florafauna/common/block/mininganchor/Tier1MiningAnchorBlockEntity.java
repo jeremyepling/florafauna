@@ -9,14 +9,14 @@ import net.minecraft.world.level.block.state.BlockState;
  * T0 (Feral) Mining Anchor block entity.
  * Spawns Feral Pods which spill items when broken.
  */
-public class FeralMiningAnchorBlockEntity extends AbstractMiningAnchorBlockEntity {
+public class Tier1MiningAnchorBlockEntity extends AbstractMiningAnchorBlockEntity {
 
-    public FeralMiningAnchorBlockEntity(BlockPos pos, BlockState state) {
-        super(FloraFaunaRegistry.FERAL_MINING_ANCHOR_BE.get(), pos, state);
+    public Tier1MiningAnchorBlockEntity(BlockPos pos, BlockState state) {
+        super(FloraFaunaRegistry.TIER1_MINING_ANCHOR_BE.get(), pos, state);
     }
 
     @Override
     protected Block getPodBlock() {
-        return FloraFaunaRegistry.FERAL_POD.get();
+        return FloraFaunaRegistry.TIER1_POD.get();
     }
 }

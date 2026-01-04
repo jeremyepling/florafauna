@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "florafauna:block/feral_mining_anchor"
+    "model": "florafauna:block/tier1_mining_anchor"
   }
 }

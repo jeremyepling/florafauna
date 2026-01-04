@@ -88,10 +88,10 @@
   "message.florafauna.mining_anchor.bound": "Anchor bound to symbiote",
   "message.florafauna.mining_anchor.unbound": "Anchor unbound from symbiote",
 
-  "block.florafauna.feral_mining_anchor": "Feral Mining Anchor",
-  "block.florafauna.hardened_mining_anchor": "Hardened Mining Anchor",
-  "block.florafauna.feral_pod": "Feral Pod",
-  "block.florafauna.hardened_pod": "Hardened Pod",
+  "block.florafauna.tier1_mining_anchor": "Feral Mining Anchor",
+  "block.florafauna.tier2_mining_anchor": "Hardened Mining Anchor",
+  "block.florafauna.tier1_pod": "Feral Pod",
+  "block.florafauna.tier2_pod": "Hardened Pod",
 
   "command.florafauna.mininganchor.player_only": "This command can only be run by a player!",
   "command.florafauna.mininganchor.no_anchor": "No mining anchor bound. Shift-right-click an anchor to bind it.",

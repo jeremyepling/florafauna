@@ -24,20 +24,20 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * T2 (Hardened) Mining Anchor block.
- * An upgraded mobile storage system with shulker-like pods.
+ * T0 (Feral) Mining Anchor block.
+ * A mobile storage system for mining expeditions that vacuums block drops.
  *
  * Interactions:
  * - Right-click: Register as active waypoint
  * - Shift-right-click: Bind/unbind to player's symbiote
  *
- * Automatically spawns Hardened Pods which keep items when broken.
+ * Automatically spawns Feral Pods when storage fills up.
  */
-public class HardenedMiningAnchorBlock extends BaseEntityBlock {
+public class Tier1MiningAnchorBlock extends BaseEntityBlock {
 
-    public static final MapCodec<HardenedMiningAnchorBlock> CODEC = simpleCodec(HardenedMiningAnchorBlock::new);
+    public static final MapCodec<Tier1MiningAnchorBlock> CODEC = simpleCodec(Tier1MiningAnchorBlock::new);
 
-    public HardenedMiningAnchorBlock(Properties properties) {
+    public Tier1MiningAnchorBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
     }
@@ -55,7 +55,7 @@ public class HardenedMiningAnchorBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new HardenedMiningAnchorBlockEntity(pos, state);
+        return new Tier1MiningAnchorBlockEntity(pos, state);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class HardenedMiningAnchorBlock extends BaseEntityBlock {
         }
 
         BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof HardenedMiningAnchorBlockEntity anchor)) {
+        if (!(be instanceof Tier1MiningAnchorBlockEntity anchor)) {
             return InteractionResult.PASS;
         }
 
@@ -114,7 +114,7 @@ public class HardenedMiningAnchorBlock extends BaseEntityBlock {
             return null;
         }
 
-        return createTickerHelper(blockEntityType, FloraFaunaRegistry.HARDENED_MINING_ANCHOR_BE.get(),
+        return createTickerHelper(blockEntityType, FloraFaunaRegistry.TIER1_MINING_ANCHOR_BE.get(),
                 (level1, blockPos, blockState, blockEntity) -> blockEntity.tick(level1, blockPos, blockState));
     }
 

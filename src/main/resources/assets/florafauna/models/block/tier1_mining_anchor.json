@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "florafauna:block/feral_mining_anchor"
+    "all": "florafauna:block/tier1_mining_anchor"
   }
 }

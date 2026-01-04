@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "florafauna:block/feral_pod"
+    "model": "florafauna:block/tier1_pod"
   }
 }

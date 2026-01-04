@@ -13,10 +13,10 @@ import org.jetbrains.annotations.Nullable;
  * T0 (Feral) Storage Pod block entity.
  * Spills all items when broken - basic organic storage.
  */
-public class FeralPodBlockEntity extends AbstractStoragePodBlockEntity {
+public class Tier1PodBlockEntity extends AbstractStoragePodBlockEntity {
 
-    public FeralPodBlockEntity(BlockPos pos, BlockState state) {
-        super(FloraFaunaRegistry.FERAL_POD_BE.get(), pos, state);
+    public Tier1PodBlockEntity(BlockPos pos, BlockState state) {
+        super(FloraFaunaRegistry.TIER1_POD_BE.get(), pos, state);
     }
 
     @Override

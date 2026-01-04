@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "florafauna:block/hardened_pod"
+    "all": "florafauna:block/tier2_pod"
   }
 }

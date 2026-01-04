@@ -169,9 +169,9 @@ public class FloraFaunaModelProvider extends ModelProvider {
         return FloraFaunaRegistry.BLOCKS.getEntries().stream()
                 .filter(x -> !x.equals(FloraFaunaRegistry.ITEM_INPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.FIELD_RELAY))
-                .filter(x -> !x.equals(FloraFaunaRegistry.FERAL_MINING_ANCHOR))
-                .filter(x -> !x.equals(FloraFaunaRegistry.HARDENED_MINING_ANCHOR))
-                .filter(x -> !x.equals(FloraFaunaRegistry.FERAL_POD))
-                .filter(x -> !x.equals(FloraFaunaRegistry.HARDENED_POD));
+                .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_MINING_ANCHOR))
+                .filter(x -> !x.equals(FloraFaunaRegistry.TIER2_MINING_ANCHOR))
+                .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_POD))
+                .filter(x -> !x.equals(FloraFaunaRegistry.TIER2_POD));
     }
 }
