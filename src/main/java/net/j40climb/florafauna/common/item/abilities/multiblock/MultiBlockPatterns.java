@@ -34,10 +34,19 @@ public final class MultiBlockPatterns {
     private MultiBlockPatterns() {} // Utility class
 
     /**
-     * Checks if any netherite tool can break the given block state.
+     * Checks if any netherite tool can break the given block state, or if the block
+     * doesn't require any tool at all (like grass, flowers, etc.).
      * Used by both pattern generation and block breaking to bypass tool restrictions.
      */
     public static boolean canNetheriteToolBreak(BlockState blockState) {
+        // Blocks with negative destroy time are unbreakable (bedrock, barriers, etc.)
+        if (blockState.getBlock().defaultDestroyTime() < 0) {
+            return false;
+        }
+        // Blocks that don't require a correct tool can be mined by anything (grass, flowers, etc.)
+        if (!blockState.requiresCorrectToolForDrops()) {
+            return true;
+        }
         return NETHERITE_PICKAXE.isCorrectToolForDrops(blockState) ||
                NETHERITE_AXE.isCorrectToolForDrops(blockState) ||
                NETHERITE_SHOVEL.isCorrectToolForDrops(blockState) ||
