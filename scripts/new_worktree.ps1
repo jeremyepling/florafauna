@@ -22,6 +22,15 @@ if ($LASTEXITCODE -ne 0) { throw "git worktree add failed" }
 
 New-Item -ItemType Directory -Force -Path (Join-Path $wtPath "tools") | Out-Null
 
+# Copy dev world template if it exists in main repo
+$devWorldSrc = Join-Path $root "dev\world-template"
+$devWorldDst = Join-Path $wtPath "dev\world-template"
+if (Test-Path $devWorldSrc) {
+    Write-Host "Copying dev world template..."
+    New-Item -ItemType Directory -Force -Path (Join-Path $wtPath "dev") | Out-Null
+    Copy-Item -Path $devWorldSrc -Destination $devWorldDst -Recurse -Force
+}
+
 @"
 `$env:GRADLE_USER_HOME   = "`$PSScriptRoot\..\..\.gradle-user-home"
 `$env:WORKTREE_ID        = "$Name"
@@ -34,5 +43,5 @@ Write-Host "  Branch: $Name"
 Write-Host "  Path:   $wtPath"
 Write-Host ""
 Write-Host "Next:"
-Write-Host "  scripts\open-idea.ps1 `"$wtPath`""
+Write-Host "  scripts\open_idea.ps1 `"$wtPath`""
 Write-Host "  (then in IntelliJ terminal: .\tools\agent_env.ps1 ; claude)"

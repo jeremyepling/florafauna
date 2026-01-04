@@ -40,7 +40,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:maven.neoforged.net)",
       "WebSearch",
-      "Read(*)"
+      "Read(*)",
+      "Read(//c/code/**)"
     ],
     "deny": [],
     "ask": []

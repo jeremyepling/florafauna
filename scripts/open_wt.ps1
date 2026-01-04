@@ -10,7 +10,7 @@ foreach ($line in $lines) {
   if ($line -like "branch *")   { $br = $line.Substring(7).Trim() }
 
   if ($wt -and $br -and $br.EndsWith("/$Branch")) {
-    & (Join-Path $PSScriptRoot "open-idea.ps1") -Path $wt
+    & (Join-Path $PSScriptRoot "open_idea.ps1") -Path $wt
     exit 0
   }
 
