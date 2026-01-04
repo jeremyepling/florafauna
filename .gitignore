@@ -46,3 +46,6 @@ tools/
 /assets/
 /build_output.txt
 /temp_jar_list.txt
+
+# Dev world template (user creates manually, not committed)
+dev/world-template/
