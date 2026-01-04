@@ -2,6 +2,7 @@ package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
+import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
@@ -90,6 +91,9 @@ public class FloraFaunaGameTests {
 
         // Register mining anchor tests
         registerMiningAnchorTests(event, defaultEnv);
+
+        // Register husk tests
+        registerHuskTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -992,6 +996,50 @@ public class FloraFaunaGameTests {
         float threshold = AnchorFillState.getWarningThreshold();
         if (threshold != 0.75f) {
             throw helper.assertionException("Warning threshold should be 0.75, got: " + threshold);
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Husk Tests ====================
+
+    private static void registerHuskTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "husk_type_restoration", FloraFaunaGameTests::testHuskTypeRestoration);
+        registerTest(event, env, "husk_type_container", FloraFaunaGameTests::testHuskTypeContainer);
+        registerTest(event, env, "husk_type_broken", FloraFaunaGameTests::testHuskTypeBroken);
+    }
+
+    private static void testHuskTypeRestoration(GameTestHelper helper) {
+        // RESTORATION husk: holds items and restores abilities
+        if (!HuskType.RESTORATION.holdsItems()) {
+            throw helper.assertionException("RESTORATION should hold items");
+        }
+        if (!HuskType.RESTORATION.restoresAbilities()) {
+            throw helper.assertionException("RESTORATION should restore abilities");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testHuskTypeContainer(GameTestHelper helper) {
+        // CONTAINER husk: holds items but does NOT restore abilities
+        if (!HuskType.CONTAINER.holdsItems()) {
+            throw helper.assertionException("CONTAINER should hold items");
+        }
+        if (HuskType.CONTAINER.restoresAbilities()) {
+            throw helper.assertionException("CONTAINER should NOT restore abilities");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testHuskTypeBroken(GameTestHelper helper) {
+        // BROKEN husk: does NOT hold items and does NOT restore abilities
+        if (HuskType.BROKEN.holdsItems()) {
+            throw helper.assertionException("BROKEN should NOT hold items");
+        }
+        if (HuskType.BROKEN.restoresAbilities()) {
+            throw helper.assertionException("BROKEN should NOT restore abilities");
         }
 
         helper.succeed();
