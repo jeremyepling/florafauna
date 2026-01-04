@@ -54,8 +54,13 @@ neoForge {
             // Set default window size
             programArguments.addAll '--width', '1920', '--height', '1080'
 
-            // Auto-load into world (replace "New World" with your world name from saves folder)
-            programArguments.addAll '--quickPlaySingleplayer', 'New World'
+            // Auto-load into dev world
+            // First run: Create world named "dev" with these settings:
+            //   - Game Mode: Creative
+            //   - World Type: Superflat
+            //   - Customize: Tunneler's Dream preset
+            // DevWorldSetup.java will handle gamerules on join
+            programArguments.addAll '--quickPlaySingleplayer', 'dev'
 
             // Gametests disabled in client/server - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -218,6 +223,44 @@ tasks.register('makeBin', Copy) {
 
 tasks.named('classes').configure { it.finalizedBy(tasks.named('makeBin')) }
 
+
+// Copy dev options template to run directory if options.txt doesn't exist
+// This sets up dev-friendly defaults (music off, narrator off, etc.)
+// Delete run/client-*/options.txt to reset to template defaults
+tasks.register('copyDevOptions') {
+    def templateFile = file('dev/options-template.txt')
+    def targetFile = file("run/client-${wt}/options.txt")
+
+    onlyIf { templateFile.exists() && !targetFile.exists() }
+
+    doLast {
+        targetFile.parentFile.mkdirs()
+        targetFile.text = templateFile.text
+        println "Copied dev options template to ${targetFile}"
+    }
+}
+
+// Copy dev world template to saves directory if world doesn't exist
+// This auto-loads the dev world with Superflat Tunneler's Dream preset
+// Delete run/client-*/saves/dev to reset to template defaults
+tasks.register('copyDevWorld', Copy) {
+    def templateDir = file('dev/world-template/dev')
+    def targetDir = file("run/client-${wt}/saves/dev")
+
+    from templateDir
+    into targetDir
+
+    onlyIf { templateDir.exists() && !targetDir.exists() }
+
+    doLast {
+        println "Copied dev world template to ${targetDir}"
+    }
+}
+
+// Run dev setup tasks before client starts
+tasks.matching { it.name == 'runClient' }.configureEach {
+    dependsOn 'copyDevOptions', 'copyDevWorld'
+}
 
 // https://discord.com/channels/313125603924639766/1185197721477468160/1330729872213151806
 // Thats basically for libraries that upload their sources into their maven, if u are on intellij when u

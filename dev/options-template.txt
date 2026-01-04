@@ -1,0 +1,39 @@
+# Dev options template - copied to run directory on first launch
+# Delete run/client-*/options.txt to reset to these defaults
+
+# Audio - music off for less distraction
+soundCategory_music:0.0
+soundCategory_master:1.0
+soundCategory_blocks:1.0
+soundCategory_hostile:1.0
+soundCategory_neutral:1.0
+soundCategory_players:1.0
+soundCategory_ambient:1.0
+soundCategory_voice:1.0
+soundCategory_weather:1.0
+musicToast:"never"
+musicFrequency:"DEFAULT"
+
+# Narrator off
+narrator:0
+showSubtitles:false
+
+# Dev-friendly settings
+pauseOnLostFocus:false
+autoJump:false
+tutorialStep:none
+skipMultiplayerWarning:true
+joinedFirstServer:true
+operatorItemsTab:true
+
+# Graphics - reasonable for dev
+renderDistance:12
+simulationDistance:10
+maxFps:120
+fullscreen:false
+guiScale:3
+entityShadows:true
+reducedDebugInfo:false
+
+# Controls
+key_key.sprint:key.keyboard.left.control
