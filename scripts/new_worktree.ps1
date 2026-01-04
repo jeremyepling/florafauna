@@ -48,13 +48,6 @@ if (Test-Path $optionsSrc) {
 `$env:JAVA_TOOL_OPTIONS  = "-Dorg.gradle.vfs.watch=false"
 "@ | Out-File (Join-Path $wtPath "tools\agent_env.ps1") -Encoding utf8 -Force
 
-# Run data generation in the new worktree (in isolated subprocess to avoid polluting current env)
-Write-Host ""
-Write-Host "Running data generation..."
-$gradleHome = Join-Path $parent.Path ".gradle-user-home"
-& pwsh -NoProfile -Command "Set-Location '$wtPath'; `$env:GRADLE_USER_HOME='$gradleHome'; `$env:WORKTREE_ID='$Name'; `$env:JAVA_TOOL_OPTIONS='-Dorg.gradle.vfs.watch=false'; ./gradlew runData"
-if ($LASTEXITCODE -ne 0) { Write-Warning "runData failed, but continuing..." }
-
 Write-Host ""
 Write-Host "Created:"
 Write-Host "  Branch: $Name"
