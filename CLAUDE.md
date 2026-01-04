@@ -134,6 +134,21 @@ From main repo only (`C:\code\florafauna-workspace\florafauna`):
 
 In worktree IntelliJ terminal, run `.\tools\agent_env.ps1` before `claude`.
 
+## Git Workflow
+
+**IMPORTANT: Never push directly to main.**
+
+When working in a worktree (branch name differs from `main`):
+
+1. **Commit** to the current feature branch
+2. **Push to the feature branch**, not main:
+   ```bash
+   git push -u origin HEAD  # Pushes to branch matching current branch name
+   ```
+3. **User merges** via `merge-and-clean.ps1` or PR
+
+Do NOT use `git push origin HEAD:main` - this bypasses code review and the worktree workflow.
+
 ## Minecraft Source Reference
 
 Decompiled source in:
