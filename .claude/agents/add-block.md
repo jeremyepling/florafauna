@@ -70,7 +70,10 @@ public static final DeferredHolder<MenuType<?>, MenuType<CrystalOreMenu>> CRYSTA
     registerMenu("crystal_ore", CrystalOreMenu::new);
 ```
 
-4. **FloraFaunaSetup.java** - Add to creative tab
+4. **FloraFaunaSetup.java** - Add to creative tab in FLORAFAUNA_ITEMS_TAB:
+```java
+output.accept(FloraFaunaRegistry.CRYSTAL_ORE);
+```
 
 5. **ClientSetup.java** - Register screen (if menu):
 ```java

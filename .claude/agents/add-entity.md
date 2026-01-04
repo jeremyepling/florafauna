@@ -69,7 +69,10 @@ EntityRenderers.register(FloraFaunaRegistry.PARROT.get(), ParrotRenderer::new);
 event.put(FloraFaunaRegistry.PARROT.get(), ParrotEntity::createAttributes);
 ```
 
-5. **FloraFaunaSetup.java** - Add spawn egg to creative tab
+5. **FloraFaunaSetup.java** - Add spawn egg to creative tab in FLORAFAUNA_ITEMS_TAB:
+```java
+output.accept(FloraFaunaRegistry.PARROT_SPAWN_EGG);
+```
 
 ## Resources to Create
 

@@ -70,9 +70,10 @@ src/main/java/net/j40climb/florafauna/
 7. Register in `FloraFaunaRegistry.java` (ENTITY_TYPES)
 8. Register renderer in `ClientSetup.java`
 9. Add spawn egg in `FloraFaunaRegistry.java`
-10. Add to `RegisterEntityEvents.java` (spawn placement, attributes)
-11. Add texture: `assets/florafauna/textures/entity/myentity/`
-12. Add lang entry: `entity.florafauna.myentity`
+10. **Add spawn egg to creative tab** in `FloraFaunaSetup.java`
+11. Add to `RegisterEntityEvents.java` (spawn placement, attributes)
+12. Add texture: `assets/florafauna/textures/entity/myentity/`
+13. Add lang entry: `entity.florafauna.myentity`
 
 ## Adding a New Block
 
@@ -80,7 +81,7 @@ src/main/java/net/j40climb/florafauna/
 2. Add block class: `MyBlock.java`
 3. Add block entity (if needed): `MyBlockEntity.java`
 4. Register in `FloraFaunaRegistry.java` (BLOCKS, BLOCK_ENTITIES)
-5. Add to creative tab in `FloraFaunaSetup.java`
+5. **Add to creative tab** in `FloraFaunaSetup.java` (FLORAFAUNA_ITEMS_TAB)
 6. Add datagen in providers (model, tags, loot table)
 7. Add texture: `assets/florafauna/textures/block/`
 8. Add lang entry: `block.florafauna.myblock`
