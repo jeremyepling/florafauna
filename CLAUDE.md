@@ -127,12 +127,42 @@ Tests in `test/FloraFaunaGameTests.java`. Register via `registerTest()`.
 From main repo only (`C:\code\florafauna-workspace\florafauna`):
 
 ```powershell
-.\scripts\new-and-open.ps1 feature-name     # Create worktree + open IntelliJ
-.\scripts\merge-and-clean.ps1 feature-name  # Merge to main + cleanup
-.\scripts\wt-list.ps1                       # List worktrees
+.\scripts\new_and_open.ps1 feature-name     # Create worktree + open IntelliJ
+.\scripts\merge_and_clean.ps1 feature-name  # Merge to main + cleanup
+.\scripts\wt_list.ps1                       # List worktrees
 ```
 
 In worktree IntelliJ terminal, run `.\tools\agent_env.ps1` before `claude`.
+
+## Dev World Template
+
+A shared dev world (`dev/world-template/dev`) is automatically copied to new worktrees. This provides a consistent starting point with a Superflat Tunneler's Dream world and dev-friendly options (music off, narrator disabled, etc.).
+
+### Editing the Dev World
+
+```powershell
+# 1. Launch client to edit the world (runs datagen first)
+.\scripts\edit_dev_world.ps1
+
+# 2. Make changes in-game, then exit
+
+# 3. Save changes to the template
+.\scripts\save_dev_world.ps1
+```
+
+### Dev World Scripts
+
+```powershell
+.\scripts\edit_dev_world.ps1    # Run datagen + launch client to edit dev world
+.\scripts\save_dev_world.ps1    # Copy current dev world to template (main repo)
+.\scripts\save_dev_world.ps1 -f # Save from any worktree to main repo's template
+.\scripts\sync_dev_world.ps1    # Push template to all existing worktrees
+```
+
+**Workflow:**
+- Edit world in any worktree → `save_dev_world.ps1 -f` → commit in main
+- Update template in main → `sync_dev_world.ps1` → all worktrees get the update
+- New worktrees automatically receive the template on creation
 
 ## Git Workflow
 
