@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "state=normal": {
+      "model": "florafauna:block/feral_pod"
+    },
+    "state=working": {
+      "model": "florafauna:block/feral_pod"
+    },
+    "state=blocked": {
+      "model": "florafauna:block/feral_pod"
+    }
+  }
+}

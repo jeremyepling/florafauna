@@ -25,6 +25,7 @@ import org.lwjgl.glfw.GLFW;
 /**
  * Handles all client-side initialization: renderers, screens, key bindings, GUI layers.
  * Call init() from main mod class to register listeners on the mod event bus.
+ * Only runs on client. Never loaded on server.
  */
 public class ClientSetup {
 

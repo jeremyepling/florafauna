@@ -1,23 +1,23 @@
-package net.j40climb.florafauna.common.block.iteminput;
+package net.j40climb.florafauna.common.block.vacuum;
 
 import net.minecraft.util.StringRepresentable;
 
 /**
- * Visual states for item input blocks.
+ * Visual states for vacuum-type blocks (ItemInput, MiningAnchor, etc.).
  * Used as a block state property for model variants.
  *
  * NORMAL: Idle, waiting for items to collect.
- * WORKING: Actively collecting or transferring items.
- * BLOCKED: Buffer is full or storage is unavailable.
+ * WORKING: Actively collecting or processing items.
+ * BLOCKED: Buffer is full or unable to process.
  */
-public enum ItemInputState implements StringRepresentable {
+public enum VacuumState implements StringRepresentable {
     NORMAL("normal"),
     WORKING("working"),
     BLOCKED("blocked");
 
     private final String name;
 
-    ItemInputState(String name) {
+    VacuumState(String name) {
         this.name = name;
     }
 
@@ -34,7 +34,7 @@ public enum ItemInputState implements StringRepresentable {
     }
 
     /**
-     * Returns true if this state indicates a problem (buffer full, no storage).
+     * Returns true if this state indicates a problem (buffer full, unable to process).
      */
     public boolean hasError() {
         return this == BLOCKED;

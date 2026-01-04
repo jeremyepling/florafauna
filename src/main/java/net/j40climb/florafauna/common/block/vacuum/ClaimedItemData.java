@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.block.iteminput;
+package net.j40climb.florafauna.common.block.vacuum;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,33 +8,33 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Entity attachment data for items claimed by an ItemInput block.
+ * Entity attachment data for items claimed by a vacuum-type block.
  * Attached to ItemEntity instances to track ownership and animation state.
  *
  * Lifecycle:
- * 1. ItemInput claims an item entity → attaches ClaimedItemData
+ * 1. Vacuum block claims an item entity -> attaches ClaimedItemData
  * 2. Animation plays on client (item moves toward block)
  * 3. After animationDuration ticks, item is absorbed into buffer
  * 4. ItemEntity is discarded
  *
  * @param claimed Whether this item is claimed (always true when attached)
- * @param itemInputPos Position of the ItemInput block that claimed this item
+ * @param vacuumBlockPos Position of the vacuum block that claimed this item
  * @param claimedAtTick Server tick when the item was claimed
  * @param animationDuration Duration in ticks for the absorption animation
  */
 public record ClaimedItemData(
         boolean claimed,
-        BlockPos itemInputPos,
+        BlockPos vacuumBlockPos,
         long claimedAtTick,
         int animationDuration
 ) {
     /**
-     * Codec for persistence (not typically needed for entity attachments, but good practice).
+     * Codec for persistence.
      */
     public static final Codec<ClaimedItemData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
                     Codec.BOOL.fieldOf("claimed").forGetter(ClaimedItemData::claimed),
-                    BlockPos.CODEC.fieldOf("itemInputPos").forGetter(ClaimedItemData::itemInputPos),
+                    BlockPos.CODEC.fieldOf("vacuumBlockPos").forGetter(ClaimedItemData::vacuumBlockPos),
                     Codec.LONG.fieldOf("claimedAtTick").forGetter(ClaimedItemData::claimedAtTick),
                     Codec.INT.fieldOf("animationDuration").forGetter(ClaimedItemData::animationDuration)
             ).apply(builder, ClaimedItemData::new)
@@ -45,7 +45,7 @@ public record ClaimedItemData(
      */
     public static final StreamCodec<ByteBuf, ClaimedItemData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL, ClaimedItemData::claimed,
-            BlockPos.STREAM_CODEC.cast(), ClaimedItemData::itemInputPos,
+            BlockPos.STREAM_CODEC.cast(), ClaimedItemData::vacuumBlockPos,
             ByteBufCodecs.VAR_LONG, ClaimedItemData::claimedAtTick,
             ByteBufCodecs.VAR_INT, ClaimedItemData::animationDuration,
             ClaimedItemData::new
@@ -59,13 +59,13 @@ public record ClaimedItemData(
     /**
      * Creates a new ClaimedItemData for an item that has just been claimed.
      *
-     * @param itemInputPos Position of the claiming ItemInput block
+     * @param vacuumBlockPos Position of the claiming vacuum block
      * @param currentTick Current server tick
      * @param animationDuration Duration of the absorption animation
      * @return New ClaimedItemData instance
      */
-    public static ClaimedItemData create(BlockPos itemInputPos, long currentTick, int animationDuration) {
-        return new ClaimedItemData(true, itemInputPos, currentTick, animationDuration);
+    public static ClaimedItemData create(BlockPos vacuumBlockPos, long currentTick, int animationDuration) {
+        return new ClaimedItemData(true, vacuumBlockPos, currentTick, animationDuration);
     }
 
     /**

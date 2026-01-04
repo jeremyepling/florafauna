@@ -153,11 +153,14 @@ public class FloraFaunaModelProvider extends ModelProvider {
      */
     @Override
     protected Stream<? extends Holder<Item>> getKnownItems() {
-        // Exclude HAMMER (has custom item model) and item inputs with STATE property (manually defined)
+        // Exclude HAMMER (has custom item model) and blocks with STATE property (manually defined)
         return FloraFaunaRegistry.ITEMS.getEntries().stream()
                 .filter(x -> !x.equals(FloraFaunaRegistry.HAMMER))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:item_input"))
-                .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"));
+                .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:feral_mining_anchor"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:hardened_mining_anchor"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:hardened_pod"));
     }
 
     @Override
@@ -165,6 +168,10 @@ public class FloraFaunaModelProvider extends ModelProvider {
         // Exclude blocks with STATE property - assets manually defined in resources
         return FloraFaunaRegistry.BLOCKS.getEntries().stream()
                 .filter(x -> !x.equals(FloraFaunaRegistry.ITEM_INPUT))
-                .filter(x -> !x.equals(FloraFaunaRegistry.FIELD_RELAY));
+                .filter(x -> !x.equals(FloraFaunaRegistry.FIELD_RELAY))
+                .filter(x -> !x.equals(FloraFaunaRegistry.FERAL_MINING_ANCHOR))
+                .filter(x -> !x.equals(FloraFaunaRegistry.HARDENED_MINING_ANCHOR))
+                .filter(x -> !x.equals(FloraFaunaRegistry.FERAL_POD))
+                .filter(x -> !x.equals(FloraFaunaRegistry.HARDENED_POD));
     }
 }

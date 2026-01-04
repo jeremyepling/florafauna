@@ -31,6 +31,14 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(FloraFaunaRegistry.ITEM_INPUT.get());
         dropSelf(FloraFaunaRegistry.FIELD_RELAY.get());
 
+        // Mining Anchor System blocks
+        dropSelf(FloraFaunaRegistry.FERAL_MINING_ANCHOR.get());
+        dropSelf(FloraFaunaRegistry.HARDENED_MINING_ANCHOR.get());
+        // Feral pods drop nothing - items spill on break (handled in block code)
+        add(FloraFaunaRegistry.FERAL_POD.get(), noDrop());
+        // Hardened pods drop themselves with inventory (handled in block code)
+        dropSelf(FloraFaunaRegistry.HARDENED_POD.get());
+
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();

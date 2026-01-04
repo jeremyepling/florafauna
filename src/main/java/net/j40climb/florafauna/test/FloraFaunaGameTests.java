@@ -1,8 +1,8 @@
 package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.iteminput.ClaimedItemData;
-import net.j40climb.florafauna.common.block.iteminput.ItemInputBuffer;
+import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
+import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
@@ -65,7 +65,7 @@ public class FloraFaunaGameTests {
         registerDialogueRepositoryTests(event, defaultEnv);
 
         // Register item input system tests
-        registerItemInputBufferTests(event, defaultEnv);
+        registerVacuumBufferTests(event, defaultEnv);
         registerClaimedItemDataTests(event, defaultEnv);
     }
 
@@ -347,7 +347,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Item Input Buffer Tests ====================
 
-    private static void registerItemInputBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerVacuumBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
         registerTest(event, env, "item_buffer_initial_state", FloraFaunaGameTests::testItemBufferInitialState);
         registerTest(event, env, "item_buffer_add_and_retrieve", FloraFaunaGameTests::testItemBufferAddAndRetrieve);
         registerTest(event, env, "item_buffer_stack_merging", FloraFaunaGameTests::testItemBufferStackMerging);
@@ -355,7 +355,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferInitialState(GameTestHelper helper) {
-        ItemInputBuffer buffer = new ItemInputBuffer(27);
+        VacuumBuffer buffer = new VacuumBuffer(27);
 
         if (!buffer.isEmpty()) {
             throw helper.assertionException("Fresh buffer should be empty");
@@ -374,7 +374,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferAddAndRetrieve(GameTestHelper helper) {
-        ItemInputBuffer buffer = new ItemInputBuffer(27);
+        VacuumBuffer buffer = new VacuumBuffer(27);
 
         // Add a stack of cobblestone
         ItemStack toAdd = new ItemStack(Items.COBBLESTONE, 32);
@@ -409,7 +409,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferStackMerging(GameTestHelper helper) {
-        ItemInputBuffer buffer = new ItemInputBuffer(27);
+        VacuumBuffer buffer = new VacuumBuffer(27);
 
         // Add two partial stacks of the same item
         buffer.add(new ItemStack(Items.DIAMOND, 16));
@@ -435,7 +435,7 @@ public class FloraFaunaGameTests {
 
     private static void testItemBufferFullDetection(GameTestHelper helper) {
         // Create a tiny buffer with 2 slots
-        ItemInputBuffer buffer = new ItemInputBuffer(2);
+        VacuumBuffer buffer = new VacuumBuffer(2);
 
         // Fill both slots completely (sticks stack to 64)
         buffer.add(new ItemStack(Items.STICK, 64));

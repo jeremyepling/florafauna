@@ -14,7 +14,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * Mixin to force the locator bar to show when player has an active restoration husk.
+ * Mixin to force the locator bar to show when player has an active waypoint.
+ * - Restoration husk: BONDED_WEAKENED state with active husk
+ * - Mining anchor: Active waypoint anchor in same dimension
  */
 @Mixin(Gui.class)
 public class GuiMixin {
@@ -25,10 +27,11 @@ public class GuiMixin {
 
     /**
      * Inject at the head of nextContextualInfoState() to return LOCATOR
-     * when player has active restoration husk in BONDED_WEAKENED state.
+     * when player has active restoration husk in BONDED_WEAKENED state,
+     * or when player has an active waypoint anchor in the same dimension.
      */
     @Inject(method = "nextContextualInfoState", at = @At("HEAD"), cancellable = true)
-    private void florafauna$forceLocatorBarForHusk(CallbackInfoReturnable<Gui.ContextualInfo> cir) {
+    private void florafauna$forceLocatorBar(CallbackInfoReturnable<Gui.ContextualInfo> cir) {
         LocalPlayer player = this.minecraft.player;
         if (player == null) {
             return;
@@ -43,7 +46,18 @@ public class GuiMixin {
             data.restorationHuskPos() != null &&
             data.restorationHuskDim().equals(player.level().dimension())) {
 
-            // Force the locator bar to show
+            // Force the locator bar to show for husk waypoint
+            cir.setReturnValue(Gui.ContextualInfo.LOCATOR);
+            return;
+        }
+
+        // Check conditions: active waypoint anchor, same dimension
+        if (data.hasActiveWaypointAnchor() &&
+            data.activeWaypointAnchorDim() != null &&
+            data.activeWaypointAnchorPos() != null &&
+            data.activeWaypointAnchorDim().equals(player.level().dimension())) {
+
+            // Force the locator bar to show for anchor waypoint
             cir.setReturnValue(Gui.ContextualInfo.LOCATOR);
         }
     }

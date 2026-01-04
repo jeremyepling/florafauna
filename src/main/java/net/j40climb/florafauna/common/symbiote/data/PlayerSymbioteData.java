@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.symbiote.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -29,6 +30,11 @@ import java.util.Optional;
  * Restoration Husk fields:
  * - restorationHuskPos/Dim: location of the player's restoration husk
  * - restorationHuskActive: whether the husk is still active
+ *
+ * Mining Anchor fields:
+ * - boundAnchorPos/Dim: the anchor bound to the player's symbiote
+ * - activeWaypointAnchorPos/Dim: the anchor shown on locator bar (can differ from bound)
+ * - lastAnnouncedFillState: for dialogue cooldown tracking
  */
 public record PlayerSymbioteData(
         // Symbiote bond state
@@ -50,7 +56,13 @@ public record PlayerSymbioteData(
         // Restoration Husk tracking
         @Nullable BlockPos restorationHuskPos,
         @Nullable ResourceKey<Level> restorationHuskDim,
-        boolean restorationHuskActive
+        boolean restorationHuskActive,
+        // Mining Anchor tracking
+        @Nullable BlockPos boundAnchorPos,
+        @Nullable ResourceKey<Level> boundAnchorDim,
+        @Nullable BlockPos activeWaypointAnchorPos,
+        @Nullable ResourceKey<Level> activeWaypointAnchorDim,
+        AnchorFillState lastAnnouncedFillState
 ) {
     /**
      * Helper record for serializing position + dimension pairs as a single optional field.
@@ -60,6 +72,40 @@ public record PlayerSymbioteData(
                 BlockPos.CODEC.fieldOf("pos").forGetter(DimensionPos::pos),
                 ResourceKey.codec(Registries.DIMENSION).fieldOf("dim").forGetter(DimensionPos::dim)
         ).apply(b, DimensionPos::new));
+    }
+
+    /**
+     * Helper record for serializing anchor bind state as a single optional field.
+     * Groups bound anchor, waypoint anchor, and fill state to reduce codec field count.
+     */
+    private record AnchorBindState(
+            @Nullable BlockPos boundPos, @Nullable ResourceKey<Level> boundDim,
+            @Nullable BlockPos waypointPos, @Nullable ResourceKey<Level> waypointDim,
+            AnchorFillState lastAnnouncedFillState
+    ) {
+        static final AnchorBindState EMPTY = new AnchorBindState(null, null, null, null, AnchorFillState.NORMAL);
+
+        static final Codec<AnchorBindState> CODEC = RecordCodecBuilder.create(b -> b.group(
+                DimensionPos.CODEC.optionalFieldOf("bound").forGetter(s ->
+                        s.boundPos != null && s.boundDim != null
+                                ? Optional.of(new DimensionPos(s.boundPos, s.boundDim))
+                                : Optional.empty()),
+                DimensionPos.CODEC.optionalFieldOf("waypoint").forGetter(s ->
+                        s.waypointPos != null && s.waypointDim != null
+                                ? Optional.of(new DimensionPos(s.waypointPos, s.waypointDim))
+                                : Optional.empty()),
+                AnchorFillState.CODEC.optionalFieldOf("lastFillState", AnchorFillState.NORMAL).forGetter(AnchorBindState::lastAnnouncedFillState)
+        ).apply(b, AnchorBindState::fromCodec));
+
+        private static AnchorBindState fromCodec(Optional<DimensionPos> bound, Optional<DimensionPos> waypoint, AnchorFillState fillState) {
+            return new AnchorBindState(
+                    bound.map(DimensionPos::pos).orElse(null),
+                    bound.map(DimensionPos::dim).orElse(null),
+                    waypoint.map(DimensionPos::pos).orElse(null),
+                    waypoint.map(DimensionPos::dim).orElse(null),
+                    fillState
+            );
+        }
     }
 
     public static final Codec<PlayerSymbioteData> CODEC = RecordCodecBuilder.create(builder ->
@@ -89,7 +135,12 @@ public record PlayerSymbioteData(
                             d.restorationHuskPos != null && d.restorationHuskDim != null
                                     ? Optional.of(new DimensionPos(d.restorationHuskPos, d.restorationHuskDim))
                                     : Optional.empty()),
-                    Codec.BOOL.fieldOf("restorationHuskActive").forGetter(PlayerSymbioteData::restorationHuskActive)
+                    Codec.BOOL.fieldOf("restorationHuskActive").forGetter(PlayerSymbioteData::restorationHuskActive),
+                    // Mining Anchor fields (1 nested record)
+                    AnchorBindState.CODEC.optionalFieldOf("anchorBind", AnchorBindState.EMPTY).forGetter(d ->
+                            new AnchorBindState(d.boundAnchorPos, d.boundAnchorDim,
+                                    d.activeWaypointAnchorPos, d.activeWaypointAnchorDim,
+                                    d.lastAnnouncedFillState))
             ).apply(builder, PlayerSymbioteData::fromCodec));
 
     private static PlayerSymbioteData fromCodec(
@@ -99,7 +150,8 @@ public record PlayerSymbioteData(
             Optional<DimensionPos> previousBedSpawn,
             boolean symbioteStewConsumedOnce, boolean cocoonSpawnSetOnce,
             Optional<DimensionPos> restorationHusk,
-            boolean restorationHuskActive
+            boolean restorationHuskActive,
+            AnchorBindState anchorBind
     ) {
         return new PlayerSymbioteData(
                 symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
@@ -111,7 +163,10 @@ public record PlayerSymbioteData(
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
                 restorationHusk.map(DimensionPos::pos).orElse(null),
                 restorationHusk.map(DimensionPos::dim).orElse(null),
-                restorationHuskActive
+                restorationHuskActive,
+                anchorBind.boundPos, anchorBind.boundDim,
+                anchorBind.waypointPos, anchorBind.waypointDim,
+                anchorBind.lastAnnouncedFillState
         );
     }
 
@@ -147,12 +202,26 @@ public record PlayerSymbioteData(
             ResourceKey<Level> restorationHuskDim = hasRestorationHusk ? ResourceKey.streamCodec(Registries.DIMENSION).decode(buffer) : null;
             boolean restorationHuskActive = ByteBufCodecs.BOOL.decode(buffer);
 
+            // Mining Anchor fields
+            boolean hasBoundAnchor = ByteBufCodecs.BOOL.decode(buffer);
+            BlockPos boundAnchorPos = hasBoundAnchor ? BlockPos.STREAM_CODEC.decode(buffer) : null;
+            ResourceKey<Level> boundAnchorDim = hasBoundAnchor ? ResourceKey.streamCodec(Registries.DIMENSION).decode(buffer) : null;
+
+            boolean hasActiveWaypoint = ByteBufCodecs.BOOL.decode(buffer);
+            BlockPos activeWaypointAnchorPos = hasActiveWaypoint ? BlockPos.STREAM_CODEC.decode(buffer) : null;
+            ResourceKey<Level> activeWaypointAnchorDim = hasActiveWaypoint ? ResourceKey.streamCodec(Registries.DIMENSION).decode(buffer) : null;
+
+            AnchorFillState lastAnnouncedFillState = AnchorFillState.STREAM_CODEC.decode(buffer);
+
             return new PlayerSymbioteData(
                     symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                     symbioteBindable, cocoonSpawnPos, cocoonSpawnDim,
                     previousBedSpawnPos, previousBedSpawnDim,
                     symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                    restorationHuskPos, restorationHuskDim, restorationHuskActive
+                    restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                    boundAnchorPos, boundAnchorDim,
+                    activeWaypointAnchorPos, activeWaypointAnchorDim,
+                    lastAnnouncedFillState
             );
         }
 
@@ -195,13 +264,31 @@ public record PlayerSymbioteData(
                 ResourceKey.streamCodec(Registries.DIMENSION).encode(buffer, data.restorationHuskDim);
             }
             ByteBufCodecs.BOOL.encode(buffer, data.restorationHuskActive);
+
+            // Mining Anchor fields
+            boolean hasBoundAnchor = data.boundAnchorPos != null && data.boundAnchorDim != null;
+            ByteBufCodecs.BOOL.encode(buffer, hasBoundAnchor);
+            if (hasBoundAnchor) {
+                BlockPos.STREAM_CODEC.encode(buffer, data.boundAnchorPos);
+                ResourceKey.streamCodec(Registries.DIMENSION).encode(buffer, data.boundAnchorDim);
+            }
+
+            boolean hasActiveWaypoint = data.activeWaypointAnchorPos != null && data.activeWaypointAnchorDim != null;
+            ByteBufCodecs.BOOL.encode(buffer, hasActiveWaypoint);
+            if (hasActiveWaypoint) {
+                BlockPos.STREAM_CODEC.encode(buffer, data.activeWaypointAnchorPos);
+                ResourceKey.streamCodec(Registries.DIMENSION).encode(buffer, data.activeWaypointAnchorDim);
+            }
+
+            AnchorFillState.STREAM_CODEC.encode(buffer, data.lastAnnouncedFillState);
         }
     };
 
     public static final PlayerSymbioteData DEFAULT = new PlayerSymbioteData(
             SymbioteState.UNBOUND, 0L, 1, false, false, false, 0,
             false, null, null, null, null, false, false,
-            null, null, false
+            null, null, false,
+            null, null, null, null, AnchorFillState.NORMAL
     );
 
     // Symbiote builder methods
@@ -213,7 +300,8 @@ public record PlayerSymbioteData(
         return new PlayerSymbioteData(state, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     /**
@@ -224,42 +312,48 @@ public record PlayerSymbioteData(
         return new PlayerSymbioteData(state, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withTier(int tier) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withDash(boolean dash) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withFeatherFalling(boolean featherFalling) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withSpeed(boolean speed) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withJumpBoost(int jumpBoost) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     // Cocoon builder methods
@@ -268,35 +362,40 @@ public record PlayerSymbioteData(
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 bindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withSymbioteStewConsumedOnce(boolean consumed) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 consumed, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withCocoonSpawn(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, pos, dim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withPreviousBedSpawn(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, pos, dim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     public PlayerSymbioteData withCocoonSpawnSetOnce(boolean set) {
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, set,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive);
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     // Restoration Husk builder methods
@@ -308,7 +407,8 @@ public record PlayerSymbioteData(
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                pos, dim, active);
+                pos, dim, active,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     /**
@@ -318,19 +418,21 @@ public record PlayerSymbioteData(
         return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                null, null, false);
+                null, null, false,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
     }
 
     /**
      * Creates a PlayerSymbioteData from an item's SymbioteData (for binding).
-     * Preserves cocoon state and restoration husk state from existing player data.
+     * Preserves cocoon state, restoration husk state, and anchor state from existing player data.
      */
     public PlayerSymbioteData withSymbioteFromItem(SymbioteData itemData, long currentGameTime) {
         return new PlayerSymbioteData(
                 SymbioteState.BONDED_ACTIVE, currentGameTime, itemData.tier(), itemData.dash(), itemData.featherFalling(), itemData.speed(), itemData.jumpBoost(),
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState
         );
     }
 
@@ -342,14 +444,86 @@ public record PlayerSymbioteData(
     }
 
     /**
-     * Resets symbiote bond state while preserving cocoon state and restoration husk state.
+     * Resets symbiote bond state while preserving cocoon state, restoration husk state, and anchor state.
      */
     public PlayerSymbioteData withSymbioteReset() {
         return new PlayerSymbioteData(
                 SymbioteState.UNBOUND, 0L, 1, false, false, false, 0,
                 symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
                 symbioteStewConsumedOnce, cocoonSpawnSetOnce,
-                restorationHuskPos, restorationHuskDim, restorationHuskActive
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState
         );
+    }
+
+    // Mining Anchor builder methods
+
+    /**
+     * Returns whether the player has an anchor bound to their symbiote.
+     */
+    public boolean hasAnchorBound() {
+        return boundAnchorPos != null && boundAnchorDim != null;
+    }
+
+    /**
+     * Returns whether the player has an active waypoint anchor.
+     */
+    public boolean hasActiveWaypointAnchor() {
+        return activeWaypointAnchorPos != null && activeWaypointAnchorDim != null;
+    }
+
+    /**
+     * Sets the bound anchor location.
+     */
+    public PlayerSymbioteData withBoundAnchor(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                pos, dim, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
+    }
+
+    /**
+     * Clears the bound anchor.
+     */
+    public PlayerSymbioteData clearBoundAnchor() {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                null, null, activeWaypointAnchorPos, activeWaypointAnchorDim, lastAnnouncedFillState);
+    }
+
+    /**
+     * Sets the active waypoint anchor location.
+     */
+    public PlayerSymbioteData withActiveWaypointAnchor(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dim) {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, pos, dim, lastAnnouncedFillState);
+    }
+
+    /**
+     * Clears the active waypoint anchor.
+     */
+    public PlayerSymbioteData clearActiveWaypointAnchor() {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, null, null, lastAnnouncedFillState);
+    }
+
+    /**
+     * Sets the last announced fill state (for dialogue cooldown tracking).
+     */
+    public PlayerSymbioteData withLastAnnouncedFillState(AnchorFillState fillState) {
+        return new PlayerSymbioteData(symbioteState, bondTime, tier, dash, featherFalling, speed, jumpBoost,
+                symbioteBindable, cocoonSpawnPos, cocoonSpawnDim, previousBedSpawnPos, previousBedSpawnDim,
+                symbioteStewConsumedOnce, cocoonSpawnSetOnce,
+                restorationHuskPos, restorationHuskDim, restorationHuskActive,
+                boundAnchorPos, boundAnchorDim, activeWaypointAnchorPos, activeWaypointAnchorDim, fillState);
     }
 }
