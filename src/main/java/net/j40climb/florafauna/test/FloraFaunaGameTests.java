@@ -17,6 +17,7 @@ import net.j40climb.florafauna.common.symbiote.observation.ObservationCategory;
 import net.j40climb.florafauna.common.symbiote.progress.ConceptSignal;
 import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.symbiote.progress.SignalState;
+import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -94,6 +95,9 @@ public class FloraFaunaGameTests {
 
         // Register husk tests
         registerHuskTests(event, defaultEnv);
+
+        // Register symbiote state tests
+        registerSymbioteStateTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -1040,6 +1044,63 @@ public class FloraFaunaGameTests {
         }
         if (HuskType.BROKEN.restoresAbilities()) {
             throw helper.assertionException("BROKEN should NOT restore abilities");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Symbiote State Tests ====================
+
+    private static void registerSymbioteStateTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "symbiote_state_unbound", FloraFaunaGameTests::testSymbioteStateUnbound);
+        registerTest(event, env, "symbiote_state_ready_to_bind", FloraFaunaGameTests::testSymbioteStateReadyToBind);
+        registerTest(event, env, "symbiote_state_bonded_active", FloraFaunaGameTests::testSymbioteStateBondedActive);
+        registerTest(event, env, "symbiote_state_bonded_weakened", FloraFaunaGameTests::testSymbioteStateBondedWeakened);
+    }
+
+    private static void testSymbioteStateUnbound(GameTestHelper helper) {
+        // UNBOUND: not bonded, no abilities
+        if (SymbioteState.UNBOUND.isBonded()) {
+            throw helper.assertionException("UNBOUND should NOT be bonded");
+        }
+        if (SymbioteState.UNBOUND.areAbilitiesActive()) {
+            throw helper.assertionException("UNBOUND should NOT have active abilities");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testSymbioteStateReadyToBind(GameTestHelper helper) {
+        // READY_TO_BIND: not bonded yet, no abilities
+        if (SymbioteState.READY_TO_BIND.isBonded()) {
+            throw helper.assertionException("READY_TO_BIND should NOT be bonded");
+        }
+        if (SymbioteState.READY_TO_BIND.areAbilitiesActive()) {
+            throw helper.assertionException("READY_TO_BIND should NOT have active abilities");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testSymbioteStateBondedActive(GameTestHelper helper) {
+        // BONDED_ACTIVE: bonded AND abilities active
+        if (!SymbioteState.BONDED_ACTIVE.isBonded()) {
+            throw helper.assertionException("BONDED_ACTIVE should be bonded");
+        }
+        if (!SymbioteState.BONDED_ACTIVE.areAbilitiesActive()) {
+            throw helper.assertionException("BONDED_ACTIVE should have active abilities");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testSymbioteStateBondedWeakened(GameTestHelper helper) {
+        // BONDED_WEAKENED: bonded but abilities NOT active
+        if (!SymbioteState.BONDED_WEAKENED.isBonded()) {
+            throw helper.assertionException("BONDED_WEAKENED should be bonded");
+        }
+        if (SymbioteState.BONDED_WEAKENED.areAbilitiesActive()) {
+            throw helper.assertionException("BONDED_WEAKENED should NOT have active abilities");
         }
 
         helper.succeed();
