@@ -36,9 +36,10 @@ if ($branch -ne "main") {
     Write-Warning "Proceeding from branch '$branch' (forced)"
 }
 
-# Source is current repo's dev world, destination is main repo's template
-$srcWorld = Join-Path $currentRoot "run\client-$branch\saves\dev"
-# Fallback to run/saves/dev for main repo
+# Determine run directory (matches gradle's logic)
+$wt = if ($env:WORKTREE_ID) { $env:WORKTREE_ID } else { Split-Path $currentRoot -Leaf }
+$srcWorld = Join-Path $currentRoot "run\client-$wt\saves\dev"
+# Fallback to run/saves/dev for legacy setup
 if (-not (Test-Path $srcWorld)) {
     $srcWorld = Join-Path $currentRoot "run\saves\dev"
 }
@@ -59,5 +60,5 @@ if (Test-Path $dstWorld) {
 Copy-Item -Path $srcWorld -Destination $dstWorld -Recurse -Force
 
 Write-Host ""
-Write-Host "Done! Changes saved to: $mainRepo"
-Write-Host "Don't forget to commit dev/world-template/ in the main repo."
+Write-Host "Done! Template updated in: $mainRepo"
+Write-Host "Run .\scripts\sync_dev_world.ps1 to push to existing worktrees."
