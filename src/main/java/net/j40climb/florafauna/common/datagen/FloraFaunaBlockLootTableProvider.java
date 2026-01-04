@@ -21,7 +21,7 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(FloraFaunaRegistry.TEAL_MOSS_BLOCK.get());
         dropSelf(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
         dropSelf(FloraFaunaRegistry.COCOON_CHAMBER.get());
-        dropSelf(FloraFaunaRegistry.COPPER_GOLEM_BARRIER.get());
+        dropSelf(FloraFaunaRegistry.MOB_BARRIER.get());
 
         // Husk drops nothing - items are retrieved via interaction
         add(FloraFaunaRegistry.HUSK.get(), noDrop());

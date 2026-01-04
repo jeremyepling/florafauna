@@ -1,7 +1,10 @@
 package net.j40climb.florafauna.setup;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.CopperGolemBarrierBlock;
+import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlock;
+import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
+import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockItem;
+import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberMenu;
@@ -110,12 +113,17 @@ public class FloraFaunaRegistry {
                     .noOcclusion()
             ));
 
-    public static final DeferredBlock<Block> COPPER_GOLEM_BARRIER = registerBlock("copper_golem_barrier",
-            props -> new CopperGolemBarrierBlock(props
+    public static final DeferredBlock<MobBarrierBlock> MOB_BARRIER = BLOCKS.registerBlock("mob_barrier",
+            props -> new MobBarrierBlock(props
                     .noOcclusion()
                     .strength(-1.0F, 3600000.0F)
                     .sound(SoundType.STONE)
             ));
+
+    // Register custom MobBarrierBlockItem (carries config component)
+    static {
+        ITEMS.registerItem("mob_barrier", props -> new MobBarrierBlockItem(MOB_BARRIER.get(), props));
+    }
 
     public static final DeferredBlock<HuskBlock> HUSK = registerBlock("husk",
             props -> new HuskBlock(props
@@ -224,6 +232,10 @@ public class FloraFaunaRegistry {
             "husk",
             () -> new BlockEntityType<>(HuskBlockEntity::new, false, HUSK.get()));
 
+    public static final Supplier<BlockEntityType<MobBarrierBlockEntity>> MOB_BARRIER_BE = BLOCK_ENTITIES.register(
+            "mob_barrier",
+            () -> new BlockEntityType<>(MobBarrierBlockEntity::new, false, MOB_BARRIER.get()));
+
     // Item Input System block entities
     public static final Supplier<BlockEntityType<StorageAnchorBlockEntity>> STORAGE_ANCHOR_BE = BLOCK_ENTITIES.register(
             "storage_anchor",
@@ -284,6 +296,11 @@ public class FloraFaunaRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ThrowableAbilityData>> THROWABLE_ABILITY =
             DATA_COMPONENTS.registerComponentType("throwable_ability",
                     builder -> builder.persistent(ThrowableAbilityData.CODEC).networkSynchronized(ThrowableAbilityData.STREAM_CODEC));
+
+    // Mob barrier config data component
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MobBarrierConfig>> MOB_BARRIER_CONFIG =
+            DATA_COMPONENTS.registerComponentType("mob_barrier_config",
+                    builder -> builder.persistent(MobBarrierConfig.CODEC).networkSynchronized(MobBarrierConfig.STREAM_CODEC));
 
     // ==================== ATTACHMENT TYPES ====================
 
@@ -351,13 +368,14 @@ public class FloraFaunaRegistry {
      * Registers all registries to the mod event bus.
      */
     public static void init(IEventBus modEventBus) {
+        // DATA_COMPONENTS must be registered before ITEMS because MobBarrierBlockItem uses MOB_BARRIER_CONFIG
+        DATA_COMPONENTS.register(modEventBus);
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         MENUS.register(modEventBus);
         MOB_EFFECTS.register(modEventBus);
-        DATA_COMPONENTS.register(modEventBus);
         ATTACHMENT_TYPES.register(modEventBus);
     }
 }

@@ -55,8 +55,16 @@
   "gui.florafauna.cocoon.clear_spawn": "Clear Spawn",
   "gui.florafauna.cocoon.bind": "Bind Symbiote",
   "gui.florafauna.cocoon.unbind": "Unbind Symbiote",
-  "block.florafauna.copper_golem_barrier": "Copper Golem Barrier",
+  "block.florafauna.mob_barrier": "Mob Barrier",
   "block.florafauna.husk": "Husk",
+
+  "key.florafauna.mob_barrier_config": "Mob Barrier Config",
+  "gui.florafauna.mob_barrier.title": "Mob Barrier Config",
+  "gui.florafauna.mob_barrier.input_hint": "Entity ID or #tag",
+  "gui.florafauna.mob_barrier.add": "Add",
+  "gui.florafauna.mob_barrier.blocked_entities": "Blocked Entities",
+  "gui.florafauna.mob_barrier.no_entries": "No entities configured",
+  "message.florafauna.mob_barrier.copied": "Config copied from block",
 
   "block.florafauna.storage_anchor": "Storage Anchor",
   "block.florafauna.item_input": "Item Input",
@@ -129,8 +137,6 @@
   "command.florafauna.ability.removed": "Removed %s ability",
   "command.florafauna.ability.all_added": "Added all abilities",
   "command.florafauna.ability.all_cleared": "Cleared all abilities",
-  "command.florafauna.ability_debug.enabled": "Ability debug overlay enabled",
-  "command.florafauna.ability_debug.disabled": "Ability debug overlay disabled",
 
   "symbiote.dialogue.bonded": "I was hoping you'd hesitate. You did not. Now it's permanent.",
   "symbiote.dialogue.unbonded": "The bond is severed. I will… adjust my expectations.",

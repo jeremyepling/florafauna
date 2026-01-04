@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.item.abilities.menu;
 
-import net.j40climb.florafauna.client.gui.BaseInventoryScreen;
+import net.j40climb.florafauna.client.gui.BaseScreen;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -16,7 +16,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * Configuration screen for tools with configurable enchantments and mining speed.
  * Works with any item that has the TOOL_CONFIG data component.
  */
-public class ToolConfigScreen extends BaseInventoryScreen {
+public class ToolConfigScreen extends BaseScreen {
     private static final int BUTTON_WIDTH = 100;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_SPACING = 24;

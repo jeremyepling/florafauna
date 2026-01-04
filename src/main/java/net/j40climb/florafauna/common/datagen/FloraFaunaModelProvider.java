@@ -45,8 +45,8 @@ public class FloraFaunaModelProvider extends ModelProvider {
         blockModels.createTrivialCube(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
         blockModels.createTrivialCube(FloraFaunaRegistry.COCOON_CHAMBER.get());
 
-        // Copper Golem Barrier - invisible block, model not actually rendered
-        blockModels.createTrivialCube(FloraFaunaRegistry.COPPER_GOLEM_BARRIER.get());
+        // Mob Barrier - invisible block, model not actually rendered
+        blockModels.createTrivialCube(FloraFaunaRegistry.MOB_BARRIER.get());
 
         // Husk block - uses a simple cube for now (blockstate variants handled by json)
         blockModels.createTrivialCube(FloraFaunaRegistry.HUSK.get());

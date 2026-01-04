@@ -1,20 +1,36 @@
 package net.j40climb.florafauna.client;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
+import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
+import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Unit;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Debug overlay that displays symbiote state information on screen.
@@ -31,10 +47,6 @@ public class DebugOverlay implements GuiLayer {
 
     public static void setEnabled(boolean value) {
         enabled = value;
-        if (value) {
-            // Turn off ability debug overlay for mutual exclusivity
-            AbilityDebugOverlay.setEnabled(false);
-        }
     }
 
     public static void toggle() {
@@ -47,6 +59,9 @@ public class DebugOverlay implements GuiLayer {
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(LAYER_ID, new DebugOverlay());
     }
+
+    // Simple record to hold a line of text with its color
+    private record DebugLine(String text, int color) {}
 
     @Override
     public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
@@ -65,19 +80,9 @@ public class DebugOverlay implements GuiLayer {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         Font font = mc.font;
 
-        // Scale to half size for compact display
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(0.5f, 0.5f);
-
-        // Coordinates in scaled space (divide by 0.5 to get screen position)
-        int x = 10;
-        int y = 10;
-        int lineHeight = 10;  // Tight line spacing
-        int sectionGap = 3;
-        int padding = 4;
+        // Colors
         int color = 0xFFF0F0F0; // Very bright gray
         int headerColor = 0xFFCB8AFF; // Bright purple
         int valueColor = 0xFFFFFFFF; // White
@@ -85,93 +90,227 @@ public class DebugOverlay implements GuiLayer {
         int disabledColor = 0xFFFF7777; // Bright red
         int bgColor = 0xE0080808; // Near black, 88% opaque
 
-        // Calculate total height for background
-        int lineCount = 2; // Header + State
-        if (data.symbioteState().isBonded()) {
-            lineCount += 7; // Bond Time, Tier, Abilities Active, Dash, Feather, Speed, Jump
-        }
-        lineCount += 6; // Cocoon section: header + 5 lines
-        lineCount += 3; // Husk section: header + 2 lines
-        int totalHeight = lineCount * lineHeight + (sectionGap * 2) + padding * 2;
-        int maxWidth = 200; // Approximate max text width
+        // Build all lines first
+        List<DebugLine> lines = new ArrayList<>();
+        buildDebugLines(lines, player, color, headerColor, valueColor, enabledColor, disabledColor);
 
-        // Draw background
-        guiGraphics.fill(x - padding, y - padding, x + maxWidth, y + totalHeight - padding, bgColor);
+        // Calculate dimensions
+        int lineHeight = 10;
+        int padding = 4;
+        int x = 10;
+        int y = 10;
+
+        // Calculate max width based on actual text
+        int maxWidth = 0;
+        for (DebugLine line : lines) {
+            int width = font.width(line.text());
+            if (width > maxWidth) {
+                maxWidth = width;
+            }
+        }
+        maxWidth += padding * 2;
+
+        int totalHeight = lines.size() * lineHeight + padding;
+
+        // Scale to half size for compact display
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().scale(0.5f, 0.5f);
+
+        // Draw background (sized to fit content)
+        guiGraphics.fill(x - padding, y - padding, x + maxWidth, y + totalHeight, bgColor);
+
+        // Draw all lines
+        for (DebugLine line : lines) {
+            guiGraphics.drawString(font, line.text(), x, y, line.color(), false);
+            y += lineHeight;
+        }
+
+        guiGraphics.pose().popMatrix();
+    }
+
+    /**
+     * Builds all debug lines with their colors.
+     */
+    private void buildDebugLines(List<DebugLine> lines, LocalPlayer player,
+                                  int color, int headerColor, int valueColor,
+                                  int enabledColor, int disabledColor) {
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Header
-        guiGraphics.drawString(font, "=== Symbiote Debug ===", x, y, headerColor, false);
-        y += lineHeight;
+        lines.add(new DebugLine("=== Symbiote Debug ===", headerColor));
 
         // Symbiote State section
-        guiGraphics.drawString(font, "State: " + data.symbioteState().getSerializedName(), x, y, valueColor, false);
-        y += lineHeight;
+        lines.add(new DebugLine("State: " + data.symbioteState().getSerializedName(), valueColor));
 
         if (data.symbioteState().isBonded()) {
-            // Bond info
-            guiGraphics.drawString(font, "Bond Time: " + data.bondTime(), x, y, color, false);
-            y += lineHeight;
-
-            guiGraphics.drawString(font, "Tier: " + data.tier(), x, y, color, false);
-            y += lineHeight;
-
-            // Abilities
-            guiGraphics.drawString(font, "Abilities Active: " + (data.symbioteState().areAbilitiesActive() ? "Yes" : "No"),
-                    x, y, data.symbioteState().areAbilitiesActive() ? enabledColor : disabledColor, false);
-            y += lineHeight;
-
-            guiGraphics.drawString(font, "  Dash: " + formatBool(data.dash()), x, y,
-                    data.dash() ? enabledColor : color, false);
-            y += lineHeight;
-
-            guiGraphics.drawString(font, "  Feather: " + formatBool(data.featherFalling()), x, y,
-                    data.featherFalling() ? enabledColor : color, false);
-            y += lineHeight;
-
-            guiGraphics.drawString(font, "  Speed: " + formatBool(data.speed()), x, y,
-                    data.speed() ? enabledColor : color, false);
-            y += lineHeight;
-
-            guiGraphics.drawString(font, "  Jump: " + data.jumpBoost(), x, y,
-                    data.jumpBoost() > 0 ? enabledColor : color, false);
-            y += lineHeight;
+            lines.add(new DebugLine("Bond Time: " + data.bondTime(), color));
+            lines.add(new DebugLine("Tier: " + data.tier(), color));
+            lines.add(new DebugLine("Abilities Active: " + (data.symbioteState().areAbilitiesActive() ? "Yes" : "No"),
+                    data.symbioteState().areAbilitiesActive() ? enabledColor : disabledColor));
+            lines.add(new DebugLine("  Dash: " + formatBool(data.dash()), data.dash() ? enabledColor : color));
+            lines.add(new DebugLine("  Feather: " + formatBool(data.featherFalling()), data.featherFalling() ? enabledColor : color));
+            lines.add(new DebugLine("  Speed: " + formatBool(data.speed()), data.speed() ? enabledColor : color));
+            lines.add(new DebugLine("  Jump: " + data.jumpBoost(), data.jumpBoost() > 0 ? enabledColor : color));
         }
 
         // Cocoon State section
-        y += sectionGap;
-        guiGraphics.drawString(font, "--- Cocoon State ---", x, y, headerColor, false);
-        y += lineHeight;
-
-        guiGraphics.drawString(font, "Bindable: " + formatBool(data.symbioteBindable()), x, y,
-                data.symbioteBindable() ? enabledColor : color, false);
-        y += lineHeight;
-
-        guiGraphics.drawString(font, "Stew: " + formatBool(data.symbioteStewConsumedOnce()), x, y, color, false);
-        y += lineHeight;
-
-        guiGraphics.drawString(font, "Cocoon Set: " + formatBool(data.cocoonSpawnSetOnce()), x, y, color, false);
-        y += lineHeight;
-
-        guiGraphics.drawString(font, "Cocoon: " + formatPosAndDim(data.cocoonSpawnPos(), data.cocoonSpawnDim()),
-                x, y, color, false);
-        y += lineHeight;
-
-        guiGraphics.drawString(font, "Prev Bed: " + formatPosAndDim(data.previousBedSpawnPos(), data.previousBedSpawnDim()),
-                x, y, color, false);
-        y += lineHeight;
+        lines.add(new DebugLine("--- Cocoon State ---", headerColor));
+        lines.add(new DebugLine("Bindable: " + formatBool(data.symbioteBindable()), data.symbioteBindable() ? enabledColor : color));
+        lines.add(new DebugLine("Stew: " + formatBool(data.symbioteStewConsumedOnce()), color));
+        lines.add(new DebugLine("Cocoon Set: " + formatBool(data.cocoonSpawnSetOnce()), color));
+        lines.add(new DebugLine("Cocoon: " + formatPosAndDim(data.cocoonSpawnPos(), data.cocoonSpawnDim()), color));
+        lines.add(new DebugLine("Prev Bed: " + formatPosAndDim(data.previousBedSpawnPos(), data.previousBedSpawnDim()), color));
 
         // Restoration Husk section
-        y += sectionGap;
-        guiGraphics.drawString(font, "--- Restoration Husk ---", x, y, headerColor, false);
-        y += lineHeight;
+        lines.add(new DebugLine("--- Restoration Husk ---", headerColor));
+        lines.add(new DebugLine("Active: " + formatBool(data.restorationHuskActive()), data.restorationHuskActive() ? enabledColor : color));
+        lines.add(new DebugLine("Pos: " + formatPosAndDim(data.restorationHuskPos(), data.restorationHuskDim()), color));
 
-        guiGraphics.drawString(font, "Active: " + formatBool(data.restorationHuskActive()), x, y,
-                data.restorationHuskActive() ? enabledColor : color, false);
-        y += lineHeight;
+        // Held Item section
+        ItemStack heldItem = player.getMainHandItem();
+        if (!heldItem.isEmpty()) {
+            lines.add(new DebugLine("--- Held Item ---", headerColor));
+            lines.add(new DebugLine("Item: " + heldItem.getHoverName().getString(), valueColor));
 
-        guiGraphics.drawString(font, "Pos: " + formatPosAndDim(data.restorationHuskPos(), data.restorationHuskDim()),
-                x, y, color, false);
+            List<String> componentLines = getModDataComponentLines(heldItem);
+            if (componentLines.isEmpty()) {
+                lines.add(new DebugLine("No mod components", color));
+            } else {
+                for (String line : componentLines) {
+                    lines.add(new DebugLine(line, color));
+                }
+            }
+        }
 
-        guiGraphics.pose().popMatrix();
+        // Targeted Block section
+        buildTargetedBlockLines(lines, player, color, headerColor, valueColor);
+    }
+
+    /**
+     * Builds debug lines for the block the player is currently looking at.
+     */
+    private void buildTargetedBlockLines(List<DebugLine> lines, LocalPlayer player,
+                                          int color, int headerColor, int valueColor) {
+        Minecraft mc = Minecraft.getInstance();
+        HitResult hitResult = mc.hitResult;
+
+        if (hitResult == null || hitResult.getType() != HitResult.Type.BLOCK) {
+            return;
+        }
+
+        BlockHitResult blockHit = (BlockHitResult) hitResult;
+        BlockPos pos = blockHit.getBlockPos();
+        Level level = player.level();
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        if (blockEntity == null) {
+            return;
+        }
+
+        // Check for FloraFauna block entities
+        List<String> blockLines = getBlockEntityDebugLines(blockEntity);
+        if (!blockLines.isEmpty()) {
+            lines.add(new DebugLine("--- Targeted Block ---", headerColor));
+            lines.add(new DebugLine("Pos: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), valueColor));
+            for (String line : blockLines) {
+                lines.add(new DebugLine(line, color));
+            }
+        }
+    }
+
+    /**
+     * Gets debug lines for FloraFauna block entities.
+     */
+    private List<String> getBlockEntityDebugLines(BlockEntity blockEntity) {
+        List<String> lines = new ArrayList<>();
+
+        if (blockEntity instanceof MobBarrierBlockEntity mobBarrierBE) {
+            MobBarrierConfig config = mobBarrierBE.getConfig();
+            lines.add("Mob Barrier Block:");
+            if (config.entityIds().isEmpty() && config.entityTags().isEmpty()) {
+                lines.add("  (no entities configured)");
+            } else {
+                for (String id : config.entityIds()) {
+                    lines.add("  ID: " + id);
+                }
+                for (String tag : config.entityTags()) {
+                    lines.add("  Tag: " + tag);
+                }
+            }
+        }
+
+        // Add more FloraFauna block entities here as needed
+
+        return lines;
+    }
+
+    /**
+     * Gets debug lines for all FloraFauna data components on the given item.
+     */
+    private static List<String> getModDataComponentLines(ItemStack stack) {
+        List<String> lines = new ArrayList<>();
+
+        // Check each FloraFauna data component
+        if (stack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING.get())) {
+            MiningModeData miningData = stack.get(FloraFaunaRegistry.MULTI_BLOCK_MINING.get());
+            if (miningData != null) {
+                lines.add("Mining: " + miningData.shape().name() + ", radius=" + miningData.radius());
+            }
+        }
+
+        if (stack.has(FloraFaunaRegistry.TOOL_CONFIG.get())) {
+            ToolConfig toolConfig = stack.get(FloraFaunaRegistry.TOOL_CONFIG.get());
+            if (toolConfig != null) {
+                String enchant = toolConfig.fortune() ? "Fortune" : "SilkTouch";
+                lines.add("Tool Config: " + enchant + ", " + toolConfig.miningSpeed().name());
+            }
+        }
+
+        if (stack.has(FloraFaunaRegistry.LIGHTNING_ABILITY.get())) {
+            lines.add("Lightning: Yes");
+        }
+
+        if (stack.has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY.get())) {
+            lines.add("Teleport: Yes");
+        }
+
+        if (stack.has(FloraFaunaRegistry.SYMBIOTE_DATA.get())) {
+            SymbioteData symbioteData = stack.get(FloraFaunaRegistry.SYMBIOTE_DATA.get());
+            if (symbioteData != null) {
+                lines.add("Symbiote: bonded=" + symbioteData.bonded() + ", tier=" + symbioteData.tier());
+            }
+        }
+
+        if (stack.has(FloraFaunaRegistry.SYMBIOTE_PROGRESS.get())) {
+            lines.add("Symbiote Progress: Present");
+        }
+
+        if (stack.has(FloraFaunaRegistry.THROWABLE_ABILITY.get())) {
+            ThrowableAbilityData throwData = stack.get(FloraFaunaRegistry.THROWABLE_ABILITY.get());
+            if (throwData != null) {
+                lines.add("Throw: dmg=" + throwData.damage() + ", range=" + throwData.maxRange());
+                lines.add("  return=" + (throwData.autoReturn() ? "yes" : "no") + ", speed=" + throwData.returnSpeed());
+            }
+        }
+
+        if (stack.has(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get())) {
+            MobBarrierConfig config = stack.get(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get());
+            if (config != null) {
+                lines.add("Mob Barrier Config:");
+                if (config.entityIds().isEmpty() && config.entityTags().isEmpty()) {
+                    lines.add("  (no entities)");
+                } else {
+                    for (String id : config.entityIds()) {
+                        lines.add("  ID: " + id);
+                    }
+                    for (String tag : config.entityTags()) {
+                        lines.add("  Tag: " + tag);
+                    }
+                }
+            }
+        }
+
+        return lines;
     }
 
     private static String formatBool(boolean value) {

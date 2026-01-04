@@ -2,6 +2,7 @@ package net.j40climb.florafauna.client.events;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.ClientUtils;
+import net.j40climb.florafauna.common.block.mobbarrier.menu.MobBarrierConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
@@ -76,6 +77,12 @@ public class KeyInputEvents {
             // Component-based check - works with any item that has MULTI_BLOCK_MINING
             if (itemStack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
                 ClientPacketDistributor.sendToServer(CycleMiningModePayload.INSTANCE);
+            }
+        }
+        while (ClientSetup.MOB_BARRIER_CONFIG_KEY.get().consumeClick()) {
+            // Check if player is holding a MobBarrier block item
+            if (itemStack.is(FloraFaunaRegistry.MOB_BARRIER.asItem())) {
+                mc.setScreen(new MobBarrierConfigScreen());
             }
         }
     }

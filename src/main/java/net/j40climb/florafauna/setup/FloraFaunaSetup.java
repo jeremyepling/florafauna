@@ -4,6 +4,7 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
+import net.j40climb.florafauna.common.block.mobbarrier.networking.UpdateMobBarrierConfigPayload;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
@@ -52,7 +53,7 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.TEAL_MOSS_BLOCK);
                         output.accept(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER);
                         output.accept(FloraFaunaRegistry.COCOON_CHAMBER);
-                        output.accept(FloraFaunaRegistry.COPPER_GOLEM_BARRIER);
+                        output.accept(FloraFaunaRegistry.MOB_BARRIER);
                         output.accept(FloraFaunaRegistry.HUSK);
 
                         // Item Input System blocks
@@ -89,6 +90,7 @@ public class FloraFaunaSetup {
         registrar.playToServer(CocoonActionPayload.TYPE, CocoonActionPayload.STREAM_CODEC, CocoonActionPayload::onServerReceived);
         registrar.playToServer(ThrowItemPayload.TYPE, ThrowItemPayload.STREAM_CODEC, ThrowItemPayload::onServerReceived);
         registrar.playToServer(CycleMiningModePayload.TYPE, CycleMiningModePayload.STREAM_CODEC, CycleMiningModePayload::onServerReceived);
+        registrar.playToServer(UpdateMobBarrierConfigPayload.TYPE, UpdateMobBarrierConfigPayload.STREAM_CODEC, UpdateMobBarrierConfigPayload::onServerReceived);
 
         // Server to client
         registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);

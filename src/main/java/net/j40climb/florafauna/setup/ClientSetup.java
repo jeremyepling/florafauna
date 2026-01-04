@@ -2,7 +2,6 @@ package net.j40climb.florafauna.setup;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.AbilityDebugOverlay;
 import net.j40climb.florafauna.client.DebugOverlay;
 import net.j40climb.florafauna.client.entity.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
@@ -82,6 +81,14 @@ public class ClientSetup {
             KEY_CATEGORY
     ));
 
+    public static final Lazy<KeyMapping> MOB_BARRIER_CONFIG_KEY = Lazy.of(() -> new KeyMapping(
+            "key.florafauna.mob_barrier_config",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_B,
+            KEY_CATEGORY
+    ));
+
     // ==================== GUI LAYERS ====================
 
     public static final Identifier SYMBIOTE_DEBUG_LAYER_ID = Identifier.fromNamespaceAndPath(
@@ -132,6 +139,7 @@ public class ClientSetup {
         event.register(HAMMER_CONFIG_KEY.get());
         event.register(THROW_ITEM_KEY.get());
         event.register(CYCLE_MINING_MODE_KEY.get());
+        event.register(MOB_BARRIER_CONFIG_KEY.get());
     }
 
     /**
@@ -139,6 +147,5 @@ public class ClientSetup {
      */
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(SYMBIOTE_DEBUG_LAYER_ID, (GuiLayer) new DebugOverlay());
-        AbilityDebugOverlay.registerGuiLayers(event);
     }
 }

@@ -13,10 +13,12 @@ import net.minecraft.resources.Identifier;
  * <p>
  * Subclasses can customize the content area at the top of the GUI (above the inventory).
  */
-public abstract class BaseInventoryScreen extends Screen {
+public abstract class BaseScreen extends Screen {
     // Default GUI texture with empty top area
     protected static final Identifier DEFAULT_GUI_TEXTURE =
             Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/base_gui.png");
+
+
 
     // Standard Minecraft GUI dimensions
     protected static final int IMAGE_WIDTH = 176;
@@ -43,7 +45,7 @@ public abstract class BaseInventoryScreen extends Screen {
      *
      * @param title the screen title
      */
-    protected BaseInventoryScreen(Component title) {
+    protected BaseScreen(Component title) {
         this(title, DEFAULT_GUI_TEXTURE);
     }
 
@@ -53,7 +55,7 @@ public abstract class BaseInventoryScreen extends Screen {
      * @param title the screen title
      * @param guiTexture the texture to use (should be 176x166 with standard slot layout)
      */
-    protected BaseInventoryScreen(Component title, Identifier guiTexture) {
+    protected BaseScreen(Component title, Identifier guiTexture) {
         super(title);
         this.guiTexture = guiTexture;
     }
@@ -90,10 +92,7 @@ public abstract class BaseInventoryScreen extends Screen {
         // 1. Render background and widgets
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        // 2. Draw title centered at top of GUI
-        guiGraphics.drawCenteredString(this.font, this.title, leftPos + IMAGE_WIDTH / 2, topPos + TITLE_Y, 0x404040);
-
-        // 3. Let subclass render custom content
+        // 2. Let subclass render custom content (including title)
         renderContent(guiGraphics, mouseX, mouseY, partialTick);
     }
 

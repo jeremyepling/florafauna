@@ -3,17 +3,16 @@ package net.j40climb.florafauna.client.events;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.block.CopperGolemBarrierBlock;
+import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlock;
 import net.j40climb.florafauna.common.entity.frontpack.FrontpackLayer;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -36,9 +35,9 @@ public class RenderEvents {
             return;
         }
 
-        // Check if holding a copper block
+        // Check if holding a mob barrier block item
         ItemStack heldItem = player.getMainHandItem();
-        if (!isCopperBlock(heldItem)) {
+        if (!heldItem.is(FloraFaunaRegistry.MOB_BARRIER.asItem())) {
             return;
         }
 
@@ -58,7 +57,7 @@ public class RenderEvents {
             // Check distance (20 blocks = 400 distance squared)
             if (playerPos.distSqr(pos) <= 400) {
                 BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof CopperGolemBarrierBlock) {
+                if (state.getBlock() instanceof MobBarrierBlock) {
                     // Render orange outline for this barrier block
                     poseStack.pushPose();
                     renderShape(
@@ -79,67 +78,37 @@ public class RenderEvents {
         }
     }
 
-    /**
-     * Checks if the given ItemStack is any copper block (waxed or unwaxed)
-     */
-    private static boolean isCopperBlock(ItemStack stack) {
-        Item item = stack.getItem();
-        return item == Items.COPPER_BLOCK
-                || item == Items.EXPOSED_COPPER
-                || item == Items.WEATHERED_COPPER
-                || item == Items.OXIDIZED_COPPER
-                || item == Items.WAXED_COPPER_BLOCK
-                || item == Items.WAXED_EXPOSED_COPPER
-                || item == Items.WAXED_WEATHERED_COPPER
-                || item == Items.WAXED_OXIDIZED_COPPER
-                || item == Items.CUT_COPPER
-                || item == Items.EXPOSED_CUT_COPPER
-                || item == Items.WEATHERED_CUT_COPPER
-                || item == Items.OXIDIZED_CUT_COPPER
-                || item == Items.WAXED_CUT_COPPER
-                || item == Items.WAXED_EXPOSED_CUT_COPPER
-                || item == Items.WAXED_WEATHERED_CUT_COPPER
-                || item == Items.WAXED_OXIDIZED_CUT_COPPER
-                || item == Items.CHISELED_COPPER
-                || item == Items.EXPOSED_CHISELED_COPPER
-                || item == Items.WEATHERED_CHISELED_COPPER
-                || item == Items.OXIDIZED_CHISELED_COPPER
-                || item == Items.WAXED_CHISELED_COPPER
-                || item == Items.WAXED_EXPOSED_CHISELED_COPPER
-                || item == Items.WAXED_WEATHERED_CHISELED_COPPER
-                || item == Items.WAXED_OXIDIZED_CHISELED_COPPER;
-    }
-
     private static void renderShape(
-            PoseStack pPoseStack,
-            VertexConsumer pConsumer,
-            VoxelShape pShape,
-            double pX,
-            double pY,
-            double pZ,
-            float pRed,
-            float pGreen,
-            float pBlue,
-            float pAlpha
+            PoseStack poseStack,
+            VertexConsumer consumer,
+            VoxelShape shape,
+            double x,
+            double y,
+            double z,
+            float red,
+            float green,
+            float blue,
+            float alpha
     ) {
-        PoseStack.Pose pose = pPoseStack.last();
-        pShape.forAllEdges(
-                (p_234280_, p_234281_, p_234282_, p_234283_, p_234284_, p_234285_) -> {
-                    float f = (float) (p_234283_ - p_234280_);
-                    float f1 = (float) (p_234284_ - p_234281_);
-                    float f2 = (float) (p_234285_ - p_234282_);
-                    float f3 = Mth.sqrt(f * f + f1 * f1 + f2 * f2);
-                    f /= f3;
-                    f1 /= f3;
-                    f2 /= f3;
-                    pConsumer.addVertex(pose.pose(), (float) (p_234280_ + pX), (float) (p_234281_ + pY), (float) (p_234282_ + pZ))
-                            .setColor(pRed, pGreen, pBlue, pAlpha)
-                            .setNormal(pose, f, f1, f2);
-                    pConsumer.addVertex(pose.pose(), (float) (p_234283_ + pX), (float) (p_234284_ + pY), (float) (p_234285_ + pZ))
-                            .setColor(pRed, pGreen, pBlue, pAlpha)
-                            .setNormal(pose, f, f1, f2);
-                }
-        );
+        PoseStack.Pose pose = poseStack.last();
+        shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
+            float dx = (float) (x2 - x1);
+            float dy = (float) (y2 - y1);
+            float dz = (float) (z2 - z1);
+            float length = Mth.sqrt(dx * dx + dy * dy + dz * dz);
+            dx /= length;
+            dy /= length;
+            dz /= length;
+
+            consumer.addVertex(pose.pose(), (float) (x1 + x), (float) (y1 + y), (float) (z1 + z))
+                    .setColor(red, green, blue, alpha)
+                    .setNormal(pose, dx, dy, dz)
+                    .setLineWidth(4.0f);
+            consumer.addVertex(pose.pose(), (float) (x2 + x), (float) (y2 + y), (float) (z2 + z))
+                    .setColor(red, green, blue, alpha)
+                    .setNormal(pose, dx, dy, dz)
+                    .setLineWidth(4.0f);
+        });
     }
 
     /**

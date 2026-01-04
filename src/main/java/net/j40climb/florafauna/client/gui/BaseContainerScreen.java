@@ -14,7 +14,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
  * Uses the standard 176x166 Minecraft GUI texture format with inventory at the bottom.
  * <p>
  * This is for screens backed by a menu (AbstractContainerMenu) that handle item slots.
- * For non-menu screens, use {@link BaseInventoryScreen} instead.
+ * For non-menu screens, use {@link BaseScreen} instead.
  */
 public abstract class BaseContainerScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
     // Default GUI texture with empty top area and standard inventory/hotbar slots

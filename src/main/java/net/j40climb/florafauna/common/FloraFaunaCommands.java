@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.AbilityDebugOverlay;
 import net.j40climb.florafauna.client.DebugOverlay;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.binding.SymbioteBindingHelper;
@@ -629,12 +628,6 @@ public class FloraFaunaCommands {
                                             .executes(context -> setDebug(context.getSource(), true)))
                                     .then(Commands.literal("off")
                                             .executes(context -> setDebug(context.getSource(), false))))
-                            .then(Commands.literal("ability_debug")
-                                    .executes(context -> toggleAbilityDebug(context.getSource()))
-                                    .then(Commands.literal("on")
-                                            .executes(context -> setAbilityDebug(context.getSource(), true)))
-                                    .then(Commands.literal("off")
-                                            .executes(context -> setAbilityDebug(context.getSource(), false))))
             );
         }
 
@@ -654,27 +647,6 @@ public class FloraFaunaCommands {
 
             source.sendSuccess(() -> Component.translatable(
                     enabled ? "command.florafauna.symbiote.debug_enabled" : "command.florafauna.symbiote.debug_disabled"
-            ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
-
-            return 1;
-        }
-
-        private static int toggleAbilityDebug(CommandSourceStack source) {
-            AbilityDebugOverlay.toggle();
-            boolean newState = AbilityDebugOverlay.isEnabled();
-
-            source.sendSuccess(() -> Component.translatable(
-                    newState ? "command.florafauna.ability_debug.enabled" : "command.florafauna.ability_debug.disabled"
-            ).withStyle(style -> style.withColor(newState ? 0x2ECC71 : 0xE74C3C)), false);
-
-            return 1;
-        }
-
-        private static int setAbilityDebug(CommandSourceStack source, boolean enabled) {
-            AbilityDebugOverlay.setEnabled(enabled);
-
-            source.sendSuccess(() -> Component.translatable(
-                    enabled ? "command.florafauna.ability_debug.enabled" : "command.florafauna.ability_debug.disabled"
             ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
 
             return 1;
