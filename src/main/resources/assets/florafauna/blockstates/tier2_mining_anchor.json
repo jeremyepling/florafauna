@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "state=normal": {
+      "model": "florafauna:block/tier2_mining_anchor"
+    },
+    "state=working": {
+      "model": "florafauna:block/tier2_mining_anchor"
+    },
+    "state=blocked": {
+      "model": "florafauna:block/tier2_mining_anchor"
+    }
+  }
+}

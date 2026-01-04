@@ -5,6 +5,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
 import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
@@ -166,6 +167,15 @@ public class DebugOverlay implements GuiLayer {
         lines.add(new DebugLine("Active: " + formatBool(data.restorationHuskActive()), data.restorationHuskActive() ? enabledColor : color));
         lines.add(new DebugLine("Pos: " + formatPosAndDim(data.restorationHuskPos(), data.restorationHuskDim()), color));
 
+        // Mining Anchor section
+        lines.add(new DebugLine("--- Mining Anchor ---", headerColor));
+        boolean hasBound = data.hasAnchorBound();
+        lines.add(new DebugLine("Bound: " + formatBool(hasBound), hasBound ? enabledColor : color));
+        lines.add(new DebugLine("Anchor: " + formatPosAndDim(data.boundAnchorPos(), data.boundAnchorDim()), color));
+        lines.add(new DebugLine("Waypoint: " + formatPosAndDim(data.activeWaypointAnchorPos(), data.activeWaypointAnchorDim()), color));
+        lines.add(new DebugLine("Fill State: " + formatFillState(data.lastAnnouncedFillState()),
+                getFillStateColor(data.lastAnnouncedFillState())));
+
         // Held Item section
         ItemStack heldItem = player.getMainHandItem();
         if (!heldItem.isEmpty()) {
@@ -323,5 +333,21 @@ public class DebugOverlay implements GuiLayer {
         }
         String dimName = dim.identifier().getPath();
         return String.format("%d,%d,%d (%s)", pos.getX(), pos.getY(), pos.getZ(), dimName);
+    }
+
+    private static String formatFillState(AnchorFillState state) {
+        return switch (state) {
+            case NORMAL -> "Normal (<75%)";
+            case WARNING -> "Warning (>=75%)";
+            case FULL -> "Full (100%)";
+        };
+    }
+
+    private static int getFillStateColor(AnchorFillState state) {
+        return switch (state) {
+            case NORMAL -> 0xFF55FF77;   // Green
+            case WARNING -> 0xFFFFAA00;  // Orange
+            case FULL -> 0xFFFF5555;     // Red
+        };
     }
 }

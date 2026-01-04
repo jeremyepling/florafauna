@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common;
+package net.j40climb.florafauna.dev;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.server.MinecraftServer;

@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.block.iteminput;
+package net.j40climb.florafauna.common.block.vacuum;
 
 import net.j40climb.florafauna.Config;
 import net.minecraft.core.NonNullList;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A buffer for temporarily storing items before transfer to storage.
+ * A buffer for temporarily storing items in vacuum-type blocks.
  * Acts like a chest inventory with automatic stack merging.
  *
  * Key behaviors:
@@ -18,7 +18,7 @@ import java.util.List;
  * - Never voids items (canAccept checks first)
  * - Provides FIFO-style poll for transfer
  */
-public class ItemInputBuffer {
+public class VacuumBuffer {
     private final NonNullList<ItemStack> stacks;
     private final int maxStacks;
 
@@ -27,7 +27,7 @@ public class ItemInputBuffer {
      *
      * @param maxStacks Maximum number of unique stacks to hold
      */
-    public ItemInputBuffer(int maxStacks) {
+    public VacuumBuffer(int maxStacks) {
         this.maxStacks = maxStacks;
         this.stacks = NonNullList.withSize(maxStacks, ItemStack.EMPTY);
     }
@@ -35,8 +35,8 @@ public class ItemInputBuffer {
     /**
      * Creates a buffer with default capacity from config.
      */
-    public static ItemInputBuffer create() {
-        return new ItemInputBuffer(Config.maxBufferedStacks);
+    public static VacuumBuffer create() {
+        return new VacuumBuffer(Config.maxBufferedStacks);
     }
 
     /**
@@ -217,10 +217,24 @@ public class ItemInputBuffer {
     }
 
     /**
+     * Alias for getTotalItemCount() for conciseness.
+     */
+    public int getItemCount() {
+        return getTotalItemCount();
+    }
+
+    /**
      * Gets the maximum number of stacks this buffer can hold.
      */
     public int getMaxStacks() {
         return maxStacks;
+    }
+
+    /**
+     * Gets the maximum capacity in items (assuming max stack size of 64).
+     */
+    public int getMaxCapacity() {
+        return maxStacks * 64;
     }
 
     /**

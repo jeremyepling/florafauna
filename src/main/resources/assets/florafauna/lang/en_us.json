@@ -81,6 +81,26 @@
   "message.florafauna.field_relay.unpaired": "Unpaired from Storage Anchor",
   "message.florafauna.field_relay.no_anchor": "No Storage Anchor found within range",
 
+  "message.florafauna.mining_anchor.status": "Storage: %s/%s items | Pods: %s | State: %s",
+  "message.florafauna.mining_anchor.requires_symbiote": "You need a bonded symbiote to use this",
+  "message.florafauna.mining_anchor.waypoint_set": "Waypoint set - follow the locator bar",
+  "message.florafauna.mining_anchor.waypoint_cleared": "Waypoint cleared",
+  "message.florafauna.mining_anchor.bound": "Anchor bound to symbiote",
+  "message.florafauna.mining_anchor.unbound": "Anchor unbound from symbiote",
+
+  "block.florafauna.tier1_mining_anchor": "Feral Mining Anchor",
+  "block.florafauna.tier2_mining_anchor": "Hardened Mining Anchor",
+  "block.florafauna.tier1_pod": "Feral Pod",
+  "block.florafauna.tier2_pod": "Hardened Pod",
+
+  "command.florafauna.mininganchor.player_only": "This command can only be run by a player!",
+  "command.florafauna.mininganchor.no_anchor": "No mining anchor bound. Shift-right-click an anchor to bind it.",
+  "command.florafauna.mininganchor.filled": "Filled anchor with %s cobblestone",
+  "command.florafauna.mininganchor.cleared": "Anchor buffer cleared",
+  "command.florafauna.mininganchor.pod_grown": "Pod spawned (total: %s)",
+  "command.florafauna.mininganchor.pod_failed": "Could not spawn pod (max reached or no space)",
+  "command.florafauna.mininganchor.status": "Storage: %s/%s items | Pods: %s | State: %s",
+
   "block.florafauna.driftwood_log": "Driftwood Log",
   "block.florafauna.stripped_driftwood_log": "Stripped Driftwood Log",
   "block.florafauna.driftwood_wood": "Driftwood Wood",
@@ -145,6 +165,8 @@
   "symbiote.dialogue.drowning": "You require oxygen. An old favorite.",
   "symbiote.dialogue.mob_attack": "You've attracted attention. Unhelpful attention.",
   "symbiote.dialogue.sleeping": "Rest. I'll remain here, doing nothing visibly productive.",
+  "symbiote.dialogue.anchor_warn_75": "Storage is filling up. We may want to address that.",
+  "symbiote.dialogue.anchor_full_100": "No more room. We need to empty this.",
 
   "symbiote.voice.environmental.cold_1": "Your warmth is making a quiet exit.",
   "symbiote.voice.environmental.cold_2": "This temperature disagrees with us.",

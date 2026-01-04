@@ -1,8 +1,8 @@
 package net.j40climb.florafauna.common.block.iteminput.rootiteminput;
 
 import com.mojang.serialization.MapCodec;
-import net.j40climb.florafauna.common.block.iteminput.ItemInputState;
-import net.j40climb.florafauna.common.block.iteminput.shared.AbstractItemInputBlockEntity;
+import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
+import net.j40climb.florafauna.common.block.vacuum.VacuumState;
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlock;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -43,7 +43,7 @@ public class ItemInputBlock extends BaseEntityBlock {
 
     public ItemInputBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(AbstractItemInputBlockEntity.STATE, ItemInputState.NORMAL));
+        registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
     }
 
     @Override
@@ -53,7 +53,7 @@ public class ItemInputBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(AbstractItemInputBlockEntity.STATE);
+        builder.add(AbstractVacuumBlockEntity.STATE);
     }
 
     @Nullable

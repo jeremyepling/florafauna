@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.DebugOverlay;
+import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.binding.SymbioteBindingHelper;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
@@ -24,6 +25,8 @@ import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -122,6 +125,16 @@ public class FloraFaunaCommands {
                                         .executes(FloraFaunaCommands::addAllAbilities))
                                 .then(Commands.literal("clear")
                                         .executes(FloraFaunaCommands::clearAllAbilities)))
+                        .then(Commands.literal("mininganchor")
+                                .then(Commands.literal("fill")
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(0, 512))
+                                                .executes(FloraFaunaCommands::fillMiningAnchor)))
+                                .then(Commands.literal("clear")
+                                        .executes(FloraFaunaCommands::clearMiningAnchor))
+                                .then(Commands.literal("growpod")
+                                        .executes(FloraFaunaCommands::growMiningAnchorPod))
+                                .then(Commands.literal("status")
+                                        .executes(FloraFaunaCommands::miningAnchorStatus)))
         );
     }
 
@@ -599,6 +612,143 @@ public class FloraFaunaCommands {
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.ability.all_cleared")
                 .withStyle(style -> style.withColor(0xF39C12)), false);
+        return 1;
+    }
+
+    // ==================== Mining Anchor Commands ====================
+
+    /**
+     * Gets the player's bound mining anchor, or null if none is bound.
+     */
+    private static AbstractMiningAnchorBlockEntity getBoundAnchor(ServerPlayer player) {
+        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+
+        if (!data.hasAnchorBound()) {
+            return null;
+        }
+
+        BlockPos anchorPos = data.boundAnchorPos();
+        if (anchorPos == null) {
+            return null;
+        }
+
+        // Check dimension matches
+        if (!player.level().dimension().equals(data.boundAnchorDim())) {
+            return null;
+        }
+
+        BlockEntity be = player.level().getBlockEntity(anchorPos);
+        if (be instanceof AbstractMiningAnchorBlockEntity anchor) {
+            return anchor;
+        }
+        return null;
+    }
+
+    private static int fillMiningAnchor(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.player_only"));
+            return 0;
+        }
+
+        AbstractMiningAnchorBlockEntity anchor = getBoundAnchor(player);
+        if (anchor == null) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.no_anchor"));
+            return 0;
+        }
+
+        int amount = IntegerArgumentType.getInteger(context, "amount");
+
+        // Clear existing items first
+        anchor.getBuffer().clear();
+
+        // Add cobblestone to simulate collected block drops
+        int remaining = amount;
+        while (remaining > 0) {
+            int stackSize = Math.min(64, remaining);
+            ItemStack cobble = new ItemStack(Items.COBBLESTONE, stackSize);
+            anchor.getBuffer().add(cobble);
+            remaining -= stackSize;
+        }
+
+        anchor.setChanged();
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.mininganchor.filled", amount)
+                .withStyle(style -> style.withColor(0x2ECC71)), false);
+        return 1;
+    }
+
+    private static int clearMiningAnchor(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.player_only"));
+            return 0;
+        }
+
+        AbstractMiningAnchorBlockEntity anchor = getBoundAnchor(player);
+        if (anchor == null) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.no_anchor"));
+            return 0;
+        }
+
+        anchor.getBuffer().clear();
+        anchor.setChanged();
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.mininganchor.cleared")
+                .withStyle(style -> style.withColor(0xF39C12)), false);
+        return 1;
+    }
+
+    private static int growMiningAnchorPod(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.player_only"));
+            return 0;
+        }
+
+        AbstractMiningAnchorBlockEntity anchor = getBoundAnchor(player);
+        if (anchor == null) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.no_anchor"));
+            return 0;
+        }
+
+        // Try to force spawn a pod
+        boolean spawned = anchor.forceSpawnPod();
+
+        if (spawned) {
+            source.sendSuccess(() -> Component.translatable("command.florafauna.mininganchor.pod_grown", anchor.getPodCount())
+                    .withStyle(style -> style.withColor(0x2ECC71)), false);
+            return 1;
+        } else {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.pod_failed"));
+            return 0;
+        }
+    }
+
+    private static int miningAnchorStatus(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.player_only"));
+            return 0;
+        }
+
+        AbstractMiningAnchorBlockEntity anchor = getBoundAnchor(player);
+        if (anchor == null) {
+            source.sendFailure(Component.translatable("command.florafauna.mininganchor.no_anchor"));
+            return 0;
+        }
+
+        int stored = anchor.getStoredCount();
+        int max = anchor.getMaxCapacity();
+        int pods = anchor.getPodCount();
+        String fillState = anchor.getFillState().getSerializedName();
+
+        source.sendSuccess(() -> Component.translatable("command.florafauna.mininganchor.status",
+                stored, max, pods, fillState).withStyle(style -> style.withColor(0x9B59B6)), false);
         return 1;
     }
 

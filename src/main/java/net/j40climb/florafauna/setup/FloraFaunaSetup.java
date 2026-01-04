@@ -5,6 +5,7 @@ import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
+import net.j40climb.florafauna.common.block.mininganchor.networking.AnchorFillStatePayload;
 import net.j40climb.florafauna.common.block.mobbarrier.networking.UpdateMobBarrierConfigPayload;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.block.wood.WoodType;
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 
 /**
  * Handles common mod setup: networking, creative tabs, event registration.
+ * Defines HOW things connect. Runs after content exists.
  */
 public class FloraFaunaSetup {
 
@@ -62,6 +64,11 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.ITEM_INPUT);
                         output.accept(FloraFaunaRegistry.FIELD_RELAY);
 
+                        // Mining Anchor System blocks
+                        output.accept(FloraFaunaRegistry.TIER1_MINING_ANCHOR);
+                        output.accept(FloraFaunaRegistry.TIER2_MINING_ANCHOR);
+                        output.accept(FloraFaunaRegistry.TIER2_POD);
+
                         // Wood blocks - iterates through all wood types
                         for (WoodType woodType : WoodType.values()) {
                             WoodBlockSet wood = woodType.getBlockSet();
@@ -96,6 +103,7 @@ public class FloraFaunaSetup {
         // Server to client
         registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);
         registrar.playToClient(OpenCocoonScreenPayload.TYPE, OpenCocoonScreenPayload.STREAM_CODEC, OpenCocoonScreenPayload::onClientReceived);
+        registrar.playToClient(AnchorFillStatePayload.TYPE, AnchorFillStatePayload.STREAM_CODEC, AnchorFillStatePayload::handleClient);
     }
 
     // ==================== COMMANDS ====================

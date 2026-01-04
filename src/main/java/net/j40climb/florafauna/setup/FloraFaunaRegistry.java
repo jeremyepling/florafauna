@@ -13,7 +13,17 @@ import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChambe
 import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
-import net.j40climb.florafauna.common.block.iteminput.ClaimedItemData;
+import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlock;
+import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.Tier2MiningAnchorBlock;
+import net.j40climb.florafauna.common.block.mininganchor.Tier2MiningAnchorBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlock;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlock;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
+import net.j40climb.florafauna.common.block.vacuum.BlockDropData;
+import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlock;
 import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlockEntity;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlock;
@@ -75,6 +85,7 @@ import static net.j40climb.florafauna.common.item.hammer.HammerItem.HAMMER_MATER
 /**
  * Central registration class for all mod content.
  * All DeferredRegisters are consolidated here for easy overview.
+ * Defines WHAT exists. No behavior, just registration.
  */
 public class FloraFaunaRegistry {
 
@@ -154,6 +165,41 @@ public class FloraFaunaRegistry {
                     .strength(2f, 4f)
                     .requiresCorrectToolForDrops()
                     .sound(SoundType.COPPER)
+                    .noOcclusion()
+            ));
+
+    // Mining Anchor System blocks
+    public static final DeferredBlock<Tier1MiningAnchorBlock> TIER1_MINING_ANCHOR = registerBlock("tier1_mining_anchor",
+            props -> new Tier1MiningAnchorBlock(props
+                    .strength(3f, 6f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.SCULK)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<Tier2MiningAnchorBlock> TIER2_MINING_ANCHOR = registerBlock("tier2_mining_anchor",
+            props -> new Tier2MiningAnchorBlock(props
+                    .strength(5f, 10f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.NETHERITE_BLOCK)
+                    .noOcclusion()
+            ));
+
+    // Storage Pod blocks (for Mining Anchor system)
+    // Feral Pod: spawned by anchor, no item (spills contents when broken)
+    public static final DeferredBlock<Tier1PodBlock> TIER1_POD = registerBlockNoItem("tier1_pod",
+            props -> new Tier1PodBlock(props
+                    .strength(2f, 4f)
+                    .sound(SoundType.SCULK)
+                    .noOcclusion()
+            ));
+
+    // Hardened Pod: player-placeable, has item (keeps contents like shulker box)
+    public static final DeferredBlock<Tier2PodBlock> TIER2_POD = registerBlock("tier2_pod",
+            props -> new Tier2PodBlock(props
+                    .strength(3f, 6f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.NETHERITE_BLOCK)
                     .noOcclusion()
             ));
 
@@ -248,6 +294,24 @@ public class FloraFaunaRegistry {
             "field_relay",
             () -> new BlockEntityType<>(FieldRelayBlockEntity::new, false, FIELD_RELAY.get()));
 
+    // Mining Anchor System block entities
+    public static final Supplier<BlockEntityType<Tier1MiningAnchorBlockEntity>> TIER1_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
+            "tier1_mining_anchor",
+            () -> new BlockEntityType<>(Tier1MiningAnchorBlockEntity::new, false, TIER1_MINING_ANCHOR.get()));
+
+    public static final Supplier<BlockEntityType<Tier2MiningAnchorBlockEntity>> TIER2_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
+            "tier2_mining_anchor",
+            () -> new BlockEntityType<>(Tier2MiningAnchorBlockEntity::new, false, TIER2_MINING_ANCHOR.get()));
+
+    // Storage Pod block entities
+    public static final Supplier<BlockEntityType<Tier1PodBlockEntity>> TIER1_POD_BE = BLOCK_ENTITIES.register(
+            "tier1_pod",
+            () -> new BlockEntityType<>(Tier1PodBlockEntity::new, false, TIER1_POD.get()));
+
+    public static final Supplier<BlockEntityType<Tier2PodBlockEntity>> TIER2_POD_BE = BLOCK_ENTITIES.register(
+            "tier2_pod",
+            () -> new BlockEntityType<>(Tier2PodBlockEntity::new, false, TIER2_POD.get()));
+
     // ==================== MENUS ====================
 
     public static final DeferredHolder<MenuType<?>, MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER_MENU =
@@ -298,6 +362,11 @@ public class FloraFaunaRegistry {
             DATA_COMPONENTS.registerComponentType("mob_barrier_config",
                     builder -> builder.persistent(MobBarrierConfig.CODEC).networkSynchronized(MobBarrierConfig.STREAM_CODEC));
 
+    // Pod contents data component (for Hardened Pods that keep items when broken)
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<PodContents>> POD_CONTENTS =
+            DATA_COMPONENTS.registerComponentType("pod_contents",
+                    builder -> builder.persistent(PodContents.CODEC).networkSynchronized(PodContents.STREAM_CODEC));
+
     // ==================== ATTACHMENT TYPES ====================
 
     public static final Supplier<AttachmentType<PlayerSymbioteData>> PLAYER_SYMBIOTE_DATA =
@@ -331,12 +400,20 @@ public class FloraFaunaRegistry {
                             .copyOnDeath()
                             .build());
 
-    // Item Input System entity attachment (for ItemEntity)
+    // Vacuum System entity attachments (for ItemEntity)
     public static final Supplier<AttachmentType<ClaimedItemData>> CLAIMED_ITEM_DATA =
             ATTACHMENT_TYPES.register("claimed_item_data", () ->
                     AttachmentType.builder(() -> ClaimedItemData.DEFAULT)
                             .serialize(ClaimedItemData.CODEC.fieldOf("claimed_item_data"))
                             .sync(ClaimedItemData.STREAM_CODEC)
+                            .build());
+
+    // Block drop tracking (marks items that came from block breaking)
+    public static final Supplier<AttachmentType<BlockDropData>> BLOCK_DROP_DATA =
+            ATTACHMENT_TYPES.register("block_drop_data", () ->
+                    AttachmentType.builder(() -> BlockDropData.DEFAULT)
+                            .serialize(BlockDropData.CODEC.fieldOf("block_drop_data"))
+                            .sync(BlockDropData.STREAM_CODEC)
                             .build());
 
     // ==================== HELPER METHODS ====================
@@ -348,6 +425,14 @@ public class FloraFaunaRegistry {
         DeferredBlock<T> blockToRegister = BLOCKS.registerBlock(name, function);
         ITEMS.registerItem(name, (properties) -> new BlockItem(blockToRegister.get(), properties.useBlockDescriptionPrefix()));
         return blockToRegister;
+    }
+
+    /**
+     * Registers a block without creating a BlockItem.
+     * Used for blocks that are spawned programmatically (e.g., feral pods).
+     */
+    public static <T extends Block> DeferredBlock<T> registerBlockNoItem(String name, Function<BlockBehaviour.Properties, T> function) {
+        return BLOCKS.registerBlock(name, function);
     }
 
     /**

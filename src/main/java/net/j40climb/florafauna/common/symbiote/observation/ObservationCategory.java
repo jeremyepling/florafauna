@@ -35,7 +35,12 @@ public enum ObservationCategory {
      * Bonding milestones: initial bond, tier up, etc.
      * These are typically Tier 2 events.
      */
-    BONDING_MILESTONE("bonding");
+    BONDING_MILESTONE("bonding"),
+
+    /**
+     * Mining anchor events: fill warnings, capacity full
+     */
+    MINING_ANCHOR("anchor");
 
     private final String key;
 
