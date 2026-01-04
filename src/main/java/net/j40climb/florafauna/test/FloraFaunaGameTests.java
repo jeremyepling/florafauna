@@ -2,6 +2,7 @@ package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
+import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
@@ -28,6 +29,7 @@ import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.IEventBus;
@@ -81,6 +83,9 @@ public class FloraFaunaGameTests {
 
         // Register containment chamber tests
         registerContainmentChamberTests(event, defaultEnv);
+
+        // Register mob barrier tests
+        registerMobBarrierTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -738,6 +743,160 @@ public class FloraFaunaGameTests {
         }
         if (!be.handler.isValid(1, symbioteResource)) {
             throw helper.assertionException("Slot 1 should accept symbiote too");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Mob Barrier Tests ====================
+
+    private static void registerMobBarrierTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "mob_barrier_config_default_empty", FloraFaunaGameTests::testMobBarrierConfigDefaultEmpty);
+        registerTest(event, env, "mob_barrier_config_add_remove_entity_id", FloraFaunaGameTests::testMobBarrierConfigAddRemoveEntityId);
+        registerTest(event, env, "mob_barrier_config_add_remove_tag", FloraFaunaGameTests::testMobBarrierConfigAddRemoveTag);
+        registerTest(event, env, "mob_barrier_config_validation", FloraFaunaGameTests::testMobBarrierConfigValidation);
+        registerTest(event, env, "mob_barrier_blocks_configured_entity", FloraFaunaGameTests::testMobBarrierBlocksConfiguredEntity);
+        registerTest(event, env, "mob_barrier_allows_unconfigured_entity", FloraFaunaGameTests::testMobBarrierAllowsUnconfiguredEntity);
+    }
+
+    private static void testMobBarrierConfigDefaultEmpty(GameTestHelper helper) {
+        MobBarrierConfig config = MobBarrierConfig.DEFAULT;
+
+        if (!config.isEmpty()) {
+            throw helper.assertionException("Default config should be empty");
+        }
+        if (config.totalEntries() != 0) {
+            throw helper.assertionException("Default config should have 0 entries, got: " + config.totalEntries());
+        }
+        if (!config.entityIds().isEmpty()) {
+            throw helper.assertionException("Default config should have no entity IDs");
+        }
+        if (!config.entityTags().isEmpty()) {
+            throw helper.assertionException("Default config should have no entity tags");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobBarrierConfigAddRemoveEntityId(GameTestHelper helper) {
+        MobBarrierConfig config = MobBarrierConfig.DEFAULT;
+
+        // Add an entity ID
+        config = config.withAddedEntityId("minecraft:zombie");
+        if (!config.entityIds().contains("minecraft:zombie")) {
+            throw helper.assertionException("Config should contain zombie after adding");
+        }
+        if (config.totalEntries() != 1) {
+            throw helper.assertionException("Config should have 1 entry after adding zombie");
+        }
+
+        // Add another
+        config = config.withAddedEntityId("minecraft:skeleton");
+        if (config.totalEntries() != 2) {
+            throw helper.assertionException("Config should have 2 entries");
+        }
+
+        // Adding duplicate should not increase count
+        config = config.withAddedEntityId("minecraft:zombie");
+        if (config.totalEntries() != 2) {
+            throw helper.assertionException("Adding duplicate should not increase count");
+        }
+
+        // Remove entity ID
+        config = config.withRemovedEntityId("minecraft:zombie");
+        if (config.entityIds().contains("minecraft:zombie")) {
+            throw helper.assertionException("Config should not contain zombie after removal");
+        }
+        if (config.totalEntries() != 1) {
+            throw helper.assertionException("Config should have 1 entry after removal");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobBarrierConfigAddRemoveTag(GameTestHelper helper) {
+        MobBarrierConfig config = MobBarrierConfig.DEFAULT;
+
+        // Add a tag (with #)
+        config = config.withAddedEntityTag("#minecraft:undead");
+        if (!config.entityTags().contains("#minecraft:undead")) {
+            throw helper.assertionException("Config should contain #minecraft:undead tag");
+        }
+
+        // Add tag without # (should normalize)
+        config = config.withAddedEntityTag("minecraft:raiders");
+        if (!config.entityTags().contains("#minecraft:raiders")) {
+            throw helper.assertionException("Config should normalize tag to include #");
+        }
+
+        if (config.totalEntries() != 2) {
+            throw helper.assertionException("Config should have 2 tag entries");
+        }
+
+        // Remove tag
+        config = config.withRemovedEntityTag("#minecraft:undead");
+        if (config.entityTags().contains("#minecraft:undead")) {
+            throw helper.assertionException("Config should not contain undead tag after removal");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobBarrierConfigValidation(GameTestHelper helper) {
+        // Valid entity ID
+        if (!MobBarrierConfig.isValidEntityId("minecraft:zombie")) {
+            throw helper.assertionException("minecraft:zombie should be valid entity ID");
+        }
+
+        // Invalid entity ID
+        if (MobBarrierConfig.isValidEntityId("minecraft:not_a_real_entity")) {
+            throw helper.assertionException("minecraft:not_a_real_entity should be invalid");
+        }
+
+        // Valid tag format
+        if (!MobBarrierConfig.isValidTagFormat("#minecraft:undead")) {
+            throw helper.assertionException("#minecraft:undead should be valid tag format");
+        }
+        if (!MobBarrierConfig.isValidTagFormat("minecraft:undead")) {
+            throw helper.assertionException("minecraft:undead (without #) should be valid tag format");
+        }
+
+        // Invalid tag format
+        if (MobBarrierConfig.isValidTagFormat("not valid")) {
+            throw helper.assertionException("'not valid' should be invalid tag format");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobBarrierBlocksConfiguredEntity(GameTestHelper helper) {
+        // Create config that blocks zombies
+        MobBarrierConfig config = MobBarrierConfig.DEFAULT.withAddedEntityId("minecraft:zombie");
+
+        // Spawn a zombie to test against
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+
+        if (!config.shouldBlockEntity(zombie)) {
+            throw helper.assertionException("Config with zombie ID should block zombie entity");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobBarrierAllowsUnconfiguredEntity(GameTestHelper helper) {
+        // Create config that only blocks zombies
+        MobBarrierConfig config = MobBarrierConfig.DEFAULT.withAddedEntityId("minecraft:zombie");
+
+        // Spawn a cow (not configured)
+        var cow = helper.spawn(EntityType.COW, new BlockPos(1, 1, 1));
+
+        if (config.shouldBlockEntity(cow)) {
+            throw helper.assertionException("Config with only zombie should NOT block cow");
+        }
+
+        // Null entity should not be blocked
+        if (config.shouldBlockEntity(null)) {
+            throw helper.assertionException("Null entity should not be blocked");
         }
 
         helper.succeed();
