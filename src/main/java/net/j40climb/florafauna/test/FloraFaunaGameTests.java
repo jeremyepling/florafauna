@@ -2,6 +2,7 @@ package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
@@ -86,6 +87,9 @@ public class FloraFaunaGameTests {
 
         // Register mob barrier tests
         registerMobBarrierTests(event, defaultEnv);
+
+        // Register mining anchor tests
+        registerMiningAnchorTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -897,6 +901,97 @@ public class FloraFaunaGameTests {
         // Null entity should not be blocked
         if (config.shouldBlockEntity(null)) {
             throw helper.assertionException("Null entity should not be blocked");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Mining Anchor Tests ====================
+
+    private static void registerMiningAnchorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "anchor_fill_state_normal", FloraFaunaGameTests::testAnchorFillStateNormal);
+        registerTest(event, env, "anchor_fill_state_warning", FloraFaunaGameTests::testAnchorFillStateWarning);
+        registerTest(event, env, "anchor_fill_state_full", FloraFaunaGameTests::testAnchorFillStateFull);
+        registerTest(event, env, "anchor_fill_state_edge_cases", FloraFaunaGameTests::testAnchorFillStateEdgeCases);
+    }
+
+    private static void testAnchorFillStateNormal(GameTestHelper helper) {
+        // Empty storage = NORMAL
+        AnchorFillState empty = AnchorFillState.fromFillRatio(0, 100);
+        if (empty != AnchorFillState.NORMAL) {
+            throw helper.assertionException("0% fill should be NORMAL, got: " + empty);
+        }
+
+        // 50% = NORMAL
+        AnchorFillState half = AnchorFillState.fromFillRatio(50, 100);
+        if (half != AnchorFillState.NORMAL) {
+            throw helper.assertionException("50% fill should be NORMAL, got: " + half);
+        }
+
+        // 74% = NORMAL (just under threshold)
+        AnchorFillState justUnder = AnchorFillState.fromFillRatio(74, 100);
+        if (justUnder != AnchorFillState.NORMAL) {
+            throw helper.assertionException("74% fill should be NORMAL, got: " + justUnder);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testAnchorFillStateWarning(GameTestHelper helper) {
+        // 75% = WARNING (exactly at threshold)
+        AnchorFillState atThreshold = AnchorFillState.fromFillRatio(75, 100);
+        if (atThreshold != AnchorFillState.WARNING) {
+            throw helper.assertionException("75% fill should be WARNING, got: " + atThreshold);
+        }
+
+        // 80% = WARNING
+        AnchorFillState eighty = AnchorFillState.fromFillRatio(80, 100);
+        if (eighty != AnchorFillState.WARNING) {
+            throw helper.assertionException("80% fill should be WARNING, got: " + eighty);
+        }
+
+        // 99% = WARNING (just under full)
+        AnchorFillState almostFull = AnchorFillState.fromFillRatio(99, 100);
+        if (almostFull != AnchorFillState.WARNING) {
+            throw helper.assertionException("99% fill should be WARNING, got: " + almostFull);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testAnchorFillStateFull(GameTestHelper helper) {
+        // 100% = FULL
+        AnchorFillState full = AnchorFillState.fromFillRatio(100, 100);
+        if (full != AnchorFillState.FULL) {
+            throw helper.assertionException("100% fill should be FULL, got: " + full);
+        }
+
+        // Over 100% = FULL (overflow case)
+        AnchorFillState overflow = AnchorFillState.fromFillRatio(150, 100);
+        if (overflow != AnchorFillState.FULL) {
+            throw helper.assertionException("150% fill should be FULL, got: " + overflow);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testAnchorFillStateEdgeCases(GameTestHelper helper) {
+        // Zero capacity = NORMAL (avoid division by zero)
+        AnchorFillState zeroCapacity = AnchorFillState.fromFillRatio(50, 0);
+        if (zeroCapacity != AnchorFillState.NORMAL) {
+            throw helper.assertionException("Zero capacity should return NORMAL, got: " + zeroCapacity);
+        }
+
+        // Negative capacity = NORMAL
+        AnchorFillState negativeCapacity = AnchorFillState.fromFillRatio(50, -100);
+        if (negativeCapacity != AnchorFillState.NORMAL) {
+            throw helper.assertionException("Negative capacity should return NORMAL, got: " + negativeCapacity);
+        }
+
+        // Warning threshold getter
+        float threshold = AnchorFillState.getWarningThreshold();
+        if (threshold != 0.75f) {
+            throw helper.assertionException("Warning threshold should be 0.75, got: " + threshold);
         }
 
         helper.succeed();
