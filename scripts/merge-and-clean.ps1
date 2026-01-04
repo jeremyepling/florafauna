@@ -15,7 +15,7 @@ $WorktreePath = "..\$Branch"
 git checkout main
 git pull origin main
 
-git merge $Branch
+git merge $Branch --no-edit
 if ($LASTEXITCODE -ne 0) {
   throw "Merge failed. Resolve conflicts, then run: git commit and re-run cleanup steps."
 }
