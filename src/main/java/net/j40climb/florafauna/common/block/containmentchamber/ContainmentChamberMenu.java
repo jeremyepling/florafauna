@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
+import net.j40climb.florafauna.client.gui.BaseContainerMenu;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -10,7 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
-public class ContainmentChamberMenu extends AbstractContainerMenu {
+public class ContainmentChamberMenu extends BaseContainerMenu {
     public final ContainmentChamberBlockEntity blockEntity;
     private final Level level;
 
@@ -25,7 +26,7 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
 
     /**
      * Server-side constructor (called when opening menu).
-     */
+ */
     public ContainmentChamberMenu(int containerId, Inventory playerInventory, BlockEntity entity, ContainerData data) {
         super(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get(), containerId);
 
@@ -41,23 +42,9 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
         addDataSlots(data);
     }
 
-    // CREDIT GOES TO: diesieben07 | https://github.com/diesieben07/SevenCommons
-    // must assign a slot number to each of the slots used by the GUI.
-    // For this container, we can see both the tile inventory's slots as well as the player inventory slots and the hotbar.
-    // Each time we add a Slot to the container, it automatically increases the slotIndex, which means
-    //  0 - 8 = hotbar slots (which will map to the InventoryPlayer slot numbers 0 - 8)
-    //  9 - 35 = player inventory slots (which map to the InventoryPlayer slot numbers 9 - 35)
-    //  36 - 44 = TileInventory slots, which map to our TileEntity slot numbers 0 - 8)
-    private static final int HOTBAR_SLOT_COUNT = 9;
-    private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
-    private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
-    private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
-    private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
-    private static final int VANILLA_FIRST_SLOT_INDEX = 0;
+    // Custom slot indices (after player inventory/hotbar from BaseContainerMenu)
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
-
-    // THIS YOU HAVE TO DEFINE!
-    private static final int TE_INVENTORY_SLOT_COUNT = 2;  // must be the number of slots you have!
+    private static final int TE_INVENTORY_SLOT_COUNT = 2;
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int pIndex) {
@@ -94,24 +81,7 @@ public class ContainmentChamberMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        // Check if player is within 8 blocks of the chamber
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
                 player, FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
-    }
-
-    private void addPlayerInventory(Inventory playerInventory) {
-        // Add player inventory (3x9 grid) at position (8, 84)
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
-            }
-        }
-    }
-
-    private void addPlayerHotbar(Inventory playerInventory) {
-        // Add hotbar (1x9 grid) at position (18, 142)
-        for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
-        }
     }
 }

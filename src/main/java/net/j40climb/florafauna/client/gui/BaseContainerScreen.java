@@ -10,11 +10,25 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 
 /**
- * Base class for container-based screens that display the standard inventory/hotbar layout.
+ * Base class for screens WITH inventory slots that need server synchronization.
  * Uses the standard 176x166 Minecraft GUI texture format with inventory at the bottom.
  * <p>
- * This is for screens backed by a menu (AbstractContainerMenu) that handle item slots.
- * For non-menu screens, use {@link BaseScreen} instead.
+ * <h2>When to use BaseContainerScreen vs BaseScreen:</h2>
+ * <ul>
+ *   <li><b>BaseContainerScreen</b> - GUIs with item slots (storage, crafting, machines).
+ *       Requires a Menu class extending {@link BaseContainerMenu}.
+ *       Opens via {@code player.openMenu()} on server side.
+ *       Examples: Chests, Furnaces, ContainmentChamberScreen.</li>
+ *   <li><b>BaseScreen</b> - Button-only GUIs, config screens, no item slots.
+ *       Opens directly on client via {@code Minecraft.getInstance().setScreen()}.
+ *       Examples: Sign editing, MobBarrierConfigScreen, CocoonChamberScreen.</li>
+ * </ul>
+ * <p>
+ * The Menu system exists for <b>slot synchronization</b>. Only use it when you have
+ * inventory slots that need client-server sync.
+ *
+ * @see BaseScreen for screens WITHOUT inventory slots
+ * @see BaseContainerMenu for the corresponding menu base class
  */
 public abstract class BaseContainerScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
     // Default GUI texture with empty top area and standard inventory/hotbar slots

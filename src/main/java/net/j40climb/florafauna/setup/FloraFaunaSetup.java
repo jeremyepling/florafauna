@@ -3,6 +3,7 @@ package net.j40climb.florafauna.setup;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
+import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
 import net.j40climb.florafauna.common.block.mobbarrier.networking.UpdateMobBarrierConfigPayload;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
@@ -94,6 +95,7 @@ public class FloraFaunaSetup {
 
         // Server to client
         registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);
+        registrar.playToClient(OpenCocoonScreenPayload.TYPE, OpenCocoonScreenPayload.STREAM_CODEC, OpenCocoonScreenPayload::onClientReceived);
     }
 
     // ==================== COMMANDS ====================

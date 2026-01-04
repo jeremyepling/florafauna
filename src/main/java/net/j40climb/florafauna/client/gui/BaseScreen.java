@@ -8,10 +8,31 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 /**
- * Base class for screens that display the standard GUI layout but blank.
+ * Base class for screens WITHOUT inventory slots (buttons, config, text input, etc.).
  * Uses the standard 176x166 Minecraft GUI texture format.
  * <p>
- * Subclasses can customize the content area at the top of the GUI (above the inventory).
+ * <h2>When to use BaseScreen vs BaseContainerScreen:</h2>
+ * <ul>
+ *   <li><b>BaseScreen</b> - Button-only GUIs, config screens, text editors. No item slots.
+ *       Opens directly via {@code Minecraft.getInstance().setScreen(new MyScreen())}.
+ *       Examples: Sign editing, Book editing, Command Block, MobBarrierConfigScreen.</li>
+ *   <li><b>BaseContainerScreen</b> - GUIs with inventory slots that need server sync.
+ *       Opens via Menu system ({@code player.openMenu()}). Requires a Menu class.
+ *       Examples: Chests, Furnaces, Crafting Tables, ContainmentChamberScreen.</li>
+ * </ul>
+ * <p>
+ * The Menu system exists for <b>slot synchronization</b>. If you have no slots, use BaseScreen
+ * and handle server communication via custom network packets - it's simpler and follows
+ * vanilla Minecraft patterns.
+ * <p>
+ * Subclasses must implement:
+ * <ul>
+ *   <li>{@link #initContent()} - Add widgets (buttons, text fields)</li>
+ *   <li>{@link #renderContent} - Render custom content</li>
+ * </ul>
+ *
+ * @see BaseContainerScreen for screens WITH inventory slots
+ * @see BaseContainerMenu for menus WITH player inventory slots
  */
 public abstract class BaseScreen extends Screen {
     // Default GUI texture with empty top area

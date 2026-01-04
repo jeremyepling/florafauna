@@ -7,7 +7,6 @@ import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockItem;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
-import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberMenu;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
@@ -253,9 +252,6 @@ public class FloraFaunaRegistry {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER_MENU =
             registerMenuType("containment_chamber", ContainmentChamberMenu::new);
-
-    public static final DeferredHolder<MenuType<?>, MenuType<CocoonChamberMenu>> COCOON_CHAMBER_MENU =
-            registerMenuType("cocoon_chamber", CocoonChamberMenu::new);
 
     // ==================== MOB EFFECTS ====================
 

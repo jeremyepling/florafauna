@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.DebugOverlay;
 import net.j40climb.florafauna.client.entity.ThrownItemRenderer;
-import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
@@ -124,7 +123,6 @@ public class ClientSetup {
      */
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get(), ContainmentChamberScreen::new);
-        event.register(FloraFaunaRegistry.COCOON_CHAMBER_MENU.get(), CocoonChamberScreen::new);
     }
 
     /**
