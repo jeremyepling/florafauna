@@ -104,6 +104,61 @@ public class Config {
         BUILDER.pop();
     }
 
+    // ==================== MOB TRANSPORT SYSTEM ====================
+
+    static {
+        BUILDER.comment("Mob Transport System Configuration (MobInput/MobOutput)").push("mobtransport");
+    }
+
+    // Lure settings
+    private static final ModConfigSpec.IntValue MOB_LURE_RADIUS = BUILDER
+            .comment("Radius in blocks for luring eligible mobs")
+            .defineInRange("lureRadius", 12, 1, 32);
+
+    private static final ModConfigSpec.IntValue MOB_LURE_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between lure attempts")
+            .defineInRange("lureIntervalTicks", 20, 1, 100);
+
+    // Capture settings
+    private static final ModConfigSpec.DoubleValue MOB_CAPTURE_RADIUS = BUILDER
+            .comment("Radius in blocks for capturing mobs (should be smaller than lure)")
+            .defineInRange("captureRadius", 1.5, 0.5, 4.0);
+
+    private static final ModConfigSpec.IntValue MOB_CAPTURE_ANIM_TICKS = BUILDER
+            .comment("Duration of capture animation in ticks")
+            .defineInRange("captureAnimTicks", 15, 5, 60);
+
+    // Travel settings
+    private static final ModConfigSpec.IntValue MOB_MIN_TRAVEL_DELAY_TICKS = BUILDER
+            .comment("Minimum travel delay in ticks before mob is ready at output")
+            .defineInRange("minTravelDelayTicks", 60, 20, 600);
+
+    private static final ModConfigSpec.IntValue MOB_MAX_TRAVEL_DELAY_TICKS = BUILDER
+            .comment("Maximum travel delay in ticks before mob is ready at output")
+            .defineInRange("maxTravelDelayTicks", 200, 60, 1200);
+
+    // Queue settings
+    private static final ModConfigSpec.IntValue MOB_MAX_QUEUE_SIZE = BUILDER
+            .comment("Maximum number of captured mobs queued per MobInput")
+            .defineInRange("maxQueueSizePerInput", 5, 1, 20);
+
+    private static final ModConfigSpec.IntValue MOB_RELEASE_CHECK_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between checking for mobs ready to release")
+            .defineInRange("releaseCheckIntervalTicks", 20, 1, 100);
+
+    // Eligibility settings
+    private static final ModConfigSpec.BooleanValue MOB_ALLOW_UNBONDED_CAPTURE = BUILDER
+            .comment("If true, unbonded mobs can be captured (bonded still prioritized)")
+            .define("allowUnbondedCapture", false);
+
+    private static final ModConfigSpec.IntValue MOB_RECENTLY_RELEASED_IMMUNITY_TICKS = BUILDER
+            .comment("Ticks of capture immunity after a mob is released")
+            .defineInRange("recentlyReleasedImmunityTicks", 100, 20, 600);
+
+    static {
+        BUILDER.pop();
+    }
+
     // ==================== BUILD SPEC ====================
 
     public static final ModConfigSpec SPEC = BUILDER.build();
@@ -131,6 +186,18 @@ public class Config {
     public static int miningAnchorCollectInterval;
     public static boolean miningAnchorBlockDropsOnly;
 
+    // Mob Transport System
+    public static int lureRadius;
+    public static int lureIntervalTicks;
+    public static double captureRadius;
+    public static int captureAnimTicks;
+    public static int minTravelDelayTicks;
+    public static int maxTravelDelayTicks;
+    public static int maxQueueSizePerInput;
+    public static int releaseCheckIntervalTicks;
+    public static boolean allowUnbondedCapture;
+    public static int recentlyReleasedImmunityTicks;
+
     /**
      * Loads config values from the spec into static fields.
      * Called when config is loaded/reloaded.
@@ -156,5 +223,17 @@ public class Config {
         miningAnchorCollectRadius = MINING_ANCHOR_COLLECT_RADIUS.get();
         miningAnchorCollectInterval = MINING_ANCHOR_COLLECT_INTERVAL.get();
         miningAnchorBlockDropsOnly = MINING_ANCHOR_BLOCK_DROPS_ONLY.get();
+
+        // Mob Transport System
+        lureRadius = MOB_LURE_RADIUS.get();
+        lureIntervalTicks = MOB_LURE_INTERVAL_TICKS.get();
+        captureRadius = MOB_CAPTURE_RADIUS.get();
+        captureAnimTicks = MOB_CAPTURE_ANIM_TICKS.get();
+        minTravelDelayTicks = MOB_MIN_TRAVEL_DELAY_TICKS.get();
+        maxTravelDelayTicks = MOB_MAX_TRAVEL_DELAY_TICKS.get();
+        maxQueueSizePerInput = MOB_MAX_QUEUE_SIZE.get();
+        releaseCheckIntervalTicks = MOB_RELEASE_CHECK_INTERVAL_TICKS.get();
+        allowUnbondedCapture = MOB_ALLOW_UNBONDED_CAPTURE.get();
+        recentlyReleasedImmunityTicks = MOB_RECENTLY_RELEASED_IMMUNITY_TICKS.get();
     }
 }

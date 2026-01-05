@@ -25,6 +25,7 @@ public class FloraFaunaDataGenerators {
                 List.of(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
         generator.addProvider(true, new FloraFaunaBlockTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new FloraFaunaEntityTypeTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
 
         // Test structures for GameTest
@@ -41,6 +42,7 @@ public class FloraFaunaDataGenerators {
                 List.of(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
         generator.addProvider(true, new FloraFaunaBlockTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new FloraFaunaEntityTypeTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
     }
 }

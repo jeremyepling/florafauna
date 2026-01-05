@@ -39,6 +39,10 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         // Hardened pods drop themselves with inventory (handled in block code)
         dropSelf(FloraFaunaRegistry.TIER2_POD.get());
 
+        // Mob Transport System blocks
+        dropSelf(FloraFaunaRegistry.MOB_INPUT.get());
+        dropSelf(FloraFaunaRegistry.MOB_OUTPUT.get());
+
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();

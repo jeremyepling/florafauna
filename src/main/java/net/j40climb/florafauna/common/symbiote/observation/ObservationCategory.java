@@ -40,7 +40,12 @@ public enum ObservationCategory {
     /**
      * Mining anchor events: fill warnings, capacity full
      */
-    MINING_ANCHOR("anchor");
+    MINING_ANCHOR("anchor"),
+
+    /**
+     * Mob transport events: mob capture, queue full
+     */
+    MOB_TRANSPORT("mob_transport");
 
     private final String key;
 

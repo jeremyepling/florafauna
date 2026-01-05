@@ -24,6 +24,14 @@ import net.j40climb.florafauna.common.symbiote.progress.ConceptSignal;
 import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
+import net.j40climb.florafauna.common.block.mobtransport.CapturedMobBuffer;
+import net.j40climb.florafauna.common.block.mobtransport.CapturedMobTicket;
+import net.j40climb.florafauna.common.block.mobtransport.MobCaptureEligibility;
+import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
+import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
+import net.j40climb.florafauna.Config;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -110,6 +118,9 @@ public class FloraFaunaGameTests {
 
         // Register symbiote state tests
         registerSymbioteStateTests(event, defaultEnv);
+
+        // Register mob transport tests
+        registerMobTransportTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -1579,6 +1590,469 @@ public class FloraFaunaGameTests {
         }
         if (SymbioteState.BONDED_WEAKENED.areAbilitiesActive()) {
             throw helper.assertionException("BONDED_WEAKENED should NOT have active abilities");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Mob Transport Tests ====================
+
+    private static void registerMobTransportTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "mob_symbiote_data_default", FloraFaunaGameTests::testMobSymbioteDataDefault);
+        registerTest(event, env, "mob_symbiote_data_bonding", FloraFaunaGameTests::testMobSymbioteDataBonding);
+        registerTest(event, env, "mob_symbiote_data_release_immunity", FloraFaunaGameTests::testMobSymbioteDataReleaseImmunity);
+        registerTest(event, env, "captured_mob_buffer_capacity", FloraFaunaGameTests::testCapturedMobBufferCapacity);
+        registerTest(event, env, "captured_mob_buffer_add_poll", FloraFaunaGameTests::testCapturedMobBufferAddPoll);
+        registerTest(event, env, "mob_capture_eligibility_player", FloraFaunaGameTests::testMobCaptureEligibilityPlayer);
+        registerTest(event, env, "mob_capture_eligibility_boss", FloraFaunaGameTests::testMobCaptureEligibilityBoss);
+        registerTest(event, env, "mob_capture_eligibility_not_bondable", FloraFaunaGameTests::testMobCaptureEligibilityNotBondable);
+        registerTest(event, env, "mob_capture_eligibility_recently_released", FloraFaunaGameTests::testMobCaptureEligibilityRecentlyReleased);
+        registerTest(event, env, "captured_mob_ticket_ready_check", FloraFaunaGameTests::testCapturedMobTicketReadyCheck);
+        // Lure goal tests
+        registerTest(event, env, "lure_goal_only_bonded_mobs", FloraFaunaGameTests::testLureGoalOnlyBondedMobs);
+        registerTest(event, env, "lure_goal_start_and_stop", FloraFaunaGameTests::testLureGoalStartAndStop);
+        registerTest(event, env, "lure_goal_is_being_lured_to", FloraFaunaGameTests::testLureGoalIsBeingLuredTo);
+        registerTest(event, env, "lure_goal_switch_target", FloraFaunaGameTests::testLureGoalSwitchTarget);
+        // MobSymbiote item and MobOutput release tests
+        registerTest(event, env, "mob_symbiote_item_bonds_mob", FloraFaunaGameTests::testMobSymbioteItemBondsMob);
+        registerTest(event, env, "mob_output_release_clears_lure_goal", FloraFaunaGameTests::testMobOutputReleaseClearsLureGoal);
+    }
+
+    private static void testMobSymbioteDataDefault(GameTestHelper helper) {
+        MobSymbioteData data = MobSymbioteData.DEFAULT;
+
+        if (data.hasMobSymbiote()) {
+            throw helper.assertionException("Default MobSymbioteData should not have MobSymbiote");
+        }
+        if (data.mobSymbioteLevel() != MobSymbioteData.LEVEL_NONE) {
+            throw helper.assertionException("Default mobSymbioteLevel should be LEVEL_NONE (0)");
+        }
+        if (data.levelUpgradedAtTick() != 0L) {
+            throw helper.assertionException("Default levelUpgradedAtTick should be 0");
+        }
+        if (data.recentlyReleasedUntil() != 0L) {
+            throw helper.assertionException("Default recentlyReleasedUntil should be 0");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobSymbioteDataBonding(GameTestHelper helper) {
+        MobSymbioteData data = MobSymbioteData.DEFAULT;
+
+        // Apply Level 1 MobSymbiote
+        MobSymbioteData level1 = data.withMobSymbioteLevel(MobSymbioteData.LEVEL_TRANSPORT, 1000L);
+
+        if (!level1.hasMobSymbiote()) {
+            throw helper.assertionException("Should have MobSymbiote after applying Level 1");
+        }
+        if (level1.mobSymbioteLevel() != MobSymbioteData.LEVEL_TRANSPORT) {
+            throw helper.assertionException("Level should be LEVEL_TRANSPORT (1), got: " + level1.mobSymbioteLevel());
+        }
+        if (level1.levelUpgradedAtTick() != 1000L) {
+            throw helper.assertionException("levelUpgradedAtTick should be 1000, got: " + level1.levelUpgradedAtTick());
+        }
+
+        // Remove the MobSymbiote
+        MobSymbioteData removed = level1.withMobSymbioteLevel(MobSymbioteData.LEVEL_NONE, 2000L);
+
+        if (removed.hasMobSymbiote()) {
+            throw helper.assertionException("Should not have MobSymbiote after removing");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobSymbioteDataReleaseImmunity(GameTestHelper helper) {
+        MobSymbioteData data = MobSymbioteData.DEFAULT;
+
+        // Set release immunity until tick 2000
+        MobSymbioteData released = data.withRecentlyReleased(2000L);
+
+        // Should have immunity before tick 2000
+        if (!released.hasReleaseImmunity(1500L)) {
+            throw helper.assertionException("Should have release immunity at tick 1500");
+        }
+        if (!released.hasReleaseImmunity(1999L)) {
+            throw helper.assertionException("Should have release immunity at tick 1999");
+        }
+
+        // Should NOT have immunity at or after tick 2000
+        if (released.hasReleaseImmunity(2000L)) {
+            throw helper.assertionException("Should NOT have release immunity at tick 2000");
+        }
+        if (released.hasReleaseImmunity(3000L)) {
+            throw helper.assertionException("Should NOT have release immunity at tick 3000");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testCapturedMobBufferCapacity(GameTestHelper helper) {
+        int maxSize = 5;
+        CapturedMobBuffer buffer = new CapturedMobBuffer(maxSize);
+
+        if (!buffer.isEmpty()) {
+            throw helper.assertionException("Fresh buffer should be empty");
+        }
+        if (buffer.isFull()) {
+            throw helper.assertionException("Fresh buffer should not be full");
+        }
+        if (!buffer.canAccept()) {
+            throw helper.assertionException("Fresh buffer should be able to accept");
+        }
+
+        // Fill the buffer
+        for (int i = 0; i < maxSize; i++) {
+            CapturedMobTicket ticket = CapturedMobTicket.create(
+                    EntityType.ZOMBIE,
+                    new CompoundTag(),
+                    1000L + i,
+                    1100L + i,
+                    null,
+                    null
+            );
+            buffer.add(ticket);
+        }
+
+        if (!buffer.isFull()) {
+            throw helper.assertionException("Buffer should be full after adding " + maxSize + " tickets");
+        }
+        if (buffer.canAccept()) {
+            throw helper.assertionException("Full buffer should not accept more");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testCapturedMobBufferAddPoll(GameTestHelper helper) {
+        CapturedMobBuffer buffer = new CapturedMobBuffer(5);
+
+        CapturedMobTicket ticket1 = CapturedMobTicket.create(
+                EntityType.ZOMBIE,
+                new CompoundTag(),
+                1000L,
+                1100L,
+                null,
+                null
+        );
+        CapturedMobTicket ticket2 = CapturedMobTicket.create(
+                EntityType.SKELETON,
+                new CompoundTag(),
+                2000L,
+                2100L,
+                null,
+                null
+        );
+
+        buffer.add(ticket1);
+        buffer.add(ticket2);
+
+        if (buffer.size() != 2) {
+            throw helper.assertionException("Buffer should have 2 tickets, got: " + buffer.size());
+        }
+
+        // Get ready ticket at tick 1100 (ticket1 should be ready)
+        var ready = buffer.getReadyTicket(1100L);
+        if (ready.isEmpty()) {
+            throw helper.assertionException("Ticket1 should be ready at tick 1100");
+        }
+        if (!ready.get().entityTypeId().equals(BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ZOMBIE))) {
+            throw helper.assertionException("Ready ticket should be zombie");
+        }
+
+        // Poll it
+        buffer.pollReadyTicket(1100L);
+        if (buffer.size() != 1) {
+            throw helper.assertionException("Buffer should have 1 ticket after poll, got: " + buffer.size());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobCaptureEligibilityPlayer(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+
+        var result = MobCaptureEligibility.checkEligibility(player, 0L);
+
+        if (result.isEligible()) {
+            throw helper.assertionException("Player should NOT be capture-eligible");
+        }
+        if (result.reason() != MobCaptureEligibility.ExclusionReason.PLAYER) {
+            throw helper.assertionException("Reason should be PLAYER, got: " + result.reason());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobCaptureEligibilityBoss(GameTestHelper helper) {
+        // Spawn the Ender Dragon (a boss - on exclusion list)
+        var dragon = helper.spawn(EntityType.ENDER_DRAGON, new BlockPos(5, 5, 5));
+
+        var result = MobCaptureEligibility.checkEligibility(dragon, 0L);
+
+        if (result.isEligible()) {
+            throw helper.assertionException("Boss should NOT be capture-eligible");
+        }
+        if (result.reason() != MobCaptureEligibility.ExclusionReason.MOB_SYMBIOTE_EXCLUDED) {
+            throw helper.assertionException("Reason should be MOB_SYMBIOTE_EXCLUDED, got: " + result.reason());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobCaptureEligibilityNotBondable(GameTestHelper helper) {
+        // Spawn a Warden (on the exclusion list)
+        var warden = helper.spawn(EntityType.WARDEN, new BlockPos(1, 1, 1));
+
+        var result = MobCaptureEligibility.checkEligibility(warden, 0L);
+
+        if (result.isEligible()) {
+            throw helper.assertionException("Excluded mob should NOT be capture-eligible");
+        }
+        if (result.reason() != MobCaptureEligibility.ExclusionReason.MOB_SYMBIOTE_EXCLUDED) {
+            throw helper.assertionException("Reason should be MOB_SYMBIOTE_EXCLUDED, got: " + result.reason());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobCaptureEligibilityRecentlyReleased(GameTestHelper helper) {
+        // Spawn a zombie
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+
+        // Mark it as recently released until tick 2000
+        MobSymbioteHelper.markRecentlyReleased(zombie, 2000L);
+
+        // Check eligibility at tick 1500 (should be excluded)
+        var result = MobCaptureEligibility.checkEligibility(zombie, 1500L);
+
+        if (result.isEligible()) {
+            throw helper.assertionException("Recently released mob should NOT be eligible at tick 1500");
+        }
+        if (result.reason() != MobCaptureEligibility.ExclusionReason.RECENTLY_RELEASED) {
+            throw helper.assertionException("Reason should be RECENTLY_RELEASED, got: " + result.reason());
+        }
+
+        // Check at tick 2500 (immunity expired)
+        var resultLater = MobCaptureEligibility.checkEligibility(zombie, 2500L);
+
+        // Note: May still be excluded if allowUnbondedCapture is false
+        // Just verify it's not excluded for RECENTLY_RELEASED
+        if (resultLater.reason() == MobCaptureEligibility.ExclusionReason.RECENTLY_RELEASED) {
+            throw helper.assertionException("Should NOT be excluded for RECENTLY_RELEASED at tick 2500");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testCapturedMobTicketReadyCheck(GameTestHelper helper) {
+        CapturedMobTicket ticket = CapturedMobTicket.create(
+                EntityType.COW,
+                new CompoundTag(),
+                1000L,  // captured at
+                1500L,  // ready at
+                null,
+                null
+        );
+
+        // Not ready before readyAtTick
+        if (ticket.isReady(1000L)) {
+            throw helper.assertionException("Ticket should NOT be ready at capture time");
+        }
+        if (ticket.isReady(1499L)) {
+            throw helper.assertionException("Ticket should NOT be ready at tick 1499");
+        }
+
+        // Ready at and after readyAtTick
+        if (!ticket.isReady(1500L)) {
+            throw helper.assertionException("Ticket should be ready at tick 1500");
+        }
+        if (!ticket.isReady(2000L)) {
+            throw helper.assertionException("Ticket should be ready at tick 2000");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Lure Goal Tests ====================
+
+    private static void testLureGoalOnlyBondedMobs(GameTestHelper helper) {
+        // Spawn a zombie without MobSymbiote
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        BlockPos lureTarget = new BlockPos(5, 1, 5);
+
+        // Try to start luring a mob without MobSymbiote - should fail
+        boolean started = MobSymbioteHelper.startLuring(zombie, lureTarget);
+
+        if (started) {
+            throw helper.assertionException("startLuring should return false for mob without MobSymbiote");
+        }
+        if (MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Mob without MobSymbiote should NOT be lured");
+        }
+
+        // Now apply Level 1 MobSymbiote
+        MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
+
+        // Try again - should succeed
+        boolean startedAfterLevel1 = MobSymbioteHelper.startLuring(zombie, lureTarget);
+
+        if (!startedAfterLevel1) {
+            throw helper.assertionException("startLuring should return true for mob with MobSymbiote");
+        }
+        if (!MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Mob with MobSymbiote should be lured after startLuring");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testLureGoalStartAndStop(GameTestHelper helper) {
+        // Spawn a zombie with MobSymbiote
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
+        BlockPos lureTarget = new BlockPos(5, 1, 5);
+
+        // Initially not lured
+        if (MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Mob should not be lured initially");
+        }
+
+        // Start luring
+        MobSymbioteHelper.startLuring(zombie, lureTarget);
+
+        if (!MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Mob should be lured after startLuring");
+        }
+
+        // Stop luring
+        boolean stopped = MobSymbioteHelper.stopLuring(zombie);
+
+        if (!stopped) {
+            throw helper.assertionException("stopLuring should return true when goal was removed");
+        }
+        if (MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Mob should NOT be lured after stopLuring");
+        }
+
+        // Stop again - should return false (no goal to remove)
+        boolean stoppedAgain = MobSymbioteHelper.stopLuring(zombie);
+
+        if (stoppedAgain) {
+            throw helper.assertionException("stopLuring should return false when no goal present");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testLureGoalIsBeingLuredTo(GameTestHelper helper) {
+        // Spawn a zombie with MobSymbiote
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
+        BlockPos lureTarget1 = new BlockPos(5, 1, 5);
+        BlockPos lureTarget2 = new BlockPos(10, 1, 10);
+
+        // Start luring to target1
+        MobSymbioteHelper.startLuring(zombie, lureTarget1);
+
+        // Check isBeingLuredTo
+        if (!MobSymbioteHelper.isBeingLuredTo(zombie, lureTarget1)) {
+            throw helper.assertionException("Should be lured to target1");
+        }
+        if (MobSymbioteHelper.isBeingLuredTo(zombie, lureTarget2)) {
+            throw helper.assertionException("Should NOT be lured to target2");
+        }
+
+        // Check getLureTarget
+        BlockPos target = MobSymbioteHelper.getLureTarget(zombie);
+        if (target == null || !target.equals(lureTarget1)) {
+            throw helper.assertionException("getLureTarget should return target1, got: " + target);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testLureGoalSwitchTarget(GameTestHelper helper) {
+        // Spawn a zombie with MobSymbiote
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
+        BlockPos lureTarget1 = new BlockPos(5, 1, 5);
+        BlockPos lureTarget2 = new BlockPos(10, 1, 10);
+
+        // Start luring to target1
+        MobSymbioteHelper.startLuring(zombie, lureTarget1);
+
+        if (!MobSymbioteHelper.isBeingLuredTo(zombie, lureTarget1)) {
+            throw helper.assertionException("Should be lured to target1");
+        }
+
+        // Start luring to target2 (should switch)
+        boolean switched = MobSymbioteHelper.startLuring(zombie, lureTarget2);
+
+        if (!switched) {
+            throw helper.assertionException("startLuring to new target should return true");
+        }
+        if (MobSymbioteHelper.isBeingLuredTo(zombie, lureTarget1)) {
+            throw helper.assertionException("Should NOT be lured to target1 after switch");
+        }
+        if (!MobSymbioteHelper.isBeingLuredTo(zombie, lureTarget2)) {
+            throw helper.assertionException("Should be lured to target2 after switch");
+        }
+
+        // Try to lure to same target again - should return false (already lured there)
+        boolean sameTarget = MobSymbioteHelper.startLuring(zombie, lureTarget2);
+
+        if (sameTarget) {
+            throw helper.assertionException("startLuring to same target should return false");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobSymbioteItemBondsMob(GameTestHelper helper) {
+        // Spawn a zombie without MobSymbiote
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+
+        // Verify no MobSymbiote initially
+        if (MobSymbioteHelper.hasMobSymbiote(zombie)) {
+            throw helper.assertionException("Zombie should NOT have MobSymbiote initially");
+        }
+
+        // Apply Level 1 MobSymbiote (simulating what MobSymbioteItem does)
+        MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 100L);
+
+        // Verify now has MobSymbiote
+        if (!MobSymbioteHelper.hasMobSymbiote(zombie)) {
+            throw helper.assertionException("Zombie should have MobSymbiote after applyMobSymbioteLevel1()");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testMobOutputReleaseClearsLureGoal(GameTestHelper helper) {
+        // Spawn a zombie with MobSymbiote, then start luring
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
+        BlockPos lureTarget = new BlockPos(5, 1, 5);
+        MobSymbioteHelper.startLuring(zombie, lureTarget);
+
+        // Verify luring
+        if (!MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Zombie should be lured initially");
+        }
+
+        // Simulate what MobOutput does on release: stop luring but keep MobSymbiote
+        MobSymbioteHelper.stopLuring(zombie);
+
+        // Verify no longer lured
+        if (MobSymbioteHelper.isBeingLured(zombie)) {
+            throw helper.assertionException("Zombie should NOT be lured after stopLuring");
+        }
+
+        // Verify still has MobSymbiote
+        if (!MobSymbioteHelper.hasMobSymbiote(zombie)) {
+            throw helper.assertionException("Zombie should STILL have MobSymbiote after stopLuring");
         }
 
         helper.succeed();

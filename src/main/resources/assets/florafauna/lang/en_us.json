@@ -226,5 +226,21 @@
 
   "effect.florafauna.symbiote_prepared": "Symbiote Prepared",
 
-  "waypoint.florafauna.husk": "Restoration Husk"
+  "waypoint.florafauna.husk": "Restoration Husk",
+
+  "block.florafauna.mob_input": "Mob Input",
+  "block.florafauna.mob_output": "Mob Output",
+  "item.florafauna.mob_symbiote": "Mob Symbiote",
+  "tooltip.florafauna.mob_symbiote": "Right-click on a mob to bond it",
+  "message.florafauna.mob_symbiote.bonded": "Mob bonded to symbiote network",
+  "message.florafauna.mob_symbiote.already_bonded": "This mob is already bonded",
+  "message.florafauna.mob_symbiote.excluded": "This creature cannot receive a MobSymbiote",
+  "message.florafauna.mob_input.status_paired": "Paired - Queue: %s/%s mobs",
+  "message.florafauna.mob_input.status_unpaired": "Not paired to a Mob Output",
+  "message.florafauna.mob_input.unpaired": "Unpaired from Mob Output",
+  "message.florafauna.mob_input.linking_mode": "Linking mode - Right-click a Mob Output to pair",
+  "message.florafauna.mob_input.paired_to_output": "Paired to Mob Output at %s, %s, %s",
+  "message.florafauna.mob_output.status": "Inputs: %s | Pending release: %s mobs",
+
+  "symbiote.dialogue.mob_input_capture": "Another unwilling volunteer."
 }

@@ -72,6 +72,11 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.TIER2_MINING_ANCHOR);
                         output.accept(FloraFaunaRegistry.TIER2_POD);
 
+                        // Mob Transport System blocks
+                        output.accept(FloraFaunaRegistry.MOB_INPUT);
+                        output.accept(FloraFaunaRegistry.MOB_OUTPUT);
+                        output.accept(FloraFaunaRegistry.MOB_SYMBIOTE);
+
                         // Wood blocks - iterates through all wood types
                         for (WoodType woodType : WoodType.values()) {
                             WoodBlockSet wood = woodType.getBlockSet();

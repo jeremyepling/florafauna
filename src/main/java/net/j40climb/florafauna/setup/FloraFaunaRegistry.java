@@ -22,6 +22,12 @@ import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlockEntity
 import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlock;
 import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
+import net.j40climb.florafauna.common.block.mobtransport.MobInputBlock;
+import net.j40climb.florafauna.common.block.mobtransport.MobInputBlockEntity;
+import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlock;
+import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlockEntity;
+import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
+import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteItem;
 import net.j40climb.florafauna.common.block.vacuum.BlockDropData;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlock;
@@ -203,6 +209,23 @@ public class FloraFaunaRegistry {
                     .noOcclusion()
             ));
 
+    // Mob Transport System blocks
+    public static final DeferredBlock<MobInputBlock> MOB_INPUT = registerBlock("mob_input",
+            props -> new MobInputBlock(props
+                    .strength(2f, 4f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.SCULK)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<MobOutputBlock> MOB_OUTPUT = registerBlock("mob_output",
+            props -> new MobOutputBlock(props
+                    .strength(2f, 4f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.SCULK)
+                    .noOcclusion()
+            ));
+
     // Wood blocks registered via ModWoodType enum
     static { registerWoodTypes(); }
     private static void registerWoodTypes() { WoodType.values(); }
@@ -254,6 +277,9 @@ public class FloraFaunaRegistry {
                             .hasConsumeParticles(true)
                             .build()
             )));
+
+    public static final DeferredItem<Item> MOB_SYMBIOTE = ITEMS.registerItem("mob_symbiote",
+            MobSymbioteItem::new);
 
     // Spawn Eggs (entities must be declared before these)
     public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
@@ -311,6 +337,15 @@ public class FloraFaunaRegistry {
     public static final Supplier<BlockEntityType<Tier2PodBlockEntity>> TIER2_POD_BE = BLOCK_ENTITIES.register(
             "tier2_pod",
             () -> new BlockEntityType<>(Tier2PodBlockEntity::new, false, TIER2_POD.get()));
+
+    // Mob Transport System block entities
+    public static final Supplier<BlockEntityType<MobInputBlockEntity>> MOB_INPUT_BE = BLOCK_ENTITIES.register(
+            "mob_input",
+            () -> new BlockEntityType<>(MobInputBlockEntity::new, false, MOB_INPUT.get()));
+
+    public static final Supplier<BlockEntityType<MobOutputBlockEntity>> MOB_OUTPUT_BE = BLOCK_ENTITIES.register(
+            "mob_output",
+            () -> new BlockEntityType<>(MobOutputBlockEntity::new, false, MOB_OUTPUT.get()));
 
     // ==================== MENUS ====================
 
@@ -414,6 +449,14 @@ public class FloraFaunaRegistry {
                     AttachmentType.builder(() -> BlockDropData.DEFAULT)
                             .serialize(BlockDropData.CODEC.fieldOf("block_drop_data"))
                             .sync(BlockDropData.STREAM_CODEC)
+                            .build());
+
+    // Mob symbiote attachment (for marking mobs as bonded for capture)
+    public static final Supplier<AttachmentType<MobSymbioteData>> MOB_SYMBIOTE_DATA =
+            ATTACHMENT_TYPES.register("mob_symbiote_data", () ->
+                    AttachmentType.builder(() -> MobSymbioteData.DEFAULT)
+                            .serialize(MobSymbioteData.CODEC.fieldOf("mob_symbiote_data"))
+                            .sync(MobSymbioteData.STREAM_CODEC)
                             .build());
 
     // ==================== HELPER METHODS ====================

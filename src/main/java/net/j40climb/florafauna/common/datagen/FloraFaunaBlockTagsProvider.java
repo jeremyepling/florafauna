@@ -55,7 +55,9 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
 
         // Mineable with axe (organic/wood-like)
         this.tag(BlockTags.MINEABLE_WITH_AXE)
-                .add(FloraFaunaRegistry.ITEM_INPUT.get());
+                .add(FloraFaunaRegistry.ITEM_INPUT.get())
+                .add(FloraFaunaRegistry.MOB_INPUT.get())
+                .add(FloraFaunaRegistry.MOB_OUTPUT.get());
 
         // Wood blocks - add to appropriate tags
         for (WoodType woodType : WoodType.values()) {
