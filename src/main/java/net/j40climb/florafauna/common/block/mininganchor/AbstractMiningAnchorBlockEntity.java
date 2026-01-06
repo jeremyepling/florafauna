@@ -3,9 +3,9 @@ package net.j40climb.florafauna.common.block.mininganchor;
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
+import net.j40climb.florafauna.common.block.vacuum.BufferTransfer;
 import net.j40climb.florafauna.common.block.vacuum.VacuumState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -226,21 +226,10 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         for (BlockPos podPos : podPositions) {
             BlockEntity be = level.getBlockEntity(podPos);
             if (be instanceof AbstractStoragePodBlockEntity pod && !pod.isFull()) {
-                // Try to move one stack at a time
-                ItemStack stack = buffer.peek();
-                if (stack != null && !stack.isEmpty()) {
-                    int added = pod.addItems(stack.copy());
-                    if (added > 0) {
-                        // Remove transferred items from buffer
-                        ItemStack polled = buffer.poll();
-                        if (polled != null && added < polled.getCount()) {
-                            // Put remainder back
-                            polled.setCount(polled.getCount() - added);
-                            buffer.add(polled);
-                        }
-                        setChanged();
-                        break; // One transfer per tick
-                    }
+                int transferred = BufferTransfer.transferOneStack(buffer, pod.getBuffer());
+                if (transferred > 0) {
+                    setChanged();
+                    break; // One transfer per tick
                 }
             }
         }

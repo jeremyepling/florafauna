@@ -18,7 +18,7 @@ import java.util.List;
  * - Never voids items (canAccept checks first)
  * - Provides FIFO-style poll for transfer
  */
-public class VacuumBuffer {
+public class VacuumBuffer implements IItemBuffer {
     private final NonNullList<ItemStack> stacks;
     private final int maxStacks;
 
@@ -46,6 +46,7 @@ public class VacuumBuffer {
      * @param stack The stack to check
      * @return true if the buffer can accept at least 1 item
      */
+    @Override
     public boolean canAccept(ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
@@ -72,6 +73,7 @@ public class VacuumBuffer {
      * @param stack The stack to add (will be modified)
      * @return Number of items actually added
      */
+    @Override
     public int add(ItemStack stack) {
         if (stack.isEmpty()) {
             return 0;
@@ -109,6 +111,7 @@ public class VacuumBuffer {
      *
      * @return The removed stack, or EMPTY if buffer is empty
      */
+    @Override
     public ItemStack poll() {
         for (int i = 0; i < stacks.size(); i++) {
             ItemStack stack = stacks.get(i);
@@ -125,6 +128,7 @@ public class VacuumBuffer {
      *
      * @return The first non-empty stack, or EMPTY if buffer is empty
      */
+    @Override
     public ItemStack peek() {
         for (ItemStack stack : stacks) {
             if (!stack.isEmpty()) {
@@ -168,6 +172,7 @@ public class VacuumBuffer {
     /**
      * Checks if the buffer is full (no empty slots and all stacks at max).
      */
+    @Override
     public boolean isFull() {
         for (ItemStack stack : stacks) {
             if (stack.isEmpty()) {
@@ -183,6 +188,7 @@ public class VacuumBuffer {
     /**
      * Checks if the buffer is empty.
      */
+    @Override
     public boolean isEmpty() {
         for (ItemStack stack : stacks) {
             if (!stack.isEmpty()) {
@@ -208,6 +214,7 @@ public class VacuumBuffer {
     /**
      * Returns the total item count across all stacks.
      */
+    @Override
     public int getTotalItemCount() {
         int count = 0;
         for (ItemStack stack : stacks) {
@@ -233,6 +240,7 @@ public class VacuumBuffer {
     /**
      * Gets the maximum capacity in items (assuming max stack size of 64).
      */
+    @Override
     public int getMaxCapacity() {
         return maxStacks * 64;
     }
@@ -240,6 +248,7 @@ public class VacuumBuffer {
     /**
      * Clears all items from the buffer.
      */
+    @Override
     public void clear() {
         for (int i = 0; i < stacks.size(); i++) {
             stacks.set(i, ItemStack.EMPTY);

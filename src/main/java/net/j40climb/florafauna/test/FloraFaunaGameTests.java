@@ -5,6 +5,7 @@ import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChambe
 import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
+import net.j40climb.florafauna.common.block.vacuum.BufferTransfer;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
@@ -79,6 +80,7 @@ public class FloraFaunaGameTests {
 
         // Register item input system tests
         registerVacuumBufferTests(event, defaultEnv);
+        registerBufferTransferTests(event, defaultEnv);
         registerClaimedItemDataTests(event, defaultEnv);
 
         // Register mining mode tests
@@ -486,6 +488,131 @@ public class FloraFaunaGameTests {
         // Should not be able to accept more
         if (buffer.canAccept(new ItemStack(Items.STONE, 1))) {
             throw helper.assertionException("Full buffer should not accept new items");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Buffer Transfer Tests ====================
+
+    private static void registerBufferTransferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "buffer_transfer_basic", FloraFaunaGameTests::testBufferTransferBasic);
+        registerTest(event, env, "buffer_transfer_partial", FloraFaunaGameTests::testBufferTransferPartial);
+        registerTest(event, env, "buffer_transfer_empty_source", FloraFaunaGameTests::testBufferTransferEmptySource);
+        registerTest(event, env, "buffer_transfer_full_destination", FloraFaunaGameTests::testBufferTransferFullDestination);
+        registerTest(event, env, "buffer_transfer_one_stack", FloraFaunaGameTests::testBufferTransferOneStack);
+    }
+
+    private static void testBufferTransferBasic(GameTestHelper helper) {
+        VacuumBuffer source = new VacuumBuffer(27);
+        VacuumBuffer dest = new VacuumBuffer(27);
+
+        // Add items to source
+        source.add(new ItemStack(Items.COBBLESTONE, 64));
+        source.add(new ItemStack(Items.DIAMOND, 32));
+
+        // Transfer all
+        BufferTransfer.TransferResult result = BufferTransfer.transferAll(source, dest);
+
+        if (result.itemsTransferred() != 96) {
+            throw helper.assertionException("Should transfer 96 items, got: " + result.itemsTransferred());
+        }
+        if (!source.isEmpty()) {
+            throw helper.assertionException("Source should be empty after full transfer");
+        }
+        if (dest.getTotalItemCount() != 96) {
+            throw helper.assertionException("Destination should have 96 items, got: " + dest.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testBufferTransferPartial(GameTestHelper helper) {
+        VacuumBuffer source = new VacuumBuffer(27);
+        VacuumBuffer dest = new VacuumBuffer(27);
+
+        // Add 100 items to source
+        source.add(new ItemStack(Items.IRON_INGOT, 64));
+        source.add(new ItemStack(Items.IRON_INGOT, 36));
+
+        // Transfer only 50
+        BufferTransfer.TransferResult result = BufferTransfer.transfer(source, dest, 50);
+
+        if (result.itemsTransferred() != 50) {
+            throw helper.assertionException("Should transfer 50 items, got: " + result.itemsTransferred());
+        }
+        if (source.getTotalItemCount() != 50) {
+            throw helper.assertionException("Source should have 50 items remaining, got: " + source.getTotalItemCount());
+        }
+        if (dest.getTotalItemCount() != 50) {
+            throw helper.assertionException("Destination should have 50 items, got: " + dest.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testBufferTransferEmptySource(GameTestHelper helper) {
+        VacuumBuffer source = new VacuumBuffer(27);
+        VacuumBuffer dest = new VacuumBuffer(27);
+
+        // Source is empty
+        BufferTransfer.TransferResult result = BufferTransfer.transferAll(source, dest);
+
+        if (result.itemsTransferred() != 0) {
+            throw helper.assertionException("Should transfer 0 items from empty source, got: " + result.itemsTransferred());
+        }
+        if (!result.sourceEmpty()) {
+            throw helper.assertionException("Result should indicate source is empty");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testBufferTransferFullDestination(GameTestHelper helper) {
+        VacuumBuffer source = new VacuumBuffer(27);
+        VacuumBuffer dest = new VacuumBuffer(1); // Tiny destination
+
+        // Add items to source
+        source.add(new ItemStack(Items.GOLD_INGOT, 128));
+
+        // Fill destination
+        dest.add(new ItemStack(Items.STICK, 64));
+
+        // Try to transfer - should fail because dest is full
+        BufferTransfer.TransferResult result = BufferTransfer.transferAll(source, dest);
+
+        if (result.itemsTransferred() != 0) {
+            throw helper.assertionException("Should transfer 0 items to full destination, got: " + result.itemsTransferred());
+        }
+        if (!result.destinationFull()) {
+            throw helper.assertionException("Result should indicate destination is full");
+        }
+        if (source.getTotalItemCount() != 128) {
+            throw helper.assertionException("Source should still have 128 items, got: " + source.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testBufferTransferOneStack(GameTestHelper helper) {
+        VacuumBuffer source = new VacuumBuffer(27);
+        VacuumBuffer dest = new VacuumBuffer(27);
+
+        // Add multiple stacks to source
+        source.add(new ItemStack(Items.COAL, 64));
+        source.add(new ItemStack(Items.REDSTONE, 64));
+
+        // Transfer one stack
+        int transferred = BufferTransfer.transferOneStack(source, dest);
+
+        if (transferred != 64) {
+            throw helper.assertionException("Should transfer 64 items (one stack), got: " + transferred);
+        }
+        if (source.getTotalItemCount() != 64) {
+            throw helper.assertionException("Source should have 64 items remaining, got: " + source.getTotalItemCount());
+        }
+        if (dest.getTotalItemCount() != 64) {
+            throw helper.assertionException("Destination should have 64 items, got: " + dest.getTotalItemCount());
         }
 
         helper.succeed();
