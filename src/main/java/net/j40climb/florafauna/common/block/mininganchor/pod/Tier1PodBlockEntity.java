@@ -10,13 +10,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * T0 (Feral) Storage Pod block entity.
+ * Tier 1 (Feral) Storage Pod block entity.
  * Spills all items when broken - basic organic storage.
+ * Capacity: 9 slots (576 items)
  */
 public class Tier1PodBlockEntity extends AbstractStoragePodBlockEntity {
 
+    public static final int SLOT_COUNT = 9;
+
     public Tier1PodBlockEntity(BlockPos pos, BlockState state) {
-        super(FloraFaunaRegistry.TIER1_POD_BE.get(), pos, state);
+        super(FloraFaunaRegistry.TIER1_POD_BE.get(), pos, state, SLOT_COUNT);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.mininganchor.pod;
 
-import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.ItemBuffer;
 import net.minecraft.core.BlockPos;
@@ -25,41 +24,43 @@ import java.util.Optional;
 /**
  * Abstract base class for storage pods that attach to Mining Anchors.
  * Pods provide additional storage capacity for the anchor system.
+ * Each pod tier defines its own slot count (capacity).
  */
 public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
 
-    // Default max items per pod (used if config not set)
-    protected static final int DEFAULT_POD_MAX_ITEMS = 256;
-    // Number of slots - enough to hold max items across different stack sizes
-    protected static final int POD_SLOT_COUNT = 16;
-    protected static final String TAG_POD_BUFFER = "PodBuffer";
     protected static final String TAG_PARENT_ANCHOR = "ParentAnchor";
 
     protected final ItemBuffer podBuffer;
+    protected final int slotCount;
     @Nullable
     protected BlockPos parentAnchorPos;
 
-    public AbstractStoragePodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    /**
+     * Creates a pod with the specified slot count.
+     * @param type The block entity type
+     * @param pos The block position
+     * @param state The block state
+     * @param slotCount Number of inventory slots (capacity = slotCount * 64)
+     */
+    public AbstractStoragePodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int slotCount) {
         super(type, pos, state);
-        // Use enough slots to hold various item types, but limit by item count
-        this.podBuffer = new ItemBuffer(POD_SLOT_COUNT);
+        this.slotCount = slotCount;
+        this.podBuffer = new ItemBuffer(slotCount);
     }
 
     /**
-     * Returns the maximum item capacity of this pod.
-     * This is the anchor's base capacity divided by max pods.
+     * Returns the number of slots in this pod.
      */
-    protected int getMaxItemCapacity() {
-        int baseCapacity = Config.miningAnchorBaseCapacity > 0 ? Config.miningAnchorBaseCapacity : 256;
-        int maxPods = Config.miningAnchorMaxPods > 0 ? Config.miningAnchorMaxPods : 4;
-        return baseCapacity / maxPods;
+    public int getSlotCount() {
+        return slotCount;
     }
 
     /**
      * Returns the maximum capacity of this pod in items.
+     * Each slot can hold up to 64 items.
      */
     public int getCapacity() {
-        return getMaxItemCapacity();
+        return slotCount * 64;
     }
 
     /**
@@ -70,10 +71,10 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
     }
 
     /**
-     * Returns whether the pod is full (reached max item capacity).
+     * Returns whether the pod is full (reached max item capacity or all slots full).
      */
     public boolean isFull() {
-        return podBuffer.getItemCount() >= getMaxItemCapacity();
+        return podBuffer.isFull() || podBuffer.getItemCount() >= getCapacity();
     }
 
     /**

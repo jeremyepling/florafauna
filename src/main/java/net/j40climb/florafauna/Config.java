@@ -73,23 +73,19 @@ public class Config {
         BUILDER.comment("Mining Anchor System Configuration").push("mininganchor");
     }
 
-    // Capacity settings
-    private static final ModConfigSpec.IntValue MINING_ANCHOR_BASE_CAPACITY = BUILDER
-            .comment("Base capacity of the anchor buffer in items (before pods)")
-            .defineInRange("baseCapacity", 256, 64, 1024);
+    // Max pods per tier (pod capacity is defined by pod tier, not config)
+    private static final ModConfigSpec.IntValue MINING_ANCHOR_TIER1_MAX_PODS = BUILDER
+            .comment("Maximum number of pods for Tier 1 (Feral) anchors")
+            .defineInRange("tier1MaxPods", 4, 1, 16);
 
-    private static final ModConfigSpec.IntValue MINING_ANCHOR_POD_CAPACITY = BUILDER
-            .comment("Capacity per storage pod in stacks (multiplied by 64 for item count)")
-            .defineInRange("podCapacityStacks", 128, 16, 512);
+    private static final ModConfigSpec.IntValue MINING_ANCHOR_TIER2_MAX_PODS = BUILDER
+            .comment("Maximum number of pods for Tier 2 (Hardened) anchors")
+            .defineInRange("tier2MaxPods", 8, 1, 16);
 
-    private static final ModConfigSpec.IntValue MINING_ANCHOR_MAX_PODS = BUILDER
-            .comment("Maximum number of pods that can grow from an anchor")
-            .defineInRange("maxPods", 4, 1, 8);
-
-    // Growth settings
-    private static final ModConfigSpec.DoubleValue MINING_ANCHOR_POD_GROWTH_THRESHOLD = BUILDER
-            .comment("Fill percentage at which a new pod spawns (0.0 to 1.0)")
-            .defineInRange("podGrowthThreshold", 0.8, 0.5, 1.0);
+    // Spawn settings
+    private static final ModConfigSpec.IntValue MINING_ANCHOR_POD_SPAWN_RADIUS = BUILDER
+            .comment("Maximum distance from anchor where pods can spawn")
+            .defineInRange("podSpawnRadius", 5, 1, 10);
 
     // Collection settings (overrides for block drops only mode)
     private static final ModConfigSpec.IntValue MINING_ANCHOR_COLLECT_RADIUS = BUILDER
@@ -128,10 +124,9 @@ public class Config {
     public static int animationDurationTicks;
 
     // Mining Anchor System
-    public static int miningAnchorBaseCapacity;
-    public static int miningAnchorPodCapacity;
-    public static int miningAnchorMaxPods;
-    public static double miningAnchorPodGrowthThreshold;
+    public static int miningAnchorTier1MaxPods;
+    public static int miningAnchorTier2MaxPods;
+    public static int miningAnchorPodSpawnRadius;
     public static int miningAnchorCollectRadius;
     public static int miningAnchorCollectInterval;
     public static boolean miningAnchorBlockDropsOnly;
@@ -155,10 +150,9 @@ public class Config {
         animationDurationTicks = ANIMATION_DURATION_TICKS.get();
 
         // Mining Anchor System
-        miningAnchorBaseCapacity = MINING_ANCHOR_BASE_CAPACITY.get();
-        miningAnchorPodCapacity = MINING_ANCHOR_POD_CAPACITY.get();
-        miningAnchorMaxPods = MINING_ANCHOR_MAX_PODS.get();
-        miningAnchorPodGrowthThreshold = MINING_ANCHOR_POD_GROWTH_THRESHOLD.get();
+        miningAnchorTier1MaxPods = MINING_ANCHOR_TIER1_MAX_PODS.get();
+        miningAnchorTier2MaxPods = MINING_ANCHOR_TIER2_MAX_PODS.get();
+        miningAnchorPodSpawnRadius = MINING_ANCHOR_POD_SPAWN_RADIUS.get();
         miningAnchorCollectRadius = MINING_ANCHOR_COLLECT_RADIUS.get();
         miningAnchorCollectInterval = MINING_ANCHOR_COLLECT_INTERVAL.get();
         miningAnchorBlockDropsOnly = MINING_ANCHOR_BLOCK_DROPS_ONLY.get();

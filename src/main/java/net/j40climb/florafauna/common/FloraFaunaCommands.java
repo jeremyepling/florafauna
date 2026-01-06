@@ -127,7 +127,7 @@ public class FloraFaunaCommands {
                                         .executes(FloraFaunaCommands::clearAllAbilities)))
                         .then(Commands.literal("mininganchor")
                                 .then(Commands.literal("fill")
-                                        .then(Commands.argument("amount", IntegerArgumentType.integer(0, 512))
+                                        .then(Commands.argument("amount", IntegerArgumentType.integer(0, 16000))
                                                 .executes(FloraFaunaCommands::fillMiningAnchor)))
                                 .then(Commands.literal("clear")
                                         .executes(FloraFaunaCommands::clearMiningAnchor))
@@ -660,9 +660,6 @@ public class FloraFaunaCommands {
 
         int amount = IntegerArgumentType.getInteger(context, "amount");
 
-        // Clear existing items first
-        anchor.clearAllPods();
-
         // Add cobblestone to pods (spawns pods as needed)
         int remaining = amount;
         int totalAdded = 0;
@@ -724,6 +721,26 @@ public class FloraFaunaCommands {
         boolean spawned = anchor.forceSpawnPod();
 
         if (spawned) {
+            // Fill the newly spawned pod with cobblestone
+            var podPositions = anchor.getPodPositions();
+            if (!podPositions.isEmpty()) {
+                BlockPos newPodPos = podPositions.get(podPositions.size() - 1);
+                BlockEntity be = player.level().getBlockEntity(newPodPos);
+                if (be instanceof net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity pod) {
+                    // Fill the pod to capacity with cobblestone
+                    int capacity = pod.getCapacity();
+                    int remaining = capacity;
+                    while (remaining > 0) {
+                        int stackSize = Math.min(64, remaining);
+                        ItemStack cobble = new ItemStack(Items.COBBLESTONE, stackSize);
+                        int added = pod.addItems(cobble);
+                        remaining -= added;
+                        if (added == 0) break;
+                    }
+                    pod.markChangedAndSync();
+                }
+            }
+
             source.sendSuccess(() -> Component.translatable("command.florafauna.mininganchor.pod_grown", anchor.getPodCount())
                     .withStyle(style -> style.withColor(0x2ECC71)), false);
             return 1;

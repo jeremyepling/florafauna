@@ -13,13 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * T2 (Hardened) Storage Pod block entity.
+ * Tier 2 (Hardened) Storage Pod block entity.
  * Keeps items when broken (like shulker boxes) - drops as item with contents.
+ * Capacity: 27 slots (1728 items) - same as shulker box
  */
 public class Tier2PodBlockEntity extends AbstractStoragePodBlockEntity {
 
+    public static final int SLOT_COUNT = 27;
+
     public Tier2PodBlockEntity(BlockPos pos, BlockState state) {
-        super(FloraFaunaRegistry.TIER2_POD_BE.get(), pos, state);
+        super(FloraFaunaRegistry.TIER2_POD_BE.get(), pos, state, SLOT_COUNT);
     }
 
     @Override

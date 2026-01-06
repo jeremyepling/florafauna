@@ -4,6 +4,7 @@ import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.VacuumState;
+import net.j40climb.florafauna.setup.FloraFaunaTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -32,20 +34,6 @@ import java.util.List;
 public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBlockEntity {
     private static final String KEY_POD_POSITIONS = "pod_positions";
 
-    // Default total capacity across all pods (in items) - overridden by config
-    protected static final int DEFAULT_BASE_CAPACITY = 256;
-
-    // Default maximum number of pods - overridden by config
-    protected static final int DEFAULT_MAX_PODS = 4;
-
-    // Relative positions where pods can spawn
-    protected static final BlockPos[] POD_OFFSETS = {
-            new BlockPos(1, 0, 0),
-            new BlockPos(-1, 0, 0),
-            new BlockPos(0, 0, 1),
-            new BlockPos(0, 0, -1)
-    };
-
     // Tracked pod positions
     protected final List<BlockPos> podPositions = new ArrayList<>();
 
@@ -58,17 +46,10 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
     }
 
     /**
-     * Returns the configured total capacity (across all pods), with fallback to default.
+     * Returns the configured maximum spawn radius for pods.
      */
-    protected static int getConfigBaseCapacity() {
-        return Config.miningAnchorBaseCapacity > 0 ? Config.miningAnchorBaseCapacity : DEFAULT_BASE_CAPACITY;
-    }
-
-    /**
-     * Returns the configured max pods, with fallback to default.
-     */
-    protected static int getConfigMaxPods() {
-        return Config.miningAnchorMaxPods > 0 ? Config.miningAnchorMaxPods : DEFAULT_MAX_PODS;
+    protected static int getConfigSpawnRadius() {
+        return Config.miningAnchorPodSpawnRadius > 0 ? Config.miningAnchorPodSpawnRadius : 5;
     }
 
     // ==================== BLOCK DROP FILTERING ====================
@@ -86,14 +67,26 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
      */
     protected abstract Block getPodBlock();
 
+    /**
+     * Returns the maximum number of pods this anchor tier can spawn.
+     * Subclasses return their tier-specific config value.
+     */
+    protected abstract int getMaxPods();
+
+    /**
+     * Returns the capacity of each pod this anchor spawns.
+     * Subclasses return their tier-specific pod capacity.
+     */
+    protected abstract int getPodCapacity();
+
     // ==================== CAPACITY CALCULATION ====================
 
     /**
-     * Returns the total capacity across all pods.
-     * This is the configured base capacity (all storage is in pods).
+     * Returns the total potential capacity across all possible pods.
+     * Based on max pods × pod capacity, not just existing pods.
      */
     public int getMaxCapacity() {
-        return getConfigBaseCapacity();
+        return getMaxPods() * getPodCapacity();
     }
 
     /**
@@ -143,8 +136,8 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         ItemStack stack = itemEntity.getItem().copy();
         int remaining = stack.getCount();
 
-        // Try to add to existing pods first
-        for (BlockPos podPos : podPositions) {
+        // Try to add to existing pods first (closest to anchor first)
+        for (BlockPos podPos : getPodPositionsByDistance()) {
             if (remaining <= 0) break;
 
             BlockEntity be = level.getBlockEntity(podPos);
@@ -162,7 +155,7 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         }
 
         // Spawn new pods if needed and we have capacity
-        while (remaining > 0 && podPositions.size() < getConfigMaxPods()) {
+        while (remaining > 0 && podPositions.size() < getMaxPods()) {
             if (!trySpawnPod(level)) {
                 break; // No space for more pods
             }
@@ -185,28 +178,95 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
 
         // Remove the item entity (even if we couldn't store everything)
         itemEntity.discard();
+
+        // Update fill state after adding items
+        checkFillStateChange(level, worldPosition, getBlockState());
     }
 
     /**
-     * Tries to spawn a new pod at an available position.
+     * Tries to spawn a new pod at the next available position.
+     * Uses expanding ring algorithm - searches outward from anchor.
      * @return true if a pod was spawned, false if no space available
      */
     protected boolean trySpawnPod(Level level) {
-        for (BlockPos offset : POD_OFFSETS) {
-            BlockPos podPos = worldPosition.offset(offset);
-            if (canSpawnPodAt(level, podPos) && !podPositions.contains(podPos)) {
-                spawnPod(level, podPos);
-                return true;
-            }
+        BlockPos nextPos = findNextPodPosition(level);
+        if (nextPos != null) {
+            spawnPod(level, nextPos);
+            return true;
         }
         return false;
     }
 
     /**
+     * Finds the next available position for a pod using expanding ring algorithm.
+     * Priority: same Y-level first, then Y+1 if blocked.
+     * @return next valid position, or null if no space within spawn radius
+     */
+    protected BlockPos findNextPodPosition(Level level) {
+        int maxRadius = getConfigSpawnRadius();
+        List<BlockPos> candidates = new ArrayList<>();
+
+        // Generate all candidate positions within radius, sorted by distance
+        for (int dy = 0; dy <= 1; dy++) {
+            for (int r = 1; r <= maxRadius; r++) {
+                // Cardinal directions at this ring
+                addCandidate(candidates, worldPosition.offset(r, dy, 0));
+                addCandidate(candidates, worldPosition.offset(-r, dy, 0));
+                addCandidate(candidates, worldPosition.offset(0, dy, r));
+                addCandidate(candidates, worldPosition.offset(0, dy, -r));
+
+                // Fill in the ring (diagonal and intermediate positions)
+                for (int i = 1; i < r; i++) {
+                    // All four quadrants
+                    addCandidate(candidates, worldPosition.offset(r, dy, i));
+                    addCandidate(candidates, worldPosition.offset(r, dy, -i));
+                    addCandidate(candidates, worldPosition.offset(-r, dy, i));
+                    addCandidate(candidates, worldPosition.offset(-r, dy, -i));
+                    addCandidate(candidates, worldPosition.offset(i, dy, r));
+                    addCandidate(candidates, worldPosition.offset(-i, dy, r));
+                    addCandidate(candidates, worldPosition.offset(i, dy, -r));
+                    addCandidate(candidates, worldPosition.offset(-i, dy, -r));
+                }
+
+                // Diagonal corners
+                addCandidate(candidates, worldPosition.offset(r, dy, r));
+                addCandidate(candidates, worldPosition.offset(r, dy, -r));
+                addCandidate(candidates, worldPosition.offset(-r, dy, r));
+                addCandidate(candidates, worldPosition.offset(-r, dy, -r));
+            }
+        }
+
+        // Sort by: Y-level first (prefer same level), then distance from anchor
+        candidates.sort(Comparator
+                .comparingInt((BlockPos p) -> p.getY() - worldPosition.getY())
+                .thenComparingDouble(p -> worldPosition.distSqr(p)));
+
+        // Find first valid position
+        for (BlockPos candidate : candidates) {
+            if (!podPositions.contains(candidate) && canSpawnPodAt(level, candidate)) {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Adds a position to the candidate list if not already present.
+     */
+    private void addCandidate(List<BlockPos> candidates, BlockPos pos) {
+        if (!candidates.contains(pos)) {
+            candidates.add(pos);
+        }
+    }
+
+    /**
      * Checks if a pod can be spawned at the given position.
+     * Valid positions are air or blocks tagged as pod_replaceable.
      */
     protected boolean canSpawnPodAt(Level level, BlockPos pos) {
-        return level.getBlockState(pos).isAir();
+        BlockState state = level.getBlockState(pos);
+        return state.isAir() || state.is(FloraFaunaTags.Blocks.POD_REPLACEABLE);
     }
 
     /**
@@ -275,18 +335,11 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
             return false;
         }
 
-        if (podPositions.size() >= getConfigMaxPods()) {
+        if (podPositions.size() >= getMaxPods()) {
             return false;
         }
 
-        for (BlockPos offset : POD_OFFSETS) {
-            BlockPos podPos = worldPosition.offset(offset);
-            if (canSpawnPodAt(level, podPos) && !podPositions.contains(podPos)) {
-                spawnPod(level, podPos);
-                return true;
-            }
-        }
-        return false;
+        return trySpawnPod(level);
     }
 
     /**
@@ -304,8 +357,8 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         int remaining = stack.getCount();
         int totalAdded = 0;
 
-        // Try to add to existing pods first
-        for (BlockPos podPos : podPositions) {
+        // Try to add to existing pods first (closest to anchor first)
+        for (BlockPos podPos : getPodPositionsByDistance()) {
             if (remaining <= 0) break;
 
             BlockEntity be = level.getBlockEntity(podPos);
@@ -324,7 +377,7 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         }
 
         // Spawn new pods if needed
-        while (remaining > 0 && podPositions.size() < getConfigMaxPods()) {
+        while (remaining > 0 && podPositions.size() < getMaxPods()) {
             if (!trySpawnPod(level)) {
                 break;
             }
@@ -345,6 +398,11 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
             }
         }
 
+        // Update fill state after adding items
+        if (totalAdded > 0) {
+            checkFillStateChange(level, worldPosition, getBlockState());
+        }
+
         return totalAdded;
     }
 
@@ -361,6 +419,11 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
                 pod.markChangedAndSync();
             }
         }
+
+        // Update fill state after clearing
+        if (!level.isClientSide()) {
+            checkFillStateChange(level, worldPosition, getBlockState());
+        }
     }
 
     /**
@@ -371,6 +434,11 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
     public void onPodRemoved(BlockPos podPos) {
         podPositions.remove(podPos);
         setChanged();
+
+        // Update fill state immediately when a pod is removed
+        if (level != null && !level.isClientSide()) {
+            checkFillStateChange(level, worldPosition, getBlockState());
+        }
     }
 
     /**
@@ -378,6 +446,16 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
      */
     public List<BlockPos> getPodPositions() {
         return new ArrayList<>(podPositions);
+    }
+
+    /**
+     * Returns pod positions sorted by distance from anchor (closest first).
+     * Used for consistent fill order regardless of spawn order.
+     */
+    protected List<BlockPos> getPodPositionsByDistance() {
+        List<BlockPos> sorted = new ArrayList<>(podPositions);
+        sorted.sort(Comparator.comparingDouble(pos -> worldPosition.distSqr(pos)));
+        return sorted;
     }
 
     /**

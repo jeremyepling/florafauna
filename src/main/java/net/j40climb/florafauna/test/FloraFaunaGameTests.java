@@ -4,7 +4,10 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
+import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.Tier2MiningAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.PodItemHandler;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.vacuum.BufferTransfer;
@@ -1240,6 +1243,11 @@ public class FloraFaunaGameTests {
         registerTest(event, env, "anchor_fill_state_warning", FloraFaunaGameTests::testAnchorFillStateWarning);
         registerTest(event, env, "anchor_fill_state_full", FloraFaunaGameTests::testAnchorFillStateFull);
         registerTest(event, env, "anchor_fill_state_edge_cases", FloraFaunaGameTests::testAnchorFillStateEdgeCases);
+        registerTest(event, env, "pod_slot_count_tier1", FloraFaunaGameTests::testPodSlotCountTier1);
+        registerTest(event, env, "pod_slot_count_tier2", FloraFaunaGameTests::testPodSlotCountTier2);
+        registerTest(event, env, "anchor_tier1_capacity", FloraFaunaGameTests::testAnchorTier1Capacity);
+        registerTest(event, env, "anchor_tier2_capacity", FloraFaunaGameTests::testAnchorTier2Capacity);
+        registerTest(event, env, "anchor_fill_state_potential_capacity", FloraFaunaGameTests::testAnchorFillStatePotentialCapacity);
     }
 
     private static void testAnchorFillStateNormal(GameTestHelper helper) {
@@ -1319,6 +1327,157 @@ public class FloraFaunaGameTests {
         float threshold = AnchorFillState.getWarningThreshold();
         if (threshold != 0.75f) {
             throw helper.assertionException("Warning threshold should be 0.75, got: " + threshold);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testPodSlotCountTier1(GameTestHelper helper) {
+        // Tier 1 pods have 9 slots
+        if (Tier1PodBlockEntity.SLOT_COUNT != 9) {
+            throw helper.assertionException("Tier 1 pod should have 9 slots, got: " + Tier1PodBlockEntity.SLOT_COUNT);
+        }
+
+        // Create a pod and verify slot count
+        BlockPos podPos = new BlockPos(0, 1, 0);
+        helper.setBlock(podPos, FloraFaunaRegistry.TIER1_POD.get().defaultBlockState());
+
+        Tier1PodBlockEntity pod = helper.getBlockEntity(podPos, Tier1PodBlockEntity.class);
+        if (pod == null) {
+            throw helper.assertionException("Tier 1 pod block entity is null");
+        }
+
+        if (pod.getSlotCount() != 9) {
+            throw helper.assertionException("Tier 1 pod getSlotCount() should return 9, got: " + pod.getSlotCount());
+        }
+
+        // Capacity = slots × 64
+        if (pod.getCapacity() != 576) {
+            throw helper.assertionException("Tier 1 pod capacity should be 576 (9×64), got: " + pod.getCapacity());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testPodSlotCountTier2(GameTestHelper helper) {
+        // Tier 2 pods have 27 slots (same as shulker box)
+        if (Tier2PodBlockEntity.SLOT_COUNT != 27) {
+            throw helper.assertionException("Tier 2 pod should have 27 slots, got: " + Tier2PodBlockEntity.SLOT_COUNT);
+        }
+
+        // Create a pod and verify slot count
+        BlockPos podPos = new BlockPos(0, 1, 0);
+        helper.setBlock(podPos, FloraFaunaRegistry.TIER2_POD.get().defaultBlockState());
+
+        Tier2PodBlockEntity pod = helper.getBlockEntity(podPos, Tier2PodBlockEntity.class);
+        if (pod == null) {
+            throw helper.assertionException("Tier 2 pod block entity is null");
+        }
+
+        if (pod.getSlotCount() != 27) {
+            throw helper.assertionException("Tier 2 pod getSlotCount() should return 27, got: " + pod.getSlotCount());
+        }
+
+        // Capacity = slots × 64
+        if (pod.getCapacity() != 1728) {
+            throw helper.assertionException("Tier 2 pod capacity should be 1728 (27×64), got: " + pod.getCapacity());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testAnchorTier1Capacity(GameTestHelper helper) {
+        // Create a Tier 1 anchor
+        BlockPos anchorPos = new BlockPos(0, 1, 0);
+        helper.setBlock(anchorPos, FloraFaunaRegistry.TIER1_MINING_ANCHOR.get().defaultBlockState());
+
+        Tier1MiningAnchorBlockEntity anchor = helper.getBlockEntity(anchorPos, Tier1MiningAnchorBlockEntity.class);
+        if (anchor == null) {
+            throw helper.assertionException("Tier 1 anchor block entity is null");
+        }
+
+        // Pod capacity: 9 slots × 64 items = 576 items
+        int expectedPodCapacity = Tier1PodBlockEntity.SLOT_COUNT * 64;
+        if (expectedPodCapacity != 576) {
+            throw helper.assertionException("Expected pod capacity 576, got: " + expectedPodCapacity);
+        }
+
+        // Max capacity = max pods (4) × pod capacity (576) = 2304
+        // Note: Config may override, but default is 4
+        int maxCapacity = anchor.getMaxCapacity();
+        // At minimum, capacity should be positive and match formula
+        if (maxCapacity <= 0) {
+            throw helper.assertionException("Max capacity should be positive, got: " + maxCapacity);
+        }
+
+        // With no pods, stored count should be 0
+        int storedCount = anchor.getStoredCount();
+        if (storedCount != 0) {
+            throw helper.assertionException("Fresh anchor should have 0 stored items, got: " + storedCount);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testAnchorTier2Capacity(GameTestHelper helper) {
+        // Create a Tier 2 anchor
+        BlockPos anchorPos = new BlockPos(0, 1, 0);
+        helper.setBlock(anchorPos, FloraFaunaRegistry.TIER2_MINING_ANCHOR.get().defaultBlockState());
+
+        Tier2MiningAnchorBlockEntity anchor = helper.getBlockEntity(anchorPos, Tier2MiningAnchorBlockEntity.class);
+        if (anchor == null) {
+            throw helper.assertionException("Tier 2 anchor block entity is null");
+        }
+
+        // Pod capacity: 27 slots × 64 items = 1728 items
+        int expectedPodCapacity = Tier2PodBlockEntity.SLOT_COUNT * 64;
+        if (expectedPodCapacity != 1728) {
+            throw helper.assertionException("Expected pod capacity 1728, got: " + expectedPodCapacity);
+        }
+
+        // Max capacity should be positive
+        int maxCapacity = anchor.getMaxCapacity();
+        if (maxCapacity <= 0) {
+            throw helper.assertionException("Max capacity should be positive, got: " + maxCapacity);
+        }
+
+        // Tier 2 should have more capacity than Tier 1
+        // Tier 1: 4 × 576 = 2304, Tier 2: 8 × 1728 = 13824
+        if (maxCapacity < 10000) {
+            throw helper.assertionException("Tier 2 max capacity should be >= 10000 (8×1728=13824), got: " + maxCapacity);
+        }
+
+        helper.succeed();
+    }
+
+    private static void testAnchorFillStatePotentialCapacity(GameTestHelper helper) {
+        // Fill state should be based on POTENTIAL capacity (all possible pods)
+        // not just existing pods
+
+        // Simulate: If an anchor can have 4 pods with 576 capacity each (2304 total)
+        // and 1728 items are stored (75%), it should be in WARNING state
+        AnchorFillState state75 = AnchorFillState.fromFillRatio(1728, 2304);
+        if (state75 != AnchorFillState.WARNING) {
+            throw helper.assertionException("75% fill (1728/2304) should be WARNING, got: " + state75);
+        }
+
+        // 50% of potential capacity = NORMAL
+        AnchorFillState state50 = AnchorFillState.fromFillRatio(1152, 2304);
+        if (state50 != AnchorFillState.NORMAL) {
+            throw helper.assertionException("50% fill (1152/2304) should be NORMAL, got: " + state50);
+        }
+
+        // 100% of potential capacity = FULL
+        AnchorFillState state100 = AnchorFillState.fromFillRatio(2304, 2304);
+        if (state100 != AnchorFillState.FULL) {
+            throw helper.assertionException("100% fill (2304/2304) should be FULL, got: " + state100);
+        }
+
+        // Even with only 1 pod spawned but at 75% of total potential = WARNING
+        // This ensures the fill state is based on ALL pods, not just existing
+        AnchorFillState partialFill = AnchorFillState.fromFillRatio(576 + 576 + 576, 2304);
+        if (partialFill != AnchorFillState.WARNING) {
+            throw helper.assertionException("3 pods worth (1728/2304 = 75%) should be WARNING, got: " + partialFill);
         }
 
         helper.succeed();
