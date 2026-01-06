@@ -4,10 +4,12 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
+import net.j40climb.florafauna.common.block.mininganchor.pod.PodItemHandler;
+import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.vacuum.BufferTransfer;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
-import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
+import net.j40climb.florafauna.common.block.vacuum.ItemBuffer;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
@@ -22,8 +24,12 @@ import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -79,9 +85,10 @@ public class FloraFaunaGameTests {
         registerDialogueRepositoryTests(event, defaultEnv);
 
         // Register item input system tests
-        registerVacuumBufferTests(event, defaultEnv);
+        registerItemBufferTests(event, defaultEnv);
         registerBufferTransferTests(event, defaultEnv);
         registerClaimedItemDataTests(event, defaultEnv);
+        registerPodItemHandlerTests(event, defaultEnv);
 
         // Register mining mode tests
         registerMiningModeTests(event, defaultEnv);
@@ -383,7 +390,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Item Input Buffer Tests ====================
 
-    private static void registerVacuumBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerItemBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
         registerTest(event, env, "item_buffer_initial_state", FloraFaunaGameTests::testItemBufferInitialState);
         registerTest(event, env, "item_buffer_add_and_retrieve", FloraFaunaGameTests::testItemBufferAddAndRetrieve);
         registerTest(event, env, "item_buffer_stack_merging", FloraFaunaGameTests::testItemBufferStackMerging);
@@ -395,7 +402,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferInitialState(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
 
         if (!buffer.isEmpty()) {
             throw helper.assertionException("Fresh buffer should be empty");
@@ -414,7 +421,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferAddAndRetrieve(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
 
         // Add a stack of cobblestone
         ItemStack toAdd = new ItemStack(Items.COBBLESTONE, 32);
@@ -449,7 +456,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferStackMerging(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
 
         // Add two partial stacks of the same item
         buffer.add(new ItemStack(Items.DIAMOND, 16));
@@ -475,7 +482,7 @@ public class FloraFaunaGameTests {
 
     private static void testItemBufferFullDetection(GameTestHelper helper) {
         // Create a tiny buffer with 2 slots
-        VacuumBuffer buffer = new VacuumBuffer(2);
+        ItemBuffer buffer = new ItemBuffer(2);
 
         // Fill both slots completely (sticks stack to 64)
         buffer.add(new ItemStack(Items.STICK, 64));
@@ -504,8 +511,8 @@ public class FloraFaunaGameTests {
     }
 
     private static void testBufferTransferBasic(GameTestHelper helper) {
-        VacuumBuffer source = new VacuumBuffer(27);
-        VacuumBuffer dest = new VacuumBuffer(27);
+        ItemBuffer source = new ItemBuffer(27);
+        ItemBuffer dest = new ItemBuffer(27);
 
         // Add items to source
         source.add(new ItemStack(Items.COBBLESTONE, 64));
@@ -528,8 +535,8 @@ public class FloraFaunaGameTests {
     }
 
     private static void testBufferTransferPartial(GameTestHelper helper) {
-        VacuumBuffer source = new VacuumBuffer(27);
-        VacuumBuffer dest = new VacuumBuffer(27);
+        ItemBuffer source = new ItemBuffer(27);
+        ItemBuffer dest = new ItemBuffer(27);
 
         // Add 100 items to source
         source.add(new ItemStack(Items.IRON_INGOT, 64));
@@ -552,8 +559,8 @@ public class FloraFaunaGameTests {
     }
 
     private static void testBufferTransferEmptySource(GameTestHelper helper) {
-        VacuumBuffer source = new VacuumBuffer(27);
-        VacuumBuffer dest = new VacuumBuffer(27);
+        ItemBuffer source = new ItemBuffer(27);
+        ItemBuffer dest = new ItemBuffer(27);
 
         // Source is empty
         BufferTransfer.TransferResult result = BufferTransfer.transferAll(source, dest);
@@ -569,8 +576,8 @@ public class FloraFaunaGameTests {
     }
 
     private static void testBufferTransferFullDestination(GameTestHelper helper) {
-        VacuumBuffer source = new VacuumBuffer(27);
-        VacuumBuffer dest = new VacuumBuffer(1); // Tiny destination
+        ItemBuffer source = new ItemBuffer(27);
+        ItemBuffer dest = new ItemBuffer(1); // Tiny destination
 
         // Add items to source
         source.add(new ItemStack(Items.GOLD_INGOT, 128));
@@ -595,8 +602,8 @@ public class FloraFaunaGameTests {
     }
 
     private static void testBufferTransferOneStack(GameTestHelper helper) {
-        VacuumBuffer source = new VacuumBuffer(27);
-        VacuumBuffer dest = new VacuumBuffer(27);
+        ItemBuffer source = new ItemBuffer(27);
+        ItemBuffer dest = new ItemBuffer(27);
 
         // Add multiple stacks to source
         source.add(new ItemStack(Items.COAL, 64));
@@ -692,8 +699,193 @@ public class FloraFaunaGameTests {
         helper.succeed();
     }
 
+    // ==================== Pod Item Handler Tests ====================
+
+    private static void registerPodItemHandlerTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "pod_handler_extract_from_buffer", FloraFaunaGameTests::testPodHandlerExtractFromBuffer);
+        registerTest(event, env, "pod_handler_buffer_sync", FloraFaunaGameTests::testPodHandlerBufferSync);
+        registerTest(event, env, "pod_handler_extract_with_transaction", FloraFaunaGameTests::testPodHandlerExtractWithTransaction);
+        registerTest(event, env, "pod_capability_registered", FloraFaunaGameTests::testPodCapabilityRegistered);
+    }
+
+    /**
+     * Tests that extracting via PodItemHandler removes items from the underlying buffer.
+     * This is a unit test that creates an ItemBuffer directly without needing a block entity.
+     */
+    private static void testPodHandlerExtractFromBuffer(GameTestHelper helper) {
+        // Create a buffer and add items
+        ItemBuffer buffer = new ItemBuffer(27);
+        buffer.add(new ItemStack(Items.COBBLESTONE, 64));
+
+        // Verify initial state
+        if (buffer.getTotalItemCount() != 64) {
+            throw helper.assertionException("Buffer should have 64 items initially, got: " + buffer.getTotalItemCount());
+        }
+
+        // Create a mock pod to test the handler
+        // We'll test the extraction logic directly on the buffer since that's the core issue
+        ItemResource cobbleResource = ItemResource.of(new ItemStack(Items.COBBLESTONE));
+
+        // Simulate what PodItemHandler.extract does
+        ItemStack current = buffer.getStack(0);
+        if (!cobbleResource.matches(current)) {
+            throw helper.assertionException("Resource should match cobblestone stack");
+        }
+
+        int toExtract = Math.min(32, current.getCount());
+        current.shrink(toExtract);
+
+        // Verify extraction worked
+        if (buffer.getTotalItemCount() != 32) {
+            throw helper.assertionException("Buffer should have 32 items after extraction, got: " + buffer.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    /**
+     * Tests that changes made via buffer.setStack are reflected in subsequent reads.
+     */
+    private static void testPodHandlerBufferSync(GameTestHelper helper) {
+        ItemBuffer buffer = new ItemBuffer(27);
+
+        // Add items
+        buffer.add(new ItemStack(Items.IRON_INGOT, 40));
+
+        // Verify we can read it back
+        ItemStack stack = buffer.getStack(0);
+        if (stack.isEmpty() || stack.getCount() != 40) {
+            throw helper.assertionException("Should read 40 iron ingots, got: " + stack.getCount());
+        }
+
+        // Modify via setStack (simulating extraction)
+        buffer.setStack(0, new ItemStack(Items.IRON_INGOT, 20));
+
+        // Verify modification persisted
+        ItemStack modified = buffer.getStack(0);
+        if (modified.getCount() != 20) {
+            throw helper.assertionException("After setStack, should have 20 items, got: " + modified.getCount());
+        }
+
+        // Verify total count is correct
+        if (buffer.getTotalItemCount() != 20) {
+            throw helper.assertionException("Total count should be 20, got: " + buffer.getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    /**
+     * Tests extracting from PodItemHandler using the Transaction API,
+     * similar to how hoppers extract items.
+     */
+    private static void testPodHandlerExtractWithTransaction(GameTestHelper helper) {
+        // Place a Tier2Pod block
+        BlockPos podPos = helper.absolutePos(new BlockPos(0, 1, 0));
+        helper.setBlock(new BlockPos(0, 1, 0), FloraFaunaRegistry.TIER2_POD.get().defaultBlockState());
+
+        // Get the block entity
+        Tier2PodBlockEntity pod = helper.getBlockEntity(new BlockPos(0, 1, 0), Tier2PodBlockEntity.class);
+        if (pod == null) {
+            throw helper.assertionException("Block entity is not Tier2PodBlockEntity");
+        }
+
+        // Add items to the pod's buffer
+        pod.getBuffer().add(new ItemStack(Items.COBBLESTONE, 64));
+
+        // Verify items are in the buffer
+        if (pod.getBuffer().getTotalItemCount() != 64) {
+            throw helper.assertionException("Pod buffer should have 64 items, got: " + pod.getBuffer().getTotalItemCount());
+        }
+
+        // Get the item handler (as hoppers would)
+        PodItemHandler handler = pod.getItemHandler();
+
+        // Verify handler can see the items
+        ItemResource resource = handler.getResource(0);
+        if (resource.isEmpty()) {
+            throw helper.assertionException("Handler getResource(0) returned empty, but buffer has items");
+        }
+
+        long amount = handler.getAmountAsLong(0);
+        if (amount != 64) {
+            throw helper.assertionException("Handler getAmountAsLong(0) should be 64, got: " + amount);
+        }
+
+        // Extract using transaction (like hoppers do)
+        try (Transaction tx = Transaction.openRoot()) {
+            int extracted = handler.extract(0, resource, 1, tx);
+            if (extracted != 1) {
+                throw helper.assertionException("Should extract 1 item, got: " + extracted);
+            }
+            tx.commit();
+        }
+
+        // Verify extraction worked on the underlying buffer
+        if (pod.getBuffer().getTotalItemCount() != 63) {
+            throw helper.assertionException("Buffer should have 63 items after extraction, got: " + pod.getBuffer().getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
+    /**
+     * Tests that the capability is properly registered and can be queried from the level.
+     * This is how hoppers find item handlers.
+     */
+    private static void testPodCapabilityRegistered(GameTestHelper helper) {
+        // Place a Tier2Pod block
+        BlockPos relativePos = new BlockPos(0, 1, 0);
+        helper.setBlock(relativePos, FloraFaunaRegistry.TIER2_POD.get().defaultBlockState());
+
+        // Get the absolute position
+        BlockPos absolutePos = helper.absolutePos(relativePos);
+
+        // Add items to the pod
+        Tier2PodBlockEntity pod = helper.getBlockEntity(relativePos, Tier2PodBlockEntity.class);
+        if (pod == null) {
+            throw helper.assertionException("Block entity is null");
+        }
+        pod.getBuffer().add(new ItemStack(Items.COBBLESTONE, 64));
+
+        // Query the capability like a hopper would (from below, direction DOWN)
+        ResourceHandler<ItemResource> handler = helper.getLevel().getCapability(
+                Capabilities.Item.BLOCK, absolutePos, Direction.DOWN);
+
+        if (handler == null) {
+            throw helper.assertionException("Capability returned null - not registered!");
+        }
+
+        // Verify the handler can see the items
+        int size = handler.size();
+        if (size == 0) {
+            throw helper.assertionException("Handler size is 0");
+        }
+
+        ItemResource resource = handler.getResource(0);
+        if (resource.isEmpty()) {
+            throw helper.assertionException("Handler getResource(0) returned empty but pod has items");
+        }
+
+        // Try extracting
+        try (Transaction tx = Transaction.openRoot()) {
+            int extracted = handler.extract(0, resource, 1, tx);
+            if (extracted != 1) {
+                throw helper.assertionException("Capability extract returned " + extracted + ", expected 1");
+            }
+            tx.commit();
+        }
+
+        // Verify extraction worked
+        if (pod.getBuffer().getTotalItemCount() != 63) {
+            throw helper.assertionException("Buffer should have 63 items, got: " + pod.getBuffer().getTotalItemCount());
+        }
+
+        helper.succeed();
+    }
+
     private static void testItemBufferPartialMergeToFull(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
 
         // Add 48 diamonds, then 32 more (48 + 32 = 80, but max stack is 64)
         buffer.add(new ItemStack(Items.DIAMOND, 48));
@@ -711,7 +903,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferOverflowToNewSlot(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
 
         // Add full stack, then add more of same item
         buffer.add(new ItemStack(Items.IRON_INGOT, 64));
@@ -728,7 +920,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferPeekNoRemove(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
         buffer.add(new ItemStack(Items.GOLD_INGOT, 20));
 
         // Peek should return the item
@@ -749,7 +941,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testItemBufferClear(GameTestHelper helper) {
-        VacuumBuffer buffer = new VacuumBuffer(27);
+        ItemBuffer buffer = new ItemBuffer(27);
         buffer.add(new ItemStack(Items.EMERALD, 32));
         buffer.add(new ItemStack(Items.REDSTONE, 64));
 

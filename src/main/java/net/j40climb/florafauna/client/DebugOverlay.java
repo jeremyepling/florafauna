@@ -1,6 +1,8 @@
 package net.j40climb.florafauna.client;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
+import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
@@ -24,6 +26,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -211,17 +214,28 @@ public class DebugOverlay implements GuiLayer {
         BlockHitResult blockHit = (BlockHitResult) hitResult;
         BlockPos pos = blockHit.getBlockPos();
         Level level = player.level();
-        BlockEntity blockEntity = level.getBlockEntity(pos);
+        BlockState blockState = level.getBlockState(pos);
 
-        if (blockEntity == null) {
-            return;
-        }
+        // Check if this is a FloraFauna block by checking the item form for our components
+        ItemStack blockItem = new ItemStack(blockState.getBlock());
+        List<String> componentLines = getModDataComponentLines(blockItem);
 
         // Check for FloraFauna block entities
-        List<String> blockLines = getBlockEntityDebugLines(blockEntity);
-        if (!blockLines.isEmpty()) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        List<String> blockLines = blockEntity != null ? getBlockEntityDebugLines(blockEntity) : List.of();
+
+        // Only show section if there's something to display
+        if (!componentLines.isEmpty() || !blockLines.isEmpty()) {
             lines.add(new DebugLine("--- Targeted Block ---", headerColor));
+            lines.add(new DebugLine("Block: " + blockState.getBlock().getName().getString(), valueColor));
             lines.add(new DebugLine("Pos: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), valueColor));
+
+            // Show item-form data components
+            for (String line : componentLines) {
+                lines.add(new DebugLine(line, color));
+            }
+
+            // Show block entity specific data
             for (String line : blockLines) {
                 lines.add(new DebugLine(line, color));
             }
@@ -249,7 +263,17 @@ public class DebugOverlay implements GuiLayer {
             }
         }
 
-        // Add more FloraFauna block entities here as needed
+        if (blockEntity instanceof AbstractStoragePodBlockEntity podBE) {
+            lines.add("Storage Pod:");
+            if (podBE.isEmpty()) {
+                lines.add("  (empty)");
+            } else {
+                lines.add("  Total: " + podBE.getStoredCount() + " items");
+                for (ItemStack item : podBE.getBuffer().getContentsForDrop()) {
+                    lines.add("  " + item.getHoverName().getString() + " x" + item.getCount());
+                }
+            }
+        }
 
         return lines;
     }
@@ -317,6 +341,19 @@ public class DebugOverlay implements GuiLayer {
                         lines.add("  Tag: " + tag);
                     }
                 }
+            }
+        }
+
+        if (stack.has(FloraFaunaRegistry.POD_CONTENTS.get())) {
+            PodContents contents = stack.get(FloraFaunaRegistry.POD_CONTENTS.get());
+            if (contents != null && !contents.isEmpty()) {
+                lines.add("Pod Contents: " + contents.getItemCount() + " items");
+                // Show item types with counts
+                for (ItemStack item : contents.items()) {
+                    lines.add("  " + item.getHoverName().getString() + " x" + item.getCount());
+                }
+            } else {
+                lines.add("Pod Contents: Empty");
             }
         }
 

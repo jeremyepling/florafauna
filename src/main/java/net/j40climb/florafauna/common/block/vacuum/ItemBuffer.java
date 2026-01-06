@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A buffer for temporarily storing items in vacuum-type blocks.
+ * A buffer for temporarily storing items.
  * Acts like a chest inventory with automatic stack merging.
  *
  * Key behaviors:
@@ -18,7 +18,7 @@ import java.util.List;
  * - Never voids items (canAccept checks first)
  * - Provides FIFO-style poll for transfer
  */
-public class VacuumBuffer implements IItemBuffer {
+public class ItemBuffer implements IItemBuffer {
     private final NonNullList<ItemStack> stacks;
     private final int maxStacks;
 
@@ -27,7 +27,7 @@ public class VacuumBuffer implements IItemBuffer {
      *
      * @param maxStacks Maximum number of unique stacks to hold
      */
-    public VacuumBuffer(int maxStacks) {
+    public ItemBuffer(int maxStacks) {
         this.maxStacks = maxStacks;
         this.stacks = NonNullList.withSize(maxStacks, ItemStack.EMPTY);
     }
@@ -35,8 +35,8 @@ public class VacuumBuffer implements IItemBuffer {
     /**
      * Creates a buffer with default capacity from config.
      */
-    public static VacuumBuffer create() {
-        return new VacuumBuffer(Config.maxBufferedStacks);
+    public static ItemBuffer create() {
+        return new ItemBuffer(Config.maxBufferedStacks);
     }
 
     /**
@@ -266,6 +266,14 @@ public class VacuumBuffer implements IItemBuffer {
             }
         }
         return drops;
+    }
+
+    /**
+     * Returns the internal stacks list for capability registration.
+     * Changes to this list will be reflected in the buffer.
+     */
+    public NonNullList<ItemStack> getStacks() {
+        return stacks;
     }
 
     // ==================== SERIALIZATION ====================

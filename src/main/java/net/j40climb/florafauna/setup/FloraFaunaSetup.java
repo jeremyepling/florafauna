@@ -6,6 +6,7 @@ import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActio
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
 import net.j40climb.florafauna.common.block.mininganchor.networking.AnchorFillStatePayload;
+import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.mobbarrier.networking.UpdateMobBarrierConfigPayload;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.block.wood.WoodType;
@@ -18,6 +19,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -115,6 +118,20 @@ public class FloraFaunaSetup {
         FloraFaunaCommands.register(event.getDispatcher());
     }
 
+    // ==================== CAPABILITIES ====================
+
+    /**
+     * Registers block entity capabilities.
+     */
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        // Allow hoppers and automation to extract from Tier2 pods
+        event.registerBlockEntity(
+                Capabilities.Item.BLOCK,
+                FloraFaunaRegistry.TIER2_POD_BE.get(),
+                (pod, direction) -> pod.getItemHandler()
+        );
+    }
+
     // ==================== INITIALIZATION ====================
 
     /**
@@ -126,6 +143,9 @@ public class FloraFaunaSetup {
 
         // Register networking to mod bus
         modEventBus.addListener(FloraFaunaSetup::registerNetworking);
+
+        // Register capabilities to mod bus
+        modEventBus.addListener(FloraFaunaSetup::registerCapabilities);
 
         // Register to NeoForge event bus for game events
         NeoForge.EVENT_BUS.addListener(FloraFaunaSetup::registerCommands);

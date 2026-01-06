@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.block.mininganchor.pod;
 
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
-import net.j40climb.florafauna.common.block.vacuum.VacuumBuffer;
+import net.j40climb.florafauna.common.block.vacuum.ItemBuffer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -26,13 +26,13 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
     protected static final String TAG_POD_BUFFER = "PodBuffer";
     protected static final String TAG_PARENT_ANCHOR = "ParentAnchor";
 
-    protected final VacuumBuffer podBuffer;
+    protected final ItemBuffer podBuffer;
     @Nullable
     protected BlockPos parentAnchorPos;
 
     public AbstractStoragePodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.podBuffer = new VacuumBuffer(getPodCapacity());
+        this.podBuffer = new ItemBuffer(getPodCapacity());
     }
 
     /**
@@ -102,8 +102,16 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
     /**
      * Gets the pod's buffer for direct access.
      */
-    public VacuumBuffer getBuffer() {
+    public ItemBuffer getBuffer() {
         return podBuffer;
+    }
+
+    /**
+     * Gets the item handler for capability registration.
+     * Creates a new handler each time - it's lightweight since it delegates to the buffer.
+     */
+    public PodItemHandler getItemHandler() {
+        return new PodItemHandler(this);
     }
 
     /**

@@ -40,14 +40,14 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
     public static final EnumProperty<VacuumState> STATE = EnumProperty.create("state", VacuumState.class);
 
     // Buffer for collected items
-    protected final VacuumBuffer buffer;
+    protected final ItemBuffer buffer;
 
     // Tick cooldowns
     private int collectCooldown = 0;
 
     protected AbstractVacuumBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState, int bufferCapacity) {
         super(type, pos, blockState);
-        this.buffer = new VacuumBuffer(bufferCapacity);
+        this.buffer = new ItemBuffer(bufferCapacity);
     }
 
     protected AbstractVacuumBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
@@ -364,7 +364,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
 
     // ==================== ACCESSORS ====================
 
-    public VacuumBuffer getBuffer() {
+    public ItemBuffer getBuffer() {
         return buffer;
     }
 }
