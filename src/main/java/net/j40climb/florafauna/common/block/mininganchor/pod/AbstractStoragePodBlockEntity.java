@@ -28,7 +28,10 @@ import java.util.Optional;
  */
 public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
 
-    protected static final int DEFAULT_POD_CAPACITY = 128;
+    // Default max items per pod (used if config not set)
+    protected static final int DEFAULT_POD_MAX_ITEMS = 256;
+    // Number of slots - enough to hold max items across different stack sizes
+    protected static final int POD_SLOT_COUNT = 16;
     protected static final String TAG_POD_BUFFER = "PodBuffer";
     protected static final String TAG_PARENT_ANCHOR = "ParentAnchor";
 
@@ -38,21 +41,25 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
 
     public AbstractStoragePodBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.podBuffer = new ItemBuffer(getPodCapacity());
+        // Use enough slots to hold various item types, but limit by item count
+        this.podBuffer = new ItemBuffer(POD_SLOT_COUNT);
     }
 
     /**
-     * Returns the capacity of this pod type. Override for different capacities.
+     * Returns the maximum item capacity of this pod.
+     * This is the anchor's base capacity divided by max pods.
      */
-    protected int getPodCapacity() {
-        return Config.miningAnchorPodCapacity > 0 ? Config.miningAnchorPodCapacity : DEFAULT_POD_CAPACITY;
+    protected int getMaxItemCapacity() {
+        int baseCapacity = Config.miningAnchorBaseCapacity > 0 ? Config.miningAnchorBaseCapacity : 256;
+        int maxPods = Config.miningAnchorMaxPods > 0 ? Config.miningAnchorMaxPods : 4;
+        return baseCapacity / maxPods;
     }
 
     /**
-     * Returns the maximum capacity of this pod.
+     * Returns the maximum capacity of this pod in items.
      */
     public int getCapacity() {
-        return podBuffer.getMaxCapacity();
+        return getMaxItemCapacity();
     }
 
     /**
@@ -63,10 +70,10 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
     }
 
     /**
-     * Returns whether the pod is full.
+     * Returns whether the pod is full (reached max item capacity).
      */
     public boolean isFull() {
-        return podBuffer.isFull();
+        return podBuffer.getItemCount() >= getMaxItemCapacity();
     }
 
     /**

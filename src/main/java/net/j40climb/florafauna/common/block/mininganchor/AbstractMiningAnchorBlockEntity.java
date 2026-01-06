@@ -226,8 +226,15 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         for (BlockPos podPos : podPositions) {
             BlockEntity be = level.getBlockEntity(podPos);
             if (be instanceof AbstractStoragePodBlockEntity pod && !pod.isFull()) {
-                int transferred = BufferTransfer.transferOneStack(buffer, pod.getBuffer());
-                if (transferred > 0) {
+                // Calculate remaining capacity for this pod
+                int remainingCapacity = pod.getCapacity() - pod.getStoredCount();
+                if (remainingCapacity <= 0) {
+                    continue; // Pod is full, try next one
+                }
+
+                // Transfer up to remaining capacity
+                BufferTransfer.TransferResult result = BufferTransfer.transfer(buffer, pod.getBuffer(), remainingCapacity);
+                if (result.itemsTransferred() > 0) {
                     setChanged();
                     pod.markChangedAndSync(); // Mark pod as changed and sync to clients
                     break; // One transfer per tick
