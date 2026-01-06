@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.common.block.iteminput.storageanchor;
 
+import net.j40climb.florafauna.common.block.iteminput.shared.ContainerScanner;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -12,7 +13,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -74,25 +74,19 @@ public class StorageAnchorBlockEntity extends BlockEntity {
     private void scanForContainers(Level level, BlockPos center) {
         nearbyContainers.clear();
 
-        for (int x = -SCAN_RADIUS; x <= SCAN_RADIUS; x++) {
-            for (int y = -SCAN_RADIUS; y <= SCAN_RADIUS; y++) {
-                for (int z = -SCAN_RADIUS; z <= SCAN_RADIUS; z++) {
-                    BlockPos pos = center.offset(x, y, z);
-                    if (pos.equals(center)) {
-                        continue; // Skip self
-                    }
+        // Build set of already-linked positions to exclude
+        Set<BlockPos> linkedPositions = new HashSet<>();
+        for (StorageDestination dest : linkedContainers) {
+            linkedPositions.add(dest.pos());
+        }
 
-                    // Check if block has item resource handler capability (NeoForge 21.9+ Transfer API)
-                    if (level.getCapability(Capabilities.Item.BLOCK, pos, null) != null) {
-                        // Don't add if already in linked list
-                        boolean isLinked = linkedContainers.stream()
-                                .anyMatch(dest -> dest.pos().equals(pos));
-                        if (!isLinked) {
-                            nearbyContainers.add(StorageDestination.autoDetected(pos));
-                        }
-                    }
-                }
-            }
+        // Use ContainerScanner utility for the actual scan
+        List<BlockPos> foundContainers = ContainerScanner.scanForContainers(
+                level, center, SCAN_RADIUS, linkedPositions);
+
+        // Convert to StorageDestination
+        for (BlockPos pos : foundContainers) {
+            nearbyContainers.add(StorageDestination.autoDetected(pos));
         }
     }
 
@@ -136,8 +130,8 @@ public class StorageAnchorBlockEntity extends BlockEntity {
             return false;
         }
 
-        // Verify it has item resource handler capability (NeoForge 21.9+ Transfer API)
-        if (level.getCapability(Capabilities.Item.BLOCK, pos, null) == null) {
+        // Verify it has item storage capability
+        if (!ContainerScanner.hasItemCapability(level, pos)) {
             return false;
         }
 

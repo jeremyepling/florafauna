@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.block.cocoonchamber;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -38,6 +39,13 @@ public class CocoonRespawnHandler {
         if (!isCocoonSpawnValid(player, data.cocoonSpawnPos(), data.cocoonSpawnDim())) {
             // Cocoon spawn is invalid - restore previous bed spawn
             restorePreviousBedSpawn(player, data);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            ChaosSuppressor.clearPlayer(player);
         }
     }
 
