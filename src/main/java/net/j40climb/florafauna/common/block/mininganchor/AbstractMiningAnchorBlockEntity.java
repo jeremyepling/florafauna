@@ -3,10 +3,11 @@ package net.j40climb.florafauna.common.block.mininganchor;
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
-import net.j40climb.florafauna.common.block.vacuum.BufferTransfer;
 import net.j40climb.florafauna.common.block.vacuum.VacuumState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,21 +25,18 @@ import java.util.List;
  *
  * Mining Anchors:
  * - Collect block drops from the world (collectBlockDropsOnly = true)
- * - Automatically spawn pods when buffer fills up
- * - Overflow items to pods when anchor buffer is full
+ * - Store ALL items in pods (anchor itself has no storage)
+ * - Automatically spawn pods as needed up to max pods
  * - Track fill state for waypoint display and symbiote dialogue
  */
 public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBlockEntity {
     private static final String KEY_POD_POSITIONS = "pod_positions";
 
-    // Default capacity of anchor buffer (in items) - overridden by config
+    // Default total capacity across all pods (in items) - overridden by config
     protected static final int DEFAULT_BASE_CAPACITY = 256;
 
     // Default maximum number of pods - overridden by config
     protected static final int DEFAULT_MAX_PODS = 4;
-
-    // Default pod growth threshold - overridden by config
-    protected static final float DEFAULT_POD_GROWTH_THRESHOLD = 0.8f;
 
     // Relative positions where pods can spawn
     protected static final BlockPos[] POD_OFFSETS = {
@@ -55,19 +53,12 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
     protected AnchorFillState currentFillState = AnchorFillState.NORMAL;
 
     protected AbstractMiningAnchorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
-        super(type, pos, blockState, calculateMaxStacks(getConfigBaseCapacity()));
+        // Anchor has minimal buffer - items go directly to pods
+        super(type, pos, blockState, 1);
     }
 
     /**
-     * Calculate buffer slot count from item capacity.
-     * Assumes average stack size of 64.
-     */
-    private static int calculateMaxStacks(int itemCapacity) {
-        return Math.max(1, itemCapacity / 64);
-    }
-
-    /**
-     * Returns the configured base capacity, with fallback to default.
+     * Returns the configured total capacity (across all pods), with fallback to default.
      */
     protected static int getConfigBaseCapacity() {
         return Config.miningAnchorBaseCapacity > 0 ? Config.miningAnchorBaseCapacity : DEFAULT_BASE_CAPACITY;
@@ -78,13 +69,6 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
      */
     protected static int getConfigMaxPods() {
         return Config.miningAnchorMaxPods > 0 ? Config.miningAnchorMaxPods : DEFAULT_MAX_PODS;
-    }
-
-    /**
-     * Returns the configured pod growth threshold, with fallback to default.
-     */
-    protected static float getConfigPodGrowthThreshold() {
-        return Config.miningAnchorPodGrowthThreshold > 0 ? (float) Config.miningAnchorPodGrowthThreshold : DEFAULT_POD_GROWTH_THRESHOLD;
     }
 
     // ==================== BLOCK DROP FILTERING ====================
@@ -105,33 +89,19 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
     // ==================== CAPACITY CALCULATION ====================
 
     /**
-     * Returns the base capacity of this anchor (without pods).
+     * Returns the total capacity across all pods.
+     * This is the configured base capacity (all storage is in pods).
      */
-    public int getBaseCapacity() {
+    public int getMaxCapacity() {
         return getConfigBaseCapacity();
     }
 
     /**
-     * Returns the total maximum capacity including all pods.
-     */
-    public int getMaxCapacity() {
-        int podCapacity = 0;
-        if (level != null) {
-            for (BlockPos podPos : podPositions) {
-                BlockEntity be = level.getBlockEntity(podPos);
-                if (be instanceof AbstractStoragePodBlockEntity pod) {
-                    podCapacity += pod.getCapacity();
-                }
-            }
-        }
-        return getConfigBaseCapacity() + podCapacity;
-    }
-
-    /**
-     * Returns the total number of stored items (anchor + all pods).
+     * Returns the total number of stored items (sum of all pods).
+     * The anchor itself stores nothing - all items are in pods.
      */
     public int getStoredCount() {
-        int count = buffer.getTotalItemCount();
+        int count = 0;
         if (level != null) {
             for (BlockPos podPos : podPositions) {
                 BlockEntity be = level.getBlockEntity(podPos);
@@ -154,38 +124,82 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
 
     @Override
     protected void tickProcessing(Level level, BlockPos pos, BlockState state) {
-        // Pod growth: spawn new pods when anchor is filling up
-        tickPodGrowth(level);
-
-        // Overflow: move excess items to pods
-        tickOverflow(level);
-
         // Fill state change detection
         checkFillStateChange(level, pos, state);
     }
 
+    // ==================== ITEM COLLECTION ====================
+
     /**
-     * Spawns new pods when the anchor buffer is getting full.
+     * Overrides parent to store items directly in pods instead of anchor buffer.
+     * Spawns pods as needed to store incoming items.
      */
-    protected void tickPodGrowth(Level level) {
-        if (podPositions.size() >= getConfigMaxPods()) {
+    @Override
+    protected void absorbItem(ItemEntity itemEntity) {
+        if (level == null) {
             return;
         }
 
-        // Check if buffer is above growth threshold
-        float fillRatio = (float) buffer.getTotalItemCount() / getBaseCapacity();
-        if (fillRatio < getConfigPodGrowthThreshold()) {
-            return;
+        ItemStack stack = itemEntity.getItem().copy();
+        int remaining = stack.getCount();
+
+        // Try to add to existing pods first
+        for (BlockPos podPos : podPositions) {
+            if (remaining <= 0) break;
+
+            BlockEntity be = level.getBlockEntity(podPos);
+            if (be instanceof AbstractStoragePodBlockEntity pod && !pod.isFull()) {
+                int canAdd = Math.min(remaining, pod.getCapacity() - pod.getStoredCount());
+                if (canAdd > 0) {
+                    ItemStack toAdd = stack.copyWithCount(canAdd);
+                    int added = pod.getBuffer().add(toAdd);
+                    if (added > 0) {
+                        remaining -= added;
+                        pod.markChangedAndSync();
+                    }
+                }
+            }
         }
 
-        // Find next available spawn position
+        // Spawn new pods if needed and we have capacity
+        while (remaining > 0 && podPositions.size() < getConfigMaxPods()) {
+            if (!trySpawnPod(level)) {
+                break; // No space for more pods
+            }
+
+            // Add to the newly spawned pod
+            BlockPos newPodPos = podPositions.get(podPositions.size() - 1);
+            BlockEntity be = level.getBlockEntity(newPodPos);
+            if (be instanceof AbstractStoragePodBlockEntity pod) {
+                int canAdd = Math.min(remaining, pod.getCapacity());
+                if (canAdd > 0) {
+                    ItemStack toAdd = stack.copyWithCount(canAdd);
+                    int added = pod.getBuffer().add(toAdd);
+                    if (added > 0) {
+                        remaining -= added;
+                        pod.markChangedAndSync();
+                    }
+                }
+            }
+        }
+
+        // Remove the item entity (even if we couldn't store everything)
+        itemEntity.discard();
+    }
+
+    /**
+     * Tries to spawn a new pod at an available position.
+     * @return true if a pod was spawned, false if no space available
+     */
+    protected boolean trySpawnPod(Level level) {
         for (BlockPos offset : POD_OFFSETS) {
             BlockPos podPos = worldPosition.offset(offset);
             if (canSpawnPodAt(level, podPos) && !podPositions.contains(podPos)) {
                 spawnPod(level, podPos);
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -209,36 +223,6 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof AbstractStoragePodBlockEntity pod) {
                 pod.setParentAnchor(worldPosition);
-            }
-        }
-    }
-
-    /**
-     * Moves excess items from anchor buffer to pods.
-     */
-    protected void tickOverflow(Level level) {
-        // Only overflow if buffer has items and we have pods
-        if (buffer.isEmpty() || podPositions.isEmpty()) {
-            return;
-        }
-
-        // Move items to pods that aren't full
-        for (BlockPos podPos : podPositions) {
-            BlockEntity be = level.getBlockEntity(podPos);
-            if (be instanceof AbstractStoragePodBlockEntity pod && !pod.isFull()) {
-                // Calculate remaining capacity for this pod
-                int remainingCapacity = pod.getCapacity() - pod.getStoredCount();
-                if (remainingCapacity <= 0) {
-                    continue; // Pod is full, try next one
-                }
-
-                // Transfer up to remaining capacity
-                BufferTransfer.TransferResult result = BufferTransfer.transfer(buffer, pod.getBuffer(), remainingCapacity);
-                if (result.itemsTransferred() > 0) {
-                    setChanged();
-                    pod.markChangedAndSync(); // Mark pod as changed and sync to clients
-                    break; // One transfer per tick
-                }
             }
         }
     }
@@ -303,6 +287,80 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
             }
         }
         return false;
+    }
+
+    /**
+     * Adds items directly to pods. Spawns new pods as needed.
+     * Used by commands and other external sources.
+     *
+     * @param stack The items to add
+     * @return The number of items that were added
+     */
+    public int addItems(ItemStack stack) {
+        if (level == null || stack.isEmpty()) {
+            return 0;
+        }
+
+        int remaining = stack.getCount();
+        int totalAdded = 0;
+
+        // Try to add to existing pods first
+        for (BlockPos podPos : podPositions) {
+            if (remaining <= 0) break;
+
+            BlockEntity be = level.getBlockEntity(podPos);
+            if (be instanceof AbstractStoragePodBlockEntity pod && !pod.isFull()) {
+                int canAdd = Math.min(remaining, pod.getCapacity() - pod.getStoredCount());
+                if (canAdd > 0) {
+                    ItemStack toAdd = stack.copyWithCount(canAdd);
+                    int added = pod.getBuffer().add(toAdd);
+                    if (added > 0) {
+                        remaining -= added;
+                        totalAdded += added;
+                        pod.markChangedAndSync();
+                    }
+                }
+            }
+        }
+
+        // Spawn new pods if needed
+        while (remaining > 0 && podPositions.size() < getConfigMaxPods()) {
+            if (!trySpawnPod(level)) {
+                break;
+            }
+
+            BlockPos newPodPos = podPositions.get(podPositions.size() - 1);
+            BlockEntity be = level.getBlockEntity(newPodPos);
+            if (be instanceof AbstractStoragePodBlockEntity pod) {
+                int canAdd = Math.min(remaining, pod.getCapacity());
+                if (canAdd > 0) {
+                    ItemStack toAdd = stack.copyWithCount(canAdd);
+                    int added = pod.getBuffer().add(toAdd);
+                    if (added > 0) {
+                        remaining -= added;
+                        totalAdded += added;
+                        pod.markChangedAndSync();
+                    }
+                }
+            }
+        }
+
+        return totalAdded;
+    }
+
+    /**
+     * Clears all items from all pods.
+     */
+    public void clearAllPods() {
+        if (level == null) return;
+
+        for (BlockPos podPos : podPositions) {
+            BlockEntity be = level.getBlockEntity(podPos);
+            if (be instanceof AbstractStoragePodBlockEntity pod) {
+                pod.getBuffer().clear();
+                pod.markChangedAndSync();
+            }
+        }
     }
 
     /**

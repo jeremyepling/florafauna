@@ -661,15 +661,20 @@ public class FloraFaunaCommands {
         int amount = IntegerArgumentType.getInteger(context, "amount");
 
         // Clear existing items first
-        anchor.getBuffer().clear();
+        anchor.clearAllPods();
 
-        // Add cobblestone to simulate collected block drops
+        // Add cobblestone to pods (spawns pods as needed)
         int remaining = amount;
+        int totalAdded = 0;
         while (remaining > 0) {
             int stackSize = Math.min(64, remaining);
             ItemStack cobble = new ItemStack(Items.COBBLESTONE, stackSize);
-            anchor.getBuffer().add(cobble);
+            int added = anchor.addItems(cobble);
+            totalAdded += added;
             remaining -= stackSize;
+            if (added == 0) {
+                break; // No more capacity
+            }
         }
 
         anchor.setChanged();
@@ -693,7 +698,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        anchor.getBuffer().clear();
+        anchor.clearAllPods();
         anchor.setChanged();
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.mininganchor.cleared")
