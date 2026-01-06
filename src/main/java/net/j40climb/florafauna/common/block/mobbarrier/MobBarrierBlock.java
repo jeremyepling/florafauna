@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,6 +42,9 @@ import org.jetbrains.annotations.Nullable;
 public class MobBarrierBlock extends BaseEntityBlock {
 
     public static final MapCodec<MobBarrierBlock> CODEC = simpleCodec(MobBarrierBlock::new);
+
+    // 24 pixels = 1.5 blocks tall, same as fences - prevents jumping over
+    private static final VoxelShape BARRIER_SHAPE = Block.box(0, 0, 0, 16, 24, 16);
 
     public MobBarrierBlock(Properties properties) {
         super(properties);
@@ -79,7 +83,7 @@ public class MobBarrierBlock extends BaseEntityBlock {
             MobBarrierConfig config = getConfigAtPos(level, pos);
 
             if (config.shouldBlockEntity(entity)) {
-                return Shapes.block();
+                return BARRIER_SHAPE;
             }
         }
         return Shapes.empty();
