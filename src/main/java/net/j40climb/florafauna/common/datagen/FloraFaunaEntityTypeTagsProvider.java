@@ -95,5 +95,10 @@ public class FloraFaunaEntityTypeTagsProvider extends EntityTypeTagsProvider {
                 .add(EntityType.VEX)
                 .add(EntityType.WARDEN)
                 .add(EntityType.BREEZE);
+
+        // Mobs that can experience fear in the fear ecosystem
+        // Currently creepers only, will expand to enderman and blaze
+        tag(FloraFaunaTags.EntityTypes.FEARFUL_MOBS)
+                .add(EntityType.CREEPER);
     }
 }

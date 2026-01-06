@@ -159,6 +159,47 @@ public class Config {
         BUILDER.pop();
     }
 
+    // ==================== FEAR SYSTEM ====================
+
+    static {
+        BUILDER.comment("Fear System Configuration (Creeper Fear Ecosystem)").push("fear");
+    }
+
+    // Timing thresholds
+    private static final ModConfigSpec.IntValue FEAR_CHECK_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between fear state updates")
+            .defineInRange("checkIntervalTicks", 10, 1, 40);
+
+    private static final ModConfigSpec.IntValue PANIC_DURATION_FOR_LEAK = BUILDER
+            .comment("Ticks in PANICKED before triggering LEAK event")
+            .defineInRange("panicDurationForLeak", 200, 40, 600);
+
+    private static final ModConfigSpec.IntValue EXHAUSTED_COOLDOWN_TICKS = BUILDER
+            .comment("Ticks in EXHAUSTED (cooldown) before returning to CALM")
+            .defineInRange("exhaustedCooldownTicks", 4500, 200, 12000);
+
+    private static final ModConfigSpec.IntValue MAX_LEAKS_BEFORE_OVERSTRESS = BUILDER
+            .comment("Consecutive leaks without CALM reset before OVERSTRESS (explosion)")
+            .defineInRange("maxLeaksBeforeOverstress", 3, 1, 10);
+
+    // Detection range
+    private static final ModConfigSpec.DoubleValue FEAR_SOURCE_DETECTION_RANGE = BUILDER
+            .comment("Range in blocks to detect fear sources")
+            .defineInRange("detectionRange", 16.0, 4.0, 32.0);
+
+    // Gunpowder drops
+    private static final ModConfigSpec.IntValue GUNPOWDER_DROP_MIN = BUILDER
+            .comment("Minimum gunpowder dropped per LEAK event")
+            .defineInRange("gunpowderDropMin", 10, 1, 32);
+
+    private static final ModConfigSpec.IntValue GUNPOWDER_DROP_MAX = BUILDER
+            .comment("Maximum gunpowder dropped per LEAK event")
+            .defineInRange("gunpowderDropMax", 14, 1, 64);
+
+    static {
+        BUILDER.pop();
+    }
+
     // ==================== BUILD SPEC ====================
 
     public static final ModConfigSpec SPEC = BUILDER.build();
@@ -198,6 +239,15 @@ public class Config {
     public static boolean allowUnbondedCapture;
     public static int recentlyReleasedImmunityTicks;
 
+    // Fear System
+    public static int fearCheckIntervalTicks;
+    public static int panicDurationForLeak;
+    public static int exhaustedCooldownTicks;
+    public static int maxLeaksBeforeOverstress;
+    public static double fearSourceDetectionRange;
+    public static int gunpowderDropMin;
+    public static int gunpowderDropMax;
+
     /**
      * Loads config values from the spec into static fields.
      * Called when config is loaded/reloaded.
@@ -235,5 +285,14 @@ public class Config {
         releaseCheckIntervalTicks = MOB_RELEASE_CHECK_INTERVAL_TICKS.get();
         allowUnbondedCapture = MOB_ALLOW_UNBONDED_CAPTURE.get();
         recentlyReleasedImmunityTicks = MOB_RECENTLY_RELEASED_IMMUNITY_TICKS.get();
+
+        // Fear System
+        fearCheckIntervalTicks = FEAR_CHECK_INTERVAL_TICKS.get();
+        panicDurationForLeak = PANIC_DURATION_FOR_LEAK.get();
+        exhaustedCooldownTicks = EXHAUSTED_COOLDOWN_TICKS.get();
+        maxLeaksBeforeOverstress = MAX_LEAKS_BEFORE_OVERSTRESS.get();
+        fearSourceDetectionRange = FEAR_SOURCE_DETECTION_RANGE.get();
+        gunpowderDropMin = GUNPOWDER_DROP_MIN.get();
+        gunpowderDropMax = GUNPOWDER_DROP_MAX.get();
     }
 }

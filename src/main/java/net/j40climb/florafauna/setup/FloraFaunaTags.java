@@ -45,6 +45,13 @@ public final class FloraFaunaTags {
          */
         public static final TagKey<EntityType<?>> MOB_SYMBIOTE_LEVEL2_ELIGIBLE = create("mob_symbiote_level2_eligible");
 
+        /**
+         * Mobs that can experience fear and participate in the fear ecosystem.
+         * Currently includes creepers. Will expand to endermen, blazes, etc.
+         * Requires MobSymbiote Level 1+ to actually experience fear.
+         */
+        public static final TagKey<EntityType<?>> FEARFUL_MOBS = create("fearful_mobs");
+
         private static TagKey<EntityType<?>> create(String name) {
             return TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name));
         }

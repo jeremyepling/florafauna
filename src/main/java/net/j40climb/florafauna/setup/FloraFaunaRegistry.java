@@ -26,6 +26,7 @@ import net.j40climb.florafauna.common.block.mobtransport.MobInputBlock;
 import net.j40climb.florafauna.common.block.mobtransport.MobInputBlockEntity;
 import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlock;
 import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlockEntity;
+import net.j40climb.florafauna.common.entity.fear.FearData;
 import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteItem;
 import net.j40climb.florafauna.common.block.vacuum.BlockDropData;
@@ -457,6 +458,14 @@ public class FloraFaunaRegistry {
                     AttachmentType.builder(() -> MobSymbioteData.DEFAULT)
                             .serialize(MobSymbioteData.CODEC.fieldOf("mob_symbiote_data"))
                             .sync(MobSymbioteData.STREAM_CODEC)
+                            .build());
+
+    // Fear system attachment (for fear/stress state tracking)
+    public static final Supplier<AttachmentType<FearData>> FEAR_DATA =
+            ATTACHMENT_TYPES.register("fear_data", () ->
+                    AttachmentType.builder(() -> FearData.DEFAULT)
+                            .serialize(FearData.CODEC.fieldOf("fear_data"))
+                            .sync(FearData.STREAM_CODEC)
                             .build());
 
     // ==================== HELPER METHODS ====================

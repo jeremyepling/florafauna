@@ -27,6 +27,9 @@ import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.common.block.mobtransport.CapturedMobBuffer;
 import net.j40climb.florafauna.common.block.mobtransport.CapturedMobTicket;
 import net.j40climb.florafauna.common.block.mobtransport.MobCaptureEligibility;
+import net.j40climb.florafauna.common.entity.fear.FearData;
+import net.j40climb.florafauna.common.entity.fear.FearHelper;
+import net.j40climb.florafauna.common.entity.fear.FearState;
 import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
 import net.j40climb.florafauna.Config;
@@ -121,6 +124,9 @@ public class FloraFaunaGameTests {
 
         // Register mob transport tests
         registerMobTransportTests(event, defaultEnv);
+
+        // Register fear system tests
+        registerFearSystemTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -2053,6 +2059,201 @@ public class FloraFaunaGameTests {
         // Verify still has MobSymbiote
         if (!MobSymbioteHelper.hasMobSymbiote(zombie)) {
             throw helper.assertionException("Zombie should STILL have MobSymbiote after stopLuring");
+        }
+
+        helper.succeed();
+    }
+
+    // ==================== Fear System Tests ====================
+
+    private static void registerFearSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        registerTest(event, env, "fear_state_helper_methods", FloraFaunaGameTests::testFearStateHelperMethods);
+        registerTest(event, env, "fear_data_default_state", FloraFaunaGameTests::testFearDataDefaultState);
+        registerTest(event, env, "fear_data_state_transitions", FloraFaunaGameTests::testFearDataStateTransitions);
+        registerTest(event, env, "fear_data_leak_count", FloraFaunaGameTests::testFearDataLeakCount);
+        registerTest(event, env, "fear_data_fear_source_pos", FloraFaunaGameTests::testFearDataFearSourcePos);
+        registerTest(event, env, "fear_data_ticks_in_state", FloraFaunaGameTests::testFearDataTicksInState);
+    }
+
+    private static void testFearStateHelperMethods(GameTestHelper helper) {
+        // Test suppressesFuse()
+        if (!FearState.PANICKED.suppressesFuse()) {
+            throw helper.assertionException("PANICKED should suppress fuse");
+        }
+        if (FearState.CALM.suppressesFuse()) {
+            throw helper.assertionException("CALM should NOT suppress fuse");
+        }
+        if (FearState.EXHAUSTED.suppressesFuse()) {
+            throw helper.assertionException("EXHAUSTED should NOT suppress fuse");
+        }
+
+        // Test isImmuneToFear()
+        if (!FearState.EXHAUSTED.isImmuneToFear()) {
+            throw helper.assertionException("EXHAUSTED should be immune to fear");
+        }
+        if (!FearState.OVERSTRESS.isImmuneToFear()) {
+            throw helper.assertionException("OVERSTRESS should be immune to fear");
+        }
+        if (FearState.CALM.isImmuneToFear()) {
+            throw helper.assertionException("CALM should NOT be immune to fear");
+        }
+        if (FearState.PANICKED.isImmuneToFear()) {
+            throw helper.assertionException("PANICKED should NOT be immune to fear");
+        }
+
+        // Test isScared()
+        if (!FearState.PANICKED.isScared()) {
+            throw helper.assertionException("PANICKED should be scared");
+        }
+        if (FearState.CALM.isScared()) {
+            throw helper.assertionException("CALM should NOT be scared");
+        }
+        if (FearState.EXHAUSTED.isScared()) {
+            throw helper.assertionException("EXHAUSTED should NOT be scared");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testFearDataDefaultState(GameTestHelper helper) {
+        FearData data = FearData.DEFAULT;
+
+        if (data.fearState() != FearState.CALM) {
+            throw helper.assertionException("Default fear state should be CALM, got: " + data.fearState());
+        }
+        if (data.stateEnteredTick() != 0L) {
+            throw helper.assertionException("Default stateEnteredTick should be 0");
+        }
+        if (data.leakCountSinceCooldown() != 0) {
+            throw helper.assertionException("Default leakCountSinceCooldown should be 0");
+        }
+        if (data.hasFearSourcePos()) {
+            throw helper.assertionException("Default should not have fear source position");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testFearDataStateTransitions(GameTestHelper helper) {
+        FearData data = FearData.DEFAULT;
+
+        // Transition to PANICKED at tick 100
+        FearData panicked = data.withState(FearState.PANICKED, 100L);
+        if (panicked.fearState() != FearState.PANICKED) {
+            throw helper.assertionException("Should be PANICKED, got: " + panicked.fearState());
+        }
+        if (panicked.stateEnteredTick() != 100L) {
+            throw helper.assertionException("State entered tick should be 100, got: " + panicked.stateEnteredTick());
+        }
+
+        // Transition to EXHAUSTED at tick 200
+        FearData exhausted = panicked.withState(FearState.EXHAUSTED, 200L);
+        if (exhausted.fearState() != FearState.EXHAUSTED) {
+            throw helper.assertionException("Should be EXHAUSTED, got: " + exhausted.fearState());
+        }
+        if (exhausted.stateEnteredTick() != 200L) {
+            throw helper.assertionException("State entered tick should be 200, got: " + exhausted.stateEnteredTick());
+        }
+
+        // Leak count should be preserved through transitions
+        FearData withLeak = panicked.withLeakCount(2);
+        FearData transitioned = withLeak.withState(FearState.EXHAUSTED, 300L);
+        if (transitioned.leakCountSinceCooldown() != 2) {
+            throw helper.assertionException("Leak count should be preserved, got: " + transitioned.leakCountSinceCooldown());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testFearDataLeakCount(GameTestHelper helper) {
+        FearData data = FearData.DEFAULT;
+
+        // Increment leak count
+        FearData oneLeaks = data.incrementLeakCount();
+        if (oneLeaks.leakCountSinceCooldown() != 1) {
+            throw helper.assertionException("Leak count should be 1 after first increment");
+        }
+
+        FearData twoLeaks = oneLeaks.incrementLeakCount();
+        if (twoLeaks.leakCountSinceCooldown() != 2) {
+            throw helper.assertionException("Leak count should be 2 after second increment");
+        }
+
+        FearData threeLeaks = twoLeaks.incrementLeakCount();
+        if (threeLeaks.leakCountSinceCooldown() != 3) {
+            throw helper.assertionException("Leak count should be 3 after third increment");
+        }
+
+        // Reset leak count
+        FearData reset = threeLeaks.resetLeakCount();
+        if (reset.leakCountSinceCooldown() != 0) {
+            throw helper.assertionException("Leak count should be 0 after reset");
+        }
+
+        // Direct set
+        FearData direct = data.withLeakCount(5);
+        if (direct.leakCountSinceCooldown() != 5) {
+            throw helper.assertionException("Leak count should be 5 after direct set");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testFearDataFearSourcePos(GameTestHelper helper) {
+        FearData data = FearData.DEFAULT;
+
+        // Initially no position
+        if (data.hasFearSourcePos()) {
+            throw helper.assertionException("Should not have fear source position initially");
+        }
+        if (data.getFearSourcePos().isPresent()) {
+            throw helper.assertionException("getFearSourcePos should return empty Optional initially");
+        }
+
+        // Set position
+        BlockPos pos = new BlockPos(10, 20, 30);
+        FearData withPos = data.withFearSourcePos(pos);
+
+        if (!withPos.hasFearSourcePos()) {
+            throw helper.assertionException("Should have fear source position after setting");
+        }
+        if (withPos.getFearSourcePos().isEmpty()) {
+            throw helper.assertionException("getFearSourcePos should return position");
+        }
+        if (!withPos.getFearSourcePos().get().equals(pos)) {
+            throw helper.assertionException("Fear source position should match, got: " + withPos.getFearSourcePos().get());
+        }
+
+        // Clear position
+        FearData cleared = withPos.withoutFearSourcePos();
+
+        if (cleared.hasFearSourcePos()) {
+            throw helper.assertionException("Should not have fear source position after clearing");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testFearDataTicksInState(GameTestHelper helper) {
+        FearData data = FearData.DEFAULT;
+
+        // Enter PANICKED at tick 100
+        FearData panicked = data.withState(FearState.PANICKED, 100L);
+
+        // Check ticks in state at various times
+        long ticksAt100 = panicked.getTicksInState(100L);
+        if (ticksAt100 != 0) {
+            throw helper.assertionException("Ticks in state at entry should be 0, got: " + ticksAt100);
+        }
+
+        long ticksAt150 = panicked.getTicksInState(150L);
+        if (ticksAt150 != 50) {
+            throw helper.assertionException("Ticks in state at 150 should be 50, got: " + ticksAt150);
+        }
+
+        long ticksAt300 = panicked.getTicksInState(300L);
+        if (ticksAt300 != 200) {
+            throw helper.assertionException("Ticks in state at 300 should be 200, got: " + ticksAt300);
         }
 
         helper.succeed();
