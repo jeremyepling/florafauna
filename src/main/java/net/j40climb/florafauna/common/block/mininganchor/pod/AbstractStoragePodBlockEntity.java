@@ -4,9 +4,15 @@ import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.ItemBuffer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -133,6 +139,17 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Marks the pod as changed and notifies clients.
+     * Call this after modifying the buffer contents.
+     */
+    public void markChangedAndSync() {
+        setChanged();
+        if (level != null && !level.isClientSide()) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
@@ -148,5 +165,18 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
         podBuffer.deserialize(input);
         Optional<BlockPos> anchorPos = input.read(TAG_PARENT_ANCHOR, BlockPos.CODEC);
         parentAnchorPos = anchorPos.orElse(null);
+    }
+
+    // ==================== CLIENT SYNC ====================
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
+    }
+
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 }

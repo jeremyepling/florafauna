@@ -229,7 +229,7 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
                 int transferred = BufferTransfer.transferOneStack(buffer, pod.getBuffer());
                 if (transferred > 0) {
                     setChanged();
-                    pod.setChanged(); // Mark pod as changed so its contents are saved
+                    pod.markChangedAndSync(); // Mark pod as changed and sync to clients
                     break; // One transfer per tick
                 }
             }

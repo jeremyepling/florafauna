@@ -76,7 +76,7 @@ public class PodItemHandler implements ResourceHandler<ItemResource> {
             } else {
                 current.grow(toInsert);
             }
-            pod.setChanged();
+            pod.markChangedAndSync();
             return toInsert;
         }
         return 0;
@@ -101,7 +101,7 @@ public class PodItemHandler implements ResourceHandler<ItemResource> {
             } else {
                 current.shrink(toExtract);
             }
-            pod.setChanged();
+            pod.markChangedAndSync();
             return toExtract;
         }
         return 0;
