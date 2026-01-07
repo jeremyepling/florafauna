@@ -64,6 +64,8 @@
   "gui.florafauna.mob_barrier.add": "Add",
   "gui.florafauna.mob_barrier.blocked_entities": "Blocked Entities",
   "gui.florafauna.mob_barrier.no_entries": "No entities configured",
+  "gui.florafauna.mob_barrier.block_vision.on": "Block Vision: ON",
+  "gui.florafauna.mob_barrier.block_vision.off": "Block Vision: OFF",
   "message.florafauna.mob_barrier.copied": "Config copied from block",
 
   "block.florafauna.storage_anchor": "Storage Anchor",
