@@ -26,6 +26,26 @@ public final class FloraFaunaTags {
          */
         public static final TagKey<Block> POD_REPLACEABLE = create("pod_replaceable");
 
+        /**
+         * Reflective blocks that endermen will stare at and see their reflection.
+         * When an enderman sees their reflection within stare distance, they become scared.
+         * Includes polished stones, glass, ice, etc.
+         */
+        public static final TagKey<Block> REFLECTIVE_BLOCKS = create("reflective_blocks");
+
+        /**
+         * Cold blocks that contribute to blaze fear.
+         * When enough cold blocks are present in a blaze's vicinity (along with snow golems),
+         * the blaze becomes scared. Includes snow, ice, powder snow, etc.
+         */
+        public static final TagKey<Block> COLD_BLOCKS = create("cold_blocks");
+
+        /**
+         * Blocks that fear line-of-sight can pass through.
+         * Includes glass and glass panes so mobs can see fear sources through windows.
+         */
+        public static final TagKey<Block> FEAR_LOS_TRANSPARENT = create("fear_los_transparent");
+
         private static TagKey<Block> create(String name) {
             return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name));
         }

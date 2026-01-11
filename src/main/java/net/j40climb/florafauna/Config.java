@@ -187,7 +187,7 @@ public class Config {
             .comment("Range in blocks to detect fear sources")
             .defineInRange("detectionRange", 16.0, 4.0, 32.0);
 
-    // Gunpowder drops
+    // Creeper gunpowder drops
     private static final ModConfigSpec.IntValue GUNPOWDER_DROP_MIN = BUILDER
             .comment("Minimum gunpowder dropped per LEAK event")
             .defineInRange("gunpowderDropMin", 10, 1, 32);
@@ -195,6 +195,48 @@ public class Config {
     private static final ModConfigSpec.IntValue GUNPOWDER_DROP_MAX = BUILDER
             .comment("Maximum gunpowder dropped per LEAK event")
             .defineInRange("gunpowderDropMax", 14, 1, 64);
+
+    // Enderman-specific settings
+    private static final ModConfigSpec.DoubleValue ENDERMAN_STARE_DISTANCE = BUILDER
+            .comment("Maximum distance in blocks for enderman to 'lock in' a stare at reflective blocks or armor stands")
+            .defineInRange("endermanStareDistance", 4.0, 1.0, 16.0);
+
+    private static final ModConfigSpec.IntValue ENDER_PEARL_DROP_MIN = BUILDER
+            .comment("Minimum ender pearls dropped per LEAK event")
+            .defineInRange("enderPearlDropMin", 2, 1, 16);
+
+    private static final ModConfigSpec.IntValue ENDER_PEARL_DROP_MAX = BUILDER
+            .comment("Maximum ender pearls dropped per LEAK event")
+            .defineInRange("enderPearlDropMax", 4, 1, 32);
+
+    // Blaze-specific settings
+    private static final ModConfigSpec.IntValue BLAZE_MIN_SNOW_GOLEMS = BUILDER
+            .comment("Minimum number of snow golems required to trigger blaze fear")
+            .defineInRange("blazeMinSnowGolems", 1, 1, 10);
+
+    private static final ModConfigSpec.IntValue BLAZE_COLD_SCAN_RADIUS = BUILDER
+            .comment("Radius for scanning cold blocks (creates a cube of 2*radius+1)")
+            .defineInRange("blazeColdScanRadius", 8, 4, 16);
+
+    private static final ModConfigSpec.IntValue BLAZE_MIN_COLD_BLOCKS = BUILDER
+            .comment("Minimum cold blocks (snow/ice) required in scan area to enable fear (0 = disabled)")
+            .defineInRange("blazeMinColdBlocks", 2, 0, 500);
+
+    private static final ModConfigSpec.BooleanValue BLAZE_REQUIRE_BOTH_CONDITIONS = BUILDER
+            .comment("If true, blazes need BOTH snow golems AND cold blocks to leak. If false, either triggers fear.")
+            .define("blazeRequireBothConditions", false);
+
+    private static final ModConfigSpec.IntValue BLAZE_ROD_DROP_MIN = BUILDER
+            .comment("Minimum blaze rods dropped per LEAK event")
+            .defineInRange("blazeRodDropMin", 2, 1, 16);
+
+    private static final ModConfigSpec.IntValue BLAZE_ROD_DROP_MAX = BUILDER
+            .comment("Maximum blaze rods dropped per LEAK event")
+            .defineInRange("blazeRodDropMax", 4, 1, 32);
+
+    private static final ModConfigSpec.BooleanValue BLAZE_SUPPRESS_ATTACKS = BUILDER
+            .comment("If true, blazes stop attacking while in PANICKED state")
+            .define("blazeSuppressAttacks", true);
 
     static {
         BUILDER.pop();
@@ -247,6 +289,16 @@ public class Config {
     public static double fearSourceDetectionRange;
     public static int gunpowderDropMin;
     public static int gunpowderDropMax;
+    public static double endermanStareDistance;
+    public static int enderPearlDropMin;
+    public static int enderPearlDropMax;
+    public static int blazeMinSnowGolems;
+    public static int blazeColdScanRadius;
+    public static int blazeMinColdBlocks;
+    public static boolean blazeRequireBothConditions;
+    public static int blazeRodDropMin;
+    public static int blazeRodDropMax;
+    public static boolean blazeSuppressAttacks;
 
     /**
      * Loads config values from the spec into static fields.
@@ -294,5 +346,15 @@ public class Config {
         fearSourceDetectionRange = FEAR_SOURCE_DETECTION_RANGE.get();
         gunpowderDropMin = GUNPOWDER_DROP_MIN.get();
         gunpowderDropMax = GUNPOWDER_DROP_MAX.get();
+        endermanStareDistance = ENDERMAN_STARE_DISTANCE.get();
+        enderPearlDropMin = ENDER_PEARL_DROP_MIN.get();
+        enderPearlDropMax = ENDER_PEARL_DROP_MAX.get();
+        blazeMinSnowGolems = BLAZE_MIN_SNOW_GOLEMS.get();
+        blazeColdScanRadius = BLAZE_COLD_SCAN_RADIUS.get();
+        blazeMinColdBlocks = BLAZE_MIN_COLD_BLOCKS.get();
+        blazeRequireBothConditions = BLAZE_REQUIRE_BOTH_CONDITIONS.get();
+        blazeRodDropMin = BLAZE_ROD_DROP_MIN.get();
+        blazeRodDropMax = BLAZE_ROD_DROP_MAX.get();
+        blazeSuppressAttacks = BLAZE_SUPPRESS_ATTACKS.get();
     }
 }

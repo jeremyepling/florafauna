@@ -48,6 +48,94 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
                 .add(Blocks.PEONY)
                 .add(Blocks.SNOW);
 
+        // Reflective blocks - endermen see their reflection and become scared
+        this.tag(FloraFaunaTags.Blocks.REFLECTIVE_BLOCKS)
+                // Polished stones
+                .add(Blocks.POLISHED_ANDESITE)
+                .add(Blocks.POLISHED_DIORITE)
+                .add(Blocks.POLISHED_GRANITE)
+                .add(Blocks.POLISHED_DEEPSLATE)
+                .add(Blocks.POLISHED_BLACKSTONE)
+                .add(Blocks.POLISHED_BASALT)
+                // Glass blocks
+                .add(Blocks.GLASS)
+                .add(Blocks.WHITE_STAINED_GLASS)
+                .add(Blocks.ORANGE_STAINED_GLASS)
+                .add(Blocks.MAGENTA_STAINED_GLASS)
+                .add(Blocks.LIGHT_BLUE_STAINED_GLASS)
+                .add(Blocks.YELLOW_STAINED_GLASS)
+                .add(Blocks.LIME_STAINED_GLASS)
+                .add(Blocks.PINK_STAINED_GLASS)
+                .add(Blocks.GRAY_STAINED_GLASS)
+                .add(Blocks.LIGHT_GRAY_STAINED_GLASS)
+                .add(Blocks.CYAN_STAINED_GLASS)
+                .add(Blocks.PURPLE_STAINED_GLASS)
+                .add(Blocks.BLUE_STAINED_GLASS)
+                .add(Blocks.BROWN_STAINED_GLASS)
+                .add(Blocks.GREEN_STAINED_GLASS)
+                .add(Blocks.RED_STAINED_GLASS)
+                .add(Blocks.BLACK_STAINED_GLASS)
+                .add(Blocks.TINTED_GLASS)
+                // Ice blocks
+                .add(Blocks.ICE)
+                .add(Blocks.PACKED_ICE)
+                .add(Blocks.BLUE_ICE)
+                // Other reflective surfaces
+                .add(Blocks.OBSIDIAN)
+                .add(Blocks.CRYING_OBSIDIAN);
+
+        // Cold blocks - blazes fear when surrounded by these (along with snow golems)
+        this.tag(FloraFaunaTags.Blocks.COLD_BLOCKS)
+                // Snow blocks
+                .add(Blocks.SNOW)
+                .add(Blocks.SNOW_BLOCK)
+                .add(Blocks.POWDER_SNOW)
+                // Ice blocks
+                .add(Blocks.ICE)
+                .add(Blocks.PACKED_ICE)
+                .add(Blocks.BLUE_ICE)
+                .add(Blocks.FROSTED_ICE);
+
+        // Fear line-of-sight transparent blocks - mobs can see fear sources through these
+        this.tag(FloraFaunaTags.Blocks.FEAR_LOS_TRANSPARENT)
+                // Glass blocks
+                .add(Blocks.GLASS)
+                .add(Blocks.WHITE_STAINED_GLASS)
+                .add(Blocks.ORANGE_STAINED_GLASS)
+                .add(Blocks.MAGENTA_STAINED_GLASS)
+                .add(Blocks.LIGHT_BLUE_STAINED_GLASS)
+                .add(Blocks.YELLOW_STAINED_GLASS)
+                .add(Blocks.LIME_STAINED_GLASS)
+                .add(Blocks.PINK_STAINED_GLASS)
+                .add(Blocks.GRAY_STAINED_GLASS)
+                .add(Blocks.LIGHT_GRAY_STAINED_GLASS)
+                .add(Blocks.CYAN_STAINED_GLASS)
+                .add(Blocks.PURPLE_STAINED_GLASS)
+                .add(Blocks.BLUE_STAINED_GLASS)
+                .add(Blocks.BROWN_STAINED_GLASS)
+                .add(Blocks.GREEN_STAINED_GLASS)
+                .add(Blocks.RED_STAINED_GLASS)
+                .add(Blocks.BLACK_STAINED_GLASS)
+                .add(Blocks.TINTED_GLASS)
+                // Glass panes
+                .add(Blocks.GLASS_PANE)
+                .add(Blocks.WHITE_STAINED_GLASS_PANE)
+                .add(Blocks.ORANGE_STAINED_GLASS_PANE)
+                .add(Blocks.MAGENTA_STAINED_GLASS_PANE)
+                .add(Blocks.LIGHT_BLUE_STAINED_GLASS_PANE)
+                .add(Blocks.YELLOW_STAINED_GLASS_PANE)
+                .add(Blocks.LIME_STAINED_GLASS_PANE)
+                .add(Blocks.PINK_STAINED_GLASS_PANE)
+                .add(Blocks.GRAY_STAINED_GLASS_PANE)
+                .add(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE)
+                .add(Blocks.CYAN_STAINED_GLASS_PANE)
+                .add(Blocks.PURPLE_STAINED_GLASS_PANE)
+                .add(Blocks.BLUE_STAINED_GLASS_PANE)
+                .add(Blocks.BROWN_STAINED_GLASS_PANE)
+                .add(Blocks.GREEN_STAINED_GLASS_PANE)
+                .add(Blocks.RED_STAINED_GLASS_PANE)
+                .add(Blocks.BLACK_STAINED_GLASS_PANE);
+
         // Mineable with pickaxe
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(FloraFaunaRegistry.HUSK.get())

@@ -2,12 +2,17 @@ package net.j40climb.florafauna.common.entity.fear;
 
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.entity.fear.FearSourceDetector.FearSource;
+import net.j40climb.florafauna.common.entity.fear.blaze.BlazeFearHandler;
 import net.j40climb.florafauna.common.entity.fear.creeper.CreeperFearHandler;
+import net.j40climb.florafauna.common.entity.fear.enderman.EndermanFearHandler;
 import net.j40climb.florafauna.common.entity.fear.goals.FearAvoidanceGoal;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.entity.monster.EnderMan;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -62,7 +67,7 @@ public class FearStateEvents {
      */
     private static void updateFearState(Mob mob, long currentTick) {
         FearState currentState = FearHelper.getFearState(mob);
-        Optional<Entity> fearSource = FearSourceDetector.detectFearSource(mob, Config.fearSourceDetectionRange);
+        Optional<FearSource> fearSource = FearSourceDetector.detectFearSource(mob, Config.fearSourceDetectionRange);
 
         switch (currentState) {
             case CALM -> handleCalm(mob, fearSource, currentTick);
@@ -83,11 +88,11 @@ public class FearStateEvents {
      * CALM state: Normal AI, no fear output.
      * Exit: Fear source detected → PANICKED
      */
-    private static void handleCalm(Mob mob, Optional<Entity> fearSource, long currentTick) {
+    private static void handleCalm(Mob mob, Optional<FearSource> fearSource, long currentTick) {
         if (fearSource.isPresent()) {
             // Transition directly to PANICKED
             FearHelper.setFearState(mob, FearState.PANICKED, currentTick);
-            FearHelper.setFearSourcePos(mob, fearSource.get().blockPosition());
+            FearHelper.setFearSourcePos(mob, fearSource.get().position());
 
             // Ensure fear avoidance goal is injected
             ensureFearAvoidanceGoal(mob);
@@ -95,6 +100,10 @@ public class FearStateEvents {
             // Mob-specific handling
             if (mob instanceof Creeper creeper) {
                 CreeperFearHandler.onEnterPanicked(creeper);
+            } else if (mob instanceof EnderMan enderman) {
+                EndermanFearHandler.onEnterPanicked(enderman);
+            } else if (mob instanceof Blaze blaze) {
+                BlazeFearHandler.onEnterPanicked(blaze);
             }
         }
     }
@@ -120,7 +129,7 @@ public class FearStateEvents {
      * Exit (up): Duration threshold → LEAK
      * Exit (down): Fear source removed → CALM (with leak count reset)
      */
-    private static void handlePanicked(Mob mob, Optional<Entity> fearSource, long currentTick) {
+    private static void handlePanicked(Mob mob, Optional<FearSource> fearSource, long currentTick) {
         if (fearSource.isEmpty()) {
             // Fear source gone - return to CALM and reset leak count
             FearHelper.resetToCalm(mob, currentTick, true);
@@ -128,11 +137,15 @@ public class FearStateEvents {
         }
 
         // Update fear source position
-        FearHelper.setFearSourcePos(mob, fearSource.get().blockPosition());
+        FearHelper.setFearSourcePos(mob, fearSource.get().position());
 
         // Mob-specific handling
         if (mob instanceof Creeper creeper) {
             CreeperFearHandler.onTickPanicked(creeper);
+        } else if (mob instanceof EnderMan enderman) {
+            EndermanFearHandler.onTickPanicked(enderman);
+        } else if (mob instanceof Blaze blaze) {
+            BlazeFearHandler.onTickPanicked(blaze);
         }
 
         // Check if we should trigger LEAK
@@ -145,6 +158,10 @@ public class FearStateEvents {
                 FearHelper.setFearState(mob, FearState.OVERSTRESS, currentTick);
                 if (mob instanceof Creeper creeper) {
                     CreeperFearHandler.onOverstress(creeper);
+                } else if (mob instanceof EnderMan enderman) {
+                    EndermanFearHandler.onOverstress(enderman);
+                } else if (mob instanceof Blaze blaze) {
+                    BlazeFearHandler.onOverstress(blaze);
                 }
             } else {
                 // Normal leak event
@@ -161,6 +178,10 @@ public class FearStateEvents {
         // Execute the leak event
         if (mob instanceof Creeper creeper) {
             CreeperFearHandler.onLeakEvent(creeper);
+        } else if (mob instanceof EnderMan enderman) {
+            EndermanFearHandler.onLeakEvent(enderman);
+        } else if (mob instanceof Blaze blaze) {
+            BlazeFearHandler.onLeakEvent(blaze);
         }
 
         // Increment leak count
@@ -184,13 +205,17 @@ public class FearStateEvents {
     }
 
     /**
-     * OVERSTRESS state: Failure - mob explodes.
+     * OVERSTRESS state: Failure - mob dies.
      * Terminal state (mob will be dead).
      */
     private static void handleOverstress(Mob mob) {
-        // Mob-specific handling (explosion for creepers)
+        // Mob-specific handling (explosion for creepers, death for endermen, hypothermia for blazes)
         if (mob instanceof Creeper creeper) {
             CreeperFearHandler.onOverstress(creeper);
+        } else if (mob instanceof EnderMan enderman) {
+            EndermanFearHandler.onOverstress(enderman);
+        } else if (mob instanceof Blaze blaze) {
+            BlazeFearHandler.onOverstress(blaze);
         }
         // Note: The mob will be dead after this, no state transition needed
     }
