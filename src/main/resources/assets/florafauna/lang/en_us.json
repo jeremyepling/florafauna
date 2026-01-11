@@ -172,6 +172,7 @@
   "symbiote.dialogue.sleeping": "Rest. I'll remain here, doing nothing visibly productive.",
   "symbiote.dialogue.anchor_warn_75": "Storage is filling up. We may want to address that.",
   "symbiote.dialogue.anchor_full_100": "No more room. We need to empty this.",
+  "symbiote.dialogue.anchor_released": "The anchor is released.",
 
   "symbiote.voice.environmental.cold_1": "Your warmth is making a quiet exit.",
   "symbiote.voice.environmental.cold_2": "This temperature disagrees with us.",
