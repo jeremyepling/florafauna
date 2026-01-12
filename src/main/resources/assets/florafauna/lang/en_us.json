@@ -25,6 +25,11 @@
   "key.florafauna.dash": "Dash",
   "key.florafauna.hammer_config": "Hammer Config",
   "key.florafauna.cycle_mining_mode": "Cycle Mining Mode",
+  "key.florafauna.noclip": "Toggle No-Clip",
+
+  "command.florafauna.noclip.enabled": "No-clip enabled",
+  "command.florafauna.noclip.disabled": "No-clip disabled",
+  "command.florafauna.noclip.creative_only": "No-clip requires creative mode",
 
   "gui.florafauna.tool_config.title": "Tool Config",
   "gui.florafauna.tool_config.enchantment": "Enchantment:",

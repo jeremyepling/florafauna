@@ -3,6 +3,10 @@
   "package": "net.j40climb.florafauna.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
+  "mixins": [
+    "noclip.PlayerNoClipMixin",
+    "noclip.ServerGamePacketListenerImplMixin"
+  ],
   "client": [
     "GuiMixin",
     "LocatorBarRendererMixin"

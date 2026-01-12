@@ -49,3 +49,6 @@ tools/
 
 # Dev world template (user creates manually, not committed)
 dev/world-template/
+
+# Claude Code temp files
+tmpclaude-*

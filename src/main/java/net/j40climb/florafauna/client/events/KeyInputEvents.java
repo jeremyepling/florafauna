@@ -3,6 +3,9 @@ package net.j40climb.florafauna.client.events;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.client.ClientUtils;
 import net.j40climb.florafauna.common.block.mobbarrier.menu.MobBarrierConfigScreen;
+import net.j40climb.florafauna.noclip.ClippingEntity;
+import net.j40climb.florafauna.noclip.NoClipClientState;
+import net.j40climb.florafauna.noclip.NoClipPayload;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
@@ -15,6 +18,7 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -83,6 +87,29 @@ public class KeyInputEvents {
             // Check if player is holding a MobBarrier block item
             if (itemStack.is(FloraFaunaRegistry.MOB_BARRIER.asItem())) {
                 mc.setScreen(new MobBarrierConfigScreen());
+            }
+        }
+        while (ClientSetup.NOCLIP_KEY.get().consumeClick()) {
+            // Only allow noclip in creative mode
+            if (player.isCreative()) {
+                boolean newState = NoClipClientState.toggle();
+                // Also set on local player immediately for responsive feel
+                if (player instanceof ClippingEntity clippingPlayer) {
+                    clippingPlayer.setClipping(newState);
+                }
+                // Send to server so it doesn't rubber-band us
+                ClientPacketDistributor.sendToServer(new NoClipPayload(newState));
+                player.displayClientMessage(
+                        Component.translatable(newState ?
+                                "command.florafauna.noclip.enabled" :
+                                "command.florafauna.noclip.disabled"),
+                        true  // Display in action bar
+                );
+            } else {
+                player.displayClientMessage(
+                        Component.translatable("command.florafauna.noclip.creative_only"),
+                        true
+                );
             }
         }
     }

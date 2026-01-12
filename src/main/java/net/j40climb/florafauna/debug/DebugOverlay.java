@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.client;
+package net.j40climb.florafauna.debug;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;

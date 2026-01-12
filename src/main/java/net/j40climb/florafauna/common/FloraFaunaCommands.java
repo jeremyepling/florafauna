@@ -5,7 +5,10 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.DebugOverlay;
+import net.j40climb.florafauna.debug.DebugOverlay;
+import net.j40climb.florafauna.noclip.ClippingEntity;
+import net.j40climb.florafauna.noclip.NoClipClientState;
+import net.j40climb.florafauna.noclip.NoClipPayload;
 import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.binding.SymbioteBindingHelper;
@@ -29,6 +32,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.permissions.PermissionCheck;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -38,6 +43,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -61,6 +67,12 @@ import java.util.Map;
  */
 public class FloraFaunaCommands {
 
+    /** Permission check: OP level 2 (gamemaster) OR creative mode */
+    private static boolean hasDevPermission(CommandSourceStack source) {
+        return Commands.hasPermission(new PermissionCheck.Require(Permissions.COMMANDS_GAMEMASTER)).test(source) ||
+                (source.getEntity() instanceof ServerPlayer p && p.isCreative());
+    }
+
     /**
      * Registers all mod commands.
      *
@@ -69,6 +81,7 @@ public class FloraFaunaCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("florafauna")
+                        .requires(FloraFaunaCommands::hasDevPermission)
                         .then(Commands.literal("symbiote")
                                 .then(Commands.literal("check")
                                         .executes(FloraFaunaCommands::checkSymbiote))
@@ -794,12 +807,19 @@ public class FloraFaunaCommands {
 
             dispatcher.register(
                     Commands.literal("florafauna")
+                            .requires(FloraFaunaCommands::hasDevPermission)
                             .then(Commands.literal("debug")
                                     .executes(context -> toggleDebug(context.getSource()))
                                     .then(Commands.literal("on")
                                             .executes(context -> setDebug(context.getSource(), true)))
                                     .then(Commands.literal("off")
                                             .executes(context -> setDebug(context.getSource(), false))))
+                            .then(Commands.literal("noclip")
+                                    .executes(context -> toggleNoClip(context.getSource()))
+                                    .then(Commands.literal("on")
+                                            .executes(context -> setNoClip(context.getSource(), true)))
+                                    .then(Commands.literal("off")
+                                            .executes(context -> setNoClip(context.getSource(), false))))
             );
         }
 
@@ -819,6 +839,52 @@ public class FloraFaunaCommands {
 
             source.sendSuccess(() -> Component.translatable(
                     enabled ? "command.florafauna.symbiote.debug_enabled" : "command.florafauna.symbiote.debug_disabled"
+            ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
+
+            return 1;
+        }
+
+        private static int toggleNoClip(CommandSourceStack source) {
+            // Check if player is in creative mode
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player == null || !player.isCreative()) {
+                source.sendFailure(Component.translatable("command.florafauna.noclip.creative_only"));
+                return 0;
+            }
+
+            boolean newState = NoClipClientState.toggle();
+            // Also set on local player immediately for responsive feel
+            if (player instanceof ClippingEntity clippingPlayer) {
+                clippingPlayer.setClipping(newState);
+            }
+            // Sync to server
+            ClientPacketDistributor.sendToServer(new NoClipPayload(newState));
+
+            source.sendSuccess(() -> Component.translatable(
+                    newState ? "command.florafauna.noclip.enabled" : "command.florafauna.noclip.disabled"
+            ).withStyle(style -> style.withColor(newState ? 0x2ECC71 : 0xE74C3C)), false);
+
+            return 1;
+        }
+
+        private static int setNoClip(CommandSourceStack source, boolean enabled) {
+            // Check if player is in creative mode
+            var player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player == null || !player.isCreative()) {
+                source.sendFailure(Component.translatable("command.florafauna.noclip.creative_only"));
+                return 0;
+            }
+
+            NoClipClientState.setEnabled(enabled);
+            // Also set on local player immediately for responsive feel
+            if (player instanceof ClippingEntity clippingPlayer) {
+                clippingPlayer.setClipping(enabled);
+            }
+            // Sync to server
+            ClientPacketDistributor.sendToServer(new NoClipPayload(enabled));
+
+            source.sendSuccess(() -> Component.translatable(
+                    enabled ? "command.florafauna.noclip.enabled" : "command.florafauna.noclip.disabled"
             ).withStyle(style -> style.withColor(enabled ? 0x2ECC71 : 0xE74C3C)), false);
 
             return 1;
