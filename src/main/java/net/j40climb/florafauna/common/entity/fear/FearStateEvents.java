@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.entity.fear.blaze.BlazeFearHandler;
 import net.j40climb.florafauna.common.entity.fear.creeper.CreeperFearHandler;
 import net.j40climb.florafauna.common.entity.fear.enderman.EndermanFearHandler;
 import net.j40climb.florafauna.common.entity.fear.goals.FearAvoidanceGoal;
+import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 
 import java.util.Optional;
@@ -25,6 +27,17 @@ import java.util.Optional;
  */
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public class FearStateEvents {
+
+    /**
+     * Prevent endermen with MobSymbiote from teleporting.
+     * The symbiote suppresses their teleportation ability.
+     */
+    @SubscribeEvent
+    public static void onEnderTeleport(EntityTeleportEvent.EnderEntity event) {
+        if (MobSymbioteHelper.hasMobSymbiote(event.getEntity())) {
+            event.setCanceled(true);
+        }
+    }
 
     /**
      * Main tick handler for the fear system.
@@ -101,7 +114,7 @@ public class FearStateEvents {
             if (mob instanceof Creeper creeper) {
                 CreeperFearHandler.onEnterPanicked(creeper);
             } else if (mob instanceof EnderMan enderman) {
-                EndermanFearHandler.onEnterPanicked(enderman);
+                EndermanFearHandler.onEnterPanicked(enderman, fearSource.get());
             } else if (mob instanceof Blaze blaze) {
                 BlazeFearHandler.onEnterPanicked(blaze);
             }
@@ -132,6 +145,9 @@ public class FearStateEvents {
     private static void handlePanicked(Mob mob, Optional<FearSource> fearSource, long currentTick) {
         if (fearSource.isEmpty()) {
             // Fear source gone - return to CALM and reset leak count
+            if (mob instanceof EnderMan enderman) {
+                EndermanFearHandler.onExitPanicked(enderman);
+            }
             FearHelper.resetToCalm(mob, currentTick, true);
             return;
         }
@@ -180,6 +196,8 @@ public class FearStateEvents {
             CreeperFearHandler.onLeakEvent(creeper);
         } else if (mob instanceof EnderMan enderman) {
             EndermanFearHandler.onLeakEvent(enderman);
+            // Clear creepy state when entering exhausted cooldown
+            EndermanFearHandler.onExitPanicked(enderman);
         } else if (mob instanceof Blaze blaze) {
             BlazeFearHandler.onLeakEvent(blaze);
         }

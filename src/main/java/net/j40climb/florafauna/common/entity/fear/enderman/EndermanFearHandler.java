@@ -1,16 +1,22 @@
 package net.j40climb.florafauna.common.entity.fear.enderman;
 
 import net.j40climb.florafauna.Config;
+import net.j40climb.florafauna.common.entity.fear.FearSourceDetector.FearSource;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.Random;
 
 /**
@@ -18,37 +24,90 @@ import java.util.Random;
  * Handles teleport suppression, ender pearl drops, particles, and death.
  *
  * Endermen become scared when:
- * 1. Armor stands with player heads or jack-o-lanterns nearby (being stared at)
+ * 1. Armor stands with player heads or carved pumpkins nearby (being stared at)
  * 2. Reflective blocks within stare distance (seeing their reflection)
  */
 public final class EndermanFearHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndermanFearHandler.class);
     private static final Random RANDOM = new Random();
+
+    // Cached reference to EnderMan.DATA_CREEPY for setting creepy state directly
+    @SuppressWarnings("unchecked")
+    private static final EntityDataAccessor<Boolean> DATA_CREEPY = getDataCreepyAccessor();
 
     private EndermanFearHandler() {
         // Utility class
+    }
+
+    /**
+     * Gets the DATA_CREEPY field from EnderMan via reflection.
+     * This allows us to trigger the creepy animation without needing a target entity.
+     */
+    @SuppressWarnings("unchecked")
+    private static EntityDataAccessor<Boolean> getDataCreepyAccessor() {
+        try {
+            Field field = EnderMan.class.getDeclaredField("DATA_CREEPY");
+            field.setAccessible(true);
+            return (EntityDataAccessor<Boolean>) field.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            LOGGER.error("Failed to access EnderMan.DATA_CREEPY field", e);
+            return null;
+        }
+    }
+
+    /**
+     * Sets the creepy state on an enderman directly.
+     * This triggers the mouth-open, jittering animation.
+     */
+    private static void setCreepyState(EnderMan enderman, boolean creepy) {
+        if (DATA_CREEPY != null) {
+            enderman.getEntityData().set(DATA_CREEPY, creepy);
+        }
     }
 
     // ==================== STATE ENTRY HANDLERS ====================
 
     /**
      * Called when an enderman enters the PANICKED state.
-     * Starts visual/audio cues.
+     * Enables the creepy animation (mouth open, jittering) and plays stare sound.
+     *
+     * @param enderman   The enderman entering panic
+     * @param fearSource The detected fear source
      */
-    public static void onEnterPanicked(EnderMan enderman) {
-        // Play stare sound when first becoming scared
-        if (!enderman.level().isClientSide()) {
-            enderman.level().playSound(
-                    null,
-                    enderman.getX(),
-                    enderman.getY(),
-                    enderman.getZ(),
-                    SoundEvents.ENDERMAN_STARE,
-                    SoundSource.HOSTILE,
-                    1.0f,
-                    1.0f
-            );
+    public static void onEnterPanicked(EnderMan enderman, FearSource fearSource) {
+        if (enderman.level().isClientSide()) {
+            return;
         }
+
+        // Enable creepy state directly (mouth open, jittering animation)
+        // Works for both entity-based fears (armor stands) and block-based fears (reflective blocks)
+        setCreepyState(enderman, true);
+
+        // Play stare sound when first becoming scared
+        enderman.level().playSound(
+                null,
+                enderman.getX(),
+                enderman.getY(),
+                enderman.getZ(),
+                SoundEvents.ENDERMAN_STARE,
+                SoundSource.HOSTILE,
+                1.0f,
+                1.0f
+        );
+    }
+
+    /**
+     * Called when an enderman exits the PANICKED state.
+     * Disables the creepy animation.
+     */
+    public static void onExitPanicked(EnderMan enderman) {
+        if (enderman.level().isClientSide()) {
+            return;
+        }
+
+        // Disable creepy state
+        setCreepyState(enderman, false);
     }
 
     // ==================== TICK HANDLERS ====================

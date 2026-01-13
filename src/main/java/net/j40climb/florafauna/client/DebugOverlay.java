@@ -87,11 +87,6 @@ public class DebugOverlay implements GuiLayer {
             return;
         }
 
-        // Don't show when F3 debug screen is open
-        if (mc.getDebugOverlay().showDebugScreen()) {
-            return;
-        }
-
         Font font = mc.font;
 
         // Colors

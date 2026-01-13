@@ -305,13 +305,14 @@ public class FearSourceDetector {
     /**
      * Check if the mob has line-of-sight to a block position.
      * Uses ray-stepping to check for blocks in the way, skipping transparent blocks (glass).
+     * The target block itself is excluded from the occlusion check.
      *
      * @param mob      The mob looking
      * @param blockPos The target block position
      * @return true if there's a clear line of sight
      */
     public static boolean hasLineOfSightToBlock(Mob mob, BlockPos blockPos) {
-        return hasLineOfSightBetween(mob.level(), mob.getEyePosition(), Vec3.atCenterOf(blockPos));
+        return hasLineOfSightBetween(mob.level(), mob.getEyePosition(), Vec3.atCenterOf(blockPos), blockPos);
     }
 
     /**
@@ -324,6 +325,20 @@ public class FearSourceDetector {
      * @return true if there's a clear line of sight
      */
     private static boolean hasLineOfSightBetween(Level level, Vec3 start, Vec3 end) {
+        return hasLineOfSightBetween(level, start, end, null);
+    }
+
+    /**
+     * Ray-step between two positions to check for line-of-sight.
+     * Skips blocks tagged as FEAR_LOS_TRANSPARENT (glass, etc.).
+     *
+     * @param level       The level to check in
+     * @param start       Starting position (e.g., mob's eye)
+     * @param end         Ending position (e.g., target's eye)
+     * @param targetBlock Optional target block to exclude from occlusion check (the block we're looking AT)
+     * @return true if there's a clear line of sight
+     */
+    private static boolean hasLineOfSightBetween(Level level, Vec3 start, Vec3 end, @Nullable BlockPos targetBlock) {
         Vec3 direction = end.subtract(start);
         double distance = direction.length();
 
@@ -344,6 +359,11 @@ public class FearSourceDetector {
                 continue;
             }
             lastChecked = blockPos;
+
+            // Skip the target block itself (we're checking if we can SEE it, not through it)
+            if (targetBlock != null && blockPos.equals(targetBlock)) {
+                continue;
+            }
 
             BlockState state = level.getBlockState(blockPos);
 
