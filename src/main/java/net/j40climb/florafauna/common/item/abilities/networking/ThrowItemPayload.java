@@ -52,6 +52,16 @@ public record ThrowItemPayload(boolean mainHand) implements CustomPacketPayload 
 
         ServerLevel level = (ServerLevel) player.level();
 
+        // Check if player already has a thrown item of this type in the world
+        boolean alreadyThrown = level.getEntities(
+                FloraFaunaRegistry.THROWN_ITEM.get(),
+                entity -> entity.getOwner() == player && ItemStack.isSameItem(entity.getThrownItem(), stack)
+        ).stream().findAny().isPresent();
+
+        if (alreadyThrown) {
+            return; // Can't throw another until the previous one returns
+        }
+
         // Create the thrown entity
         ThrownItemEntity entity = new ThrownItemEntity(level, player, stack, abilityData);
 
