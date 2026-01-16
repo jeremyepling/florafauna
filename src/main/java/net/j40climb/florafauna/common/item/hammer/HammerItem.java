@@ -1,26 +1,28 @@
 package net.j40climb.florafauna.common.item.hammer;
 
+import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 
 import java.util.function.Consumer;
 
@@ -58,6 +60,8 @@ public class HammerItem extends Item {
                 .component(FloraFaunaRegistry.LIGHTNING_ABILITY, Unit.INSTANCE)
                 .component(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
                 .component(FloraFaunaRegistry.THROWABLE_ABILITY, ThrowableAbilityData.DEFAULT)
+                .component(FloraFaunaRegistry.RIGHT_CLICK_ACTION, new RightClickAction(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "throwable_ability")))
+                .component(FloraFaunaRegistry.MULTI_TOOL_ABILITY, MultiToolAbilityData.DEFAULT)
                 .component(DataComponents.UNBREAKABLE, Unit.INSTANCE)
         );
     }
@@ -88,33 +92,29 @@ public class HammerItem extends Item {
     }
 
     /**
-     * Handles right-click interactions with blocks.
-     * Cycles through available mining modes and displays the current mode to the player.
-     * This operation only executes server-side to prevent client-server desync.
+     * Declares which tool actions this item can perform based on its MULTI_TOOL_ABILITY component.
+     * This is required for getToolModifiedState to work properly.
      *
-     * @param useOnContext the context of the block interaction
-     * @return {@link InteractionResult#PASS} to allow other interactions to proceed
+     * @param stack the item stack
+     * @param itemAbility the tool action being checked
+     * @return true if this item can perform the action
      */
     @Override
-    public @NotNull InteractionResult useOn(UseOnContext useOnContext) {
-        if(!useOnContext.getLevel().isClientSide()) {
-            Player player = useOnContext.getPlayer();
-            if (player != null) {
-                ItemStack hammerItemStack = player.getMainHandItem();
-
-                // Go to next shape
-                hammerItemStack.update(
-                        FloraFaunaRegistry.MULTI_BLOCK_MINING,
-                        MiningModeData.DEFAULT,
-                        MiningModeData::getNextMode
-                );
-
-                // Output the new shape and default was set via Update so a get() instead of getOrDefault()
-                MiningModeData currentMiningMode = hammerItemStack.get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
-                player.displayClientMessage(Component.literal(currentMiningMode.getMiningModeString()), true);
-            }
+    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+        MultiToolAbilityData multiTool = stack.get(FloraFaunaRegistry.MULTI_TOOL_ABILITY);
+        if (multiTool == null) {
+            return false;
         }
-        return InteractionResult.PASS;
+        if (itemAbility == ItemAbilities.AXE_STRIP && multiTool.strip()) {
+            return true;
+        }
+        if (itemAbility == ItemAbilities.SHOVEL_FLATTEN && multiTool.flatten()) {
+            return true;
+        }
+        if (itemAbility == ItemAbilities.HOE_TILL && multiTool.till()) {
+            return true;
+        }
+        return false;
     }
 
     /**

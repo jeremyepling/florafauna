@@ -36,8 +36,15 @@ public record ThrowItemPayload(boolean mainHand) implements CustomPacketPayload 
         if (!(context.player() instanceof ServerPlayer player)) {
             return;
         }
-
         InteractionHand hand = data.mainHand ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        throwItem(player, hand);
+    }
+
+    /**
+     * Throws the item in the specified hand.
+     * Can be called directly from items or via network payload.
+     */
+    public static void throwItem(ServerPlayer player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
         // Check if item has throwable ability

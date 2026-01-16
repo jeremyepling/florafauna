@@ -23,8 +23,11 @@ import net.j40climb.florafauna.common.symbiote.progress.SignalState;
 import net.j40climb.florafauna.common.symbiote.voice.SymbioteVoiceService;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.minecraft.resources.Identifier;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
@@ -596,6 +599,9 @@ public class FloraFaunaCommands {
         stack.set(FloraFaunaRegistry.THROWABLE_ABILITY.get(), ThrowableAbilityData.DEFAULT);
         stack.set(FloraFaunaRegistry.MULTI_BLOCK_MINING.get(), MiningModeData.DEFAULT);
         stack.set(FloraFaunaRegistry.TOOL_CONFIG.get(), ToolConfig.DEFAULT);
+        stack.set(FloraFaunaRegistry.RIGHT_CLICK_ACTION.get(),
+                new RightClickAction(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "throwable_ability")));
+        stack.set(FloraFaunaRegistry.MULTI_TOOL_ABILITY.get(), MultiToolAbilityData.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.ability.all_added")
                 .withStyle(style -> style.withColor(0x2ECC71)), false);
@@ -622,6 +628,8 @@ public class FloraFaunaCommands {
         stack.remove(FloraFaunaRegistry.THROWABLE_ABILITY.get());
         stack.remove(FloraFaunaRegistry.MULTI_BLOCK_MINING.get());
         stack.remove(FloraFaunaRegistry.TOOL_CONFIG.get());
+        stack.remove(FloraFaunaRegistry.RIGHT_CLICK_ACTION.get());
+        stack.remove(FloraFaunaRegistry.MULTI_TOOL_ABILITY.get());
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.ability.all_cleared")
                 .withStyle(style -> style.withColor(0xF39C12)), false);

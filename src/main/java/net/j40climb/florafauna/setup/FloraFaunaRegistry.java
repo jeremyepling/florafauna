@@ -37,6 +37,8 @@ import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
 import net.j40climb.florafauna.common.entity.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.hammer.HammerItem;
@@ -356,6 +358,16 @@ public class FloraFaunaRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ThrowableAbilityData>> THROWABLE_ABILITY =
             DATA_COMPONENTS.registerComponentType("throwable_ability",
                     builder -> builder.persistent(ThrowableAbilityData.CODEC).networkSynchronized(ThrowableAbilityData.STREAM_CODEC));
+
+    // Right-click action data component - configures what ability triggers on right-click
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<RightClickAction>> RIGHT_CLICK_ACTION =
+            DATA_COMPONENTS.registerComponentType("right_click_action",
+                    builder -> builder.persistent(RightClickAction.CODEC).networkSynchronized(RightClickAction.STREAM_CODEC));
+
+    // Multi-tool ability data component - enables strip/path/till on right-click
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MultiToolAbilityData>> MULTI_TOOL_ABILITY =
+            DATA_COMPONENTS.registerComponentType("multi_tool_ability",
+                    builder -> builder.persistent(MultiToolAbilityData.CODEC).networkSynchronized(MultiToolAbilityData.STREAM_CODEC));
 
     // Mob barrier config data component
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MobBarrierConfig>> MOB_BARRIER_CONFIG =

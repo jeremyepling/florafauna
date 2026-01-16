@@ -15,6 +15,8 @@ The abilities system provides reusable tool functionality through data component
 | `LIGHTNING_ABILITY` | Spawn lightning at target |
 | `TELEPORT_SURFACE_ABILITY` | Teleport to surface |
 | `THROWABLE_ABILITY` | Throw item as projectile |
+| `RIGHT_CLICK_ACTION` | Configures which ability triggers on right-click |
+| `MULTI_TOOL_ABILITY` | Enables axe/shovel/hoe actions (strip, path, till) |
 
 ## Mining Shapes
 
@@ -66,6 +68,31 @@ When breaking a block with `MULTI_BLOCK_MINING` component:
 3. On break, destroy all blocks in pattern
 4. Drops collected normally (with Fortune/Silk Touch applied)
 
+## Right-Click Action
+
+The `RIGHT_CLICK_ACTION` component configures which ability triggers on right-click. It stores an Identifier referencing one of the ability components.
+
+| Ability ID | Effect |
+|------------|--------|
+| `florafauna:throwable_ability` | Throw the item as a projectile |
+| `florafauna:multi_block_mining` | Cycle mining mode |
+| `florafauna:lightning_ability` | Spawn lightning at target block |
+| `florafauna:teleport_surface_ability` | Teleport to surface |
+
+## Multi-Tool Ability
+
+The `MULTI_TOOL_ABILITY` component enables tool modifications on right-click:
+
+| Setting | Effect |
+|---------|--------|
+| `strip` | Strip logs/wood (like axe) |
+| `flatten` | Create grass paths (like shovel) |
+| `till` | Till dirt to farmland (like hoe) |
+
+**Priority**: Multi-tool actions take priority over `RIGHT_CLICK_ACTION`. If a block can be modified (stripped, pathed, or tilled), only that action occurs. Otherwise, the right-click ability executes.
+
+**Note**: The multi-tool ability requires the item to override `canPerformAction()` to declare support for the tool actions. Currently only `HammerItem` implements this - other items with the component will not perform tool modifications until they add the override.
+
 ## Adding Abilities to Items
 
 ```java
@@ -74,6 +101,8 @@ ItemStack stack = new ItemStack(myItem);
 stack.set(FloraFaunaRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
 stack.set(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
 stack.set(FloraFaunaRegistry.LIGHTNING_ABILITY, Unit.INSTANCE);
+stack.set(FloraFaunaRegistry.RIGHT_CLICK_ACTION, new RightClickAction(Identifier.fromNamespaceAndPath("florafauna", "throwable_ability")));
+stack.set(FloraFaunaRegistry.MULTI_TOOL_ABILITY, MultiToolAbilityData.DEFAULT);
 ```
 
 ## Event Handlers
@@ -85,4 +114,6 @@ All abilities use `@EventBusSubscriber` for automatic registration:
 | `BlockEvent.BreakEvent` | Multi-block breaking |
 | `PlayerEvent.BreakSpeed` | Mining speed modification |
 | `PlayerInteractEvent.LeftClickBlock` | Visual feedback |
+| `PlayerInteractEvent.RightClickBlock` | Right-click abilities and multi-tool |
+| `PlayerInteractEvent.RightClickItem` | Right-click abilities (in air) |
 | `ExtractBlockOutlineRenderStateEvent` | Block outline rendering |

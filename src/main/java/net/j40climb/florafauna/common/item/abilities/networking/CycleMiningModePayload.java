@@ -28,7 +28,14 @@ public enum CycleMiningModePayload implements CustomPacketPayload {
         if (!(context.player() instanceof ServerPlayer player)) {
             return;
         }
+        cycleMiningMode(player);
+    }
 
+    /**
+     * Cycles the mining mode on the player's main hand item.
+     * Can be called directly from items or via network payload.
+     */
+    public static void cycleMiningMode(ServerPlayer player) {
         ItemStack stack = player.getMainHandItem();
 
         // Check if item has multi-block mining component
