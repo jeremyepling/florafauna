@@ -47,7 +47,7 @@ public class MultiBlockOutlineRenderer implements CustomBlockOutlineRenderer {
         double camY = cameraPos.y();
         double camZ = cameraPos.z();
 
-        Set<BlockPos> breakBlockPositions = MultiBlockPatterns.getBlocksToBreak(targetPos, player);
+        Set<BlockPos> breakBlockPositions = MultiBlockPatterns.getTargetBlocks(targetPos, player);
 
         for (BlockPos blockPos : breakBlockPositions) {
             if (blockPos.equals(targetPos)) {

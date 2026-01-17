@@ -3,13 +3,13 @@ package net.j40climb.florafauna.common.item.abilities;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -25,11 +25,11 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -139,22 +139,48 @@ public class RightClickActionHandler {
     }
 
     /**
-     * Attempts to perform a tool modification (strip/path/till) on the target block.
+     * Attempts to perform a tool modification (strip/path/till) on blocks based on mining pattern.
+     * Uses the same pattern calculation as multi-block mining.
      *
      * @param player the player performing the action
      * @param hand the hand holding the tool
      * @param pos the position of the target block
      * @param hitResult the block hit result
      * @param multiTool the multi-tool configuration
-     * @return true if a modification was performed
+     * @return true if any modification was performed
      */
     private static boolean tryToolModification(ServerPlayer player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool) {
+        // Get blocks based on mining pattern (reuses existing pattern logic)
+        Set<BlockPos> blocksToModify = MultiBlockPatterns.getTargetBlocks(pos, player);
+
+        // Try to modify each block in the pattern
+        boolean anyModified = false;
+        for (BlockPos targetPos : blocksToModify) {
+            if (tryModifySingleBlock(player, hand, targetPos, hitResult, multiTool)) {
+                anyModified = true;
+            }
+        }
+        return anyModified;
+    }
+
+    /**
+     * Attempts to perform a tool modification on a single block.
+     *
+     * @param player the player performing the action
+     * @param hand the hand holding the tool
+     * @param pos the position of the target block
+     * @param originalHit the original block hit result (used for direction)
+     * @param multiTool the multi-tool configuration
+     * @return true if the block was modified
+     */
+    private static boolean tryModifySingleBlock(ServerPlayer player, InteractionHand hand, BlockPos pos, BlockHitResult originalHit, MultiToolAbilityData multiTool) {
         Level level = player.level();
         BlockState state = level.getBlockState(pos);
-        ItemStack stack = player.getItemInHand(hand);
 
-        // Create context for the modification
-        UseOnContext context = new UseOnContext(player, hand, hitResult);
+        // Create synthetic hit result for this block position
+        BlockHitResult syntheticHit = new BlockHitResult(
+                Vec3.atCenterOf(pos), originalHit.getDirection(), pos, originalHit.isInside());
+        UseOnContext context = new UseOnContext(player, hand, syntheticHit);
 
         // Try each enabled tool action in order of priority
         if (multiTool.strip()) {

@@ -70,7 +70,7 @@ public final class MultiBlockBreaker {
      * Block validation is centralized in {@link MultiBlockPatterns#isValidToMine(Player, BlockPos)},
      * which checks if blocks can be mined based on the ignoreToolRestrictions flag.
      * When ignoreToolRestrictions is true, any block breakable by a netherite tool is valid.
-     * The getBlocksToBreak() method uses this validation, so blocks returned are pre-validated.
+     * The getTargetBlocks() method uses this validation, so blocks returned are pre-validated.
      * <p>
      * For tunnel modes, stair placement is scheduled for the next tick to ensure all blocks
      * are broken before stairs are placed, avoiding the need to cancel the original event.
@@ -107,7 +107,7 @@ public final class MultiBlockBreaker {
         }
 
         // Break all blocks in the mining pattern except initialBlockPos (handled by original event)
-        for (BlockPos blockPos : getBlocksToBreak(initialBlockPos, serverPlayer)) {
+        for (BlockPos blockPos : getTargetBlocks(initialBlockPos, serverPlayer)) {
             // Skip initialBlockPos - the original BreakEvent breaks it after we return
             if (blockPos.equals(initialBlockPos)) {
                 continue;
@@ -175,7 +175,7 @@ public final class MultiBlockBreaker {
      * Updates the destruction progress visual for all blocks in the mining pattern.
      */
     public static void updateDestroyProgress(Level level, BlockState blockState, BlockPos initialBlockPos, Player player) {
-        Set<BlockPos> breakBlockPositions = getBlocksToBreak(initialBlockPos, player);
+        Set<BlockPos> breakBlockPositions = getTargetBlocks(initialBlockPos, player);
         int i = MultiBlockVisualFeedback.getGameTicksMining();
         float f = blockState.getDestroyProgress(player, player.level(), initialBlockPos) * (float) (i + 1);
         int j = (int) (f * 10.0F);
@@ -194,7 +194,7 @@ public final class MultiBlockBreaker {
      * Cancels the destruction progress visual for all blocks in the mining pattern.
      */
     public static void cancelDestroyProgress(BlockPos pos, Player player) {
-        Set<BlockPos> breakBlockPositions = getBlocksToBreak(pos, player);
+        Set<BlockPos> breakBlockPositions = getTargetBlocks(pos, player);
         for (BlockPos blockPos : breakBlockPositions) {
             if (blockPos.equals(pos)) continue;
             player.level().destroyBlockProgress(player.getId() + generatePosHash(blockPos), blockPos, -1);

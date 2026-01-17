@@ -60,7 +60,7 @@ public final class MultiBlockPatterns {
      * @param player The player doing the mining
      * @return Set of block positions to break
      */
-    public static Set<BlockPos> getBlocksToBreak(BlockPos initialBlockPos, Player player) {
+    public static Set<BlockPos> getTargetBlocks(BlockPos initialBlockPos, Player player) {
         Set<BlockPos> positions = new HashSet<>();
         float maxDistance = 6f;
         BlockHitResult traceResult = (BlockHitResult) raycastFromPlayer(player, maxDistance);
