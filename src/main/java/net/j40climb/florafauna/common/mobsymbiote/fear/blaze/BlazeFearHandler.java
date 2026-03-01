@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.fear.blaze;
+package net.j40climb.florafauna.common.mobsymbiote.fear.blaze;
 
 import net.j40climb.florafauna.Config;
 import net.minecraft.core.particles.ParticleTypes;

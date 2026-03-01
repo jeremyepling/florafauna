@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.iteminput.ItemInputAnimationTracker;
+import net.j40climb.florafauna.common.block.iteminput.ItemInputAnimationTracker;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;

@@ -1,6 +1,6 @@
-package net.j40climb.florafauna.common.entity.fear;
+package net.j40climb.florafauna.common.mobsymbiote.fear;
 
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.setup.FloraFaunaTags;
 import net.minecraft.core.BlockPos;

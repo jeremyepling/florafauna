@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.frontpack;
+package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

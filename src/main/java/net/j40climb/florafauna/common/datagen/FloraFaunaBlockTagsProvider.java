@@ -136,6 +136,43 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
                 .add(Blocks.RED_STAINED_GLASS_PANE)
                 .add(Blocks.BLACK_STAINED_GLASS_PANE);
 
+        // Ferric poppy plantable blocks - iron golems can plant ferric poppies on these
+        this.tag(FloraFaunaTags.Blocks.FERRIC_POPPY_PLANTABLE)
+                .add(Blocks.DIRT)
+                .add(Blocks.GRASS_BLOCK)
+                .add(Blocks.PODZOL)
+                .add(Blocks.COARSE_DIRT)
+                .add(Blocks.ROOTED_DIRT)
+                .add(Blocks.FARMLAND)
+                .add(Blocks.MUD)
+                .add(Blocks.MUDDY_MANGROVE_ROOTS)
+                .add(Blocks.MOSS_BLOCK)
+                .add(Blocks.MYCELIUM);
+
+        // Iron garden storage - containers iron golems can deposit poppies into
+        this.tag(FloraFaunaTags.Blocks.IRON_GARDEN_STORAGE)
+                .add(Blocks.CHEST)
+                .add(Blocks.TRAPPED_CHEST)
+                .add(Blocks.BARREL)
+                .add(Blocks.HOPPER)
+                .add(Blocks.SHULKER_BOX)
+                .add(Blocks.WHITE_SHULKER_BOX)
+                .add(Blocks.ORANGE_SHULKER_BOX)
+                .add(Blocks.MAGENTA_SHULKER_BOX)
+                .add(Blocks.LIGHT_BLUE_SHULKER_BOX)
+                .add(Blocks.YELLOW_SHULKER_BOX)
+                .add(Blocks.LIME_SHULKER_BOX)
+                .add(Blocks.PINK_SHULKER_BOX)
+                .add(Blocks.GRAY_SHULKER_BOX)
+                .add(Blocks.LIGHT_GRAY_SHULKER_BOX)
+                .add(Blocks.CYAN_SHULKER_BOX)
+                .add(Blocks.PURPLE_SHULKER_BOX)
+                .add(Blocks.BLUE_SHULKER_BOX)
+                .add(Blocks.BROWN_SHULKER_BOX)
+                .add(Blocks.GREEN_SHULKER_BOX)
+                .add(Blocks.RED_SHULKER_BOX)
+                .add(Blocks.BLACK_SHULKER_BOX);
+
         // Mineable with pickaxe
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(FloraFaunaRegistry.HUSK.get())

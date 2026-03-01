@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.fear;
+package net.j40climb.florafauna.common.mobsymbiote.fear;
 
 /**
  * Fear states for the stress/fear ecosystem.

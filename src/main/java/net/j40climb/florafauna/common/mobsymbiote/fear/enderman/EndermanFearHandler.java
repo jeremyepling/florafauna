@@ -1,13 +1,12 @@
-package net.j40climb.florafauna.common.entity.fear.enderman;
+package net.j40climb.florafauna.common.mobsymbiote.fear.enderman;
 
 import net.j40climb.florafauna.Config;
-import net.j40climb.florafauna.common.entity.fear.FearSourceDetector.FearSource;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearSourceDetector.FearSource;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.item.ItemStack;

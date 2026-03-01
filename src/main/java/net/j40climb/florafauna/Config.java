@@ -242,6 +242,82 @@ public class Config {
         BUILDER.pop();
     }
 
+    // ==================== IRON GARDEN SYSTEM ====================
+
+    static {
+        BUILDER.comment("Iron Garden System Configuration (Iron Golem Ferric Poppy Gardening)").push("irongarden");
+    }
+
+    // Timing settings
+    private static final ModConfigSpec.IntValue IRON_GARDEN_CHECK_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between iron garden state updates")
+            .defineInRange("checkIntervalTicks", 20, 1, 100);
+
+    private static final ModConfigSpec.IntValue IRON_GARDEN_CALM_REQUIRED_TICKS = BUILDER
+            .comment("Ticks without combat required for golem to become calm (default 6000 = 5 minutes)")
+            .defineInRange("calmRequiredTicks", 6000, 200, 72000);
+
+    // Phase settings
+    private static final ModConfigSpec.IntValue IRON_GARDEN_MAX_PLANTS_PER_PHASE = BUILDER
+            .comment("Maximum poppies to plant before switching to harvest phase")
+            .defineInRange("maxPlantsPerPhase", 8, 1, 32);
+
+    private static final ModConfigSpec.IntValue IRON_GARDEN_MAX_HARVESTS_PER_PHASE = BUILDER
+            .comment("Maximum poppies to harvest before switching to plant phase")
+            .defineInRange("maxHarvestsPerPhase", 8, 1, 32);
+
+    private static final ModConfigSpec.IntValue FERRIC_POPPY_GOLEM_RANGE = BUILDER
+            .comment("Range in blocks for calm golem proximity to enable conversion")
+            .defineInRange("golemRange", 32, 32, 64);
+
+    // Vanilla poppy -> ferric poppy conversion
+    // Conversion check runs every ironGardenCheckIntervalTicks (default 20 ticks = 1 second).
+    // Formula: avg_seconds = conversionChance * (checkIntervalTicks / 20)
+    // With default 20 tick interval: avg_seconds = conversionChance
+    //
+    // Quick reference (with default 20 tick check interval):
+    //   10  = ~10 seconds (fast, for testing)
+    //   30  = ~30 seconds
+    //   60  = ~1 minute
+    //   120 = ~2 minutes
+    //   300 = ~5 minutes
+    private static final ModConfigSpec.IntValue FERRIC_POPPY_CONVERSION_CHANCE = BUILDER
+            .comment(
+                    "Controls vanilla poppy to ferric poppy conversion speed. Higher = slower.",
+                    "This is a 1-in-N chance per state check to convert a nearby vanilla poppy.",
+                    "Checks run every 'checkIntervalTicks' (default 20 ticks = 1 second).",
+                    "",
+                    "Approximate conversion times (with default 1-second check interval):",
+                    "  10  = ~10 sec  (fast, good for testing)",
+                    "  30  = ~30 sec",
+                    "  60  = ~1 min   (default)",
+                    "  120 = ~2 min",
+                    "  300 = ~5 min"
+            )
+            .defineInRange("conversionChance", 60, 1, 600);
+
+    // Movement settings
+    private static final ModConfigSpec.IntValue IRON_GARDEN_WANDER_RADIUS = BUILDER
+            .comment("Radius in blocks for golem to wander within garden")
+            .defineInRange("wanderRadius", 16, 4, 32);
+
+    private static final ModConfigSpec.IntValue IRON_GARDEN_STORAGE_SEARCH_RADIUS = BUILDER
+            .comment("Range in blocks to search for storage containers")
+            .defineInRange("storageSearchRadius", 8, 2, 32);
+
+    // Output settings
+    private static final ModConfigSpec.IntValue IRON_NUGGETS_PER_POPPY = BUILDER
+            .comment("Number of iron nuggets from crafting one ferric poppy")
+            .defineInRange("nuggetsPerPoppy", 3, 1, 9);
+
+    private static final ModConfigSpec.BooleanValue IRON_GARDEN_DROP_IF_NO_STORAGE = BUILDER
+            .comment("If true, drop poppies on ground when no storage found. If false, golem retains them.")
+            .define("dropIfNoStorage", true);
+
+    static {
+        BUILDER.pop();
+    }
+
     // ==================== BUILD SPEC ====================
 
     public static final ModConfigSpec SPEC = BUILDER.build();
@@ -300,6 +376,18 @@ public class Config {
     public static int blazeRodDropMax;
     public static boolean blazeSuppressAttacks;
 
+    // Iron Garden System
+    public static int ironGardenCheckIntervalTicks;
+    public static int ironGardenCalmRequiredTicks;
+    public static int ironGardenMaxPlantsPerPhase;
+    public static int ironGardenMaxHarvestsPerPhase;
+    public static int ferricPoppyGolemRange;
+    public static int ferricPoppyConversionChance;
+    public static int ironGardenWanderRadius;
+    public static int ironGardenStorageSearchRadius;
+    public static int ironNuggetsPerPoppy;
+    public static boolean ironGardenDropIfNoStorage;
+
     /**
      * Loads config values from the spec into static fields.
      * Called when config is loaded/reloaded.
@@ -356,5 +444,17 @@ public class Config {
         blazeRodDropMin = BLAZE_ROD_DROP_MIN.get();
         blazeRodDropMax = BLAZE_ROD_DROP_MAX.get();
         blazeSuppressAttacks = BLAZE_SUPPRESS_ATTACKS.get();
+
+        // Iron Garden System
+        ironGardenCheckIntervalTicks = IRON_GARDEN_CHECK_INTERVAL_TICKS.get();
+        ironGardenCalmRequiredTicks = IRON_GARDEN_CALM_REQUIRED_TICKS.get();
+        ironGardenMaxPlantsPerPhase = IRON_GARDEN_MAX_PLANTS_PER_PHASE.get();
+        ironGardenMaxHarvestsPerPhase = IRON_GARDEN_MAX_HARVESTS_PER_PHASE.get();
+        ferricPoppyGolemRange = FERRIC_POPPY_GOLEM_RANGE.get();
+        ferricPoppyConversionChance = FERRIC_POPPY_CONVERSION_CHANCE.get();
+        ironGardenWanderRadius = IRON_GARDEN_WANDER_RADIUS.get();
+        ironGardenStorageSearchRadius = IRON_GARDEN_STORAGE_SEARCH_RADIUS.get();
+        ironNuggetsPerPoppy = IRON_NUGGETS_PER_POPPY.get();
+        ironGardenDropIfNoStorage = IRON_GARDEN_DROP_IF_NO_STORAGE.get();
     }
 }

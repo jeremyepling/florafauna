@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common;
+package net.j40climb.florafauna.common.util;
 
 import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.animation.AnimationDefinition;

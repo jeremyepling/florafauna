@@ -2,7 +2,7 @@ package net.j40climb.florafauna.common.item.abilities.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.projectile.ThrownItemEntity;
+import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.codec.ByteBufCodecs;

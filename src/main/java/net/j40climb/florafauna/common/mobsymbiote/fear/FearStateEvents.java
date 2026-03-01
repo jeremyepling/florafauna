@@ -1,13 +1,13 @@
-package net.j40climb.florafauna.common.entity.fear;
+package net.j40climb.florafauna.common.mobsymbiote.fear;
 
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.fear.FearSourceDetector.FearSource;
-import net.j40climb.florafauna.common.entity.fear.blaze.BlazeFearHandler;
-import net.j40climb.florafauna.common.entity.fear.creeper.CreeperFearHandler;
-import net.j40climb.florafauna.common.entity.fear.enderman.EndermanFearHandler;
-import net.j40climb.florafauna.common.entity.fear.goals.FearAvoidanceGoal;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearSourceDetector.FearSource;
+import net.j40climb.florafauna.common.mobsymbiote.fear.blaze.BlazeFearHandler;
+import net.j40climb.florafauna.common.mobsymbiote.fear.creeper.CreeperFearHandler;
+import net.j40climb.florafauna.common.mobsymbiote.fear.enderman.EndermanFearHandler;
+import net.j40climb.florafauna.common.mobsymbiote.fear.goals.FearAvoidanceGoal;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;

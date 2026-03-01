@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.client.iteminput;
+package net.j40climb.florafauna.common.block.iteminput;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.client.Minecraft;

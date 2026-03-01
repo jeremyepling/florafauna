@@ -1,9 +1,9 @@
-package net.j40climb.florafauna.common.entity.frontpack.networking;
+package net.j40climb.florafauna.common.entity.frenchie.frontpack.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

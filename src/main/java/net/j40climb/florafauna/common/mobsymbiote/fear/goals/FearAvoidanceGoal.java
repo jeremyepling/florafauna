@@ -1,8 +1,8 @@
-package net.j40climb.florafauna.common.entity.fear.goals;
+package net.j40climb.florafauna.common.mobsymbiote.fear.goals;
 
-import net.j40climb.florafauna.common.entity.fear.FearData;
-import net.j40climb.florafauna.common.entity.fear.FearHelper;
-import net.j40climb.florafauna.common.entity.fear.FearState;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearData;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearHelper;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;

@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.projectile;
+package net.j40climb.florafauna.common.item.projectile;
 
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;

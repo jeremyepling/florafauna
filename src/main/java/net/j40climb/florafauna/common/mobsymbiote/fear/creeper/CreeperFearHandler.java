@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.fear.creeper;
+package net.j40climb.florafauna.common.mobsymbiote.fear.creeper;
 
 import net.j40climb.florafauna.Config;
 import net.minecraft.core.particles.ParticleTypes;

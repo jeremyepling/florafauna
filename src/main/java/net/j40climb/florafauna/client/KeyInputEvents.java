@@ -1,7 +1,6 @@
-package net.j40climb.florafauna.client.events;
+package net.j40climb.florafauna.client;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.client.ClientUtils;
 import net.j40climb.florafauna.common.block.mobbarrier.menu.MobBarrierConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;

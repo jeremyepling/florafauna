@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockItem;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
+import net.j40climb.florafauna.common.block.ferricpoppy.FerricPoppyBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
@@ -26,9 +27,10 @@ import net.j40climb.florafauna.common.block.mobtransport.MobInputBlock;
 import net.j40climb.florafauna.common.block.mobtransport.MobInputBlockEntity;
 import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlock;
 import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlockEntity;
-import net.j40climb.florafauna.common.entity.fear.FearData;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteItem;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearData;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteItem;
 import net.j40climb.florafauna.common.block.vacuum.BlockDropData;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlock;
@@ -39,10 +41,10 @@ import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAncho
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
-import net.j40climb.florafauna.common.entity.projectile.ThrownItemEntity;
+import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
@@ -226,6 +228,20 @@ public class FloraFaunaRegistry {
                     .sound(SoundType.SCULK)
                     .noOcclusion()
             ));
+
+    // Ferric Poppy block (Iron Garden system)
+    public static final DeferredBlock<FerricPoppyBlock> FERRIC_POPPY = registerBlock("ferric_poppy",
+            props -> new FerricPoppyBlock(props
+                    .noCollision()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+            ));
+
+    // Separate item registration for ferric poppy (for use in goals)
+    public static final DeferredItem<Item> FERRIC_POPPY_ITEM = ITEMS.registerItem("ferric_poppy_item",
+            Item::new);
 
     // Wood blocks registered via ModWoodType enum
     static { registerWoodTypes(); }
@@ -466,6 +482,14 @@ public class FloraFaunaRegistry {
                     AttachmentType.builder(() -> FearData.DEFAULT)
                             .serialize(FearData.CODEC.fieldOf("fear_data"))
                             .sync(FearData.STREAM_CODEC)
+                            .build());
+
+    // Iron Garden system attachment (for iron golem gardening state)
+    public static final Supplier<AttachmentType<IronGardenData>> IRON_GARDEN_DATA =
+            ATTACHMENT_TYPES.register("iron_garden_data", () ->
+                    AttachmentType.builder(() -> IronGardenData.DEFAULT)
+                            .serialize(IronGardenData.CODEC.fieldOf("iron_garden_data"))
+                            .sync(IronGardenData.STREAM_CODEC)
                             .build());
 
     // ==================== HELPER METHODS ====================

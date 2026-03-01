@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.frontpack;
+package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.client.animation.KeyframeAnimation;

@@ -1,8 +1,8 @@
-package net.j40climb.florafauna.common.entity.frontpack;
+package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.networking.PutDownFrenchiePayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;

@@ -6,11 +6,10 @@ import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActio
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
 import net.j40climb.florafauna.common.block.mininganchor.networking.AnchorFillStatePayload;
-import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.mobbarrier.networking.UpdateMobBarrierConfigPayload;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.common.block.wood.WoodType;
-import net.j40climb.florafauna.common.entity.frontpack.networking.PutDownFrenchiePayload;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.networking.PutDownFrenchiePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.*;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueLoader;
@@ -76,6 +75,10 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.MOB_INPUT);
                         output.accept(FloraFaunaRegistry.MOB_OUTPUT);
                         output.accept(FloraFaunaRegistry.MOB_SYMBIOTE);
+
+                        // Iron Garden System blocks
+                        output.accept(FloraFaunaRegistry.FERRIC_POPPY);
+                        output.accept(FloraFaunaRegistry.FERRIC_POPPY_ITEM);
 
                         // Wood blocks - iterates through all wood types
                         for (WoodType woodType : WoodType.values()) {

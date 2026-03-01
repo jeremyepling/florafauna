@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.client.entity;
+package net.j40climb.florafauna.common.item.projectile;
 
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;

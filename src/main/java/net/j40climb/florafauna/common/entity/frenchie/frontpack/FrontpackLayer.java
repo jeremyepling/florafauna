@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.frontpack;
+package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;

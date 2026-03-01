@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.mobsymbiote;
+package net.j40climb.florafauna.common.mobsymbiote;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;

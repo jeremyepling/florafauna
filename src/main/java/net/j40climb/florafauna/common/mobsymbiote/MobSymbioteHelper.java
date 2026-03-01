@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.mobsymbiote;
+package net.j40climb.florafauna.common.mobsymbiote;
 
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mobtransport.LuredToBlockGoal;

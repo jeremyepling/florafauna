@@ -244,5 +244,8 @@
   "message.florafauna.mob_input.paired_to_output": "Paired to Mob Output at %s, %s, %s",
   "message.florafauna.mob_output.status": "Inputs: %s | Pending release: %s mobs",
 
-  "symbiote.dialogue.mob_input_capture": "Another unwilling volunteer."
+  "symbiote.dialogue.mob_input_capture": "Another unwilling volunteer.",
+
+  "block.florafauna.ferric_poppy": "Ferric Poppy",
+  "item.florafauna.ferric_poppy_item": "Ferric Poppy"
 }

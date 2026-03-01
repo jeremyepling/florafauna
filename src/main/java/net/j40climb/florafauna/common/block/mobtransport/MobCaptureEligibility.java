@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.common.block.mobtransport;
 
 import net.j40climb.florafauna.Config;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;

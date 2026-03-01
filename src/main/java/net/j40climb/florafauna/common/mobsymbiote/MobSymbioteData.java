@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.mobsymbiote;
+package net.j40climb.florafauna.common.mobsymbiote;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

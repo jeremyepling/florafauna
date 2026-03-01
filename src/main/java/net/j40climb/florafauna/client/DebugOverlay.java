@@ -5,16 +5,19 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
-import net.j40climb.florafauna.common.entity.fear.FearData;
-import net.j40climb.florafauna.common.entity.fear.FearState;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearData;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenActivity;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
-import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
 import net.minecraft.client.DeltaTracker;
@@ -23,16 +26,15 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -309,6 +311,59 @@ public class DebugOverlay implements GuiLayer {
             fearData.getFearSourcePos().ifPresent(pos ->
                     lines.add(new DebugLine("Fear Source: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), color)));
         }
+
+        // Check for Iron Garden data (Iron Golems only)
+        if (mob instanceof IronGolem golem && mob.hasData(FloraFaunaRegistry.IRON_GARDEN_DATA)) {
+            IronGardenData gardenData = mob.getData(FloraFaunaRegistry.IRON_GARDEN_DATA);
+            IronGardenState state = gardenData.ironGardenState();
+
+            // Only show if the golem is bonded (participating in iron garden)
+            if (state != IronGardenState.UNBONDED) {
+                lines.add(new DebugLine("-- Iron Garden --", headerColor));
+                lines.add(new DebugLine("State: " + state.name(), getIronGardenStateColor(state)));
+
+                // Show current activity (synced from server via IronGardenData)
+                String activity = gardenData.activity().getDisplayName();
+                lines.add(new DebugLine("Activity: " + activity, getActivityColor(gardenData.activity())));
+
+                long ticksInState = gardenData.getTicksInState(currentTick);
+                lines.add(new DebugLine("In State: " + formatTicks(ticksInState), color));
+
+                // Show time until calm for BONDED_NOT_CALM
+                if (state == IronGardenState.BONDED_NOT_CALM) {
+                    long ticksUntilCalm = IronGardenHelper.getTicksUntilCalm(golem, currentTick);
+                    if (ticksUntilCalm > 0) {
+                        lines.add(new DebugLine("Until CALM: " + formatTicks(ticksUntilCalm), 0xFFFFAA00));
+                    } else {
+                        lines.add(new DebugLine("Ready to garden!", 0xFF55FF77));
+                    }
+                }
+
+                // Show phase progress for gardening states
+                if (state == IronGardenState.CALM_PLANTING) {
+                    lines.add(new DebugLine("Plants: " + gardenData.plantsThisPhase() + "/" + Config.ironGardenMaxPlantsPerPhase, color));
+                } else if (state == IronGardenState.CALM_HARVESTING) {
+                    lines.add(new DebugLine("Harvests: " + gardenData.harvestsThisPhase() + "/" + Config.ironGardenMaxHarvestsPerPhase, color));
+                }
+
+                // Show carried poppies
+                if (gardenData.carriedPoppies() > 0) {
+                    lines.add(new DebugLine("Carrying: " + gardenData.carriedPoppies() + "/" + IronGardenData.MAX_CARRIED_POPPIES + " poppies", 0xFF55FFFF));
+                }
+
+                // Show garden center
+                gardenData.getGardenCenter().ifPresent(pos ->
+                        lines.add(new DebugLine("Garden: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), color)));
+
+                // Show remembered storage
+                gardenData.getStorage().ifPresent(pos ->
+                        lines.add(new DebugLine("Storage: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), color)));
+
+                // Count nearby ferric poppies
+                int poppyCount = IronGardenHelper.countFerricPoppies(golem);
+                lines.add(new DebugLine("Poppies: " + poppyCount, poppyCount > 0 ? enabledColor : color));
+            }
+        }
     }
 
     /**
@@ -530,6 +585,30 @@ public class DebugOverlay implements GuiLayer {
             case LEAK -> 0xFFFF55FF;       // Magenta
             case EXHAUSTED -> 0xFF55FFFF;  // Cyan
             case OVERSTRESS -> 0xFFFF5555; // Red
+        };
+    }
+
+    /**
+     * Gets the display color for an iron garden state.
+     */
+    private static int getIronGardenStateColor(IronGardenState state) {
+        return switch (state) {
+            case UNBONDED -> 0xFFAAAAAA;        // Gray
+            case BONDED_NOT_CALM -> 0xFFFFAA00; // Orange
+            case CALM, CALM_PLANTING, CALM_HARVESTING -> 0xFF55FF77; // Green (all calm states)
+        };
+    }
+
+    /**
+     * Gets the display color for an iron garden activity.
+     */
+    private static int getActivityColor(IronGardenActivity activity) {
+        return switch (activity) {
+            case IDLE -> 0xFFAAAAAA;        // Gray
+            case WANDERING -> 0xFF55FFFF;   // Cyan
+            case PLANTING -> 0xFF55FF77;    // Green
+            case HARVESTING -> 0xFFFFFF55;  // Yellow
+            case DEPOSITING -> 0xFFFF55FF;  // Magenta
         };
     }
 }

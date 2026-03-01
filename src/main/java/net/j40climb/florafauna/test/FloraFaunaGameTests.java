@@ -17,7 +17,6 @@ import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
-import net.j40climb.florafauna.common.symbiote.item.DormantSymbioteItem;
 import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
 import net.j40climb.florafauna.common.symbiote.observation.ObservationCategory;
 import net.j40climb.florafauna.common.symbiote.progress.ConceptSignal;
@@ -27,15 +26,15 @@ import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.common.block.mobtransport.CapturedMobBuffer;
 import net.j40climb.florafauna.common.block.mobtransport.CapturedMobTicket;
 import net.j40climb.florafauna.common.block.mobtransport.MobCaptureEligibility;
-import net.j40climb.florafauna.common.entity.fear.FearData;
-import net.j40climb.florafauna.common.entity.fear.FearHelper;
-import net.j40climb.florafauna.common.entity.fear.FearSourceDetector;
-import net.j40climb.florafauna.common.entity.fear.FearState;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearData;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearSourceDetector;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
 import net.j40climb.florafauna.common.util.AreaScanner;
-import net.j40climb.florafauna.setup.FloraFaunaTags;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteData;
-import net.j40climb.florafauna.common.entity.mobsymbiote.MobSymbioteHelper;
-import net.j40climb.florafauna.Config;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
@@ -130,6 +129,9 @@ public class FloraFaunaGameTests {
 
         // Register fear system tests
         registerFearSystemTests(event, defaultEnv);
+
+        // Register iron garden system tests
+        registerIronGardenSystemTests(event, defaultEnv);
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
@@ -2388,6 +2390,302 @@ public class FloraFaunaGameTests {
 
             throw helper.assertionException("Diamond was not transferred to chest");
         });
+    }
+
+    // ==================== Iron Garden System Tests ====================
+
+    private static void registerIronGardenSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+        // IronGardenState tests
+        registerTest(event, env, "iron_garden_state_helper_methods", FloraFaunaGameTests::testIronGardenStateHelperMethods);
+
+        // IronGardenData tests
+        registerTest(event, env, "iron_garden_data_default_state", FloraFaunaGameTests::testIronGardenDataDefaultState);
+        registerTest(event, env, "iron_garden_data_state_transitions", FloraFaunaGameTests::testIronGardenDataStateTransitions);
+        registerTest(event, env, "iron_garden_data_combat_breaks_calm", FloraFaunaGameTests::testIronGardenDataCombatBreaksCalm);
+        registerTest(event, env, "iron_garden_data_increment_plants", FloraFaunaGameTests::testIronGardenDataIncrementPlants);
+        registerTest(event, env, "iron_garden_data_increment_harvests", FloraFaunaGameTests::testIronGardenDataIncrementHarvests);
+        registerTest(event, env, "iron_garden_data_garden_center", FloraFaunaGameTests::testIronGardenDataGardenCenter);
+        registerTest(event, env, "iron_garden_data_carried_poppies", FloraFaunaGameTests::testIronGardenDataCarriedPoppies);
+
+        // IronGardenHelper tests
+        registerTest(event, env, "iron_garden_helper_eligibility", FloraFaunaGameTests::testIronGardenHelperEligibility);
+        registerTest(event, env, "iron_garden_helper_format_ticks", FloraFaunaGameTests::testIronGardenHelperFormatTicks);
+    }
+
+    private static void testIronGardenStateHelperMethods(GameTestHelper helper) {
+        // Test isCalm()
+        if (!IronGardenState.CALM.isCalm()) {
+            throw helper.assertionException("CALM should be calm");
+        }
+        if (IronGardenState.UNBONDED.isCalm()) {
+            throw helper.assertionException("UNBONDED should NOT be calm");
+        }
+        if (IronGardenState.BONDED_NOT_CALM.isCalm()) {
+            throw helper.assertionException("BONDED_NOT_CALM should NOT be calm");
+        }
+
+        // Test isBonded()
+        if (IronGardenState.UNBONDED.isBonded()) {
+            throw helper.assertionException("UNBONDED should NOT be bonded");
+        }
+        if (!IronGardenState.BONDED_NOT_CALM.isBonded()) {
+            throw helper.assertionException("BONDED_NOT_CALM should be bonded");
+        }
+        if (!IronGardenState.CALM.isBonded()) {
+            throw helper.assertionException("CALM should be bonded");
+        }
+
+        // Test isGardening()
+        if (!IronGardenState.CALM.isGardening()) {
+            throw helper.assertionException("CALM should be gardening");
+        }
+        if (IronGardenState.UNBONDED.isGardening()) {
+            throw helper.assertionException("UNBONDED should NOT be gardening");
+        }
+        if (IronGardenState.BONDED_NOT_CALM.isGardening()) {
+            throw helper.assertionException("BONDED_NOT_CALM should NOT be gardening");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataDefaultState(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT;
+
+        if (data.ironGardenState() != IronGardenState.UNBONDED) {
+            throw helper.assertionException("Default state should be UNBONDED, got: " + data.ironGardenState());
+        }
+        if (data.stateEnteredTick() != 0L) {
+            throw helper.assertionException("Default stateEnteredTick should be 0");
+        }
+        if (data.lastCombatTick() != 0L) {
+            throw helper.assertionException("Default lastCombatTick should be 0");
+        }
+        if (data.plantsThisPhase() != 0) {
+            throw helper.assertionException("Default plantsThisPhase should be 0");
+        }
+        if (data.harvestsThisPhase() != 0) {
+            throw helper.assertionException("Default harvestsThisPhase should be 0");
+        }
+        if (data.carriedPoppies() != 0) {
+            throw helper.assertionException("Default carriedPoppies should be 0");
+        }
+        if (data.hasGardenCenter()) {
+            throw helper.assertionException("Default should NOT have garden center");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataStateTransitions(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT;
+
+        // Transition to CALM
+        IronGardenData calm = data.withState(IronGardenState.CALM, 1000L);
+        if (calm.ironGardenState() != IronGardenState.CALM) {
+            throw helper.assertionException("Should be CALM, got: " + calm.ironGardenState());
+        }
+        if (calm.stateEnteredTick() != 1000L) {
+            throw helper.assertionException("stateEnteredTick should be 1000, got: " + calm.stateEnteredTick());
+        }
+
+        // Transition to BONDED_NOT_CALM
+        IronGardenData notCalm = calm.withState(IronGardenState.BONDED_NOT_CALM, 2000L);
+        if (notCalm.ironGardenState() != IronGardenState.BONDED_NOT_CALM) {
+            throw helper.assertionException("Should be BONDED_NOT_CALM");
+        }
+        if (notCalm.stateEnteredTick() != 2000L) {
+            throw helper.assertionException("stateEnteredTick should be 2000, got: " + notCalm.stateEnteredTick());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataCombatBreaksCalm(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT
+                .withState(IronGardenState.CALM, 1000L);
+
+        // Combat should break calm
+        IronGardenData afterCombat = data.withCombatBreakingCalm(2000L);
+
+        if (afterCombat.ironGardenState() != IronGardenState.BONDED_NOT_CALM) {
+            throw helper.assertionException("Should be BONDED_NOT_CALM after combat, got: " + afterCombat.ironGardenState());
+        }
+        if (afterCombat.stateEnteredTick() != 2000L) {
+            throw helper.assertionException("stateEnteredTick should be 2000, got: " + afterCombat.stateEnteredTick());
+        }
+        if (afterCombat.lastCombatTick() != 2000L) {
+            throw helper.assertionException("lastCombatTick should be 2000, got: " + afterCombat.lastCombatTick());
+        }
+        // Phase counters should be reset
+        if (afterCombat.plantsThisPhase() != 0 || afterCombat.harvestsThisPhase() != 0) {
+            throw helper.assertionException("Phase counters should be reset after combat breaks calm");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataIncrementPlants(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT
+                .withState(IronGardenState.CALM, 1000L);
+
+        IronGardenData after1 = data.incrementPlants();
+        if (after1.plantsThisPhase() != 1) {
+            throw helper.assertionException("plantsThisPhase should be 1, got: " + after1.plantsThisPhase());
+        }
+
+        IronGardenData after5 = after1.incrementPlants().incrementPlants().incrementPlants().incrementPlants();
+        if (after5.plantsThisPhase() != 5) {
+            throw helper.assertionException("plantsThisPhase should be 5, got: " + after5.plantsThisPhase());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataIncrementHarvests(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT
+                .withState(IronGardenState.CALM, 1000L);
+
+        IronGardenData after1 = data.incrementHarvests();
+        if (after1.harvestsThisPhase() != 1) {
+            throw helper.assertionException("harvestsThisPhase should be 1, got: " + after1.harvestsThisPhase());
+        }
+        if (after1.carriedPoppies() != 1) {
+            throw helper.assertionException("carriedPoppies should be 1, got: " + after1.carriedPoppies());
+        }
+
+        // Test max capacity
+        IronGardenData atMax = after1.withCarriedPoppies(IronGardenData.MAX_CARRIED_POPPIES - 1).incrementHarvests();
+        if (atMax.carriedPoppies() != IronGardenData.MAX_CARRIED_POPPIES) {
+            throw helper.assertionException("carriedPoppies should be at MAX, got: " + atMax.carriedPoppies());
+        }
+
+        // Incrementing past max should clamp
+        IronGardenData pastMax = atMax.incrementHarvests();
+        if (pastMax.carriedPoppies() != IronGardenData.MAX_CARRIED_POPPIES) {
+            throw helper.assertionException("carriedPoppies should stay at MAX, got: " + pastMax.carriedPoppies());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataGardenCenter(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT;
+
+        // Initially no garden center
+        if (data.getGardenCenter().isPresent()) {
+            throw helper.assertionException("Should not have garden center initially");
+        }
+
+        // Set garden center
+        BlockPos center = new BlockPos(100, 64, 200);
+        IronGardenData withCenter = data.withGardenCenter(center);
+
+        if (!withCenter.hasGardenCenter()) {
+            throw helper.assertionException("Should have garden center after setting");
+        }
+        if (withCenter.getGardenCenter().isEmpty()) {
+            throw helper.assertionException("getGardenCenter should return value");
+        }
+        BlockPos retrieved = withCenter.getGardenCenter().get();
+        if (!retrieved.equals(center)) {
+            throw helper.assertionException("Garden center mismatch: expected " + center + ", got " + retrieved);
+        }
+
+        // Clear garden center
+        IronGardenData cleared = withCenter.clearGardenCenter();
+        if (cleared.hasGardenCenter()) {
+            throw helper.assertionException("Should NOT have garden center after clearing");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenDataCarriedPoppies(GameTestHelper helper) {
+        IronGardenData data = IronGardenData.DEFAULT;
+
+        // Test withCarriedPoppies
+        IronGardenData with5 = data.withCarriedPoppies(5);
+        if (with5.carriedPoppies() != 5) {
+            throw helper.assertionException("carriedPoppies should be 5, got: " + with5.carriedPoppies());
+        }
+        if (!with5.isCarryingPoppies()) {
+            throw helper.assertionException("Should be carrying poppies");
+        }
+        if (with5.isCarryingFull()) {
+            throw helper.assertionException("Should NOT be carrying full with 5");
+        }
+
+        // Test max clamping
+        IronGardenData over = data.withCarriedPoppies(100);
+        if (over.carriedPoppies() != IronGardenData.MAX_CARRIED_POPPIES) {
+            throw helper.assertionException("Should clamp to MAX, got: " + over.carriedPoppies());
+        }
+        if (!over.isCarryingFull()) {
+            throw helper.assertionException("Should be carrying full at MAX");
+        }
+
+        // Test min clamping
+        IronGardenData negative = data.withCarriedPoppies(-5);
+        if (negative.carriedPoppies() != 0) {
+            throw helper.assertionException("Should clamp to 0, got: " + negative.carriedPoppies());
+        }
+
+        // Test clearCarriedPoppies
+        IronGardenData cleared = with5.clearCarriedPoppies();
+        if (cleared.carriedPoppies() != 0) {
+            throw helper.assertionException("Should be 0 after clear, got: " + cleared.carriedPoppies());
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenHelperEligibility(GameTestHelper helper) {
+        // Spawn an iron golem without MobSymbiote
+        var golem = helper.spawn(EntityType.IRON_GOLEM, new BlockPos(1, 1, 1));
+
+        // Initially not eligible (no MobSymbiote)
+        if (IronGardenHelper.isEligible(golem)) {
+            throw helper.assertionException("Golem without MobSymbiote should NOT be eligible");
+        }
+
+        // Apply MobSymbiote Level 1
+        MobSymbioteHelper.applyMobSymbioteLevel1(golem, 0L);
+
+        // Now should be eligible
+        if (!IronGardenHelper.isEligible(golem)) {
+            throw helper.assertionException("Golem with MobSymbiote should be eligible");
+        }
+
+        helper.succeed();
+    }
+
+    private static void testIronGardenHelperFormatTicks(GameTestHelper helper) {
+        // Test seconds only
+        String s30 = IronGardenHelper.formatTicks(600); // 30 seconds
+        if (!s30.equals("30s")) {
+            throw helper.assertionException("600 ticks should format as '30s', got: " + s30);
+        }
+
+        // Test minutes and seconds
+        String m1s30 = IronGardenHelper.formatTicks(1800); // 1m 30s
+        if (!m1s30.equals("1m 30s")) {
+            throw helper.assertionException("1800 ticks should format as '1m 30s', got: " + m1s30);
+        }
+
+        // Test minutes with 0 seconds
+        String m5 = IronGardenHelper.formatTicks(6000); // 5m 0s
+        if (!m5.equals("5m 0s")) {
+            throw helper.assertionException("6000 ticks should format as '5m 0s', got: " + m5);
+        }
+
+        // Test 0 ticks
+        String zero = IronGardenHelper.formatTicks(0);
+        if (!zero.equals("0s")) {
+            throw helper.assertionException("0 ticks should format as '0s', got: " + zero);
+        }
+
+        helper.succeed();
     }
 
     // ==================== Helper Methods ====================

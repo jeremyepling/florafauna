@@ -1,8 +1,10 @@
 package net.j40climb.florafauna.common.datagen;
 
+import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -66,6 +68,13 @@ public class FloraFaunaRecipeProvider extends RecipeProvider.Runner {
                 // Fence gate from planks + sticks (2 planks + 4 sticks -> 1 fence gate)
                 fenceGateFromPlanks(wood.fenceGate().get(), wood.planks().get(), name);
             }
+
+            // Iron Garden System recipes
+            // Ferric Poppy -> 3 Iron Nuggets (shapeless)
+            ShapelessRecipeBuilder.shapeless(items, RecipeCategory.MISC, Items.IRON_NUGGET, 3)
+                    .requires(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get())
+                    .unlockedBy("has_ferric_poppy", has(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get()))
+                    .save(output, FloraFauna.MOD_ID + ":iron_nuggets_from_ferric_poppy");
         }
 
         private void planksFromLog(ItemLike planks, ItemLike log, String logName) {

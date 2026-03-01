@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.fear;
+package net.j40climb.florafauna.common.mobsymbiote.fear;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

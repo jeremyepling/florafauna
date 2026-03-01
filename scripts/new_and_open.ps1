@@ -1,16 +1,18 @@
-# WARNING: Run this script ONLY from the main repo checkout (C:\code\florafauna-workspace\florafauna).
-# Do NOT run from the workspace root or from inside a worktree.
+# Creates a new worktree and opens it in IntelliJ
+# WARNING: Run this script ONLY from the main repo checkout.
 
 param(
   [Parameter(Mandatory=$true)][string]$Name,
   [string]$Base = "origin/main",
-  [string]$ParentDir = ".."
+  [switch]$SkipDataGen
 )
 
-& (Join-Path $PSScriptRoot "new_worktree.ps1") -Name $Name -Base $Base -ParentDir $ParentDir
+. (Join-Path $PSScriptRoot "config.ps1")
 
-$root = git rev-parse --show-toplevel
-$parent = Resolve-Path (Join-Path $root $ParentDir)
-$wtPath = Join-Path $parent.Path $Name
-
-& (Join-Path $PSScriptRoot "open_idea.ps1") -Path $wtPath
+& (Join-Path $SharedScriptsDir "new_and_open.ps1") `
+  -Name $Name `
+  -Base $Base `
+  -WorldTemplatePath $WorldTemplatePath `
+  -OptionsTemplatePath $OptionsTemplatePath `
+  -RunDirPattern $RunDirPattern `
+  -SkipDataGen:$SkipDataGen

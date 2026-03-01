@@ -46,6 +46,18 @@ public final class FloraFaunaTags {
          */
         public static final TagKey<Block> FEAR_LOS_TRANSPARENT = create("fear_los_transparent");
 
+        /**
+         * Blocks that ferric poppies can be planted on.
+         * Includes dirt, grass blocks, and other natural ground blocks.
+         */
+        public static final TagKey<Block> FERRIC_POPPY_PLANTABLE = create("ferric_poppy_plantable");
+
+        /**
+         * Storage containers that Iron Golems can deposit harvested poppies into.
+         * Includes chests, barrels, hoppers, and shulker boxes.
+         */
+        public static final TagKey<Block> IRON_GARDEN_STORAGE = create("iron_garden_storage");
+
         private static TagKey<Block> create(String name) {
             return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name));
         }

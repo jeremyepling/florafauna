@@ -1,8 +1,7 @@
-package net.j40climb.florafauna.client.entity;
+package net.j40climb.florafauna.common.item.projectile;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

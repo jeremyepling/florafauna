@@ -1,4 +1,4 @@
-package net.j40climb.florafauna.common.entity.fear;
+package net.j40climb.florafauna.common.mobsymbiote.fear;
 
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.util.AreaScanner;
