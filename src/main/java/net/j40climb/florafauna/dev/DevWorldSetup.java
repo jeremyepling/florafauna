@@ -56,7 +56,7 @@ public class DevWorldSetup {
         commands.performPrefixedCommand(source, "time set day");
         commands.performPrefixedCommand(source, "weather clear");
 
-        // Set peaceful
-        commands.performPrefixedCommand(source, "difficulty peaceful");
+        // Set easy (allows mob testing while being forgiving)
+        commands.performPrefixedCommand(source, "difficulty easy");
     }
 }

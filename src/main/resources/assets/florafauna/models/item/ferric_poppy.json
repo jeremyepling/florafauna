@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "florafauna:block/ferric_poppy_mature"
+  }
+}

@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockItem;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
+import net.j40climb.florafauna.common.block.ferricpoppy.FerricPoppyBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
@@ -22,6 +23,14 @@ import net.j40climb.florafauna.common.block.mininganchor.pod.Tier1PodBlockEntity
 import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlock;
 import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
+import net.j40climb.florafauna.common.block.mobtransport.MobInputBlock;
+import net.j40climb.florafauna.common.block.mobtransport.MobInputBlockEntity;
+import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlock;
+import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlockEntity;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearData;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteItem;
 import net.j40climb.florafauna.common.block.vacuum.BlockDropData;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.iteminput.fieldrelay.FieldRelayBlock;
@@ -32,10 +41,10 @@ import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAncho
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frontpack.FrontpackData;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
-import net.j40climb.florafauna.common.entity.projectile.ThrownItemEntity;
+import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
@@ -205,6 +214,37 @@ public class FloraFaunaRegistry {
                     .noOcclusion()
             ));
 
+    // Mob Transport System blocks
+    public static final DeferredBlock<MobInputBlock> MOB_INPUT = registerBlock("mob_input",
+            props -> new MobInputBlock(props
+                    .strength(2f, 4f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.SCULK)
+                    .noOcclusion()
+            ));
+
+    public static final DeferredBlock<MobOutputBlock> MOB_OUTPUT = registerBlock("mob_output",
+            props -> new MobOutputBlock(props
+                    .strength(2f, 4f)
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.SCULK)
+                    .noOcclusion()
+            ));
+
+    // Ferric Poppy block (Iron Garden system)
+    public static final DeferredBlock<FerricPoppyBlock> FERRIC_POPPY = registerBlock("ferric_poppy",
+            props -> new FerricPoppyBlock(props
+                    .noCollision()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+            ));
+
+    // Separate item registration for ferric poppy (for use in goals)
+    public static final DeferredItem<Item> FERRIC_POPPY_ITEM = ITEMS.registerItem("ferric_poppy_item",
+            Item::new);
+
     // Wood blocks registered via ModWoodType enum
     static { registerWoodTypes(); }
     private static void registerWoodTypes() { WoodType.values(); }
@@ -256,6 +296,9 @@ public class FloraFaunaRegistry {
                             .hasConsumeParticles(true)
                             .build()
             )));
+
+    public static final DeferredItem<Item> MOB_SYMBIOTE = ITEMS.registerItem("mob_symbiote",
+            MobSymbioteItem::new);
 
     // Spawn Eggs (entities must be declared before these)
     public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
@@ -313,6 +356,15 @@ public class FloraFaunaRegistry {
     public static final Supplier<BlockEntityType<Tier2PodBlockEntity>> TIER2_POD_BE = BLOCK_ENTITIES.register(
             "tier2_pod",
             () -> new BlockEntityType<>(Tier2PodBlockEntity::new, false, TIER2_POD.get()));
+
+    // Mob Transport System block entities
+    public static final Supplier<BlockEntityType<MobInputBlockEntity>> MOB_INPUT_BE = BLOCK_ENTITIES.register(
+            "mob_input",
+            () -> new BlockEntityType<>(MobInputBlockEntity::new, false, MOB_INPUT.get()));
+
+    public static final Supplier<BlockEntityType<MobOutputBlockEntity>> MOB_OUTPUT_BE = BLOCK_ENTITIES.register(
+            "mob_output",
+            () -> new BlockEntityType<>(MobOutputBlockEntity::new, false, MOB_OUTPUT.get()));
 
     // ==================== MENUS ====================
 
@@ -426,6 +478,30 @@ public class FloraFaunaRegistry {
                     AttachmentType.builder(() -> BlockDropData.DEFAULT)
                             .serialize(BlockDropData.CODEC.fieldOf("block_drop_data"))
                             .sync(BlockDropData.STREAM_CODEC)
+                            .build());
+
+    // Mob symbiote attachment (for marking mobs as bonded for capture)
+    public static final Supplier<AttachmentType<MobSymbioteData>> MOB_SYMBIOTE_DATA =
+            ATTACHMENT_TYPES.register("mob_symbiote_data", () ->
+                    AttachmentType.builder(() -> MobSymbioteData.DEFAULT)
+                            .serialize(MobSymbioteData.CODEC.fieldOf("mob_symbiote_data"))
+                            .sync(MobSymbioteData.STREAM_CODEC)
+                            .build());
+
+    // Fear system attachment (for fear/stress state tracking)
+    public static final Supplier<AttachmentType<FearData>> FEAR_DATA =
+            ATTACHMENT_TYPES.register("fear_data", () ->
+                    AttachmentType.builder(() -> FearData.DEFAULT)
+                            .serialize(FearData.CODEC.fieldOf("fear_data"))
+                            .sync(FearData.STREAM_CODEC)
+                            .build());
+
+    // Iron Garden system attachment (for iron golem gardening state)
+    public static final Supplier<AttachmentType<IronGardenData>> IRON_GARDEN_DATA =
+            ATTACHMENT_TYPES.register("iron_garden_data", () ->
+                    AttachmentType.builder(() -> IronGardenData.DEFAULT)
+                            .serialize(IronGardenData.CODEC.fieldOf("iron_garden_data"))
+                            .sync(IronGardenData.STREAM_CODEC)
                             .build());
 
     // ==================== HELPER METHODS ====================

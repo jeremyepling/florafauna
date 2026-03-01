@@ -104,6 +104,220 @@ public class Config {
         BUILDER.pop();
     }
 
+    // ==================== MOB TRANSPORT SYSTEM ====================
+
+    static {
+        BUILDER.comment("Mob Transport System Configuration (MobInput/MobOutput)").push("mobtransport");
+    }
+
+    // Lure settings
+    private static final ModConfigSpec.IntValue MOB_LURE_RADIUS = BUILDER
+            .comment("Radius in blocks for luring eligible mobs")
+            .defineInRange("lureRadius", 12, 1, 32);
+
+    private static final ModConfigSpec.IntValue MOB_LURE_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between lure attempts")
+            .defineInRange("lureIntervalTicks", 20, 1, 100);
+
+    // Capture settings
+    private static final ModConfigSpec.DoubleValue MOB_CAPTURE_RADIUS = BUILDER
+            .comment("Radius in blocks for capturing mobs (should be smaller than lure)")
+            .defineInRange("captureRadius", 1.5, 0.5, 4.0);
+
+    private static final ModConfigSpec.IntValue MOB_CAPTURE_ANIM_TICKS = BUILDER
+            .comment("Duration of capture animation in ticks")
+            .defineInRange("captureAnimTicks", 15, 5, 60);
+
+    // Travel settings
+    private static final ModConfigSpec.IntValue MOB_MIN_TRAVEL_DELAY_TICKS = BUILDER
+            .comment("Minimum travel delay in ticks before mob is ready at output")
+            .defineInRange("minTravelDelayTicks", 60, 20, 600);
+
+    private static final ModConfigSpec.IntValue MOB_MAX_TRAVEL_DELAY_TICKS = BUILDER
+            .comment("Maximum travel delay in ticks before mob is ready at output")
+            .defineInRange("maxTravelDelayTicks", 200, 60, 1200);
+
+    // Queue settings
+    private static final ModConfigSpec.IntValue MOB_MAX_QUEUE_SIZE = BUILDER
+            .comment("Maximum number of captured mobs queued per MobInput")
+            .defineInRange("maxQueueSizePerInput", 5, 1, 20);
+
+    private static final ModConfigSpec.IntValue MOB_RELEASE_CHECK_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between checking for mobs ready to release")
+            .defineInRange("releaseCheckIntervalTicks", 20, 1, 100);
+
+    // Eligibility settings
+    private static final ModConfigSpec.BooleanValue MOB_ALLOW_UNBONDED_CAPTURE = BUILDER
+            .comment("If true, unbonded mobs can be captured (bonded still prioritized)")
+            .define("allowUnbondedCapture", false);
+
+    private static final ModConfigSpec.IntValue MOB_RECENTLY_RELEASED_IMMUNITY_TICKS = BUILDER
+            .comment("Ticks of capture immunity after a mob is released")
+            .defineInRange("recentlyReleasedImmunityTicks", 100, 20, 600);
+
+    static {
+        BUILDER.pop();
+    }
+
+    // ==================== FEAR SYSTEM ====================
+
+    static {
+        BUILDER.comment("Fear System Configuration (Creeper Fear Ecosystem)").push("fear");
+    }
+
+    // Timing thresholds
+    private static final ModConfigSpec.IntValue FEAR_CHECK_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between fear state updates")
+            .defineInRange("checkIntervalTicks", 10, 1, 40);
+
+    private static final ModConfigSpec.IntValue PANIC_DURATION_FOR_LEAK = BUILDER
+            .comment("Ticks in PANICKED before triggering LEAK event")
+            .defineInRange("panicDurationForLeak", 200, 40, 600);
+
+    private static final ModConfigSpec.IntValue EXHAUSTED_COOLDOWN_TICKS = BUILDER
+            .comment("Ticks in EXHAUSTED (cooldown) before returning to CALM")
+            .defineInRange("exhaustedCooldownTicks", 4500, 200, 12000);
+
+    private static final ModConfigSpec.IntValue MAX_LEAKS_BEFORE_OVERSTRESS = BUILDER
+            .comment("Consecutive leaks without CALM reset before OVERSTRESS (explosion)")
+            .defineInRange("maxLeaksBeforeOverstress", 3, 1, 10);
+
+    // Detection range
+    private static final ModConfigSpec.DoubleValue FEAR_SOURCE_DETECTION_RANGE = BUILDER
+            .comment("Range in blocks to detect fear sources")
+            .defineInRange("detectionRange", 16.0, 4.0, 32.0);
+
+    // Creeper gunpowder drops
+    private static final ModConfigSpec.IntValue GUNPOWDER_DROP_MIN = BUILDER
+            .comment("Minimum gunpowder dropped per LEAK event")
+            .defineInRange("gunpowderDropMin", 10, 1, 32);
+
+    private static final ModConfigSpec.IntValue GUNPOWDER_DROP_MAX = BUILDER
+            .comment("Maximum gunpowder dropped per LEAK event")
+            .defineInRange("gunpowderDropMax", 14, 1, 64);
+
+    // Enderman-specific settings
+    private static final ModConfigSpec.DoubleValue ENDERMAN_STARE_DISTANCE = BUILDER
+            .comment("Maximum distance in blocks for enderman to 'lock in' a stare at reflective blocks or armor stands")
+            .defineInRange("endermanStareDistance", 4.0, 1.0, 16.0);
+
+    private static final ModConfigSpec.IntValue ENDER_PEARL_DROP_MIN = BUILDER
+            .comment("Minimum ender pearls dropped per LEAK event")
+            .defineInRange("enderPearlDropMin", 2, 1, 16);
+
+    private static final ModConfigSpec.IntValue ENDER_PEARL_DROP_MAX = BUILDER
+            .comment("Maximum ender pearls dropped per LEAK event")
+            .defineInRange("enderPearlDropMax", 4, 1, 32);
+
+    // Blaze-specific settings
+    private static final ModConfigSpec.IntValue BLAZE_MIN_SNOW_GOLEMS = BUILDER
+            .comment("Minimum number of snow golems required to trigger blaze fear")
+            .defineInRange("blazeMinSnowGolems", 1, 1, 10);
+
+    private static final ModConfigSpec.IntValue BLAZE_COLD_SCAN_RADIUS = BUILDER
+            .comment("Radius for scanning cold blocks (creates a cube of 2*radius+1)")
+            .defineInRange("blazeColdScanRadius", 8, 4, 16);
+
+    private static final ModConfigSpec.IntValue BLAZE_MIN_COLD_BLOCKS = BUILDER
+            .comment("Minimum cold blocks (snow/ice) required in scan area to enable fear (0 = disabled)")
+            .defineInRange("blazeMinColdBlocks", 2, 0, 500);
+
+    private static final ModConfigSpec.BooleanValue BLAZE_REQUIRE_BOTH_CONDITIONS = BUILDER
+            .comment("If true, blazes need BOTH snow golems AND cold blocks to leak. If false, either triggers fear.")
+            .define("blazeRequireBothConditions", false);
+
+    private static final ModConfigSpec.IntValue BLAZE_ROD_DROP_MIN = BUILDER
+            .comment("Minimum blaze rods dropped per LEAK event")
+            .defineInRange("blazeRodDropMin", 2, 1, 16);
+
+    private static final ModConfigSpec.IntValue BLAZE_ROD_DROP_MAX = BUILDER
+            .comment("Maximum blaze rods dropped per LEAK event")
+            .defineInRange("blazeRodDropMax", 4, 1, 32);
+
+    private static final ModConfigSpec.BooleanValue BLAZE_SUPPRESS_ATTACKS = BUILDER
+            .comment("If true, blazes stop attacking while in PANICKED state")
+            .define("blazeSuppressAttacks", true);
+
+    static {
+        BUILDER.pop();
+    }
+
+    // ==================== IRON GARDEN SYSTEM ====================
+
+    static {
+        BUILDER.comment("Iron Garden System Configuration (Iron Golem Ferric Poppy Gardening)").push("irongarden");
+    }
+
+    // Timing settings
+    private static final ModConfigSpec.IntValue IRON_GARDEN_CHECK_INTERVAL_TICKS = BUILDER
+            .comment("Ticks between iron garden state updates")
+            .defineInRange("checkIntervalTicks", 20, 1, 100);
+
+    private static final ModConfigSpec.IntValue IRON_GARDEN_CALM_REQUIRED_TICKS = BUILDER
+            .comment("Ticks without combat required for golem to become calm (default 6000 = 5 minutes)")
+            .defineInRange("calmRequiredTicks", 6000, 200, 72000);
+
+    // Phase settings
+    private static final ModConfigSpec.IntValue IRON_GARDEN_MAX_PLANTS_PER_PHASE = BUILDER
+            .comment("Maximum poppies to plant before switching to harvest phase")
+            .defineInRange("maxPlantsPerPhase", 8, 1, 32);
+
+    private static final ModConfigSpec.IntValue IRON_GARDEN_MAX_HARVESTS_PER_PHASE = BUILDER
+            .comment("Maximum poppies to harvest before switching to plant phase")
+            .defineInRange("maxHarvestsPerPhase", 8, 1, 32);
+
+    private static final ModConfigSpec.IntValue FERRIC_POPPY_GOLEM_RANGE = BUILDER
+            .comment("Range in blocks for calm golem proximity to enable conversion")
+            .defineInRange("golemRange", 32, 32, 64);
+
+    // Vanilla poppy -> ferric poppy conversion
+    // Conversion check runs every ironGardenCheckIntervalTicks (default 20 ticks = 1 second).
+    // Formula: avg_seconds = conversionChance * (checkIntervalTicks / 20)
+    // With default 20 tick interval: avg_seconds = conversionChance
+    //
+    // Quick reference (with default 20 tick check interval):
+    //   10  = ~10 seconds (fast, for testing)
+    //   30  = ~30 seconds
+    //   60  = ~1 minute
+    //   120 = ~2 minutes
+    //   300 = ~5 minutes
+    private static final ModConfigSpec.IntValue FERRIC_POPPY_CONVERSION_CHANCE = BUILDER
+            .comment(
+                    "Controls vanilla poppy to ferric poppy conversion speed. Higher = slower.",
+                    "This is a 1-in-N chance per state check to convert a nearby vanilla poppy.",
+                    "Checks run every 'checkIntervalTicks' (default 20 ticks = 1 second).",
+                    "",
+                    "Approximate conversion times (with default 1-second check interval):",
+                    "  10  = ~10 sec  (fast, good for testing)",
+                    "  30  = ~30 sec",
+                    "  60  = ~1 min   (default)",
+                    "  120 = ~2 min",
+                    "  300 = ~5 min"
+            )
+            .defineInRange("conversionChance", 60, 1, 600);
+
+    // Movement settings
+    private static final ModConfigSpec.IntValue IRON_GARDEN_WANDER_RADIUS = BUILDER
+            .comment("Radius in blocks for golem to wander within garden")
+            .defineInRange("wanderRadius", 16, 4, 32);
+
+    private static final ModConfigSpec.IntValue IRON_GARDEN_STORAGE_SEARCH_RADIUS = BUILDER
+            .comment("Range in blocks to search for storage containers")
+            .defineInRange("storageSearchRadius", 8, 2, 32);
+
+    // Output settings
+    private static final ModConfigSpec.IntValue IRON_NUGGETS_PER_POPPY = BUILDER
+            .comment("Number of iron nuggets from crafting one ferric poppy")
+            .defineInRange("nuggetsPerPoppy", 3, 1, 9);
+
+    private static final ModConfigSpec.BooleanValue IRON_GARDEN_DROP_IF_NO_STORAGE = BUILDER
+            .comment("If true, drop poppies on ground when no storage found. If false, golem retains them.")
+            .define("dropIfNoStorage", true);
+
+    static {
+        BUILDER.pop();
+    }
+
     // ==================== BUILD SPEC ====================
 
     public static final ModConfigSpec SPEC = BUILDER.build();
@@ -131,6 +345,49 @@ public class Config {
     public static int miningAnchorCollectInterval;
     public static boolean miningAnchorBlockDropsOnly;
 
+    // Mob Transport System
+    public static int lureRadius;
+    public static int lureIntervalTicks;
+    public static double captureRadius;
+    public static int captureAnimTicks;
+    public static int minTravelDelayTicks;
+    public static int maxTravelDelayTicks;
+    public static int maxQueueSizePerInput;
+    public static int releaseCheckIntervalTicks;
+    public static boolean allowUnbondedCapture;
+    public static int recentlyReleasedImmunityTicks;
+
+    // Fear System
+    public static int fearCheckIntervalTicks;
+    public static int panicDurationForLeak;
+    public static int exhaustedCooldownTicks;
+    public static int maxLeaksBeforeOverstress;
+    public static double fearSourceDetectionRange;
+    public static int gunpowderDropMin;
+    public static int gunpowderDropMax;
+    public static double endermanStareDistance;
+    public static int enderPearlDropMin;
+    public static int enderPearlDropMax;
+    public static int blazeMinSnowGolems;
+    public static int blazeColdScanRadius;
+    public static int blazeMinColdBlocks;
+    public static boolean blazeRequireBothConditions;
+    public static int blazeRodDropMin;
+    public static int blazeRodDropMax;
+    public static boolean blazeSuppressAttacks;
+
+    // Iron Garden System
+    public static int ironGardenCheckIntervalTicks;
+    public static int ironGardenCalmRequiredTicks;
+    public static int ironGardenMaxPlantsPerPhase;
+    public static int ironGardenMaxHarvestsPerPhase;
+    public static int ferricPoppyGolemRange;
+    public static int ferricPoppyConversionChance;
+    public static int ironGardenWanderRadius;
+    public static int ironGardenStorageSearchRadius;
+    public static int ironNuggetsPerPoppy;
+    public static boolean ironGardenDropIfNoStorage;
+
     /**
      * Loads config values from the spec into static fields.
      * Called when config is loaded/reloaded.
@@ -156,5 +413,48 @@ public class Config {
         miningAnchorCollectRadius = MINING_ANCHOR_COLLECT_RADIUS.get();
         miningAnchorCollectInterval = MINING_ANCHOR_COLLECT_INTERVAL.get();
         miningAnchorBlockDropsOnly = MINING_ANCHOR_BLOCK_DROPS_ONLY.get();
+
+        // Mob Transport System
+        lureRadius = MOB_LURE_RADIUS.get();
+        lureIntervalTicks = MOB_LURE_INTERVAL_TICKS.get();
+        captureRadius = MOB_CAPTURE_RADIUS.get();
+        captureAnimTicks = MOB_CAPTURE_ANIM_TICKS.get();
+        minTravelDelayTicks = MOB_MIN_TRAVEL_DELAY_TICKS.get();
+        maxTravelDelayTicks = MOB_MAX_TRAVEL_DELAY_TICKS.get();
+        maxQueueSizePerInput = MOB_MAX_QUEUE_SIZE.get();
+        releaseCheckIntervalTicks = MOB_RELEASE_CHECK_INTERVAL_TICKS.get();
+        allowUnbondedCapture = MOB_ALLOW_UNBONDED_CAPTURE.get();
+        recentlyReleasedImmunityTicks = MOB_RECENTLY_RELEASED_IMMUNITY_TICKS.get();
+
+        // Fear System
+        fearCheckIntervalTicks = FEAR_CHECK_INTERVAL_TICKS.get();
+        panicDurationForLeak = PANIC_DURATION_FOR_LEAK.get();
+        exhaustedCooldownTicks = EXHAUSTED_COOLDOWN_TICKS.get();
+        maxLeaksBeforeOverstress = MAX_LEAKS_BEFORE_OVERSTRESS.get();
+        fearSourceDetectionRange = FEAR_SOURCE_DETECTION_RANGE.get();
+        gunpowderDropMin = GUNPOWDER_DROP_MIN.get();
+        gunpowderDropMax = GUNPOWDER_DROP_MAX.get();
+        endermanStareDistance = ENDERMAN_STARE_DISTANCE.get();
+        enderPearlDropMin = ENDER_PEARL_DROP_MIN.get();
+        enderPearlDropMax = ENDER_PEARL_DROP_MAX.get();
+        blazeMinSnowGolems = BLAZE_MIN_SNOW_GOLEMS.get();
+        blazeColdScanRadius = BLAZE_COLD_SCAN_RADIUS.get();
+        blazeMinColdBlocks = BLAZE_MIN_COLD_BLOCKS.get();
+        blazeRequireBothConditions = BLAZE_REQUIRE_BOTH_CONDITIONS.get();
+        blazeRodDropMin = BLAZE_ROD_DROP_MIN.get();
+        blazeRodDropMax = BLAZE_ROD_DROP_MAX.get();
+        blazeSuppressAttacks = BLAZE_SUPPRESS_ATTACKS.get();
+
+        // Iron Garden System
+        ironGardenCheckIntervalTicks = IRON_GARDEN_CHECK_INTERVAL_TICKS.get();
+        ironGardenCalmRequiredTicks = IRON_GARDEN_CALM_REQUIRED_TICKS.get();
+        ironGardenMaxPlantsPerPhase = IRON_GARDEN_MAX_PLANTS_PER_PHASE.get();
+        ironGardenMaxHarvestsPerPhase = IRON_GARDEN_MAX_HARVESTS_PER_PHASE.get();
+        ferricPoppyGolemRange = FERRIC_POPPY_GOLEM_RANGE.get();
+        ferricPoppyConversionChance = FERRIC_POPPY_CONVERSION_CHANCE.get();
+        ironGardenWanderRadius = IRON_GARDEN_WANDER_RADIUS.get();
+        ironGardenStorageSearchRadius = IRON_GARDEN_STORAGE_SEARCH_RADIUS.get();
+        ironNuggetsPerPoppy = IRON_NUGGETS_PER_POPPY.get();
+        ironGardenDropIfNoStorage = IRON_GARDEN_DROP_IF_NO_STORAGE.get();
     }
 }

@@ -39,6 +39,14 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         // Hardened pods drop themselves with inventory (handled in block code)
         dropSelf(FloraFaunaRegistry.TIER2_POD.get());
 
+        // Mob Transport System blocks
+        dropSelf(FloraFaunaRegistry.MOB_INPUT.get());
+        dropSelf(FloraFaunaRegistry.MOB_OUTPUT.get());
+
+        // Iron Garden System blocks
+        // Ferric Poppy drops the ferric poppy item (for crafting into nuggets)
+        dropOther(FloraFaunaRegistry.FERRIC_POPPY.get(), FloraFaunaRegistry.FERRIC_POPPY_ITEM.get());
+
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();

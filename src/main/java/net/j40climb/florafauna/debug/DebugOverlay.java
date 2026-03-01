@@ -1,16 +1,23 @@
 package net.j40climb.florafauna.debug;
 
+import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearData;
+import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenActivity;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
-import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
 import net.minecraft.client.DeltaTracker;
@@ -19,16 +26,18 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Unit;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
 import org.jetbrains.annotations.Nullable;
@@ -43,7 +52,8 @@ import java.util.List;
 public class DebugOverlay implements GuiLayer {
     public static final Identifier LAYER_ID = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_debug");
 
-    private static boolean enabled = false;
+    // Auto-enable in dev environment for convenience
+    private static boolean enabled = !FMLEnvironment.isProduction();
 
     public static boolean isEnabled() {
         return enabled;
@@ -76,11 +86,6 @@ public class DebugOverlay implements GuiLayer {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null) {
-            return;
-        }
-
-        // Don't show when F3 debug screen is open
-        if (mc.getDebugOverlay().showDebugScreen()) {
             return;
         }
 
@@ -195,8 +200,170 @@ public class DebugOverlay implements GuiLayer {
             }
         }
 
-        // Targeted Block section
-        buildTargetedBlockLines(lines, player, color, headerColor, valueColor);
+        // Targeted Entity or Block section
+        buildTargetedEntityOrBlockLines(lines, player, color, headerColor, valueColor, enabledColor, disabledColor);
+    }
+
+    /**
+     * Builds debug lines for the entity or block the player is currently looking at.
+     * Prioritizes entities over blocks.
+     */
+    private void buildTargetedEntityOrBlockLines(List<DebugLine> lines, LocalPlayer player,
+                                                  int color, int headerColor, int valueColor,
+                                                  int enabledColor, int disabledColor) {
+        Minecraft mc = Minecraft.getInstance();
+
+        // First check for entity hit (crosshairPickEntity is the entity under crosshair)
+        Entity targetEntity = mc.crosshairPickEntity;
+        if (targetEntity != null) {
+            buildTargetedEntityLines(lines, targetEntity, player, color, headerColor, valueColor, enabledColor, disabledColor);
+            return;
+        }
+
+        // Fall back to block hit
+        HitResult hitResult = mc.hitResult;
+        if (hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
+            buildTargetedBlockLines(lines, player, color, headerColor, valueColor);
+        }
+    }
+
+    /**
+     * Builds debug lines for a targeted entity.
+     */
+    private void buildTargetedEntityLines(List<DebugLine> lines, Entity entity, LocalPlayer player,
+                                           int color, int headerColor, int valueColor,
+                                           int enabledColor, int disabledColor) {
+        lines.add(new DebugLine("--- Targeted Entity ---", headerColor));
+        lines.add(new DebugLine("Entity: " + entity.getName().getString(), valueColor));
+        lines.add(new DebugLine("Type: " + entity.getType().toShortString(), color));
+        lines.add(new DebugLine("ID: " + entity.getId(), color));
+
+        // Only show FloraFauna data for Mob entities
+        if (!(entity instanceof Mob mob)) {
+            return;
+        }
+
+        long currentTick = player.level().getGameTime();
+
+        // Check for MobSymbiote data
+        if (mob.hasData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA)) {
+            MobSymbioteData symbioteData = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+            if (symbioteData.hasMobSymbiote()) {
+                lines.add(new DebugLine("-- MobSymbiote --", headerColor));
+                lines.add(new DebugLine("Level: " + symbioteData.mobSymbioteLevel(), enabledColor));
+
+                // Show release immunity if active
+                if (symbioteData.hasReleaseImmunity(currentTick)) {
+                    long immunityRemaining = symbioteData.recentlyReleasedUntil() - currentTick;
+                    lines.add(new DebugLine("Capture Immune: " + formatTicks(immunityRemaining), disabledColor));
+                }
+            } else {
+                lines.add(new DebugLine("MobSymbiote: None", color));
+            }
+        }
+
+        // Check for Fear data
+        if (mob.hasData(FloraFaunaRegistry.FEAR_DATA)) {
+            FearData fearData = mob.getData(FloraFaunaRegistry.FEAR_DATA);
+            FearState state = fearData.fearState();
+
+            lines.add(new DebugLine("-- Fear State --", headerColor));
+            lines.add(new DebugLine("State: " + state.name(), getFearStateColor(state)));
+
+            long ticksInState = fearData.getTicksInState(currentTick);
+            lines.add(new DebugLine("In State: " + formatTicks(ticksInState), color));
+
+            // Show state-specific timing
+            switch (state) {
+                case PANICKED -> {
+                    long ticksUntilLeak = Config.panicDurationForLeak - ticksInState;
+                    if (ticksUntilLeak > 0) {
+                        lines.add(new DebugLine("Until LEAK: " + formatTicks(ticksUntilLeak), 0xFFFFAA00));
+                    } else {
+                        lines.add(new DebugLine("LEAK imminent!", 0xFFFF5555));
+                    }
+                }
+                case EXHAUSTED -> {
+                    long ticksUntilCalm = Config.exhaustedCooldownTicks - ticksInState;
+                    if (ticksUntilCalm > 0) {
+                        lines.add(new DebugLine("Until CALM: " + formatTicks(ticksUntilCalm), 0xFF55FFFF));
+                    } else {
+                        lines.add(new DebugLine("CALM soon", 0xFF55FF77));
+                    }
+                }
+                case CALM -> {
+                    // Nothing special to show
+                }
+                case LEAK, OVERSTRESS -> {
+                    // Transient states, just show current
+                }
+            }
+
+            // Show leak count
+            int leakCount = fearData.leakCountSinceCooldown();
+            if (leakCount > 0) {
+                int remaining = Config.maxLeaksBeforeOverstress - leakCount;
+                int leakColor = remaining <= 1 ? 0xFFFF5555 : (remaining <= 2 ? 0xFFFFAA00 : color);
+                lines.add(new DebugLine("Leaks: " + leakCount + "/" + Config.maxLeaksBeforeOverstress, leakColor));
+            }
+
+            // Show fear source if present
+            fearData.getFearSourcePos().ifPresent(pos ->
+                    lines.add(new DebugLine("Fear Source: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), color)));
+        }
+
+        // Check for Iron Garden data (Iron Golems only)
+        if (mob instanceof IronGolem golem && mob.hasData(FloraFaunaRegistry.IRON_GARDEN_DATA)) {
+            IronGardenData gardenData = mob.getData(FloraFaunaRegistry.IRON_GARDEN_DATA);
+            IronGardenState state = gardenData.ironGardenState();
+
+            // Only show if the golem is bonded (participating in iron garden)
+            if (state != IronGardenState.UNBONDED) {
+                lines.add(new DebugLine("-- Iron Garden --", headerColor));
+                lines.add(new DebugLine("State: " + state.name(), getIronGardenStateColor(state)));
+
+                // Show current activity (synced from server via IronGardenData)
+                String activity = gardenData.activity().getDisplayName();
+                lines.add(new DebugLine("Activity: " + activity, getActivityColor(gardenData.activity())));
+
+                long ticksInState = gardenData.getTicksInState(currentTick);
+                lines.add(new DebugLine("In State: " + formatTicks(ticksInState), color));
+
+                // Show time until calm for BONDED_NOT_CALM
+                if (state == IronGardenState.BONDED_NOT_CALM) {
+                    long ticksUntilCalm = IronGardenHelper.getTicksUntilCalm(golem, currentTick);
+                    if (ticksUntilCalm > 0) {
+                        lines.add(new DebugLine("Until CALM: " + formatTicks(ticksUntilCalm), 0xFFFFAA00));
+                    } else {
+                        lines.add(new DebugLine("Ready to garden!", 0xFF55FF77));
+                    }
+                }
+
+                // Show phase progress for gardening states
+                if (state == IronGardenState.CALM_PLANTING) {
+                    lines.add(new DebugLine("Plants: " + gardenData.plantsThisPhase() + "/" + Config.ironGardenMaxPlantsPerPhase, color));
+                } else if (state == IronGardenState.CALM_HARVESTING) {
+                    lines.add(new DebugLine("Harvests: " + gardenData.harvestsThisPhase() + "/" + Config.ironGardenMaxHarvestsPerPhase, color));
+                }
+
+                // Show carried poppies
+                if (gardenData.carriedPoppies() > 0) {
+                    lines.add(new DebugLine("Carrying: " + gardenData.carriedPoppies() + "/" + IronGardenData.MAX_CARRIED_POPPIES + " poppies", 0xFF55FFFF));
+                }
+
+                // Show garden center
+                gardenData.getGardenCenter().ifPresent(pos ->
+                        lines.add(new DebugLine("Garden: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), color)));
+
+                // Show remembered storage
+                gardenData.getStorage().ifPresent(pos ->
+                        lines.add(new DebugLine("Storage: " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ(), color)));
+
+                // Count nearby ferric poppies
+                int poppyCount = IronGardenHelper.countFerricPoppies(golem);
+                lines.add(new DebugLine("Poppies: " + poppyCount, poppyCount > 0 ? enabledColor : color));
+            }
+        }
     }
 
     /**
@@ -385,6 +552,63 @@ public class DebugOverlay implements GuiLayer {
             case NORMAL -> 0xFF55FF77;   // Green
             case WARNING -> 0xFFFFAA00;  // Orange
             case FULL -> 0xFFFF5555;     // Red
+        };
+    }
+
+    /**
+     * Formats ticks as a human-readable time string.
+     * Shows seconds with one decimal place, or just ticks if under 1 second.
+     */
+    private static String formatTicks(long ticks) {
+        if (ticks < 0) {
+            return "0t";
+        }
+        if (ticks < 20) {
+            return ticks + "t";
+        }
+        double seconds = ticks / 20.0;
+        if (seconds < 60) {
+            return String.format("%.1fs", seconds);
+        }
+        int mins = (int) (seconds / 60);
+        double secs = seconds % 60;
+        return String.format("%dm %.0fs", mins, secs);
+    }
+
+    /**
+     * Gets the display color for a fear state.
+     */
+    private static int getFearStateColor(FearState state) {
+        return switch (state) {
+            case CALM -> 0xFF55FF77;       // Green
+            case PANICKED -> 0xFFFFAA00;   // Orange
+            case LEAK -> 0xFFFF55FF;       // Magenta
+            case EXHAUSTED -> 0xFF55FFFF;  // Cyan
+            case OVERSTRESS -> 0xFFFF5555; // Red
+        };
+    }
+
+    /**
+     * Gets the display color for an iron garden state.
+     */
+    private static int getIronGardenStateColor(IronGardenState state) {
+        return switch (state) {
+            case UNBONDED -> 0xFFAAAAAA;        // Gray
+            case BONDED_NOT_CALM -> 0xFFFFAA00; // Orange
+            case CALM, CALM_PLANTING, CALM_HARVESTING -> 0xFF55FF77; // Green (all calm states)
+        };
+    }
+
+    /**
+     * Gets the display color for an iron garden activity.
+     */
+    private static int getActivityColor(IronGardenActivity activity) {
+        return switch (activity) {
+            case IDLE -> 0xFFAAAAAA;        // Gray
+            case WANDERING -> 0xFF55FFFF;   // Cyan
+            case PLANTING -> 0xFF55FF77;    // Green
+            case HARVESTING -> 0xFFFFFF55;  // Yellow
+            case DEPOSITING -> 0xFFFF55FF;  // Magenta
         };
     }
 }

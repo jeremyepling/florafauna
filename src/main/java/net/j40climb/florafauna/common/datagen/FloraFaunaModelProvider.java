@@ -95,9 +95,12 @@ public class FloraFaunaModelProvider extends ModelProvider {
     private static void registerGeneratedItemModels(ItemModelGenerators itemModels) {
         itemModels.generateFlatItem(FloraFaunaRegistry.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.SYMBIOTE_STEW.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        // Iron Garden system items
+        itemModels.generateFlatItem(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get(), ModelTemplates.FLAT_ITEM);
     }
 
     // ============================================================
@@ -160,7 +163,10 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:feral_mining_anchor"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:hardened_mining_anchor"))
-                .filter(x -> !x.getRegisteredName().equals("florafauna:hardened_pod"));
+                .filter(x -> !x.getRegisteredName().equals("florafauna:hardened_pod"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:mob_input"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:mob_output"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:ferric_poppy"));
     }
 
     @Override
@@ -172,6 +178,9 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_MINING_ANCHOR))
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER2_MINING_ANCHOR))
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_POD))
-                .filter(x -> !x.equals(FloraFaunaRegistry.TIER2_POD));
+                .filter(x -> !x.equals(FloraFaunaRegistry.TIER2_POD))
+                .filter(x -> !x.equals(FloraFaunaRegistry.MOB_INPUT))
+                .filter(x -> !x.equals(FloraFaunaRegistry.MOB_OUTPUT))
+                .filter(x -> !x.equals(FloraFaunaRegistry.FERRIC_POPPY));
     }
 }

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "state=idle": {
+      "model": "florafauna:block/mob_input_idle"
+    },
+    "state=open": {
+      "model": "florafauna:block/mob_input_open"
+    },
+    "state=chomping": {
+      "model": "florafauna:block/mob_input_chomping"
+    }
+  }
+}

@@ -24,10 +24,11 @@ import java.util.List;
  */
 public record MobBarrierConfig(
         List<String> entityIds,
-        List<String> entityTags
+        List<String> entityTags,
+        boolean blockVision
 ) {
 
-    public static final MobBarrierConfig DEFAULT = new MobBarrierConfig(List.of(), List.of());
+    public static final MobBarrierConfig DEFAULT = new MobBarrierConfig(List.of(), List.of(), false);
 
     public MobBarrierConfig {
         entityIds = List.copyOf(entityIds);
@@ -37,7 +38,8 @@ public record MobBarrierConfig(
     public static final Codec<MobBarrierConfig> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.STRING.listOf().fieldOf("entityIds").forGetter(MobBarrierConfig::entityIds),
-                    Codec.STRING.listOf().fieldOf("entityTags").forGetter(MobBarrierConfig::entityTags)
+                    Codec.STRING.listOf().fieldOf("entityTags").forGetter(MobBarrierConfig::entityTags),
+                    Codec.BOOL.optionalFieldOf("blockVision", false).forGetter(MobBarrierConfig::blockVision)
             ).apply(instance, MobBarrierConfig::new)
     );
 
@@ -46,6 +48,8 @@ public record MobBarrierConfig(
             MobBarrierConfig::entityIds,
             ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()),
             MobBarrierConfig::entityTags,
+            ByteBufCodecs.BOOL,
+            MobBarrierConfig::blockVision,
             MobBarrierConfig::new
     );
 
@@ -88,7 +92,7 @@ public record MobBarrierConfig(
         if (entityIds.contains(entityId)) return this;
         List<String> newIds = new ArrayList<>(entityIds);
         newIds.add(entityId);
-        return new MobBarrierConfig(newIds, entityTags);
+        return new MobBarrierConfig(newIds, entityTags, blockVision);
     }
 
     /**
@@ -97,7 +101,7 @@ public record MobBarrierConfig(
     public MobBarrierConfig withRemovedEntityId(String entityId) {
         List<String> newIds = new ArrayList<>(entityIds);
         newIds.remove(entityId);
-        return new MobBarrierConfig(newIds, entityTags);
+        return new MobBarrierConfig(newIds, entityTags, blockVision);
     }
 
     /**
@@ -108,7 +112,7 @@ public record MobBarrierConfig(
         if (entityTags.contains(normalizedTag)) return this;
         List<String> newTags = new ArrayList<>(entityTags);
         newTags.add(normalizedTag);
-        return new MobBarrierConfig(entityIds, newTags);
+        return new MobBarrierConfig(entityIds, newTags, blockVision);
     }
 
     /**
@@ -117,7 +121,14 @@ public record MobBarrierConfig(
     public MobBarrierConfig withRemovedEntityTag(String entityTag) {
         List<String> newTags = new ArrayList<>(entityTags);
         newTags.remove(entityTag);
-        return new MobBarrierConfig(entityIds, newTags);
+        return new MobBarrierConfig(entityIds, newTags, blockVision);
+    }
+
+    /**
+     * Creates a new config with blockVision toggled.
+     */
+    public MobBarrierConfig withBlockVision(boolean blockVision) {
+        return new MobBarrierConfig(entityIds, entityTags, blockVision);
     }
 
     /**

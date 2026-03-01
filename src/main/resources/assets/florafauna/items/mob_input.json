@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "florafauna:block/mob_input_idle"
+  }
+}

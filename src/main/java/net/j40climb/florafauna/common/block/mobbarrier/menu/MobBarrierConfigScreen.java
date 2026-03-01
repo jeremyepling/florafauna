@@ -70,6 +70,11 @@ public class MobBarrierConfigScreen extends BaseScreen {
     private static final int MAX_SUGGESTIONS = 5;
     public static final int INPUT_X_OFFSET = 2;
 
+    // Vision blocking toggle
+    private static final int TOGGLE_Y_OFFSET = 112; // Below list area
+    private static final int TOGGLE_WIDTH = 120;
+    private static final int TOGGLE_HEIGHT = 16;
+
     // ===================
     // State
     // ===================
@@ -149,6 +154,25 @@ public class MobBarrierConfigScreen extends BaseScreen {
 
         // Remove buttons for each visible entry
         createRemoveButtons();
+
+        // Block vision toggle button
+        addRenderableWidget(Button.builder(
+                getBlockVisionButtonText(),
+                this::onBlockVisionToggled
+        ).bounds(x, y + TOGGLE_Y_OFFSET, TOGGLE_WIDTH, TOGGLE_HEIGHT).build());
+    }
+
+    private Component getBlockVisionButtonText() {
+        String stateKey = config.blockVision()
+                ? "gui.florafauna.mob_barrier.block_vision.on"
+                : "gui.florafauna.mob_barrier.block_vision.off";
+        return Component.translatable(stateKey);
+    }
+
+    private void onBlockVisionToggled(Button button) {
+        config = config.withBlockVision(!config.blockVision());
+        sendConfigToServer();
+        rebuildWidgets();
     }
 
     private void createRemoveButtons() {

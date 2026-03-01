@@ -48,6 +48,131 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
                 .add(Blocks.PEONY)
                 .add(Blocks.SNOW);
 
+        // Reflective blocks - endermen see their reflection and become scared
+        this.tag(FloraFaunaTags.Blocks.REFLECTIVE_BLOCKS)
+                // Polished stones
+                .add(Blocks.POLISHED_ANDESITE)
+                .add(Blocks.POLISHED_DIORITE)
+                .add(Blocks.POLISHED_GRANITE)
+                .add(Blocks.POLISHED_DEEPSLATE)
+                .add(Blocks.POLISHED_BLACKSTONE)
+                .add(Blocks.POLISHED_BASALT)
+                // Glass blocks
+                .add(Blocks.GLASS)
+                .add(Blocks.WHITE_STAINED_GLASS)
+                .add(Blocks.ORANGE_STAINED_GLASS)
+                .add(Blocks.MAGENTA_STAINED_GLASS)
+                .add(Blocks.LIGHT_BLUE_STAINED_GLASS)
+                .add(Blocks.YELLOW_STAINED_GLASS)
+                .add(Blocks.LIME_STAINED_GLASS)
+                .add(Blocks.PINK_STAINED_GLASS)
+                .add(Blocks.GRAY_STAINED_GLASS)
+                .add(Blocks.LIGHT_GRAY_STAINED_GLASS)
+                .add(Blocks.CYAN_STAINED_GLASS)
+                .add(Blocks.PURPLE_STAINED_GLASS)
+                .add(Blocks.BLUE_STAINED_GLASS)
+                .add(Blocks.BROWN_STAINED_GLASS)
+                .add(Blocks.GREEN_STAINED_GLASS)
+                .add(Blocks.RED_STAINED_GLASS)
+                .add(Blocks.BLACK_STAINED_GLASS)
+                .add(Blocks.TINTED_GLASS)
+                // Ice blocks
+                .add(Blocks.ICE)
+                .add(Blocks.PACKED_ICE)
+                .add(Blocks.BLUE_ICE)
+                // Other reflective surfaces
+                .add(Blocks.OBSIDIAN)
+                .add(Blocks.CRYING_OBSIDIAN);
+
+        // Cold blocks - blazes fear when surrounded by these (along with snow golems)
+        this.tag(FloraFaunaTags.Blocks.COLD_BLOCKS)
+                // Snow blocks
+                .add(Blocks.SNOW)
+                .add(Blocks.SNOW_BLOCK)
+                .add(Blocks.POWDER_SNOW)
+                // Ice blocks
+                .add(Blocks.ICE)
+                .add(Blocks.PACKED_ICE)
+                .add(Blocks.BLUE_ICE)
+                .add(Blocks.FROSTED_ICE);
+
+        // Fear line-of-sight transparent blocks - mobs can see fear sources through these
+        this.tag(FloraFaunaTags.Blocks.FEAR_LOS_TRANSPARENT)
+                // Glass blocks
+                .add(Blocks.GLASS)
+                .add(Blocks.WHITE_STAINED_GLASS)
+                .add(Blocks.ORANGE_STAINED_GLASS)
+                .add(Blocks.MAGENTA_STAINED_GLASS)
+                .add(Blocks.LIGHT_BLUE_STAINED_GLASS)
+                .add(Blocks.YELLOW_STAINED_GLASS)
+                .add(Blocks.LIME_STAINED_GLASS)
+                .add(Blocks.PINK_STAINED_GLASS)
+                .add(Blocks.GRAY_STAINED_GLASS)
+                .add(Blocks.LIGHT_GRAY_STAINED_GLASS)
+                .add(Blocks.CYAN_STAINED_GLASS)
+                .add(Blocks.PURPLE_STAINED_GLASS)
+                .add(Blocks.BLUE_STAINED_GLASS)
+                .add(Blocks.BROWN_STAINED_GLASS)
+                .add(Blocks.GREEN_STAINED_GLASS)
+                .add(Blocks.RED_STAINED_GLASS)
+                .add(Blocks.BLACK_STAINED_GLASS)
+                .add(Blocks.TINTED_GLASS)
+                // Glass panes
+                .add(Blocks.GLASS_PANE)
+                .add(Blocks.WHITE_STAINED_GLASS_PANE)
+                .add(Blocks.ORANGE_STAINED_GLASS_PANE)
+                .add(Blocks.MAGENTA_STAINED_GLASS_PANE)
+                .add(Blocks.LIGHT_BLUE_STAINED_GLASS_PANE)
+                .add(Blocks.YELLOW_STAINED_GLASS_PANE)
+                .add(Blocks.LIME_STAINED_GLASS_PANE)
+                .add(Blocks.PINK_STAINED_GLASS_PANE)
+                .add(Blocks.GRAY_STAINED_GLASS_PANE)
+                .add(Blocks.LIGHT_GRAY_STAINED_GLASS_PANE)
+                .add(Blocks.CYAN_STAINED_GLASS_PANE)
+                .add(Blocks.PURPLE_STAINED_GLASS_PANE)
+                .add(Blocks.BLUE_STAINED_GLASS_PANE)
+                .add(Blocks.BROWN_STAINED_GLASS_PANE)
+                .add(Blocks.GREEN_STAINED_GLASS_PANE)
+                .add(Blocks.RED_STAINED_GLASS_PANE)
+                .add(Blocks.BLACK_STAINED_GLASS_PANE);
+
+        // Ferric poppy plantable blocks - iron golems can plant ferric poppies on these
+        this.tag(FloraFaunaTags.Blocks.FERRIC_POPPY_PLANTABLE)
+                .add(Blocks.DIRT)
+                .add(Blocks.GRASS_BLOCK)
+                .add(Blocks.PODZOL)
+                .add(Blocks.COARSE_DIRT)
+                .add(Blocks.ROOTED_DIRT)
+                .add(Blocks.FARMLAND)
+                .add(Blocks.MUD)
+                .add(Blocks.MUDDY_MANGROVE_ROOTS)
+                .add(Blocks.MOSS_BLOCK)
+                .add(Blocks.MYCELIUM);
+
+        // Iron garden storage - containers iron golems can deposit poppies into
+        this.tag(FloraFaunaTags.Blocks.IRON_GARDEN_STORAGE)
+                .add(Blocks.CHEST)
+                .add(Blocks.TRAPPED_CHEST)
+                .add(Blocks.BARREL)
+                .add(Blocks.HOPPER)
+                .add(Blocks.SHULKER_BOX)
+                .add(Blocks.WHITE_SHULKER_BOX)
+                .add(Blocks.ORANGE_SHULKER_BOX)
+                .add(Blocks.MAGENTA_SHULKER_BOX)
+                .add(Blocks.LIGHT_BLUE_SHULKER_BOX)
+                .add(Blocks.YELLOW_SHULKER_BOX)
+                .add(Blocks.LIME_SHULKER_BOX)
+                .add(Blocks.PINK_SHULKER_BOX)
+                .add(Blocks.GRAY_SHULKER_BOX)
+                .add(Blocks.LIGHT_GRAY_SHULKER_BOX)
+                .add(Blocks.CYAN_SHULKER_BOX)
+                .add(Blocks.PURPLE_SHULKER_BOX)
+                .add(Blocks.BLUE_SHULKER_BOX)
+                .add(Blocks.BROWN_SHULKER_BOX)
+                .add(Blocks.GREEN_SHULKER_BOX)
+                .add(Blocks.RED_SHULKER_BOX)
+                .add(Blocks.BLACK_SHULKER_BOX);
+
         // Mineable with pickaxe
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(FloraFaunaRegistry.HUSK.get())
@@ -55,7 +180,9 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
 
         // Mineable with axe (organic/wood-like)
         this.tag(BlockTags.MINEABLE_WITH_AXE)
-                .add(FloraFaunaRegistry.ITEM_INPUT.get());
+                .add(FloraFaunaRegistry.ITEM_INPUT.get())
+                .add(FloraFaunaRegistry.MOB_INPUT.get())
+                .add(FloraFaunaRegistry.MOB_OUTPUT.get());
 
         // Wood blocks - add to appropriate tags
         for (WoodType woodType : WoodType.values()) {

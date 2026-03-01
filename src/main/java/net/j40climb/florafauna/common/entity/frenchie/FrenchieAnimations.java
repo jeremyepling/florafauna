@@ -1,6 +1,6 @@
 package net.j40climb.florafauna.common.entity.frenchie;
 
-import net.j40climb.florafauna.common.AnimationUtils;
+import net.j40climb.florafauna.common.util.AnimationUtils;
 import net.minecraft.client.animation.AnimationChannel;
 import net.minecraft.client.animation.AnimationDefinition;
 import net.minecraft.client.animation.Keyframe;
