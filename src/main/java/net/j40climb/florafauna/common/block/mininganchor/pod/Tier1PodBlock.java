@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.block.mininganchor.pod;
 
 import com.mojang.serialization.MapCodec;
+import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -47,8 +48,11 @@ public class Tier1PodBlock extends BaseEntityBlock {
         if (!level.isClientSide()) {
             BlockEntity be = level.getBlockEntity(pos);
             if (be instanceof Tier1PodBlockEntity pod) {
-                // Spill items (unless creative mode)
-                if (!player.isCreative()) {
+                // Check if anchor is tearing down - if so, anchor handles items
+                boolean anchorHandling = isAnchorTearingDown(level, pod.getParentAnchorPos());
+
+                // Spill items ONLY if NOT being handled by anchor teardown
+                if (!anchorHandling && !player.isCreative()) {
                     pod.onBlockBroken(level, pos, player);
                 }
                 // Notify anchor
@@ -56,6 +60,15 @@ public class Tier1PodBlock extends BaseEntityBlock {
             }
         }
         return super.playerWillDestroy(level, pos, state, player);
+    }
+
+    /**
+     * Checks if the parent anchor is currently tearing down.
+     */
+    private boolean isAnchorTearingDown(Level level, @Nullable BlockPos anchorPos) {
+        if (anchorPos == null) return false;
+        BlockEntity be = level.getBlockEntity(anchorPos);
+        return be instanceof AbstractMiningAnchorBlockEntity anchor && anchor.isTearingDown();
     }
 
     @Nullable

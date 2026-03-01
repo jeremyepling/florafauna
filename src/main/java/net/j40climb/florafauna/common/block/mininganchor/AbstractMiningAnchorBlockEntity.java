@@ -4,9 +4,16 @@ import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.common.block.mininganchor.pod.AbstractStoragePodBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.VacuumState;
+import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.observation.ObservationCategory;
+import net.j40climb.florafauna.common.symbiote.voice.SymbioteVoiceService;
+import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.setup.FloraFaunaTags;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -39,6 +46,9 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
 
     // Current fill state (for change detection)
     protected AnchorFillState currentFillState = AnchorFillState.NORMAL;
+
+    /** Transient flag - true during teardown to prevent pods from spilling independently */
+    private boolean isTearingDown = false;
 
     protected AbstractMiningAnchorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState) {
         // Anchor has minimal buffer - items go directly to pods
@@ -78,6 +88,25 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
      * Subclasses return their tier-specific pod capacity.
      */
     protected abstract int getPodCapacity();
+
+    /**
+     * Resolves a pod's contents during anchor teardown.
+     * Tier 1: Spills items in tight radius around pod position
+     * Tier 2: Converts pod to item with contents preserved
+     *
+     * @param podPos The position of the pod to resolve
+     */
+    protected abstract void resolvePodContents(BlockPos podPos);
+
+    // ==================== TEARDOWN ====================
+
+    /**
+     * Returns true if this anchor is currently tearing down.
+     * Pods should check this to prevent double item drops.
+     */
+    public boolean isTearingDown() {
+        return isTearingDown;
+    }
 
     // ==================== CAPACITY CALCULATION ====================
 
@@ -471,9 +500,119 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
     public void onRemoved() {
         super.onRemoved(); // Drops anchor buffer contents
 
-        // Don't remove pods - they spill their own contents when broken
-        // Just clear the tracking list
+        if (level == null || level.isClientSide()) {
+            podPositions.clear();
+            return;
+        }
+
+        // Set flag FIRST - pods will check this to prevent double drops
+        isTearingDown = true;
+
+        // 1. Clear waypoints for all players with this anchor
+        clearWaypointsForAllPlayers();
+
+        // 2. Send teardown dialogue
+        sendTeardownDialogue();
+
+        // 3. Resolve all pods (tier-specific behavior)
+        for (BlockPos podPos : new ArrayList<>(podPositions)) {
+            resolvePod(podPos);
+        }
+
         podPositions.clear();
+    }
+
+    /**
+     * Removes a pod and resolves its contents during teardown.
+     * The anchor is responsible for item resolution - the pod block
+     * will NOT spill items because isTearingDown is true.
+     */
+    protected void resolvePod(BlockPos podPos) {
+        if (level == null) return;
+
+        BlockEntity be = level.getBlockEntity(podPos);
+        if (be instanceof AbstractStoragePodBlockEntity pod) {
+            // Resolve contents BEFORE removing block (tier-specific)
+            resolvePodContents(podPos);
+
+            // Clear pod buffer (items already resolved)
+            pod.getBuffer().clear();
+        }
+
+        // Remove the pod block - triggers playerWillDestroy on pod,
+        // but pod will check isTearingDown and skip its own item handling
+        level.removeBlock(podPos, false);
+    }
+
+    /**
+     * Clears waypoints for all players who have this anchor as their waypoint.
+     * Called during teardown before removing pods.
+     */
+    protected void clearWaypointsForAllPlayers() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+
+        ResourceKey<Level> thisDim = serverLevel.dimension();
+
+        for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
+            PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+
+            boolean changed = false;
+            PlayerSymbioteData newData = data;
+
+            // Clear active waypoint if it matches this anchor
+            if (data.hasActiveWaypointAnchor() &&
+                worldPosition.equals(data.activeWaypointAnchorPos()) &&
+                thisDim.equals(data.activeWaypointAnchorDim())) {
+
+                newData = newData.clearActiveWaypointAnchor();
+                changed = true;
+            }
+
+            // Also clear bound anchor if it matches
+            if (data.hasAnchorBound() &&
+                worldPosition.equals(data.boundAnchorPos()) &&
+                thisDim.equals(data.boundAnchorDim())) {
+
+                newData = newData.clearBoundAnchor();
+                changed = true;
+            }
+
+            if (changed) {
+                player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+            }
+        }
+    }
+
+    /**
+     * Sends teardown confirmation dialogue to all players who had this anchor
+     * as their waypoint or bound anchor.
+     */
+    protected void sendTeardownDialogue() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+
+        ResourceKey<Level> thisDim = serverLevel.dimension();
+
+        for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
+            PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+
+            // Send dialogue to players who had this as waypoint or bound anchor
+            boolean wasWaypoint = data.hasActiveWaypointAnchor() &&
+                worldPosition.equals(data.activeWaypointAnchorPos()) &&
+                thisDim.equals(data.activeWaypointAnchorDim());
+
+            boolean wasBound = data.hasAnchorBound() &&
+                worldPosition.equals(data.boundAnchorPos()) &&
+                thisDim.equals(data.boundAnchorDim());
+
+            if (wasWaypoint || wasBound) {
+                SymbioteVoiceService.trySpeak(
+                    player,
+                    VoiceTier.TIER_1_AMBIENT,
+                    ObservationCategory.MINING_ANCHOR,
+                    "symbiote.dialogue.anchor_released"
+                );
+            }
+        }
     }
 
     // ==================== SERIALIZATION ====================
