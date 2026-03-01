@@ -28,17 +28,12 @@ nul
 repo
 /src/generated/
 
-# Worktree-local gradle state (agents)
-.gradle-user-home/
-
 # Optional per-worktree build cache
 .gradle-build-cache/
 
 # Optional per-worktree temp
 .tmp/
 
-# Per-worktree tools directory
-tools/
 /gradle/gradle-daemon-jvm.properties
 /.claude/settings.local.json
 /.claude/blockbench-config.json
@@ -47,7 +42,7 @@ tools/
 /build_output.txt
 /temp_jar_list.txt
 
-# Dev world template (user creates manually, not committed)
+# Dev world template (binary, not committed — shared via scripts)
 dev/world-template/
 
 # Claude Code temp files

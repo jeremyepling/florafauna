@@ -1,4 +1,4 @@
-   # FloraFauna
+# FloraFauna
 
 A NeoForge 1.21.1 Minecraft mod.
 
@@ -22,21 +22,9 @@ A NeoForge 1.21.1 Minecraft mod.
 
 **VS Code / Cursor:** Open the project folder. Debug configs are in `.vscode/launch.json`.
 
-### Dev World Setup
+### Dev World
 
-The dev environment auto-loads into a "dev" world. First-time setup:
-
-1. Run client: `./gradlew runClient`
-2. Create new world named exactly **"dev"**:
-   - Game Mode: **Creative**
-   - World Type: **Superflat** → Customize → **Tunneler's Dream**
-3. Exit Minecraft
-4. Copy to template (from main repo):
-   ```bash
-   cp -r run/client-*/saves/dev dev/world-template/
-   ```
-
-The world template auto-copies to new worktrees and clean run directories.
+The dev environment auto-loads into a "dev" world. The master template lives in the main repo at `dev/world-template/dev/` (gitignored). It is automatically copied on first `./gradlew runClient`.
 
 **Dev world features** (applied automatically on join):
 - All recipes unlocked
@@ -45,6 +33,12 @@ The world template auto-copies to new worktrees and clean run directories.
 - Peaceful difficulty
 - No advancement announcements
 
+**Editing the dev world:**
+1. `.\scripts\edit_dev_world.ps1` — launches the client in your worktree
+2. Make changes in-game, exit
+3. `.\scripts\save_dev_world.ps1 -f` — saves your worktree's world back to the master template
+4. `.\scripts\sync_dev_world.ps1` — (optional) pushes master template to other worktrees
+
 Delete `run/client-*/saves/dev` to reset from template.
 
 ### Worktree Workflow
@@ -52,12 +46,12 @@ Delete `run/client-*/saves/dev` to reset from template.
 This repo uses git worktrees for parallel development:
 
 ```powershell
-# From main repo (florafauna/)
-scripts/new-worktree.ps1 -Name feature-name    # Create worktree
-scripts/open-idea.ps1 ..\feature-name          # Open in IntelliJ
+.\scripts\new_worktree.ps1 3        # Create florafauna-3 worktree
+.\scripts\merge.ps1                 # Merge current branch to main
+.\scripts\wt_list.ps1               # List worktrees
 ```
 
-Each worktree gets isolated run directories and gradle state.
+Each worktree gets isolated run directories and build caches.
 
 ## Project Structure
 

@@ -29,7 +29,7 @@ Scripts in `scripts/` are PowerShell (.ps1) for user to run directly.
 C:\code\florafauna-workspace\florafauna
 ```
 
-Worktrees are created in the parent directory via `scripts/new-and-open.ps1`.
+Worktrees are created in the parent directory via `scripts/new_worktree.ps1`.
 
 ## Architecture
 
@@ -124,45 +124,37 @@ Tests in `test/FloraFaunaGameTests.java`. Register via `registerTest()`.
 
 ## Scripts (Worktree Workflow)
 
-From main repo only (`C:\code\florafauna-workspace\florafauna`):
+From main repo (`C:\code\florafauna-workspace\florafauna`):
 
 ```powershell
-.\scripts\new_and_open.ps1 feature-name     # Create worktree + open IntelliJ
-.\scripts\merge_and_clean.ps1 feature-name  # Merge to main + cleanup
-.\scripts\wt_list.ps1                       # List worktrees
+.\scripts\new_worktree.ps1 3        # Create florafauna-3 worktree
+.\scripts\sync_dev_world.ps1        # Push template to all worktrees
+.\scripts\wt_list.ps1               # List worktrees
+.\scripts\open_idea.ps1 <path>      # Open IntelliJ for a path
 ```
 
-In worktree IntelliJ terminal, run `.\tools\agent_env.ps1` before `claude`.
+From any worktree:
+
+```powershell
+.\scripts\merge.ps1                 # Merge current branch to main
+.\scripts\edit_dev_world.ps1        # Run datagen + launch client to edit dev world
+.\scripts\save_dev_world.ps1        # Save dev world to main repo's template
+.\scripts\save_dev_world.ps1 -f     # Save from non-main branch (force)
+```
 
 ## Dev World Template
 
-A shared dev world (`dev/world-template/dev`) is automatically copied to new worktrees. This provides a consistent starting point with a Superflat Tunneler's Dream world and dev-friendly options (music off, narrator disabled, etc.).
+The master dev world template lives in the main repo at `dev/world-template/dev/` (gitignored). It is automatically copied to new worktrees and to clean run directories on first `runClient`.
 
-### Editing the Dev World
+- **`save_dev_world.ps1`** — copies your worktree's world back to the master template in the main repo
+- **`sync_dev_world.ps1`** — pushes the master template to all worktrees
+- **`edit_dev_world.ps1`** — launches the client in your worktree (run `save` afterward to update the master)
 
-```powershell
-# 1. Launch client to edit the world (runs datagen first)
-.\scripts\edit_dev_world.ps1
+### Dev World Workflow
 
-# 2. Make changes in-game, then exit
-
-# 3. Save changes to the template
-.\scripts\save_dev_world.ps1
-```
-
-### Dev World Scripts
-
-```powershell
-.\scripts\edit_dev_world.ps1    # Run datagen + launch client to edit dev world
-.\scripts\save_dev_world.ps1    # Copy current dev world to template (main repo)
-.\scripts\save_dev_world.ps1 -f # Save from any worktree to main repo's template
-.\scripts\sync_dev_world.ps1    # Push template to all existing worktrees
-```
-
-**Workflow:**
-- Edit world in any worktree → `save_dev_world.ps1 -f` → commit in main
-- Update template in main → `sync_dev_world.ps1` → all worktrees get the update
-- New worktrees automatically receive the template on creation
+1. `edit_dev_world.ps1` — launch client, make changes in-game, exit
+2. `save_dev_world.ps1 -f` — save your worktree's world back to the master template
+3. `sync_dev_world.ps1` — (optional) push master template to other worktrees
 
 ## Git Workflow
 
@@ -175,7 +167,7 @@ When working in a worktree (branch name differs from `main`):
    ```bash
    git push -u origin HEAD  # Pushes to branch matching current branch name
    ```
-3. **User merges** via `merge-and-clean.ps1` or PR
+3. **User merges** via `scripts/merge.ps1` or PR
 
 Do NOT use `git push origin HEAD:main` - this bypasses code review and the worktree workflow.
 

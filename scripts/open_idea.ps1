@@ -1,9 +1,24 @@
 # Opens IntelliJ IDEA for the specified path
-
 param(
-  [Parameter(Mandatory=$true)][string]$Path
+    [Parameter(Mandatory=$true)][string]$Path
 )
 
-. (Join-Path $PSScriptRoot "config.ps1")
+$idea = $env:IDEA_EXE
 
-& (Join-Path $SharedScriptsDir "open_idea.ps1") -Path $Path
+if (-not $idea -or -not (Test-Path $idea)) {
+    $candidates = Get-ChildItem "C:\Program Files\JetBrains\" -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like "IntelliJ IDEA Community Edition*" } |
+        ForEach-Object { Join-Path $_.FullName "bin\idea64.exe" } |
+        Where-Object { Test-Path $_ } |
+        Sort-Object -Descending
+
+    $idea = $candidates | Select-Object -First 1
+}
+
+if (-not $idea -or -not (Test-Path $idea)) {
+    throw "Could not find idea64.exe. Set IDEA_EXE env var, e.g. setx IDEA_EXE `"C:\...\idea64.exe`""
+}
+
+$full = Resolve-Path $Path
+Write-Host "Launching IntelliJ: $idea"
+Start-Process -FilePath $idea -ArgumentList "`"$($full.Path)`""

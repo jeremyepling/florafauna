@@ -29,8 +29,7 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 // Worktree-specific run directory suffix for multi-agent parallel development
-def wt = (System.getenv("WORKTREE_ID") ?: rootProject.projectDir.name)
-        .replaceAll(/[^A-Za-z0-9._-]/, "_")
+def wt = rootProject.projectDir.name
 
 neoForge {
     // Specify the version of NeoForge to use.
