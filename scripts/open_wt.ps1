@@ -1,20 +1,9 @@
-param([Parameter(Mandatory=$true)][string]$Branch)
+# Opens a worktree in IntelliJ by branch name
 
-# Find the worktree path that has this branch checked out
-$lines = git worktree list --porcelain
-$wt = $null
-$br = $null
+param(
+  [Parameter(Mandatory=$true)][string]$Branch
+)
 
-foreach ($line in $lines) {
-  if ($line -like "worktree *") { $wt = $line.Substring(9).Trim() }
-  if ($line -like "branch *")   { $br = $line.Substring(7).Trim() }
+. (Join-Path $PSScriptRoot "config.ps1")
 
-  if ($wt -and $br -and $br.EndsWith("/$Branch")) {
-    & (Join-Path $PSScriptRoot "open_idea.ps1") -Path $wt
-    exit 0
-  }
-
-  if ($line -eq "") { $wt = $null; $br = $null }
-}
-
-throw "Branch '$Branch' not found as a checked-out worktree."
+& (Join-Path $SharedScriptsDir "open_wt.ps1") -Branch $Branch -ScriptsDir $SharedScriptsDir
