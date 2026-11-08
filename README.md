@@ -54,17 +54,18 @@ Close the source world, then run this from the checkout in PowerShell 7 with Jav
 .\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\dev-save'
 ```
 
-Each scenario launches a real Minecraft client in a fresh copy of the save. Let the test control the client until it exits.
+Each scenario launches a real Minecraft client in a fresh copy of the save. When the source is a 26.1 world, the runner selects Minecraft’s **Create Backup and Load** option for the copy and continues through the 26.3 file upgrade. Let the test control the client until it exits.
 
 | Scenario | What the client and integrated server check |
 | --- | --- |
 | `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
-| `hammer` | Change tool settings, capture wall and floor outlines, mine the matching 3×3 areas, and strip a log. |
+| `hammer` | Configure and mine 3×3 walls and floors, capture their outlines, strip horizontal driftwood while preserving its axis, and switch between flattening and tilling. |
+| `barrier` | Place a configured mob barrier, verify its settings on both sides, and compare screenshots with the barrier item held and with an empty hand. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
 
-The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the recovery, hammer and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
+The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the recovery, hammer, barrier and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
 ### Worktree Workflow
 
