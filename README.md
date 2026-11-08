@@ -1,45 +1,49 @@
 # FloraFauna
 
-A Minecraft 26.1 mod for NeoForge 26.1.0.19-beta.
+A Minecraft 26.1 mod for NeoForge 26.1.0.19-beta. Players can bond with a symbiote, recover gear from a husk, mine with configurable tools and use living storage and mob transport systems.
+
+Coding agents share the repository's worktree, implementation and testing instructions. Claude Code imports them through `CLAUDE.md`. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
 ## Development Setup
 
 ### Prerequisites
+
 - Java 25
 - Git
+- PowerShell 7 for the Windows worktree and playtest scripts
 
 ### Build & Run
 
-```bash
-./gradlew build          # Build the mod
-./gradlew runClient      # Run Minecraft client with mod
-./gradlew runData        # Generate data files (models, recipes, tags)
+From the checkout you want to test, generate resources before packaging. The build writes the mod jar to `build/libs/`.
+
+```powershell
+.\gradlew.bat --max-workers=4 runData
+.\gradlew.bat --max-workers=4 build runGameTestServer
+.\gradlew.bat runClient
 ```
 
 ### IDE Setup
 
-**IntelliJ IDEA:** Open the checkout you want to test as a Gradle project using JDK 25. To open a worker from the main checkout, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1` and choose a new window if prompted. Let Gradle sync so NeoForge can generate that checkout's run configurations. Use **Client** for playing or debugging the mod and **GameTestServer** for headless gameplay tests. Run the Gradle `runData` task before testing a fresh checkout or changes to generated content.
-
-**VS Code / Cursor:** Open the project folder. Debug configs are in `.vscode/launch.json`.
+Open the checkout you want to test as an IntelliJ Gradle project using JDK 25. To open a worker from the main checkout, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1` and choose a new window if prompted. Let Gradle sync so NeoForge can generate that checkout's run configurations. Use **Client** for playing or debugging the mod and **GameTestServer** for headless gameplay tests. Run the Gradle `runData` task before testing a fresh checkout or changes to generated content.
 
 ### Dev World
 
-The dev environment auto-loads into a "dev" world. The master template lives in the main repo at `dev/world-template/dev/` (gitignored). It is automatically copied on first `./gradlew runClient`.
+The client opens the save named `dev` in its worktree-specific run directory. The shared template lives in `dev/world-template/dev/` in the main checkout and is gitignored. The worktree creation helper seeds new slots from that template when present. On first launch, Gradle can also seed a missing save from a template present in the same checkout.
 
-**Dev world features** (applied automatically on join):
+Joining the dev world applies these settings automatically.
+
 - All recipes unlocked
 - Daylight cycle stopped (time set to day)
 - Weather cycle stopped
 - Easy difficulty
 - No advancement announcements
 
-**Editing the dev world:**
-1. `.\scripts\edit_dev_world.ps1` — launches the client in your worktree
-2. Make changes in-game, exit
-3. `.\scripts\save_dev_world.ps1 -f` — saves your worktree's world back to the master template
-4. `.\scripts\sync_dev_world.ps1` — (optional) pushes master template to other worktrees
+To update the shared dev world, follow these steps.
 
-Delete `run/client-*/saves/dev` to reset from template.
+1. `.\scripts\edit_dev_world.ps1` — launches the client in your worktree
+2. Make the changes in-game and exit the client.
+3. To publish those world edits, run `.\scripts\save_dev_world.ps1` from the source checkout (add `-f` on a feature branch). This replaces the shared template.
+4. To distribute that template, run `.\scripts\sync_dev_world.ps1` from the main checkout. This replaces the other worktrees' dev saves. For playtesting, use the disposable copies below.
 
 ### Automated client playtests
 
@@ -60,7 +64,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
 
-The script prints the output directory under `.tmp/world-playtests`. Each run keeps its disposable worlds, per-phase logs and results, and the hammer screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
+The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the recovery, hammer and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
 ### Worktree Workflow
 
@@ -72,7 +76,9 @@ From the checkout on `main`, choose an unused slot number:
 .\scripts\new_worktree.ps1 5                  # Create an idle detached slot
 ```
 
-Each worktree gets isolated run directories and build caches. To use a detached slot, run `git switch -c feature/<name> main` there before editing. From the main checkout, use PowerShell 7 to build and test slots concurrently:
+The numbered folders are reusable checkouts. Give each independent feature its own branch. In an idle, clean detached slot, run `git switch -c feature/<name> main` before editing. Each slot has separate build outputs, generated resources and game saves. Gradle shares downloaded dependencies and Minecraft assets across slots.
+
+From the main checkout, use PowerShell 7 to build and test the slots currently assigned to your batch:
 
 ```powershell
 .\scripts\test_worktrees.ps1 -Slot 1,2,3
@@ -82,4 +88,8 @@ Logs are written under each slot's `.tmp/worktree-tests`. When ready to publish 
 
 ## Project Structure
 
-See [CLAUDE.md](CLAUDE.md) for detailed codebase documentation.
+The Java entry point is `FloraFauna.java`; gameplay lives under `common/`, and registration and client setup under `setup/`, all in the `net.j40climb.florafauna` package. See [AGENTS.md](AGENTS.md#implement-a-feature) for implementation conventions.
+
+- [Player symbiote](src/main/java/net/j40climb/florafauna/common/symbiote/README.md) and [husk recovery](src/main/java/net/j40climb/florafauna/common/block/husk/README.md)
+- [Tool abilities](src/main/java/net/j40climb/florafauna/common/item/abilities/README.md), [mining anchors and pods](src/main/java/net/j40climb/florafauna/common/block/mininganchor/README.md), and [item intake](src/main/java/net/j40climb/florafauna/common/block/iteminput/README.md)
+- [Mob barriers](src/main/java/net/j40climb/florafauna/common/block/mobbarrier/README.md) and [mob fear](src/main/java/net/j40climb/florafauna/common/mobsymbiote/fear/README.md)
