@@ -57,7 +57,7 @@ import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -1234,7 +1234,7 @@ public class FloraFaunaGameTests {
         MobBarrierConfig config = MobBarrierConfig.DEFAULT.withAddedEntityId("minecraft:zombie");
 
         // Spawn a zombie to test against
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
 
         if (!config.shouldBlockEntity(zombie)) {
             throw helper.assertionException("Config with zombie ID should block zombie entity");
@@ -1248,7 +1248,7 @@ public class FloraFaunaGameTests {
         MobBarrierConfig config = MobBarrierConfig.DEFAULT.withAddedEntityId("minecraft:zombie");
 
         // Spawn a cow (not configured)
-        var cow = helper.spawn(EntityType.COW, new BlockPos(1, 1, 1));
+        var cow = helper.spawn(EntityTypes.COW, new BlockPos(1, 1, 1));
 
         if (config.shouldBlockEntity(cow)) {
             throw helper.assertionException("Config with only zombie should NOT block cow");
@@ -1720,7 +1720,7 @@ public class FloraFaunaGameTests {
         // Fill the buffer
         for (int i = 0; i < maxSize; i++) {
             CapturedMobTicket ticket = CapturedMobTicket.create(
-                    EntityType.ZOMBIE,
+                    EntityTypes.ZOMBIE,
                     new CompoundTag(),
                     1000L + i,
                     1100L + i,
@@ -1744,7 +1744,7 @@ public class FloraFaunaGameTests {
         CapturedMobBuffer buffer = new CapturedMobBuffer(5);
 
         CapturedMobTicket ticket1 = CapturedMobTicket.create(
-                EntityType.ZOMBIE,
+                EntityTypes.ZOMBIE,
                 new CompoundTag(),
                 1000L,
                 1100L,
@@ -1752,7 +1752,7 @@ public class FloraFaunaGameTests {
                 null
         );
         CapturedMobTicket ticket2 = CapturedMobTicket.create(
-                EntityType.SKELETON,
+                EntityTypes.SKELETON,
                 new CompoundTag(),
                 2000L,
                 2100L,
@@ -1772,7 +1772,7 @@ public class FloraFaunaGameTests {
         if (ready.isEmpty()) {
             throw helper.assertionException("Ticket1 should be ready at tick 1100");
         }
-        if (!ready.get().entityTypeId().equals(BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.ZOMBIE))) {
+        if (!ready.get().entityTypeId().equals(BuiltInRegistries.ENTITY_TYPE.getKey(EntityTypes.ZOMBIE))) {
             throw helper.assertionException("Ready ticket should be zombie");
         }
 
@@ -1802,7 +1802,7 @@ public class FloraFaunaGameTests {
 
     private static void testMobCaptureEligibilityBoss(GameTestHelper helper) {
         // Spawn the Ender Dragon (a boss - on exclusion list)
-        var dragon = helper.spawn(EntityType.ENDER_DRAGON, new BlockPos(5, 5, 5));
+        var dragon = helper.spawn(EntityTypes.ENDER_DRAGON, new BlockPos(5, 5, 5));
 
         var result = MobCaptureEligibility.checkEligibility(dragon, 0L);
 
@@ -1818,7 +1818,7 @@ public class FloraFaunaGameTests {
 
     private static void testMobCaptureEligibilityNotBondable(GameTestHelper helper) {
         // Spawn a Warden (on the exclusion list)
-        var warden = helper.spawn(EntityType.WARDEN, new BlockPos(1, 1, 1));
+        var warden = helper.spawn(EntityTypes.WARDEN, new BlockPos(1, 1, 1));
 
         var result = MobCaptureEligibility.checkEligibility(warden, 0L);
 
@@ -1834,7 +1834,7 @@ public class FloraFaunaGameTests {
 
     private static void testMobCaptureEligibilityRecentlyReleased(GameTestHelper helper) {
         // Spawn a zombie
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
 
         long expiry = zombie.level().getGameTime() + Config.recentlyReleasedImmunityTicks;
         MobSymbioteHelper.markRecentlyReleased(zombie);
@@ -1860,7 +1860,7 @@ public class FloraFaunaGameTests {
 
     private static void testCapturedMobTicketReadyCheck(GameTestHelper helper) {
         CapturedMobTicket ticket = CapturedMobTicket.create(
-                EntityType.COW,
+                EntityTypes.COW,
                 new CompoundTag(),
                 1000L,  // captured at
                 1500L,  // ready at
@@ -1891,7 +1891,7 @@ public class FloraFaunaGameTests {
 
     private static void testLureGoalOnlyBondedMobs(GameTestHelper helper) {
         // Spawn a zombie without MobSymbiote
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
         BlockPos lureTarget = new BlockPos(5, 1, 5);
 
         // Try to start luring a mob without MobSymbiote - should fail
@@ -1922,7 +1922,7 @@ public class FloraFaunaGameTests {
 
     private static void testLureGoalStartAndStop(GameTestHelper helper) {
         // Spawn a zombie with MobSymbiote
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
         MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
         BlockPos lureTarget = new BlockPos(5, 1, 5);
 
@@ -1960,7 +1960,7 @@ public class FloraFaunaGameTests {
 
     private static void testLureGoalIsBeingLuredTo(GameTestHelper helper) {
         // Spawn a zombie with MobSymbiote
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
         MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
         BlockPos lureTarget1 = new BlockPos(5, 1, 5);
         BlockPos lureTarget2 = new BlockPos(10, 1, 10);
@@ -1987,7 +1987,7 @@ public class FloraFaunaGameTests {
 
     private static void testLureGoalSwitchTarget(GameTestHelper helper) {
         // Spawn a zombie with MobSymbiote
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
         MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
         BlockPos lureTarget1 = new BlockPos(5, 1, 5);
         BlockPos lureTarget2 = new BlockPos(10, 1, 10);
@@ -2024,7 +2024,7 @@ public class FloraFaunaGameTests {
 
     private static void testMobSymbioteItemBondsMob(GameTestHelper helper) {
         // Spawn a zombie without MobSymbiote
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
 
         // Verify no MobSymbiote initially
         if (MobSymbioteHelper.hasMobSymbiote(zombie)) {
@@ -2044,7 +2044,7 @@ public class FloraFaunaGameTests {
 
     private static void testMobOutputReleaseClearsLureGoal(GameTestHelper helper) {
         // Spawn a zombie with MobSymbiote, then start luring
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
+        var zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 1, 1));
         MobSymbioteHelper.applyMobSymbioteLevel1(zombie, 0L);
         BlockPos lureTarget = new BlockPos(5, 1, 5);
         MobSymbioteHelper.startLuring(zombie, lureTarget);
@@ -2276,7 +2276,7 @@ public class FloraFaunaGameTests {
         // Test isCreeperFearSource - it checks EntityType
         // We can't easily create mock entities in GameTest, but we can verify
         // the FearSourceDetector.isCreeperFearSource method exists and the logic is correct
-        // by checking that EntityType.CAT and EntityType.OCELOT are the targets
+        // by checking that EntityTypes.CAT and EntityTypes.OCELOT are the targets
 
         // Verify the method recognizes cats
         // Note: Without actual entity instances, we can only verify the method signature exists
@@ -2643,7 +2643,7 @@ public class FloraFaunaGameTests {
 
     private static void testIronGardenHelperEligibility(GameTestHelper helper) {
         // Spawn an iron golem without MobSymbiote
-        var golem = helper.spawn(EntityType.IRON_GOLEM, new BlockPos(1, 1, 1));
+        var golem = helper.spawn(EntityTypes.IRON_GOLEM, new BlockPos(1, 1, 1));
 
         // Initially not eligible (no MobSymbiote)
         if (IronGardenHelper.isEligible(golem)) {

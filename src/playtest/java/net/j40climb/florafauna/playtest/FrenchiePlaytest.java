@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.clock.ClockTimeMarker;
 import net.minecraft.world.clock.ClockTimeMarkers;
+import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -122,7 +123,8 @@ final class FrenchiePlaytest {
 
     private static void setTime(ServerLevel level, ResourceKey<ClockTimeMarker> marker) {
         var clock = level.dimensionType().defaultClock().orElseThrow();
-        Playtest.require(level.getServer().clockManager().moveToTimeMarker(clock, marker), "Overworld lacks time marker " + marker);
+        var result = level.getServer().clockManager().moveToTimeMarker(clock, marker);
+        Playtest.require(result != ServerClockManager.MoveResult.NO_TIME_MARKER_FOUND, "Overworld lacks time marker " + marker);
     }
 
     private static void toggleSit(Minecraft mc, int id) {

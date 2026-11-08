@@ -52,27 +52,27 @@ public final class HammerPlaytest {
         t.client("Select the hammer and press its configured menu key", mc -> {
             mc.player.getInventory().setSelectedSlot(0);
             mc.options.setCameraType(CameraType.FIRST_PERSON);
-            mc.options.hideGui = false;
+            if (mc.gui.hud.isHidden()) mc.gui.hud.toggle();
             KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey());
         });
-        t.awaitClient("Open the tool configuration screen", mc -> mc.screen instanceof ToolConfigScreen);
+        t.awaitClient("Open the tool configuration screen", mc -> mc.gui.screen() instanceof ToolConfigScreen);
         t.client("Click the speed control to switch from Efficiency to Instabreak", mc -> {
             Button button = speedButton(mc, "efficiency");
             var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
                     button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(0, 0));
-            Playtest.require(mc.screen.mouseClicked(click, false), "Speed button click was ignored");
-            mc.screen.mouseReleased(click);
-            mc.screen.onClose();
+            Playtest.require(mc.gui.screen().mouseClicked(click, false), "Speed button click was ignored");
+            mc.gui.screen().mouseReleased(click);
+            mc.gui.screen().onClose();
         });
         t.awaitServer("Receive the speed update on the server", p ->
                 p.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).miningSpeed() == MiningSpeed.INSTABREAK);
         t.awaitClient("Synchronize the server's tool configuration back to the client", mc ->
                 mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).miningSpeed() == MiningSpeed.INSTABREAK);
         t.client("Press the menu key again", mc -> KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey()));
-        t.awaitClient("Reopen the tool configuration screen", mc -> mc.screen instanceof ToolConfigScreen);
+        t.awaitClient("Reopen the tool configuration screen", mc -> mc.gui.screen() instanceof ToolConfigScreen);
         t.client("Verify the persisted speed label and press Cycle Mining Mode", mc -> {
             speedButton(mc, "instabreak");
-            mc.screen.onClose();
+            mc.gui.screen().onClose();
             KeyMapping.click(ClientSetup.CYCLE_MINING_MODE_KEY.get().getKey());
         });
         t.awaitServer("Select flat 3×3 mining on the server", p ->
@@ -119,7 +119,7 @@ public final class HammerPlaytest {
 
     private static Button speedButton(Minecraft mc, String speed) {
         String expected = Component.translatable("gui.florafauna.tool_config.speed." + speed).getString();
-        return mc.screen.children().stream()
+        return mc.gui.screen().children().stream()
                 .filter(Button.class::isInstance).map(Button.class::cast)
                 .filter(button -> button.getMessage().getString().equals(expected))
                 .findFirst().orElseThrow(() -> new AssertionError("Missing speed button: " + expected));
