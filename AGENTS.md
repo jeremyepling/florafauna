@@ -1,0 +1,26 @@
+# FloraFauna workspace
+
+Start the coordinator chat in the parent workspace containing `florafauna` and its numbered sibling worktrees. The coordinator's Git examples below assume that parent as the working directory. Run each worker's Gradle commands from its assigned checkout.
+
+## Coordinator
+
+- When the user describes multiple independent features, delegate each complete feature to a subagent. Use the numbered slots for independent requests, up to three concurrent workers. Keep a single small feature in one checkout. If one feature depends on another's new API, finish that API first.
+- Translate each request into observable Minecraft behavior. Give the worker its absolute worktree path, branch, base commit, scope, acceptance checks and any shared registration points. Each worker implements and verifies its feature end to end. The coordinator owns cross-feature decisions and reviews the combined result.
+- Before dispatch, run `git -C florafauna worktree list --porcelain`. Check each candidate with `git -C <slot> status --short --branch`. Check for active workers, unmerged commits and detached work before reusing a slot. Preserve existing branches, local edits and saves. Treat each assigned checkout as having one writer.
+- For new work, record the target branch and SHA. Use local `main` by default. If it is still at `a114919`, use local `fix/parallel-build-baseline` for new features and tell the user. That main revision imports the debug overlay from its old Java package. In an idle, clean slot whose previous work is accounted for, run `git -C <slot> switch --no-track -c feature/<short-name> <base-sha>`. To continue existing work, use its existing feature branch. To add a slot when needed, use `git -C florafauna worktree add -b feature/<short-name> ../florafauna-<number> <base-sha>` from this parent folder. Use the worktree list to choose an unused path.
+- Workers share filesystem access. Require each worker to verify its path and branch before editing, and to scope shell commands and patch paths to that checkout. The coordinator alone assigns or reassigns slots.
+
+## Feature workers
+
+- Read the relevant feature README, neighboring Java classes, and the architecture notes in your checkout's `CLAUDE.md`. Use `gradle.properties` and `build.gradle` for the actual Minecraft, NeoForge and Java versions.
+- Own the full change, including registration, resources, translatable text and applicable GameTests. Coordinate changes to `FloraFaunaRegistry`, `FloraFaunaSetup`, `ClientSetup`, datagen providers, `en_us.json` and `FloraFaunaGameTests` with the coordinator. If two workers need the same registry ID or behavior, agree on ownership before implementing it.
+- Use the checkout's Windows Gradle wrapper with JDK 21. Generate missing or changed recipes, loot tables, assets and GameTest structures with `.\gradlew.bat --max-workers=4 runData`. When it finishes, run `.\gradlew.bat --max-workers=4 build runGameTestServer`. Generation runs Minecraft and writes ignored files under `src/generated`; the second Gradle invocation picks them up for the jar and the headless GameTests.
+- The developer uses IntelliJ IDEA to run, test and debug the mod. Open the individual checkout as a Gradle project with JDK 21 and let NeoForge generate its **Client** and **GameTestServer** run configurations. Use `scripts/open_idea.ps1` for opening a checkout and computer use for IDE Run/Debug actions when requested. Preserve the developer's open project. Agents can run equivalent Gradle tasks in their own worktrees for unattended checks.
+- Run the same workflow concurrently across different checkouts. Use one Gradle invocation at a time per checkout. Keep the Gradle user home shared on this machine for dependencies, Minecraft assets and NeoForm intermediates. Each checkout owns its `.gradle`, `.gradle-build-cache`, `build`, `src/generated` and `run` directories.
+- For a batch check, run `.\scripts\test_worktrees.ps1 -Slot 1,2,3` from a checkout containing the runner, selecting only the slots assigned for this batch. It verifies each slot's current contents and writes a separate log under its `.tmp/worktree-tests`. Coordinate with workers so they have finished edits before running the batch.
+- Headless GameTests have separate test worlds per checkout. For simultaneous *dedicated* Minecraft servers, set a distinct `server-port` in each slot's `run/server-<checkout>/server.properties`. Keep individual client saves local. Run a client for features that need visible rendering, input or UI verification.
+- Commit the scoped change on the assigned feature branch. Report the branch and commit, behavior implemented, checks run and their results, and any steps that still need an in-game check.
+
+## Integration
+
+Review each diff against its recorded base. When features need to be tested together, create a local integration branch in a free worktree, merge the feature commits there one at a time, resolve shared registrations, and rerun datagen, the build and relevant GameTests on the combined code. Report the tested commits and any remaining limitations. Follow the project's user-managed merge or PR workflow for landing on `main`. Keep the developer's shared dev-world template separate from feature testing.
