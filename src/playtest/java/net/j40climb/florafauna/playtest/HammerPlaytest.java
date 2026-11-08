@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
@@ -8,7 +9,6 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -22,13 +22,25 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 
-import java.nio.file.Files;
 import java.util.Set;
 
-final class HammerPlaytest {
+@EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+public final class HammerPlaytest {
     private static final BlockPos WALL = new BlockPos(0, 202, 3);
     private static final BlockPos FLOOR = new BlockPos(0, 200, 0);
+    private static BlockPos lastCustomOutline;
+
+    // LevelRenderer resets this state at the end of each frame, before the playtest's next client tick.
+    @SubscribeEvent
+    public static void captureOutline(ExtractLevelRenderStateEvent event) {
+        var outline = event.getRenderState().blockOutlineRenderState;
+        lastCustomOutline = outline != null && !outline.customRenderers().isEmpty() ? outline.pos() : null;
+    }
 
     static void steps(Playtest t, int phase) {
         if (phase != 1) {
@@ -121,16 +133,10 @@ final class HammerPlaytest {
     private static void minePlane(Playtest t, BlockPos center, Direction face, String label) {
         t.server("Aim at the " + label, p ->
                 p.teleportTo(p.level(), 0.5, 201, 0.5, Set.of(), 0f, face == Direction.UP ? 90f : 0f, true));
-        t.awaitClient("Extract the custom mining outline for the " + label, mc -> {
-            var outline = mc.gameRenderer.getGameRenderState().levelRenderState.blockOutlineRenderState;
-            return aimedAt(mc, center, face) && outline != null && outline.pos().equals(center)
-                    && !outline.customRenderers().isEmpty();
-        });
-        String image = "hammer-" + label + ".png";
-        t.client("Capture the " + label + " preview", mc ->
-                Screenshot.grab(mc.gameDirectory, image, mc.getMainRenderTarget(), 1, ignored -> {}));
-        t.awaitClient("Write the " + label + " preview screenshot", mc ->
-                Files.isRegularFile(mc.gameDirectory.toPath().resolve("screenshots").resolve(image)));
+        t.awaitClient("Target the " + label + " center on the client", mc -> aimedAt(mc, center, face));
+        t.awaitClient("Extract the custom mining outline for the " + label,
+                mc -> aimedAt(mc, center, face) && center.equals(lastCustomOutline));
+        t.screenshot("hammer-" + label);
         t.client("Attack the center of the " + label, mc ->
                 Playtest.require(mc.gameMode.startDestroyBlock(center, face), "Client refused to mine " + center));
         t.awaitServer("Mine the " + label + " center", p -> p.level().getBlockState(center).isAir());
