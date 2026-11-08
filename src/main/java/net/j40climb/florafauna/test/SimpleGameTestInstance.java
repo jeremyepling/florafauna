@@ -19,7 +19,7 @@ public class SimpleGameTestInstance extends GameTestInstance {
 
     private final Consumer<GameTestHelper> testFunction;
 
-    public SimpleGameTestInstance(TestData<Holder<TestEnvironmentDefinition>> info, Consumer<GameTestHelper> testFunction) {
+    public SimpleGameTestInstance(TestData<Holder<TestEnvironmentDefinition<?>>> info, Consumer<GameTestHelper> testFunction) {
         super(info);
         this.testFunction = testFunction;
     }

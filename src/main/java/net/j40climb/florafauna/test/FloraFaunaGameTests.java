@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.test;
 
+import com.mojang.authlib.GameProfile;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
@@ -56,12 +57,13 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
@@ -81,7 +83,7 @@ public class FloraFaunaGameTests {
         modEventBus.addListener(FloraFaunaGameTests::registerTests);
     }
 
-    private static final Identifier EMPTY_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "empty_1x1x1");
+    private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
     private static final Identifier ITEM_INPUT_TO_CHEST_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_item_input_to_chest");
 
     private static void registerTests(RegisterGameTestsEvent event) {
@@ -89,7 +91,7 @@ public class FloraFaunaGameTests {
         GlobalTestReporter.replaceWith(new ColoredTestReporter());
 
         // Register a minimal test environment
-        Holder<TestEnvironmentDefinition> defaultEnv = event.registerEnvironment(
+        Holder<TestEnvironmentDefinition<?>> defaultEnv = event.registerEnvironment(
                 Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "default"),
                 new TestEnvironmentDefinition.AllOf()
         );
@@ -139,7 +141,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Voice Cooldown Tests ====================
 
-    private static void registerVoiceCooldownTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerVoiceCooldownTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "voice_cooldown_initial_state", FloraFaunaGameTests::testVoiceCooldownInitialState);
         registerTest(event, env, "voice_cooldown_tier1_can_speak", FloraFaunaGameTests::testVoiceCooldownTier1CanSpeak);
         registerTest(event, env, "voice_cooldown_tier1_blocked_during_cooldown", FloraFaunaGameTests::testVoiceCooldownTier1BlockedDuringCooldown);
@@ -229,7 +231,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Progress Signal Tests ====================
 
-    private static void registerProgressSignalTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerProgressSignalTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "progress_signal_initial_state", FloraFaunaGameTests::testProgressSignalInitialState);
         registerTest(event, env, "progress_signal_state_transitions", FloraFaunaGameTests::testProgressSignalStateTransitions);
         registerTest(event, env, "progress_signal_stall_detection", FloraFaunaGameTests::testProgressSignalStallDetection);
@@ -320,13 +322,13 @@ public class FloraFaunaGameTests {
 
     // ==================== Chaos Suppressor Tests ====================
 
-    private static void registerChaosSuppressorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerChaosSuppressorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "chaos_suppressor_initial_state", FloraFaunaGameTests::testChaosSuppressorInitialState);
         registerTest(event, env, "chaos_suppressor_threshold", FloraFaunaGameTests::testChaosSuppressorThreshold);
     }
 
     private static void testChaosSuppressorInitialState(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = createTestPlayer(helper);
 
         // Fresh player should not be suppressed
         if (ChaosSuppressor.isSuppressed(player)) {
@@ -337,7 +339,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testChaosSuppressorThreshold(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = createTestPlayer(helper);
 
         // Record 4 damage events (below threshold of 5)
         ChaosSuppressor.recordDamage(player);
@@ -356,12 +358,13 @@ public class FloraFaunaGameTests {
             throw helper.assertionException("Should be suppressed with 5 events");
         }
 
+        ChaosSuppressor.clearPlayer(player);
         helper.succeed();
     }
 
     // ==================== Dialogue Repository Tests ====================
 
-    private static void registerDialogueRepositoryTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerDialogueRepositoryTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "dialogue_repository_empty_returns_empty", FloraFaunaGameTests::testDialogueRepositoryEmptyReturnsEmpty);
         registerTest(event, env, "dialogue_repository_dream_selection", FloraFaunaGameTests::testDialogueRepositoryDreamSelection);
     }
@@ -415,7 +418,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Item Input Buffer Tests ====================
 
-    private static void registerItemBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerItemBufferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "item_buffer_initial_state", FloraFaunaGameTests::testItemBufferInitialState);
         registerTest(event, env, "item_buffer_add_and_retrieve", FloraFaunaGameTests::testItemBufferAddAndRetrieve);
         registerTest(event, env, "item_buffer_stack_merging", FloraFaunaGameTests::testItemBufferStackMerging);
@@ -527,7 +530,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Buffer Transfer Tests ====================
 
-    private static void registerBufferTransferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerBufferTransferTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "buffer_transfer_basic", FloraFaunaGameTests::testBufferTransferBasic);
         registerTest(event, env, "buffer_transfer_partial", FloraFaunaGameTests::testBufferTransferPartial);
         registerTest(event, env, "buffer_transfer_empty_source", FloraFaunaGameTests::testBufferTransferEmptySource);
@@ -652,7 +655,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Claimed Item Data Tests ====================
 
-    private static void registerClaimedItemDataTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerClaimedItemDataTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "claimed_data_initial_state", FloraFaunaGameTests::testClaimedDataInitialState);
         registerTest(event, env, "claimed_data_animation_progress", FloraFaunaGameTests::testClaimedDataAnimationProgress);
         registerTest(event, env, "claimed_data_animation_completion", FloraFaunaGameTests::testClaimedDataAnimationCompletion);
@@ -726,7 +729,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Pod Item Handler Tests ====================
 
-    private static void registerPodItemHandlerTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerPodItemHandlerTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "pod_handler_extract_from_buffer", FloraFaunaGameTests::testPodHandlerExtractFromBuffer);
         registerTest(event, env, "pod_handler_buffer_sync", FloraFaunaGameTests::testPodHandlerBufferSync);
         registerTest(event, env, "pod_handler_extract_with_transaction", FloraFaunaGameTests::testPodHandlerExtractWithTransaction);
@@ -988,7 +991,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Mining Mode Tests ====================
 
-    private static void registerMiningModeTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerMiningModeTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "mining_mode_initial_state", FloraFaunaGameTests::testMiningModeInitialState);
         registerTest(event, env, "mining_mode_cycling", FloraFaunaGameTests::testMiningModeCycling);
         registerTest(event, env, "mining_mode_wrap_around", FloraFaunaGameTests::testMiningModeWrapAround);
@@ -1065,7 +1068,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Containment Chamber Tests ====================
 
-    private static void registerContainmentChamberTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerContainmentChamberTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "containment_chamber_slot_validation", FloraFaunaGameTests::testContainmentChamberSlotValidation);
     }
 
@@ -1106,7 +1109,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Mob Barrier Tests ====================
 
-    private static void registerMobBarrierTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerMobBarrierTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "mob_barrier_config_default_empty", FloraFaunaGameTests::testMobBarrierConfigDefaultEmpty);
         registerTest(event, env, "mob_barrier_config_add_remove_entity_id", FloraFaunaGameTests::testMobBarrierConfigAddRemoveEntityId);
         registerTest(event, env, "mob_barrier_config_add_remove_tag", FloraFaunaGameTests::testMobBarrierConfigAddRemoveTag);
@@ -1260,7 +1263,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Mining Anchor Tests ====================
 
-    private static void registerMiningAnchorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerMiningAnchorTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "anchor_fill_state_normal", FloraFaunaGameTests::testAnchorFillStateNormal);
         registerTest(event, env, "anchor_fill_state_warning", FloraFaunaGameTests::testAnchorFillStateWarning);
         registerTest(event, env, "anchor_fill_state_full", FloraFaunaGameTests::testAnchorFillStateFull);
@@ -1507,7 +1510,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Husk Tests ====================
 
-    private static void registerHuskTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerHuskTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "husk_type_restoration", FloraFaunaGameTests::testHuskTypeRestoration);
         registerTest(event, env, "husk_type_container", FloraFaunaGameTests::testHuskTypeContainer);
         registerTest(event, env, "husk_type_broken", FloraFaunaGameTests::testHuskTypeBroken);
@@ -1551,7 +1554,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Symbiote State Tests ====================
 
-    private static void registerSymbioteStateTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerSymbioteStateTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "symbiote_state_unbound", FloraFaunaGameTests::testSymbioteStateUnbound);
         registerTest(event, env, "symbiote_state_ready_to_bind", FloraFaunaGameTests::testSymbioteStateReadyToBind);
         registerTest(event, env, "symbiote_state_bonded_active", FloraFaunaGameTests::testSymbioteStateBondedActive);
@@ -1608,7 +1611,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Mob Transport Tests ====================
 
-    private static void registerMobTransportTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerMobTransportTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "mob_symbiote_data_default", FloraFaunaGameTests::testMobSymbioteDataDefault);
         registerTest(event, env, "mob_symbiote_data_bonding", FloraFaunaGameTests::testMobSymbioteDataBonding);
         registerTest(event, env, "mob_symbiote_data_release_immunity", FloraFaunaGameTests::testMobSymbioteDataReleaseImmunity);
@@ -1782,7 +1785,7 @@ public class FloraFaunaGameTests {
     }
 
     private static void testMobCaptureEligibilityPlayer(GameTestHelper helper) {
-        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ServerPlayer player = createTestPlayer(helper);
 
         var result = MobCaptureEligibility.checkEligibility(player, 0L);
 
@@ -2071,7 +2074,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Fear System Tests ====================
 
-    private static void registerFearSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerFearSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerTest(event, env, "fear_state_helper_methods", FloraFaunaGameTests::testFearStateHelperMethods);
         registerTest(event, env, "fear_data_default_state", FloraFaunaGameTests::testFearDataDefaultState);
         registerTest(event, env, "fear_data_state_transitions", FloraFaunaGameTests::testFearDataStateTransitions);
@@ -2330,7 +2333,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Item Input Structure Tests ====================
 
-    private static void registerItemInputStructureTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerItemInputStructureTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerStructureTest(event, env, "item_input_collects_and_transfers",
                 ITEM_INPUT_TO_CHEST_STRUCTURE, 200, FloraFaunaGameTests::testItemInputCollectsAndTransfers);
     }
@@ -2394,7 +2397,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Iron Garden System Tests ====================
 
-    private static void registerIronGardenSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition> env) {
+    private static void registerIronGardenSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         // IronGardenState tests
         registerTest(event, env, "iron_garden_state_helper_methods", FloraFaunaGameTests::testIronGardenStateHelperMethods);
 
@@ -2690,12 +2693,16 @@ public class FloraFaunaGameTests {
 
     // ==================== Helper Methods ====================
 
+    private static ServerPlayer createTestPlayer(GameTestHelper helper) {
+        return new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "test-player"));
+    }
+
     /**
      * Register a test with a custom structure.
      */
     private static void registerStructureTest(
             RegisterGameTestsEvent event,
-            Holder<TestEnvironmentDefinition> env,
+            Holder<TestEnvironmentDefinition<?>> env,
             String name,
             Identifier structure,
             int maxTicks,
@@ -2703,17 +2710,12 @@ public class FloraFaunaGameTests {
     ) {
         Identifier testId = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name);
 
-        TestData<Holder<TestEnvironmentDefinition>> testData = new TestData<>(
+        TestData<Holder<TestEnvironmentDefinition<?>>> testData = new TestData<>(
                 env,
                 structure,
                 maxTicks,
                 20,   // setupTicks - give block entities time to load
-                true, // required
-                Rotation.NONE,
-                false, // manualOnly
-                1,    // maxAttempts
-                1,    // requiredSuccesses
-                false // skyAccess
+                true  // required
         );
 
         event.registerTest(testId, new SimpleGameTestInstance(testData, testFunction));
@@ -2724,23 +2726,18 @@ public class FloraFaunaGameTests {
      */
     private static void registerTest(
             RegisterGameTestsEvent event,
-            Holder<TestEnvironmentDefinition> env,
+            Holder<TestEnvironmentDefinition<?>> env,
             String name,
             Consumer<GameTestHelper> testFunction
     ) {
         Identifier testId = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, name);
 
-        TestData<Holder<TestEnvironmentDefinition>> testData = new TestData<>(
+        TestData<Holder<TestEnvironmentDefinition<?>>> testData = new TestData<>(
                 env,
                 EMPTY_STRUCTURE,
                 100, // maxTicks
                 0,   // setupTicks
-                true, // required
-                Rotation.NONE,
-                false, // manualOnly
-                1,    // maxAttempts
-                1,    // requiredSuccesses
-                false // skyAccess
+                true  // required
         );
 
         // Create a SimpleGameTestInstance wrapper
