@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
@@ -64,7 +65,7 @@ public final class HammerPlaytest {
         t.client("Click the speed control to switch from Efficiency to Instabreak", mc -> {
             Button button = speedButton(mc, "efficiency");
             var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
-                    button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(0, 0));
+                    button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
             Playtest.require(mc.gui.screen().mouseClicked(click, false), "Speed button click was ignored");
             mc.gui.screen().mouseReleased(click);
             mc.gui.screen().onClose();
