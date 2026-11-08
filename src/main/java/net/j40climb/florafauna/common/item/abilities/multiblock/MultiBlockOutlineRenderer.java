@@ -1,120 +1,53 @@
 package net.j40climb.florafauna.common.item.abilities.multiblock;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.BlockOutlineRenderState;
-import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.client.CustomBlockOutlineRenderer;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 
-import java.util.Set;
+import java.util.List;
 
-/**
- * Client-side renderer for multi-block mining outlines.
- * Renders additional block outlines for all blocks that will be affected by the mining pattern.
- */
-public class MultiBlockOutlineRenderer implements CustomBlockOutlineRenderer {
+/** Draws the additional outlines for a multi-block mining tool. */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+public class MultiBlockOutlineRenderer {
 
-    @Override
-    public boolean render(BlockOutlineRenderState renderState, MultiBufferSource.BufferSource buffer, PoseStack poseStack, boolean translucentPass, LevelRenderState levelRenderState) {
+    @SubscribeEvent
+    public static void extractBlockOutlines(ExtractBlockOutlineRenderStateEvent event) {
         Player player = Minecraft.getInstance().player;
-        if (player == null) {
-            return false;
+        if (player == null || !player.getMainHandItem().has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
+            return;
         }
 
-        // Only render outlines if the held item has multi-block mining capability
-        if (!player.getMainHandItem().has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
-            return false;
+        BlockPos target = event.getBlockPos();
+        List<VoxelShape> outlines = MultiBlockPatterns.getTargetBlocks(target, player).stream()
+                .filter(pos -> !pos.equals(target))
+                .map(pos -> event.getLevel().getBlockState(pos)
+                        .getShape(event.getLevel(), pos, event.getCollisionContext())
+                        .move(pos.getX(), pos.getY(), pos.getZ()))
+                .filter(shape -> !shape.isEmpty())
+                .toList();
+        if (outlines.isEmpty()) {
+            return;
         }
 
-        Level level = player.level();
-        BlockPos targetPos = renderState.pos();
-
-        Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
-        double camX = cameraPos.x();
-        double camY = cameraPos.y();
-        double camZ = cameraPos.z();
-
-        Set<BlockPos> breakBlockPositions = MultiBlockPatterns.getTargetBlocks(targetPos, player);
-
-        for (BlockPos blockPos : breakBlockPositions) {
-            if (blockPos.equals(targetPos)) {
-                continue; // Skip the main target - vanilla handles that
+        event.addCustomRenderer((state, buffers, poseStack, translucentPass, levelState) -> {
+            if (translucentPass == state.isTranslucent()) {
+                Vec3 camera = levelState.cameraRenderState.pos;
+                var vertices = buffers.getBuffer(RenderTypes.lines());
+                for (VoxelShape outline : outlines) {
+                    ShapeRenderer.renderShape(poseStack, vertices, outline, -camera.x, -camera.y, -camera.z, 0x66000000, 2.0F);
+                }
             }
-            VertexConsumer vertexConsumer = buffer.getBuffer(RenderTypes.lines());
-            renderBlockOutline(poseStack, vertexConsumer, player, camX, camY, camZ, level, blockPos, level.getBlockState(blockPos));
-        }
-
-        return false; // Allow vanilla to render the main target block outline
-    }
-
-    private static void renderBlockOutline(
-            PoseStack poseStack,
-            VertexConsumer consumer,
-            Entity entity,
-            double camX,
-            double camY,
-            double camZ,
-            Level level,
-            BlockPos pos,
-            BlockState state
-    ) {
-        renderShape(
-                poseStack,
-                consumer,
-                state.getShape(level, pos, CollisionContext.of(entity)),
-                (double) pos.getX() - camX,
-                (double) pos.getY() - camY,
-                (double) pos.getZ() - camZ,
-                0.0F,
-                0.0F,
-                0.0F,
-                0.4F
-        );
-    }
-
-    private static void renderShape(
-            PoseStack poseStack,
-            VertexConsumer consumer,
-            VoxelShape shape,
-            double x,
-            double y,
-            double z,
-            float red,
-            float green,
-            float blue,
-            float alpha
-    ) {
-        PoseStack.Pose pose = poseStack.last();
-        shape.forAllEdges((x1, y1, z1, x2, y2, z2) -> {
-            float dx = (float) (x2 - x1);
-            float dy = (float) (y2 - y1);
-            float dz = (float) (z2 - z1);
-            float length = Mth.sqrt(dx * dx + dy * dy + dz * dz);
-            dx /= length;
-            dy /= length;
-            dz /= length;
-
-            consumer.addVertex(pose.pose(), (float) (x1 + x), (float) (y1 + y), (float) (z1 + z))
-                    .setColor(red, green, blue, alpha)
-                    .setNormal(pose, dx, dy, dz)
-                    .setLineWidth(2.0f);
-            consumer.addVertex(pose.pose(), (float) (x2 + x), (float) (y2 + y), (float) (z2 + z))
-                    .setColor(red, green, blue, alpha)
-                    .setNormal(pose, dx, dy, dz)
-                    .setLineWidth(2.0f);
+            return false; // Vanilla draws the targeted block.
         });
     }
 }

@@ -1,7 +1,7 @@
 package net.j40climb.florafauna.client.gui;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -100,25 +100,25 @@ public abstract class BaseScreen extends Screen {
     protected abstract void initContent();
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 1. Render blurred background
-        super.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
 
         // 2. Render the GUI texture
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, guiTexture, leftPos, topPos, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT, 256, 256);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 1. Render background and widgets
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         // 2. Let subclass render custom content (including title)
         renderContent(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     /**
-     * Called during render() to allow subclasses to render custom content in the content area.
+     * Called during extractRenderState() to allow subclasses to render custom content in the content area.
      * This is called after the title but before the inventory.
      *
      * @param guiGraphics the graphics context
@@ -126,7 +126,7 @@ public abstract class BaseScreen extends Screen {
      * @param mouseY mouse Y position
      * @param partialTick partial tick time
      */
-    protected abstract void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick);
+    protected abstract void renderContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick);
 
     @Override
     public boolean isPauseScreen() {

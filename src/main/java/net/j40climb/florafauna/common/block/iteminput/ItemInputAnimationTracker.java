@@ -124,9 +124,9 @@ public class ItemInputAnimationTracker {
                 // Spawn burst of particles at target when complete
                 Vec3 target = Vec3.atCenterOf(data.targetPos());
                 for (int i = 0; i < 8; i++) {
-                    double offsetX = (mc.level.random.nextDouble() - 0.5) * 0.5;
-                    double offsetY = (mc.level.random.nextDouble() - 0.5) * 0.5;
-                    double offsetZ = (mc.level.random.nextDouble() - 0.5) * 0.5;
+                    double offsetX = (mc.level.getRandom().nextDouble() - 0.5) * 0.5;
+                    double offsetY = (mc.level.getRandom().nextDouble() - 0.5) * 0.5;
+                    double offsetZ = (mc.level.getRandom().nextDouble() - 0.5) * 0.5;
                     mc.level.addParticle(ParticleTypes.PORTAL,
                             target.x + offsetX, target.y + offsetY, target.z + offsetZ,
                             0, 0.1, 0);
@@ -143,9 +143,9 @@ public class ItemInputAnimationTracker {
                     if (currentTick % 2 == 0) { // Every other tick
                         mc.level.addParticle(ParticleTypes.ENCHANT,
                                 pos.x, pos.y + 0.25, pos.z,
-                                (mc.level.random.nextDouble() - 0.5) * 0.1,
+                                (mc.level.getRandom().nextDouble() - 0.5) * 0.1,
                                 0.05,
-                                (mc.level.random.nextDouble() - 0.5) * 0.1);
+                                (mc.level.getRandom().nextDouble() - 0.5) * 0.1);
                     }
                 }
             }

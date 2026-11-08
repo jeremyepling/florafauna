@@ -6,7 +6,7 @@ import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -83,10 +83,10 @@ public class LocatorBarRendererMixin {
     private Minecraft minecraft;
 
     /**
-     * Inject at the end of render() to add our husk waypoint.
+     * Inject at the end of extractRenderState() to add our husk waypoint.
      */
-    @Inject(method = "render", at = @At("TAIL"))
-    private void florafauna$renderHuskWaypoint(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void florafauna$renderHuskWaypoint(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         LocalPlayer player = this.minecraft.player;
         if (player == null) {
             return;
@@ -186,8 +186,8 @@ public class LocatorBarRendererMixin {
     /**
      * Inject after the husk waypoint to render mining anchor waypoint.
      */
-    @Inject(method = "render", at = @At("TAIL"))
-    private void florafauna$renderAnchorWaypoint(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void florafauna$renderAnchorWaypoint(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         LocalPlayer player = this.minecraft.player;
         if (player == null) {
             return;

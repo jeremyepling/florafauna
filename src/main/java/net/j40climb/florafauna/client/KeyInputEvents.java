@@ -98,16 +98,14 @@ public class KeyInputEvents {
                 }
                 // Send to server so it doesn't rubber-band us
                 ClientPacketDistributor.sendToServer(new NoClipPayload(newState));
-                player.displayClientMessage(
+                player.sendOverlayMessage(
                         Component.translatable(newState ?
                                 "command.florafauna.noclip.enabled" :
-                                "command.florafauna.noclip.disabled"),
-                        true  // Display in action bar
+                                "command.florafauna.noclip.disabled")
                 );
             } else {
-                player.displayClientMessage(
-                        Component.translatable("command.florafauna.noclip.creative_only"),
-                        true
+                player.sendOverlayMessage(
+                        Component.translatable("command.florafauna.noclip.creative_only")
                 );
             }
         }

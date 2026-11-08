@@ -9,10 +9,9 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -109,7 +108,7 @@ public class ClientSetup {
      * Call this from the main mod class.
      */
     public static void init(IEventBus modEventBus) {
-        modEventBus.addListener(ClientSetup::onClientSetup);
+        modEventBus.addListener(ClientSetup::registerRenderers);
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
@@ -120,11 +119,11 @@ public class ClientSetup {
     /**
      * Client setup: register entity renderers.
      */
-    private static void onClientSetup(FMLClientSetupEvent event) {
-        EntityRenderers.register(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
-        EntityRenderers.register(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);
-        EntityRenderers.register(FloraFaunaRegistry.FRENCHIE.get(), FrenchieRenderer::new);
-        EntityRenderers.register(FloraFaunaRegistry.THROWN_ITEM.get(), ThrownItemRenderer::new);
+    private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
+        event.registerEntityRenderer(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);
+        event.registerEntityRenderer(FloraFaunaRegistry.FRENCHIE.get(), FrenchieRenderer::new);
+        event.registerEntityRenderer(FloraFaunaRegistry.THROWN_ITEM.get(), ThrownItemRenderer::new);
     }
 
     /**

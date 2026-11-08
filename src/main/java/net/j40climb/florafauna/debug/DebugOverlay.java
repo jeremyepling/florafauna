@@ -23,7 +23,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -78,7 +78,7 @@ public class DebugOverlay implements GuiLayer {
     private record DebugLine(String text, int color) {}
 
     @Override
-    public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public void render(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         if (!enabled) {
             return;
         }
@@ -130,7 +130,7 @@ public class DebugOverlay implements GuiLayer {
 
         // Draw all lines
         for (DebugLine line : lines) {
-            guiGraphics.drawString(font, line.text(), x, y, line.color(), false);
+            guiGraphics.text(font, line.text(), x, y, line.color(), false);
             y += lineHeight;
         }
 
@@ -339,10 +339,10 @@ public class DebugOverlay implements GuiLayer {
                     }
                 }
 
-                // Show phase progress for gardening states
-                if (state == IronGardenState.CALM_PLANTING) {
+                // A calm golem can alternate between planting and harvesting.
+                if (state == IronGardenState.CALM && gardenData.activity() == IronGardenActivity.PLANTING) {
                     lines.add(new DebugLine("Plants: " + gardenData.plantsThisPhase() + "/" + Config.ironGardenMaxPlantsPerPhase, color));
-                } else if (state == IronGardenState.CALM_HARVESTING) {
+                } else if (state == IronGardenState.CALM && gardenData.activity() == IronGardenActivity.HARVESTING) {
                     lines.add(new DebugLine("Harvests: " + gardenData.harvestsThisPhase() + "/" + Config.ironGardenMaxHarvestsPerPhase, color));
                 }
 
@@ -595,7 +595,7 @@ public class DebugOverlay implements GuiLayer {
         return switch (state) {
             case UNBONDED -> 0xFFAAAAAA;        // Gray
             case BONDED_NOT_CALM -> 0xFFFFAA00; // Orange
-            case CALM, CALM_PLANTING, CALM_HARVESTING -> 0xFF55FF77; // Green (all calm states)
+            case CALM -> 0xFF55FF77;             // Green
         };
     }
 
