@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.test;
 
 import com.mojang.authlib.GameProfile;
+import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskType;
@@ -1835,26 +1836,23 @@ public class FloraFaunaGameTests {
         // Spawn a zombie
         var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 1, 1));
 
-        // Mark it as recently released until tick 2000
-        MobSymbioteHelper.markRecentlyReleased(zombie, 2000L);
-
-        // Check eligibility at tick 1500 (should be excluded)
-        var result = MobCaptureEligibility.checkEligibility(zombie, 1500L);
+        long expiry = zombie.level().getGameTime() + Config.recentlyReleasedImmunityTicks;
+        MobSymbioteHelper.markRecentlyReleased(zombie);
+        var result = MobCaptureEligibility.checkEligibility(zombie, expiry - 1);
 
         if (result.isEligible()) {
-            throw helper.assertionException("Recently released mob should NOT be eligible at tick 1500");
+            throw helper.assertionException("Recently released mob became eligible before immunity expired");
         }
         if (result.reason() != MobCaptureEligibility.ExclusionReason.RECENTLY_RELEASED) {
             throw helper.assertionException("Reason should be RECENTLY_RELEASED, got: " + result.reason());
         }
 
-        // Check at tick 2500 (immunity expired)
-        var resultLater = MobCaptureEligibility.checkEligibility(zombie, 2500L);
+        var resultLater = MobCaptureEligibility.checkEligibility(zombie, expiry);
 
         // Note: May still be excluded if allowUnbondedCapture is false
         // Just verify it's not excluded for RECENTLY_RELEASED
         if (resultLater.reason() == MobCaptureEligibility.ExclusionReason.RECENTLY_RELEASED) {
-            throw helper.assertionException("Should NOT be excluded for RECENTLY_RELEASED at tick 2500");
+            throw helper.assertionException("Release immunity lasted beyond the configured duration");
         }
 
         helper.succeed();
