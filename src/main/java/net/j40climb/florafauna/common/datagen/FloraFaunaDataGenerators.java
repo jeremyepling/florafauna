@@ -27,9 +27,6 @@ public class FloraFaunaDataGenerators {
         generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new FloraFaunaEntityTypeTagsProvider(packOutput, lookupProvider));
         generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
-
-        // Test structures for GameTest
-        generator.addProvider(true, new TestStructureProvider(packOutput, lookupProvider));
     }
 
     public static void gatherServerData(GatherDataEvent.Server event) {

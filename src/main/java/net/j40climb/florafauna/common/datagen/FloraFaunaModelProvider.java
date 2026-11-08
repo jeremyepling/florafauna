@@ -7,11 +7,10 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
+import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TexturedModel;
-import net.minecraft.client.renderer.item.BlockModelWrapper;
-import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
@@ -19,7 +18,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
-import java.util.Collections;
 import java.util.stream.Stream;
 
 public class FloraFaunaModelProvider extends ModelProvider {
@@ -117,16 +115,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
      * assets/florafauna/models/item/<itemname>.json
      */
     private static void registerClientItemFromModelJson(ItemModelGenerators itemModels, Item item) {
-        itemModels.itemModelOutput.register(
-                item,
-                new ClientItem(
-                        new BlockModelWrapper.Unbaked(
-                                ModelLocationUtils.getModelLocation(item),
-                                Collections.emptyList()
-                        ),
-                        new ClientItem.Properties(true, false, 1.0F)
-                )
-        );
+        itemModels.itemModelOutput.accept(item, ItemModelUtils.plainModel(ModelLocationUtils.getModelLocation(item)));
     }
 
     // ============================================================
