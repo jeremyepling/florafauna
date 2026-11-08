@@ -439,8 +439,7 @@ public class MobInputBlockEntity extends BlockEntity {
 
         // Mark as recently released
         if (entity instanceof Mob mob) {
-            long immunityUntil = level.getGameTime() + Config.recentlyReleasedImmunityTicks;
-            MobSymbioteHelper.markRecentlyReleased(mob, immunityUntil);
+            MobSymbioteHelper.markRecentlyReleased(mob);
         }
     }
 

@@ -119,8 +119,7 @@ public class MobOutputBlockEntity extends BlockEntity {
 
         // Mark as recently released (capture immunity) and remove any lure goal
         if (entity instanceof Mob mob) {
-            long immunityUntil = level.getGameTime() + Config.recentlyReleasedImmunityTicks;
-            MobSymbioteHelper.markRecentlyReleased(mob, immunityUntil);
+            MobSymbioteHelper.markRecentlyReleased(mob);
             MobSymbioteHelper.stopLuring(mob);
         }
 

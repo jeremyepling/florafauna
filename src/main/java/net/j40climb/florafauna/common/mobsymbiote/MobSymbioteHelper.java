@@ -108,11 +108,10 @@ public final class MobSymbioteHelper {
      * Marks a mob as recently released, granting capture immunity.
      *
      * @param mob The mob to mark
-     * @param currentTick The current game tick
      */
-    public static void markRecentlyReleased(Mob mob, long currentTick) {
+    public static void markRecentlyReleased(Mob mob) {
         MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
-        long immunityUntil = currentTick + Config.recentlyReleasedImmunityTicks;
+        long immunityUntil = mob.level().getGameTime() + Config.recentlyReleasedImmunityTicks;
         mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA, current.withRecentlyReleased(immunityUntil));
     }
 
