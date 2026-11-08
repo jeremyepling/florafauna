@@ -17,7 +17,7 @@ import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.item.ItemStack;
@@ -65,7 +65,7 @@ final class MobTransportPlaytest {
             t.awaitServer("Receive both placed transport blocks", p -> p.level().getBlockEntity(IN) instanceof MobInputBlockEntity
                     && p.level().getBlockEntity(OUT) instanceof MobOutputBlockEntity);
             t.server("Spawn one identifiable unbonded cow beside the input", p -> {
-                Cow cow = EntityType.COW.create(p.level(), EntitySpawnReason.COMMAND);
+                Cow cow = EntityTypes.COW.create(p.level(), EntitySpawnReason.COMMAND);
                 require(cow != null, "Failed to create the cow");
                 cow.setUUID(COW_ID);
                 cow.setCustomName(Component.literal(NAME));

@@ -79,7 +79,7 @@ final class RecoveryPlaytest {
             player.inventoryMenu.broadcastChanges();
         });
         t.awaitClient("Wait for the test platform and stew to synchronize", mc ->
-                mc.screen == null && mc.level.getBlockState(CHAMBER).is(FloraFaunaRegistry.COCOON_CHAMBER.get())
+                mc.gui.screen() == null && mc.level.getBlockState(CHAMBER).is(FloraFaunaRegistry.COCOON_CHAMBER.get())
                         && mc.player.getInventory().getItem(0).is(FloraFaunaRegistry.SYMBIOTE_STEW.get())
                         && mc.player.distanceToSqr(0.5, 200, 2.5) < 1);
         t.client("Hold use and drink the stew", mc -> {
@@ -108,7 +108,7 @@ final class RecoveryPlaytest {
         t.client("Release forward", mc -> mc.options.keyUp.setDown(false));
         t.server("Kill the real player and create the restoration husk", p -> p.kill(p.level()));
         t.awaitClient("Wait for the vanilla Respawn button", mc ->
-                mc.screen instanceof DeathScreen && enabledButton(mc.screen, "deathScreen.respawn") != null);
+                mc.gui.screen() instanceof DeathScreen && enabledButton(mc.gui.screen(), "deathScreen.respawn") != null);
         t.screenshot("recovery-death");
         t.client("Click Respawn", mc -> click(mc, "deathScreen.respawn"));
         t.awaitServer("Verify respawn at the cocoon with an empty inventory", p -> p.isAlive()
@@ -122,7 +122,7 @@ final class RecoveryPlaytest {
             Playtest.require(hasWaypoint(p) && p.getInventory().isEmpty(), "Player lost the saved recovery state");
             checkHusk(p);
         });
-        t.awaitClient("Wait for the saved waypoint to reach the rejoined client", mc -> mc.screen == null && hasWaypoint(mc.player));
+        t.awaitClient("Wait for the saved waypoint to reach the rejoined client", mc -> mc.gui.screen() == null && hasWaypoint(mc.player));
         t.screenshot("recovery-after-restart");
         t.client("Walk toward the persisted husk", mc -> {
             Vec3 target = Vec3.atCenterOf(data(mc.player).restorationHuskPos());
@@ -195,7 +195,7 @@ final class RecoveryPlaytest {
         String key = "gui.florafauna.cocoon." + action;
         t.client("Right-click the cocoon to open its screen", mc -> useBlock(mc, CHAMBER, Direction.SOUTH));
         t.awaitClient("Wait for the cocoon " + action + " button", mc ->
-                mc.screen instanceof CocoonChamberScreen && enabledButton(mc.screen, key) != null);
+                mc.gui.screen() instanceof CocoonChamberScreen && enabledButton(mc.gui.screen(), key) != null);
         t.client("Click the cocoon " + action + " button", mc -> click(mc, key));
     }
 
@@ -205,11 +205,11 @@ final class RecoveryPlaytest {
     }
 
     private static void click(Minecraft mc, String key) {
-        Button button = enabledButton(mc.screen, key);
+        Button button = enabledButton(mc.gui.screen(), key);
         Playtest.require(button != null, "Missing enabled button " + key);
         MouseButtonEvent leftClick = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
                 button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(0, 0));
-        Playtest.require(mc.screen.mouseClicked(leftClick, false), "Screen did not handle click on " + key);
+        Playtest.require(mc.gui.screen().mouseClicked(leftClick, false), "Screen did not handle click on " + key);
     }
 
     private static void useBlock(Minecraft mc, BlockPos pos, Direction face) {
