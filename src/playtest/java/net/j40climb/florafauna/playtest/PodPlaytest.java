@@ -148,13 +148,17 @@ final class PodPlaytest {
     }
 
     private static void mine(Playtest t, Supplier<BlockPos> target, String description) {
-        // Send the survival client's press/release actions. The server measures break progress,
-        // fires block and loot events, and broadcasts the resulting block change to the client.
         t.client("Start mining " + description, mc -> mc.player.connection.send(new ServerboundPlayerActionPacket(
                 ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, target.get(), Direction.UP)));
         long[] release = new long[1];
-        t.server("Hold the pickaxe on " + description, p -> release[0] = p.level().getGameTime() + 20);
-        t.awaitServer("Mine " + description + " for 20 ticks", p -> p.level().getGameTime() >= release[0]);
+        t.server("Hold the pickaxe on " + description, p -> {
+            BlockPos pos = target.get();
+            require(p.isWithinBlockInteractionRange(pos, 0), "Mining target out of reach: " + pos + " from " + p.position());
+            float progress = p.level().getBlockState(pos).getDestroyProgress(p, p.level(), pos);
+            require(progress > 0, "Player cannot mine " + description);
+            release[0] = p.level().getGameTime() + (long) Math.ceil(1.0 / progress);
+        });
+        t.awaitServer("Mine " + description + " at the pickaxe's survival speed", p -> p.level().getGameTime() >= release[0]);
         t.client("Release the pickaxe on " + description, mc -> mc.player.connection.send(new ServerboundPlayerActionPacket(
                 ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, target.get(), Direction.UP)));
         t.awaitServer("Check that " + description + " was broken on the server", p -> p.level().isEmptyBlock(target.get()));
