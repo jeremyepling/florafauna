@@ -1,10 +1,13 @@
 # Creates a new numbered worktree with dev world setup
 # Run from the main repo only.
-# Usage: .\scripts\new_worktree.ps1 <number>
+# Usage: .\scripts\new_worktree.ps1 <number> [new-feature-branch]
 
 param(
-    [Parameter(Mandatory=$true, Position=0)][int]$Number
+    [Parameter(Mandatory=$true, Position=0)][int]$Number,
+    [Parameter(Position=1)][string]$FeatureBranch
 )
+
+$ErrorActionPreference = 'Stop'
 
 $repoRoot = git rev-parse --show-toplevel
 if ($LASTEXITCODE -ne 0) { throw "Not in a git repo." }
@@ -23,7 +26,11 @@ if (Test-Path $wtPath) { throw "Worktree path already exists: $wtPath" }
 
 Write-Host "Creating worktree '$wtName' at $wtPath"
 
-git worktree add $wtPath main
+if ($FeatureBranch) {
+    git worktree add --no-track -b $FeatureBranch $wtPath refs/heads/main
+} else {
+    git worktree add --detach $wtPath refs/heads/main
+}
 if ($LASTEXITCODE -ne 0) { throw "git worktree add failed" }
 
 # Copy dev world and options to worktree's run directory

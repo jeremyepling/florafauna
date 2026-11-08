@@ -1,6 +1,6 @@
 # FloraFauna
 
-A NeoForge 1.21.1 Minecraft mod.
+A Minecraft 1.21.11 mod for NeoForge 21.11.38-beta.
 
 ## Development Setup
 
@@ -43,15 +43,21 @@ Delete `run/client-*/saves/dev` to reset from template.
 
 ### Worktree Workflow
 
-This repo uses git worktrees for parallel development:
+From the checkout on `main`, choose an unused slot number:
 
 ```powershell
-.\scripts\new_worktree.ps1 3        # Create florafauna-3 worktree
-.\scripts\merge.ps1                 # Merge current branch to main
-.\scripts\wt_list.ps1               # List worktrees
+.\scripts\wt_list.ps1                          # List existing worktrees
+.\scripts\new_worktree.ps1 4 feature/new-mob  # Create a new branch and slot
+.\scripts\new_worktree.ps1 5                  # Create an idle detached slot
 ```
 
-Each worktree gets isolated run directories and build caches.
+Each worktree gets isolated run directories and build caches. To use a detached slot, run `git switch -c feature/<name> main` there before editing. From the main checkout, use PowerShell 7 to build and test slots concurrently:
+
+```powershell
+.\scripts\test_worktrees.ps1 -Slot 1,2,3
+```
+
+Logs are written under each slot's `.tmp/worktree-tests`. When ready to publish a committed feature, run `.\scripts\merge.ps1` manually from its worktree. It updates and pushes `main` via the checkout that owns it, removes the merged feature branches and leaves the worker detached. If the remote feature has additional commits, it keeps both feature branches. For merge conflicts, resolve and commit in the main checkout, then rerun the helper from the feature worktree.
 
 ## Project Structure
 
