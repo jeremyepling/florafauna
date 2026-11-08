@@ -49,7 +49,7 @@ The Fear System creates a renewable resource loop where mobs with MobSymbiote ca
 | Mob Type | Fear Sources | Line of Sight Required |
 |----------|--------------|------------------------|
 | Creeper | Cats, Ocelots | Yes |
-| Enderman | Armor stands with player heads/jack-o-lanterns, Reflective blocks | Yes |
+| Enderman | Armor stands with player heads or carved pumpkins, reflective blocks | Yes |
 | Blaze | Snow golems + Cold blocks (configurable) | Yes (for golems) |
 
 ## Creeper Fear
@@ -76,7 +76,7 @@ The Fear System creates a renewable resource loop where mobs with MobSymbiote ca
 ### Fear Sources
 1. **Armor Stands with Staring Faces**
    - Player heads
-   - Carved pumpkins (NOT jack-o-lanterns - the light ruins the effect)
+   - Carved pumpkins
 
 2. **Reflective Blocks** (within stare distance)
    - Polished stones (andesite, diorite, granite, deepslate, blackstone, basalt)
@@ -110,7 +110,7 @@ The Fear System creates a renewable resource loop where mobs with MobSymbiote ca
 Blazes can be scared by either condition (configurable):
 
 1. **Snow Golems** - Minimum count required (default: 1)
-2. **Cold Blocks** - Minimum count in area (default: 20 blocks in 8-block radius)
+2. **Cold Blocks** - At least 2 blocks in an 8-block radius by default.
    - Snow, snow blocks, powder snow
    - Ice, packed ice, blue ice, frosted ice
 
@@ -134,7 +134,7 @@ By default, **EITHER** condition triggers fear. Set `blazeRequireBothConditions=
 |---------|---------|-------------|
 | `blazeMinSnowGolems` | 1 | Minimum snow golems to trigger fear |
 | `blazeColdScanRadius` | 8 | Radius to scan for cold blocks |
-| `blazeMinColdBlocks` | 20 | Minimum cold blocks needed (0 = disabled) |
+| `blazeMinColdBlocks` | 2 | Minimum cold blocks needed. A value of 0 always satisfies the cold-block condition. |
 | `blazeRequireBothConditions` | false | If true, require BOTH golems AND cold blocks |
 | `blazeRodDropMin` | 2 | Minimum blaze rods per LEAK |
 | `blazeRodDropMax` | 4 | Maximum blaze rods per LEAK |
@@ -165,13 +165,15 @@ The counter resets only when the mob naturally returns to CALM (fear source leav
 
 ## General Configuration
 
+These keys are in the `[fear]` section of the mod configuration.
+
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `fearCheckIntervalTicks` | 10 | Ticks between fear updates |
+| `checkIntervalTicks` | 10 | Ticks between fear updates |
 | `panicDurationForLeak` | 200 (10s) | Ticks in PANICKED before LEAK |
 | `exhaustedCooldownTicks` | 4500 (3.75m) | Cooldown before CALM |
 | `maxLeaksBeforeOverstress` | 3 | Consecutive leaks before death |
-| `fearSourceDetectionRange` | 16.0 | Range to detect fear sources |
+| `detectionRange` | 16.0 | Range to detect fear sources |
 
 ## Entity Attachment
 
@@ -232,8 +234,11 @@ When looking at a fearful mob with debug overlay enabled:
 5. Hopper system collects ender pearl drops
 
 ### Blaze Farm
-1. Create cold environment with snow/ice blocks (20+ blocks)
-2. Position snow golems nearby (minimum 2)
-3. Protect snow golems from blaze fireballs (fire suppressed while panicked)
-4. Hopper system collects blaze rod drops
-5. Consider disabling `blazeRequireBothConditions` for easier setup
+1. With default settings, place two cold blocks in range or put one snow golem within sight of the blaze.
+2. If `blazeRequireBothConditions` is enabled, supply both sources.
+3. Protect the golem from fireballs when the blaze is outside its panic state.
+4. Collect blaze rod drops with hoppers.
+
+## Testing
+
+The headless GameTests include `florafauna:fear_data_state_transitions`, `florafauna:fear_source_creeper_sources` and `florafauna:area_scanner_count_blocks`. Use the IntelliJ Client to check a bonded mob's visible panic behavior, particles and sounds.

@@ -9,8 +9,8 @@ The Symbiote is a permanent player companion that provides abilities, observatio
 ## Binding Process
 
 1. **Consume Symbiote Stew** - Grants "Symbiote Prepared" effect, sets `symbioteBindable = true`
-2. **Enter Cocoon Chamber** - With Dormant Symbiote in inventory
-3. **Bind** - Symbiote transfers from item to player attachment
+2. **Open the Cocoon Chamber** with a Dormant Symbiote in your inventory.
+3. **Select Bind** to transfer the symbiote to the player attachment. **Set Spawn** is a separate chamber action.
 4. **Active** - Abilities enabled, voice system active
 
 ## Symbiote States
@@ -18,15 +18,15 @@ The Symbiote is a permanent player companion that provides abilities, observatio
 | State | Description | Abilities |
 |-------|-------------|-----------|
 | UNBOUND | No symbiote | None |
-| READY_TO_BIND | Consumed stew, not yet bound | None |
+| READY_TO_BIND | Defined in the enum. Stew records readiness in the separate `symbioteBindable` field. | None |
 | BONDED_ACTIVE | Full symbiote bond | Enabled |
 | BONDED_WEAKENED | After death, before recovery | Disabled |
 
 ## State Transitions
 
 ```
-UNBOUND ──(consume stew)──> READY_TO_BIND
-READY_TO_BIND ──(bind in cocoon)──> BONDED_ACTIVE
+UNBOUND ──(consume stew)──> UNBOUND + symbioteBindable
+UNBOUND + symbioteBindable ──(bind in cocoon)──> BONDED_ACTIVE
 BONDED_ACTIVE ──(die)──> BONDED_WEAKENED + Restoration Husk
 BONDED_WEAKENED ──(interact with husk)──> BONDED_ACTIVE
 ```
@@ -105,10 +105,12 @@ The symbiote tracks player progress through concept signals:
 
 | State | Description |
 |-------|-------------|
-| UNMET | Not encountered |
-| ENCOUNTERED | Discovered |
-| IN_PROGRESS | Actively working on |
+| UNSEEN | Never encountered |
+| SEEN | Observed once |
+| TOUCHED | Interacted with multiple times |
+| STABILIZED | Consistent engagement |
 | INTEGRATED | Completed |
+| NEGLECTED | Progress has stalled |
 
 ### Stall Detection
 
@@ -124,16 +126,19 @@ If progress stalls (same state for extended time), dreams become more direct.
 ## Related Systems
 
 - **Cocoon Chamber** - Block where binding occurs, sets spawn point
-- **Symbiotic Husk** - Death recovery system (see husk/README.md)
-- **Mining Anchor** - Storage system with symbiote dialogue integration
+- The [Symbiotic Husk guide](../block/husk/README.md) covers death recovery and the copied-world recovery playtest.
+- The [Mining Anchor guide](../block/mininganchor/README.md) covers storage, binding and waypoint controls.
 
 ## Commands
 
-```
-/florafauna symbiote status     - Show symbiote state
-/florafauna symbiote bind       - Force bind (debug)
-/florafauna symbiote unbind     - Force unbind (debug)
-/florafauna symbiote toggle <ability> - Toggle ability
-/florafauna symbiote dream      - Trigger dream
-/florafauna symbiote reset      - Reset cooldowns
-```
+Use these commands as a creative player or with game master permission.
+
+| Command | Effect |
+|---------|--------|
+| `/florafauna symbiote check` | Show the player's symbiote data. |
+| `/florafauna symbiote bond` or `unbond` | Apply or remove the bond for testing. |
+| `/florafauna symbiote toggle <ability>` | Toggle `dash`, `featherFalling` or `speed`. |
+| `/florafauna symbiote dream` | Request a dream under normal eligibility rules. |
+| `/florafauna symbiote dream force <level>` | Trigger a dream at level 1, 2 or 3. |
+| `/florafauna symbiote cooldown reset` | Clear voice cooldowns. |
+| `/florafauna symbiote reset` | Remove the bond and reset abilities, progress signals and voice cooldowns. |

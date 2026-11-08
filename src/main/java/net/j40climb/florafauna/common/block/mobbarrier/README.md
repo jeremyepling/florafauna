@@ -54,7 +54,8 @@ The config screen allows adding/removing blocked entities:
 - **Text input** - Enter entity ID or tag (with `#` prefix)
 - **Add button** - Add entry to block list
 - **Entry list** - Shows all blocked entities/tags
-- **Click entry** - Remove from list
+- **X beside an entry** - Remove that entity or tag from the list
+- **Block vision** - Toggle whether the barrier also prevents matching mobs from acquiring targets across it
 
 ## Block Properties
 

@@ -19,7 +19,7 @@ When a player with a bonded symbiote dies, their inventory is stored in a Symbio
 | State | Description | On Death |
 |-------|-------------|----------|
 | UNBOUND | No symbiote | Normal death (no husk) |
-| READY_TO_BIND | Consumed stew, not yet bound | Normal death (no husk) |
+| READY_TO_BIND | Unbonded enum state. Drinking stew marks an unbound player bindable. | Normal death (no husk) |
 | BONDED_ACTIVE | Full symbiote abilities | Creates Restoration Husk, transitions to WEAKENED |
 | BONDED_WEAKENED | Abilities disabled | Creates Container Husk, stays WEAKENED |
 
@@ -85,3 +85,7 @@ When a player with a bonded symbiote dies, their inventory is stored in a Symbio
 - **Particles** - Firefly-style ambient particles (visible to all players)
 - **Ability Restore** - Symbiote transitions WEAKENED → ACTIVE on interaction
 - **Dimension Tracked** - Works across dimensions
+
+## Verification
+
+From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario recovery` using a closed dev save. The player binds at the cocoon, dies, respawns, and reopens the world. The test checks that the husk retains the counted items and that a second interaction cannot pay them out again.

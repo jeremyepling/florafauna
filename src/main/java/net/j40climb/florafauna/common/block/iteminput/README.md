@@ -46,7 +46,7 @@ FREE → CLAIMED → ABSORBED → BUFFERED → STORED
 | `collectIntervalTicks` | 10 ticks | Time between collection scans |
 | `maxItemEntitiesPerCollect` | 8 | Max item entities claimed per cycle |
 | `maxItemsPerCollect` | 64 | Max total items claimed per cycle |
-| `animationDurationTicks` | 15 ticks | Time for item to animate to input |
+| `animationDurationTicks` | 20 ticks | Time for item to animate to input |
 
 ### Buffer
 
@@ -93,7 +93,7 @@ FREE → CLAIMED → ABSORBED → BUFFERED → STORED
 ### Valid Destinations
 - Chests
 - Barrels
-- Any block with IItemHandler capability
+- Other blocks that expose `Capabilities.Item.BLOCK` as a `ResourceHandler<ItemResource>`
 
 ## Pairing
 
@@ -101,9 +101,9 @@ Item Inputs must be paired to a Storage Anchor to transfer items.
 
 | Action | Result |
 |--------|--------|
-| Right-click Item Input | Show status (paired/unpaired, buffer count) |
-| Shift + Right-click Item Input near Anchor | Pair to nearest anchor |
-| Shift + Right-click paired Item Input | Unpair from anchor |
+| Right-click an unpaired Item Input with an empty hand | Pair to the nearest Storage Anchor in range |
+| Right-click a paired Item Input with an empty hand | Show pairing and buffer status |
+| Shift-right-click a paired Item Input with an empty hand | Unpair from the anchor |
 
 ## Transfer API
 
@@ -119,3 +119,7 @@ Uses NeoForge Transfer API for safe item insertion:
 - Full storage → exponential backoff, items remain buffered
 - Block broken → buffer contents drop to ground
 - Claimed items released if input removed
+
+## Verification
+
+The headless GameTest `florafauna:item_input_collects_and_transfers` exercises transfer into a chest using the checked-in `florafauna:test_item_input_to_chest` structure. From the checkout root, run `.\gradlew.bat --max-workers=4 runData` to prepare generated mod resources, then `.\gradlew.bat --max-workers=4 runGameTestServer`.

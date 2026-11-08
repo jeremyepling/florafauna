@@ -1,9 +1,9 @@
-# Florafauna — Phase 1 Storage & Item Intake (Claude Code Implementation Spec)
+# FloraFauna — Phase 1 Storage & Item Intake Specification
 _Target: Minecraft 26.1 · NeoForge 26.1.0.19-beta Transfer API_
 _Mod id: `FloraFauna.MOD_ID` (`"florafauna"`)_
 _Package root: `net.j40climb.florafauna`_
 
-This document is **authoritative for Phase 1**. Claude Code should implement *exactly* what is described here.
+This document defines the Phase 1 requirements. For the current blocks and controls, see the [Item Input guide](README.md).
 
 ---
 
@@ -162,7 +162,7 @@ Buffered stacks are transferred **later**, on a separate timer.
 
 # Performance Controls (CONFIG)
 
-Claude must expose these as config values:
+Expose the following configuration values.
 
 ### Collection
 - `collectRadius`
@@ -205,7 +205,7 @@ Claude must expose these as config values:
 
 ---
 
-## Final Note to Claude Code
+## Design Priorities
 
 If any ambiguity exists, prefer:
 - **world-visible behavior**

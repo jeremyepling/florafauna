@@ -93,9 +93,14 @@ The `florafauna:pod_replaceable` tag includes blocks that pods can replace when 
 
 ## Player Interaction
 
-- **Right Click** - Show status message (storage count, pod count, state)
+- **Right-click with an empty hand** to see the stored item count, capacity, pod count, and fill state. For a bonded player this also toggles the active waypoint.
+- **Shift-right-click with an empty hand** to bind the anchor to a bonded symbiote and set its waypoint. Repeat on the same anchor to unbind and clear its waypoint.
 
 ## Automation
 
 - **Hoppers** - Can extract items from pods (uses NeoForge Transfer API)
 - Items are distributed across pods, filling each before spawning the next
+
+## Verification
+
+From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario pods` using a closed dev save. The test checks mined drops through collection, a full restart, breaking and replacing a Hardened Pod, and hopper extraction.
