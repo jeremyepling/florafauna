@@ -13,7 +13,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
@@ -113,7 +113,7 @@ public class FearStateEvents {
             // Mob-specific handling
             if (mob instanceof Creeper creeper) {
                 CreeperFearHandler.onEnterPanicked(creeper);
-            } else if (mob instanceof EnderMan enderman) {
+            } else if (mob instanceof Enderman enderman) {
                 EndermanFearHandler.onEnterPanicked(enderman, fearSource.get());
             } else if (mob instanceof Blaze blaze) {
                 BlazeFearHandler.onEnterPanicked(blaze);
@@ -145,7 +145,7 @@ public class FearStateEvents {
     private static void handlePanicked(Mob mob, Optional<FearSource> fearSource, long currentTick) {
         if (fearSource.isEmpty()) {
             // Fear source gone - return to CALM and reset leak count
-            if (mob instanceof EnderMan enderman) {
+            if (mob instanceof Enderman enderman) {
                 EndermanFearHandler.onExitPanicked(enderman);
             }
             FearHelper.resetToCalm(mob, currentTick, true);
@@ -158,7 +158,7 @@ public class FearStateEvents {
         // Mob-specific handling
         if (mob instanceof Creeper creeper) {
             CreeperFearHandler.onTickPanicked(creeper);
-        } else if (mob instanceof EnderMan enderman) {
+        } else if (mob instanceof Enderman enderman) {
             EndermanFearHandler.onTickPanicked(enderman);
         } else if (mob instanceof Blaze blaze) {
             BlazeFearHandler.onTickPanicked(blaze);
@@ -174,7 +174,7 @@ public class FearStateEvents {
                 FearHelper.setFearState(mob, FearState.OVERSTRESS, currentTick);
                 if (mob instanceof Creeper creeper) {
                     CreeperFearHandler.onOverstress(creeper);
-                } else if (mob instanceof EnderMan enderman) {
+                } else if (mob instanceof Enderman enderman) {
                     EndermanFearHandler.onOverstress(enderman);
                 } else if (mob instanceof Blaze blaze) {
                     BlazeFearHandler.onOverstress(blaze);
@@ -194,7 +194,7 @@ public class FearStateEvents {
         // Execute the leak event
         if (mob instanceof Creeper creeper) {
             CreeperFearHandler.onLeakEvent(creeper);
-        } else if (mob instanceof EnderMan enderman) {
+        } else if (mob instanceof Enderman enderman) {
             EndermanFearHandler.onLeakEvent(enderman);
             // Clear creepy state when entering exhausted cooldown
             EndermanFearHandler.onExitPanicked(enderman);
@@ -230,7 +230,7 @@ public class FearStateEvents {
         // Mob-specific handling (explosion for creepers, death for endermen, hypothermia for blazes)
         if (mob instanceof Creeper creeper) {
             CreeperFearHandler.onOverstress(creeper);
-        } else if (mob instanceof EnderMan enderman) {
+        } else if (mob instanceof Enderman enderman) {
             EndermanFearHandler.onOverstress(enderman);
         } else if (mob instanceof Blaze blaze) {
             BlazeFearHandler.onOverstress(blaze);

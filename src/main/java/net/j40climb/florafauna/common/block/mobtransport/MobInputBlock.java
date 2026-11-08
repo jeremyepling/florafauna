@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.mobtransport;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -35,17 +34,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MobInputBlock extends BaseEntityBlock {
 
-    public static final MapCodec<MobInputBlock> CODEC = simpleCodec(MobInputBlock::new);
     public static final EnumProperty<MobInputState> STATE = EnumProperty.create("state", MobInputState.class);
 
     public MobInputBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(STATE, MobInputState.IDLE));
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

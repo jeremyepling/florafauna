@@ -15,15 +15,12 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.ItemAbility;
 
 import java.util.function.Consumer;
 
@@ -89,32 +86,6 @@ public class HammerItem extends Item {
      */
     @Override
     public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
-        return false;
-    }
-
-    /**
-     * Declares which tool actions this item can perform based on its MULTI_TOOL_ABILITY component.
-     * This is required for getToolModifiedState to work properly.
-     *
-     * @param stack the item stack
-     * @param itemAbility the tool action being checked
-     * @return true if this item can perform the action
-     */
-    @Override
-    public boolean canPerformAction(ItemInstance stack, ItemAbility itemAbility) {
-        MultiToolAbilityData multiTool = stack.get(FloraFaunaRegistry.MULTI_TOOL_ABILITY);
-        if (multiTool == null) {
-            return false;
-        }
-        if (itemAbility == ItemAbilities.AXE_STRIP && multiTool.strip()) {
-            return true;
-        }
-        if (itemAbility == ItemAbilities.SHOVEL_FLATTEN && multiTool.flatten()) {
-            return true;
-        }
-        if (itemAbility == ItemAbilities.HOE_TILL && multiTool.till()) {
-            return true;
-        }
         return false;
     }
 

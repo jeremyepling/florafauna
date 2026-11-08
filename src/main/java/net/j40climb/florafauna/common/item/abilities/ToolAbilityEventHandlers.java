@@ -16,7 +16,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
 /**
  * Event handlers for tool abilities.
@@ -25,7 +25,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public class ToolAbilityEventHandlers {
     @SubscribeEvent
-    public static void onBlockBreakEvent(BlockEvent.BreakEvent event) {
+    public static void onBlockBreakEvent(BreakBlockEvent event) {
         Player player = event.getPlayer();
         Level level = player.level();
         GameType type = player.getAbilities().instabuild ? GameType.CREATIVE : GameType.SURVIVAL;
