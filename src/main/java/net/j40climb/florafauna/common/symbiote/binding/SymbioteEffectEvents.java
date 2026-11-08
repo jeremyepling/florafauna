@@ -52,10 +52,9 @@ public class SymbioteEffectEvents {
         player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         // Notify the player
-        player.displayClientMessage(
+        player.sendOverlayMessage(
                 Component.translatable("symbiote.florafauna.effect_expired")
-                        .withStyle(style -> style.withColor(0xE74C3C)),
-                true
+                        .withStyle(style -> style.withColor(0xE74C3C))
         );
     }
 }

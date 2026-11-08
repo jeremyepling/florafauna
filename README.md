@@ -1,11 +1,11 @@
 # FloraFauna
 
-A Minecraft 1.21.11 mod for NeoForge 21.11.38-beta.
+A Minecraft 26.1 mod for NeoForge 26.1.0.19-beta.
 
 ## Development Setup
 
 ### Prerequisites
-- Java 21
+- Java 25
 - Git
 
 ### Build & Run
@@ -18,7 +18,7 @@ A Minecraft 1.21.11 mod for NeoForge 21.11.38-beta.
 
 ### IDE Setup
 
-**IntelliJ IDEA:** Open the checkout you want to test as a Gradle project using JDK 21. To open a worker from the main checkout, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1` and choose a new window if prompted. Let Gradle sync so NeoForge can generate that checkout's run configurations. Use **Client** for playing or debugging the mod and **GameTestServer** for headless gameplay tests. Run the Gradle `runData` task before testing a fresh checkout or changes to generated content.
+**IntelliJ IDEA:** Open the checkout you want to test as a Gradle project using JDK 25. To open a worker from the main checkout, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1` and choose a new window if prompted. Let Gradle sync so NeoForge can generate that checkout's run configurations. Use **Client** for playing or debugging the mod and **GameTestServer** for headless gameplay tests. Run the Gradle `runData` task before testing a fresh checkout or changes to generated content.
 
 **VS Code / Cursor:** Open the project folder. Debug configs are in `.vscode/launch.json`.
 
@@ -30,7 +30,7 @@ The dev environment auto-loads into a "dev" world. The master template lives in 
 - All recipes unlocked
 - Daylight cycle stopped (time set to day)
 - Weather cycle stopped
-- Peaceful difficulty
+- Easy difficulty
 - No advancement announcements
 
 **Editing the dev world:**

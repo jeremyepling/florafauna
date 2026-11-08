@@ -1,6 +1,6 @@
 # Flora Fauna Mod
 
-NeoForge 1.21.11 Minecraft mod.
+Minecraft 26.1 mod for NeoForge 26.1.0.19-beta and Java 25.
 
 ## Environment
 
@@ -175,5 +175,5 @@ Do NOT use `git push origin HEAD:main` - this bypasses code review and the workt
 
 Decompiled source in:
 ```
-build/moddev/artifacts/neoforge-*.jar
+build/moddev/artifacts/minecraft-patched-26.1.0.19-beta-sources.jar
 ```

@@ -87,11 +87,10 @@ public class SymbioteAbilityEvents {
 
             // Send warning message
             String direction = getDirectionToEntity(player, closestCreeper);
-            player.displayClientMessage(
+            player.sendOverlayMessage(
                     Component.literal("⚠ Symbiote: Creeper detected " + direction + " - " +
                             String.format("%.1f", closestDistance) + " blocks away!")
-                            .withStyle(style -> style.withColor(0xFF6B6B)),
-                    true // actionBar = true for less intrusive message
+                            .withStyle(style -> style.withColor(0xFF6B6B))
             );
         }
     }

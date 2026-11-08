@@ -53,10 +53,9 @@ public class SymbioteStewItem extends Item {
 
             // Check if already bindable (optional: could allow re-consuming)
             if (data.symbioteBindable()) {
-                player.displayClientMessage(
+                player.sendOverlayMessage(
                         Component.translatable("symbiote.florafauna.already_prepared")
-                                .withStyle(style -> style.withColor(0x9B59B6)),
-                        true
+                                .withStyle(style -> style.withColor(0x9B59B6))
                 );
                 return itemStack; // Don't consume if already prepared
             }
@@ -82,10 +81,9 @@ public class SymbioteStewItem extends Item {
             CocoonProgressionHooks.onSymbioteStewConsumed((ServerPlayer) player);
 
             // Display feedback
-            player.displayClientMessage(
+            player.sendSystemMessage(
                     Component.translatable("symbiote.florafauna.stew_consumed")
-                            .withStyle(style -> style.withColor(0x9B59B6)),
-                    false
+                            .withStyle(style -> style.withColor(0x9B59B6))
             );
 
             // Consume the item

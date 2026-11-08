@@ -4,6 +4,9 @@ import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.clock.ClockTimeMarkers;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -19,7 +22,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * - Sets time to day (1000)
  * - Stops daylight cycle
  * - Stops weather cycle
- * - Sets peaceful difficulty
+ * - Sets easy difficulty
  *
  * To reset: delete the world and recreate it.
  * World should be created as: Superflat, Creative, Tunneler's Dream preset
@@ -36,27 +39,16 @@ public class DevWorldSetup {
     }
 
     private static void setupDevWorld(ServerPlayer player) {
-        if (!(player.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-
+        ServerLevel serverLevel = player.level();
         MinecraftServer server = serverLevel.getServer();
-        var source = player.createCommandSourceStack().withSuppressedOutput();
-        var commands = server.getCommands();
-
-        // Unlock all recipes
-        commands.performPrefixedCommand(source, "recipe give @s *");
-
-        // Set gamerules
-        commands.performPrefixedCommand(source, "gamerule announceAdvancements false");
-        commands.performPrefixedCommand(source, "gamerule doDaylightCycle false");
-        commands.performPrefixedCommand(source, "gamerule doWeatherCycle false");
-
-        // Set time to day and clear weather
-        commands.performPrefixedCommand(source, "time set day");
-        commands.performPrefixedCommand(source, "weather clear");
-
-        // Set easy (allows mob testing while being forgiving)
-        commands.performPrefixedCommand(source, "difficulty easy");
+        var rules = serverLevel.getGameRules();
+        rules.set(GameRules.SHOW_ADVANCEMENT_MESSAGES, false, server);
+        rules.set(GameRules.ADVANCE_TIME, false, server);
+        rules.set(GameRules.ADVANCE_WEATHER, false, server);
+        player.awardRecipes(server.getRecipeManager().getRecipes());
+        serverLevel.dimensionType().defaultClock().ifPresent(clock ->
+                server.clockManager().moveToTimeMarker(clock, ClockTimeMarkers.DAY));
+        server.setWeatherParameters(ServerLevel.RAIN_DELAY.sample(serverLevel.getRandom()), 0, false, false);
+        server.setDifficulty(Difficulty.EASY, true);
     }
 }

@@ -107,8 +107,7 @@ public class SymbioteVoiceService {
                         .withColor(VOICE_COLOR)
                         .withItalic(true));
 
-        // Send to chat (false = not action bar)
-        player.displayClientMessage(message, false);
+        player.sendSystemMessage(message);
     }
 
     /**
@@ -124,7 +123,7 @@ public class SymbioteVoiceService {
                         .withColor(color)
                         .withItalic(true));
 
-        player.displayClientMessage(message, false);
+        player.sendSystemMessage(message);
     }
 
     /**

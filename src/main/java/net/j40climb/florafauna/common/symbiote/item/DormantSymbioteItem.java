@@ -44,10 +44,9 @@ public class DormantSymbioteItem extends Item {
     public @NotNull InteractionResult use(Level level, Player player, InteractionHand hand) {
         // Show message that this item must be used via Cocoon Chamber
         if (level.isClientSide()) {
-            player.displayClientMessage(
+            player.sendOverlayMessage(
                     Component.translatable("symbiote.florafauna.use_cocoon")
-                            .withStyle(style -> style.withColor(0x9B59B6).withItalic(true)),
-                    true
+                            .withStyle(style -> style.withColor(0x9B59B6).withItalic(true))
             );
         }
         return InteractionResult.FAIL;
