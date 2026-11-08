@@ -1,5 +1,5 @@
 # FloraFauna — Phase 1 Storage & Item Intake Specification
-_Target: Minecraft 26.1 · NeoForge 26.1.0.19-beta Transfer API_
+_Target: Minecraft 26.3 · NeoForge 26.3.0.101 Transfer API_
 _Mod id: `FloraFauna.MOD_ID` (`"florafauna"`)_
 _Package root: `net.j40climb.florafauna`_
 

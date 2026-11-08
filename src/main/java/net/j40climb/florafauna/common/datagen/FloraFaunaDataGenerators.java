@@ -1,45 +1,30 @@
 package net.j40climb.florafauna.common.datagen;
 
-import net.minecraft.core.HolderLookup;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
+import net.j40climb.florafauna.common.block.wood.WoodTransformsProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import net.neoforged.neoforge.data.event.GatherDataRegistryEntriesEvent;
 
 public class FloraFaunaDataGenerators {
+    public static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
+        event.lootTable(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK));
+        event.recipe(FloraFaunaRecipeProvider::new);
+    }
+
     public static void gatherClientData(GatherDataEvent.Client event) {
-        DataGenerator generator = event.getGenerator();
-        PackOutput packOutput = generator.getPackOutput();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-
-        // Client-side data
-        generator.addProvider(true, new FloraFaunaModelProvider(packOutput));
-
-        // Server-side data (included here so runData generates everything in one pass)
-        generator.addProvider(true, new LootTableProvider(packOutput, Collections.emptySet(),
-                List.of(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(true, new FloraFaunaBlockTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new FloraFaunaEntityTypeTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
+        event.createProvider(FloraFaunaModelProvider::new);
+        gatherServerProviders(event);
     }
 
     public static void gatherServerData(GatherDataEvent.Server event) {
-        DataGenerator generator = event.getGenerator();
-        PackOutput packOutput = generator.getPackOutput();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+        gatherServerProviders(event);
+    }
 
-        // Server-side data only (no models - those are client-side)
-        generator.addProvider(true , new LootTableProvider(packOutput, Collections.emptySet(),
-                List.of(new LootTableProvider.SubProviderEntry(FloraFaunaBlockLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(true, new FloraFaunaBlockTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new FloraFaunaItemTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new FloraFaunaEntityTypeTagsProvider(packOutput, lookupProvider));
-        generator.addProvider(true, new FloraFaunaRecipeProvider(packOutput, lookupProvider));
+    private static void gatherServerProviders(GatherDataEvent event) {
+        event.createProvider(FloraFaunaBlockTagsProvider::new);
+        event.createProvider(FloraFaunaItemTagsProvider::new);
+        event.createProvider(FloraFaunaEntityTypeTagsProvider::new);
+        event.createProvider(WoodTransformsProvider::new);
     }
 }

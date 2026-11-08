@@ -1,6 +1,6 @@
 # FloraFauna agent guide
 
-Use this guide for work in any FloraFauna checkout. The mod targets Minecraft 26.1, NeoForge 26.1.0.19-beta and Java 25. Check `gradle.properties`, `build.gradle` and the Gradle wrapper for the versions in the assigned branch. Keep implementation and assets on the current Minecraft APIs.
+Use this guide for work in any FloraFauna checkout. The mod targets Minecraft 26.3, NeoForge 26.3.0.101 and Java 25. Check `gradle.properties`, `build.gradle` and the Gradle wrapper for the versions in the assigned branch. Keep implementation and assets on the current Minecraft APIs.
 
 ## Coordinate work across agents
 

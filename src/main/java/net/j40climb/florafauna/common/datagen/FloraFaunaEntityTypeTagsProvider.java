@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypeIds;
 import net.neoforged.neoforge.common.Tags;
 
 import java.util.concurrent.CompletableFuture;
@@ -22,8 +22,8 @@ public class FloraFaunaEntityTypeTagsProvider extends EntityTypeTagsProvider {
         // Deny list: Mobs that can NEVER receive a MobSymbiote
         tag(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_EXCLUDED)
                 .addTag(Tags.EntityTypes.BOSSES)  // neoforge:bosses (Wither, Ender Dragon)
-                .add(EntityType.ELDER_GUARDIAN)
-                .add(EntityType.WARDEN);
+                .add(EntityTypeIds.ELDER_GUARDIAN)
+                .add(EntityTypeIds.WARDEN);
 
         // Allowlist for Level 2 MobSymbiote eligibility (future feature)
         tag(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_LEVEL2_ELIGIBLE)
@@ -33,75 +33,75 @@ public class FloraFaunaEntityTypeTagsProvider extends EntityTypeTagsProvider {
                 .addTag(EntityTypeTags.ZOMBIES)
                 .addTag(EntityTypeTags.ARTHROPOD)
                 // Passive animals
-                .add(EntityType.COW)
-                .add(EntityType.PIG)
-                .add(EntityType.SHEEP)
-                .add(EntityType.CHICKEN)
-                .add(EntityType.RABBIT)
-                .add(EntityType.HORSE)
-                .add(EntityType.DONKEY)
-                .add(EntityType.MULE)
-                .add(EntityType.LLAMA)
-                .add(EntityType.TRADER_LLAMA)
-                .add(EntityType.MOOSHROOM)
-                .add(EntityType.GOAT)
-                .add(EntityType.CAMEL)
-                .add(EntityType.SNIFFER)
-                .add(EntityType.ARMADILLO)
+                .add(EntityTypeIds.COW)
+                .add(EntityTypeIds.PIG)
+                .add(EntityTypeIds.SHEEP)
+                .add(EntityTypeIds.CHICKEN)
+                .add(EntityTypeIds.RABBIT)
+                .add(EntityTypeIds.HORSE)
+                .add(EntityTypeIds.DONKEY)
+                .add(EntityTypeIds.MULE)
+                .add(EntityTypeIds.LLAMA)
+                .add(EntityTypeIds.TRADER_LLAMA)
+                .add(EntityTypeIds.MOOSHROOM)
+                .add(EntityTypeIds.GOAT)
+                .add(EntityTypeIds.CAMEL)
+                .add(EntityTypeIds.SNIFFER)
+                .add(EntityTypeIds.ARMADILLO)
                 // Tameable/friendly mobs
-                .add(EntityType.CAT)
-                .add(EntityType.WOLF)
-                .add(EntityType.OCELOT)
-                .add(EntityType.FOX)
-                .add(EntityType.PARROT)
-                .add(EntityType.PANDA)
-                .add(EntityType.POLAR_BEAR)
-                .add(EntityType.ALLAY)
+                .add(EntityTypeIds.CAT)
+                .add(EntityTypeIds.WOLF)
+                .add(EntityTypeIds.OCELOT)
+                .add(EntityTypeIds.FOX)
+                .add(EntityTypeIds.PARROT)
+                .add(EntityTypeIds.PANDA)
+                .add(EntityTypeIds.POLAR_BEAR)
+                .add(EntityTypeIds.ALLAY)
                 // Aquatic mobs
-                .add(EntityType.TURTLE)
-                .add(EntityType.FROG)
-                .add(EntityType.TADPOLE)
-                .add(EntityType.AXOLOTL)
-                .add(EntityType.DOLPHIN)
-                .add(EntityType.SQUID)
-                .add(EntityType.GLOW_SQUID)
-                .add(EntityType.COD)
-                .add(EntityType.SALMON)
-                .add(EntityType.TROPICAL_FISH)
-                .add(EntityType.PUFFERFISH)
+                .add(EntityTypeIds.TURTLE)
+                .add(EntityTypeIds.FROG)
+                .add(EntityTypeIds.TADPOLE)
+                .add(EntityTypeIds.AXOLOTL)
+                .add(EntityTypeIds.DOLPHIN)
+                .add(EntityTypeIds.SQUID)
+                .add(EntityTypeIds.GLOW_SQUID)
+                .add(EntityTypeIds.COD)
+                .add(EntityTypeIds.SALMON)
+                .add(EntityTypeIds.TROPICAL_FISH)
+                .add(EntityTypeIds.PUFFERFISH)
                 // Nether mobs
-                .add(EntityType.BAT)
-                .add(EntityType.STRIDER)
-                .add(EntityType.HOGLIN)
-                .add(EntityType.ZOGLIN)
-                .add(EntityType.PIGLIN)
-                .add(EntityType.PIGLIN_BRUTE)
+                .add(EntityTypeIds.BAT)
+                .add(EntityTypeIds.STRIDER)
+                .add(EntityTypeIds.HOGLIN)
+                .add(EntityTypeIds.ZOGLIN)
+                .add(EntityTypeIds.PIGLIN)
+                .add(EntityTypeIds.PIGLIN_BRUTE)
                 // Villagers/golems
-                .add(EntityType.VILLAGER)
-                .add(EntityType.WANDERING_TRADER)
-                .add(EntityType.IRON_GOLEM)
-                .add(EntityType.SNOW_GOLEM)
+                .add(EntityTypeIds.VILLAGER)
+                .add(EntityTypeIds.WANDERING_TRADER)
+                .add(EntityTypeIds.IRON_GOLEM)
+                .add(EntityTypeIds.SNOW_GOLEM)
                 // Hostile mobs
-                .add(EntityType.CREEPER)
-                .add(EntityType.ENDERMAN)
-                .add(EntityType.SLIME)
-                .add(EntityType.MAGMA_CUBE)
-                .add(EntityType.BLAZE)
-                .add(EntityType.GHAST)
-                .add(EntityType.GUARDIAN)
-                .add(EntityType.ELDER_GUARDIAN)
-                .add(EntityType.SHULKER)
-                .add(EntityType.PHANTOM)
-                .add(EntityType.VEX)
-                .add(EntityType.WARDEN)
-                .add(EntityType.BREEZE);
+                .add(EntityTypeIds.CREEPER)
+                .add(EntityTypeIds.ENDERMAN)
+                .add(EntityTypeIds.SLIME)
+                .add(EntityTypeIds.MAGMA_CUBE)
+                .add(EntityTypeIds.BLAZE)
+                .add(EntityTypeIds.GHAST)
+                .add(EntityTypeIds.GUARDIAN)
+                .add(EntityTypeIds.ELDER_GUARDIAN)
+                .add(EntityTypeIds.SHULKER)
+                .add(EntityTypeIds.PHANTOM)
+                .add(EntityTypeIds.VEX)
+                .add(EntityTypeIds.WARDEN)
+                .add(EntityTypeIds.BREEZE);
 
         // Mobs that can experience fear in the fear ecosystem
         // Creepers fear cats/ocelots, endermen fear staring faces and reflections
         // Blazes fear snow golems and cold environments
         tag(FloraFaunaTags.EntityTypes.FEARFUL_MOBS)
-                .add(EntityType.CREEPER)
-                .add(EntityType.ENDERMAN)
-                .add(EntityType.BLAZE);
+                .add(EntityTypeIds.CREEPER)
+                .add(EntityTypeIds.ENDERMAN)
+                .add(EntityTypeIds.BLAZE);
     }
 }

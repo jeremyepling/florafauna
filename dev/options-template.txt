@@ -1,4 +1,5 @@
-version:4786
+version:5023
+preferredGraphicsBackend:default
 ao:true
 biomeBlendRadius:2
 chunkSectionFadeInTime:0.75

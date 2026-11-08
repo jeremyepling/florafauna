@@ -1,6 +1,6 @@
 # FloraFauna
 
-A Minecraft 26.1 mod for NeoForge 26.1.0.19-beta. Players can bond with a symbiote, recover gear from a husk, mine with configurable tools and use living storage and mob transport systems.
+A Minecraft 26.3 mod for NeoForge 26.3.0.101. Players can bond with a symbiote, recover gear from a husk, mine with configurable tools and use living storage and mob transport systems.
 
 Coding agents share the repository's worktree, implementation and testing instructions. Claude Code imports them through `CLAUDE.md`. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
@@ -51,7 +51,7 @@ Close the source world, then run this from the checkout in PowerShell 7 with Jav
 
 ```powershell
 .\scripts\test_dev_world.ps1
-.\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
+.\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\dev-save'
 ```
 
 Each scenario launches a real Minecraft client in a fresh copy of the save. Let the test control the client until it exits.

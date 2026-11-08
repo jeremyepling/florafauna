@@ -238,7 +238,7 @@ public class FloraFaunaRegistry {
                     .instabreak()
                     .sound(SoundType.GRASS)
                     .offsetType(BlockBehaviour.OffsetType.XZ)
-                    .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+                    .pushReaction(net.minecraft.world.level.material.PushReaction.POPPED)
             ));
 
     // Separate item registration for ferric poppy (for use in goals)

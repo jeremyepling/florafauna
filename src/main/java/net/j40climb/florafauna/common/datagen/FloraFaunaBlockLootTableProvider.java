@@ -4,7 +4,7 @@ import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.Block;
 import java.util.Set;
 
 public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
-    protected FloraFaunaBlockLootTableProvider(HolderLookup.Provider provider) {
-        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), provider);
+    protected FloraFaunaBlockLootTableProvider(LootTableSubProvider.Context context) {
+        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), context);
     }
 
     @Override
