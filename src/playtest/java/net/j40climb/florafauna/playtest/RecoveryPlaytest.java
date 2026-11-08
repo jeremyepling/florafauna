@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
@@ -208,7 +209,7 @@ final class RecoveryPlaytest {
         Button button = enabledButton(mc.gui.screen(), key);
         Playtest.require(button != null, "Missing enabled button " + key);
         MouseButtonEvent leftClick = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
-                button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(0, 0));
+                button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
         Playtest.require(mc.gui.screen().mouseClicked(leftClick, false), "Screen did not handle click on " + key);
     }
 

@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.client.Minecraft;
@@ -93,7 +94,7 @@ public final class Playtest {
         for (var child : screen.children()) {
             if (child instanceof Button button && button.active && button.visible && label.equals(button.getMessage())) {
                 var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
-                        button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(0, 0));
+                        button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
                 require(screen.mouseClicked(click, false), "World upgrade button did not accept click");
                 lastUpgradePrompt = screen;
                 return;
@@ -166,8 +167,11 @@ public final class Playtest {
                 return;
             }
             if (mc.gui.screen() instanceof PauseScreen) mc.gui.setScreen(null);
-            if (System.nanoTime() > deadline) throw new AssertionError("Timed out; screen="
-                    + (mc.gui.screen() == null ? "none" : mc.gui.screen().getClass().getSimpleName()));
+            if (System.nanoTime() > deadline) {
+                Screen screen = mc.gui.screen();
+                throw new AssertionError("Timed out; screen=" + (screen == null ? "none"
+                        : screen.getClass().getSimpleName() + " (" + screen.getTitle().getString() + ")"));
+            }
             if (pending == null) pending = step.run().apply(mc);
             if (!pending.isDone()) return;
             if (pending.join()) {
