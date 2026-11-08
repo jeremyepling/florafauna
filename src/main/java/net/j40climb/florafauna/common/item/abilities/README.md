@@ -53,11 +53,13 @@ Stores enchantment and speed settings:
 
 | Key | Action | Component Required |
 |-----|--------|-------------------|
-| **V** | Cycle mining mode | `MULTI_BLOCK_MINING` |
+| **C** | Cycle mining mode | `MULTI_BLOCK_MINING` |
 | **P** | Open tool config screen | `TOOL_CONFIG` |
 | **R** | Spawn lightning | `LIGHTNING_ABILITY` |
 | **M** | Teleport to surface | `TELEPORT_SURFACE_ABILITY` |
-| **G** | Throw item | `THROWABLE_ABILITY` |
+| **T** | Throw item | `THROWABLE_ABILITY` |
+
+These are the registered defaults. The dev options template binds throw to **comma**. Check the current binding in Minecraft's Controls menu.
 
 ## Multi-Block Mining
 
@@ -117,3 +119,7 @@ All abilities use `@EventBusSubscriber` for automatic registration:
 | `PlayerInteractEvent.RightClickBlock` | Right-click abilities and multi-tool |
 | `PlayerInteractEvent.RightClickItem` | Right-click abilities (in air) |
 | `ExtractBlockOutlineRenderStateEvent` | Block outline rendering |
+
+## Verification
+
+From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario hammer` using a closed dev save. The client changes tool settings, captures the wall and floor previews, verifies the exact blocks mined, and strips a log.
