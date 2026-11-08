@@ -6,7 +6,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.mobbarrier.networking.UpdateMobBarrierConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -427,12 +427,12 @@ public class MobBarrierConfigScreen extends BaseScreen {
     // ===================
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int x = getContentX();
         int y = getContentY();
 
         // Title
-        graphics.drawString(font, title, leftPos + TITLE_X_OFFSET, topPos + TITLE_Y_OFFSET, CommonColors.DARK_GRAY, false);
+        graphics.text(font, title, leftPos + TITLE_X_OFFSET, topPos + TITLE_Y_OFFSET, CommonColors.DARK_GRAY, false);
 
         // Entry list
         renderEntryList(graphics, x, y + LIST_Y_OFFSET, mouseX, mouseY);
@@ -441,11 +441,11 @@ public class MobBarrierConfigScreen extends BaseScreen {
         renderSuggestions(graphics, mouseX, mouseY);
     }
 
-    private void renderEntryList(GuiGraphics graphics, int x, int listY, int mouseX, int mouseY) {
+    private void renderEntryList(GuiGraphicsExtractor graphics, int x, int listY, int mouseX, int mouseY) {
         List<String> entries = getEntries();
 
         if (entries.isEmpty()) {
-            graphics.drawString(font,
+            graphics.text(font,
                     Component.translatable("gui.florafauna.mob_barrier.no_entries"),
                     x, listY, CommonColors.GRAY, true);
             return;
@@ -466,7 +466,7 @@ public class MobBarrierConfigScreen extends BaseScreen {
 
             // Text
             String displayText = truncateText(entry, LIST_ENTRY_MAX_CHARS);
-            graphics.drawString(font, displayText, x + 4, entryY + 3, CommonColors.WHITE, true);
+            graphics.text(font, displayText, x + 4, entryY + 3, CommonColors.WHITE, true);
         }
 
         // Render scrollbar if needed
@@ -475,7 +475,7 @@ public class MobBarrierConfigScreen extends BaseScreen {
         }
     }
 
-    private void renderScrollbar(GuiGraphics graphics, int totalEntries, int mouseX, int mouseY) {
+    private void renderScrollbar(GuiGraphicsExtractor graphics, int totalEntries, int mouseX, int mouseY) {
         int[] bounds = getScrollbarBounds();
         int trackX = bounds[0];
         int trackY = bounds[1];
@@ -498,7 +498,7 @@ public class MobBarrierConfigScreen extends BaseScreen {
         }
     }
 
-    private void renderSuggestions(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderSuggestions(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (suggestions.isEmpty()) return;
 
         int x = getContentX() + 2;
@@ -523,13 +523,13 @@ public class MobBarrierConfigScreen extends BaseScreen {
             graphics.fill(x, entryY, x + SUGGESTION_WIDTH, entryY + SUGGESTION_HEIGHT - 2, bgColor);
 
             String displayText = truncateText(suggestion, SUGGESTION_MAX_CHARS);
-            graphics.drawString(font, displayText, x + 2, entryY + 2, CommonColors.WHITE, true);
+            graphics.text(font, displayText, x + 2, entryY + 2, CommonColors.WHITE, true);
         }
 
         // Scroll indicator
         if (suggestions.size() > MAX_SUGGESTIONS) {
             String indicator = String.format("(%d/%d)", suggestionScrollOffset + 1, suggestions.size() - MAX_SUGGESTIONS + 1);
-            graphics.drawString(font, indicator, x + SUGGESTION_WIDTH - 30, y + bgHeight + 2, CommonColors.GRAY, true);
+            graphics.text(font, indicator, x + SUGGESTION_WIDTH - 30, y + bgHeight + 2, CommonColors.GRAY, true);
         }
     }
 

@@ -5,7 +5,7 @@ import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -60,13 +60,13 @@ public class ToolConfigScreen extends BaseScreen {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         int labelX = getContentX();
         int startY = getContentY() + 2;
 
         // Draw static labels to the left of buttons
-        guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.tool_config.enchantment"), labelX, startY + 6, 0x404040);
-        guiGraphics.drawString(this.font, Component.translatable("gui.florafauna.tool_config.mining_speed"), labelX, startY + BUTTON_SPACING + 6, 0x404040);
+        guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.enchantment"), labelX, startY + 6, 0xFF404040);
+        guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.mining_speed"), labelX, startY + BUTTON_SPACING + 6, 0xFF404040);
     }
 
     private void toggleEnchantment() {

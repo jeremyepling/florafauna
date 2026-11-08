@@ -6,7 +6,7 @@ import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActio
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -80,10 +80,10 @@ public class CocoonChamberScreen extends BaseScreen {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Draw title centered at top
         int titleX = leftPos + (IMAGE_WIDTH - font.width(title)) / 2;
-        guiGraphics.drawString(font, title, titleX, topPos + 8, CommonColors.DARK_GRAY, false);
+        guiGraphics.text(font, title, titleX, topPos + 8, CommonColors.DARK_GRAY, false);
     }
 
     private void updateButtonStates() {
