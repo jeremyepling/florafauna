@@ -70,6 +70,7 @@ public final class Playtest {
         switch (scenario) {
             case "recovery" -> RecoveryPlaytest.steps(this, phase);
             case "hammer" -> HammerPlaytest.steps(this, phase);
+            case "barrier" -> BarrierPlaytest.steps(this, phase);
             case "pods" -> PodPlaytest.steps(this, phase);
             case "frenchie" -> FrenchiePlaytest.steps(this, phase);
             case "transport" -> MobTransportPlaytest.steps(this, phase);
