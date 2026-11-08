@@ -76,7 +76,7 @@ public record MobBarrierConfig(
             Identifier tagId = Identifier.tryParse(tagPath);
             if (tagId != null) {
                 TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, tagId);
-                if (entityType.is(tagKey)) {
+                if (entity.is(tagKey)) {
                     return true;
                 }
             }

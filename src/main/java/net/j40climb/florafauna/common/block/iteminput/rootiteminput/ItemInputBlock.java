@@ -85,9 +85,8 @@ public class ItemInputBlock extends BaseEntityBlock {
             // Sneak + right-click: unpair
             if (player.isShiftKeyDown() && itemInput.isPaired()) {
                 itemInput.unpairAnchor();
-                player.displayClientMessage(
-                        Component.translatable("message.florafauna.item_input.unpaired"),
-                        true
+                player.sendOverlayMessage(
+                        Component.translatable("message.florafauna.item_input.unpaired")
                 );
                 return InteractionResult.SUCCESS;
             }
@@ -97,15 +96,13 @@ public class ItemInputBlock extends BaseEntityBlock {
                 BlockPos anchorPos = findNearestStorageAnchor(level, pos);
                 if (anchorPos != null) {
                     itemInput.pairWithAnchor(anchorPos);
-                    player.displayClientMessage(
+                    player.sendOverlayMessage(
                             Component.translatable("message.florafauna.item_input.paired",
-                                    anchorPos.getX(), anchorPos.getY(), anchorPos.getZ()),
-                            true
+                                    anchorPos.getX(), anchorPos.getY(), anchorPos.getZ())
                     );
                 } else {
-                    player.displayClientMessage(
-                            Component.translatable("message.florafauna.item_input.no_anchor"),
-                            true
+                    player.sendOverlayMessage(
+                            Component.translatable("message.florafauna.item_input.no_anchor")
                     );
                 }
                 return InteractionResult.SUCCESS;
@@ -155,15 +152,13 @@ public class ItemInputBlock extends BaseEntityBlock {
         int totalItems = itemInput.getBuffer().getTotalItemCount();
 
         if (paired) {
-            player.displayClientMessage(
+            player.sendOverlayMessage(
                     Component.translatable("message.florafauna.item_input.status_paired",
-                            buffered, maxSlots, totalItems),
-                    true
+                            buffered, maxSlots, totalItems)
             );
         } else {
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.item_input.status_unpaired"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.item_input.status_unpaired")
             );
         }
     }

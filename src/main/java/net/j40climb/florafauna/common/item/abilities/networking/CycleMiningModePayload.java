@@ -53,7 +53,7 @@ public enum CycleMiningModePayload implements CustomPacketPayload {
         // Display the new mode to the player
         MiningModeData currentMode = stack.get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
         if (currentMode != null) {
-            player.displayClientMessage(Component.literal(currentMode.getMiningModeString()), true);
+            player.sendOverlayMessage(Component.literal(currentMode.getMiningModeString()));
         }
     }
 

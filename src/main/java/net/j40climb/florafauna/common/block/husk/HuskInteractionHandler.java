@@ -42,9 +42,8 @@ public final class HuskInteractionHandler {
     ) {
         // Owner-only check
         if (!husk.isOwner(player)) {
-            player.displayClientMessage(
-                    Component.translatable("symbiote.florafauna.husk_not_owner"),
-                    false
+            player.sendSystemMessage(
+                    Component.translatable("symbiote.florafauna.husk_not_owner")
             );
             return InteractionResult.FAIL;
         }
@@ -90,10 +89,9 @@ public final class HuskInteractionHandler {
         player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, restored);
 
         // Display restoration message
-        player.displayClientMessage(
+        player.sendSystemMessage(
                 Component.translatable("symbiote.florafauna.abilities_restored")
-                        .withStyle(style -> style.withColor(0x9B59B6).withItalic(true)),
-                false
+                        .withStyle(style -> style.withColor(0x9B59B6).withItalic(true))
         );
     }
 }

@@ -37,10 +37,9 @@ public class MobSymbioteItem extends Item {
         // Check if this mob is excluded (deny list - bosses, warden, etc.)
         if (MobSymbioteHelper.isMobSymbioteExcluded(mob)) {
             if (!player.level().isClientSide()) {
-                player.displayClientMessage(
+                player.sendOverlayMessage(
                         Component.translatable("message.florafauna.mob_symbiote.excluded")
-                                .withStyle(style -> style.withColor(0xAA0000)),
-                        true
+                                .withStyle(style -> style.withColor(0xAA0000))
                 );
             }
             return InteractionResult.FAIL;
@@ -53,10 +52,9 @@ public class MobSymbioteItem extends Item {
             // Check if already has a MobSymbiote
             if (MobSymbioteHelper.hasMobSymbiote(mob)) {
                 // Already has MobSymbiote - show message
-                player.displayClientMessage(
+                player.sendOverlayMessage(
                         Component.translatable("message.florafauna.mob_symbiote.already_bonded")
-                                .withStyle(style -> style.withColor(0x888888)),
-                        true
+                                .withStyle(style -> style.withColor(0x888888))
                 );
                 return InteractionResult.FAIL;
             }
@@ -65,10 +63,9 @@ public class MobSymbioteItem extends Item {
             MobSymbioteHelper.applyMobSymbioteLevel1(mob, currentTick);
 
             // Show success message
-            player.displayClientMessage(
+            player.sendOverlayMessage(
                     Component.translatable("message.florafauna.mob_symbiote.bonded")
-                            .withStyle(style -> style.withColor(0x00AA00)),
-                    true
+                            .withStyle(style -> style.withColor(0x00AA00))
             );
 
             // Consume item if not in creative mode

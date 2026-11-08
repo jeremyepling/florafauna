@@ -126,7 +126,7 @@ public class MobOutputBlockEntity extends BlockEntity {
 
         // Play emergence sound
         level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 0.8f + level.random.nextFloat() * 0.4f);
+                SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 0.8f + level.getRandom().nextFloat() * 0.4f);
     }
 
     /**

@@ -100,10 +100,9 @@ public class Tier2MiningAnchorBlock extends BaseEntityBlock {
         int pods = anchor.getPodCount();
         AnchorFillState fillState = anchor.getFillState();
 
-        player.displayClientMessage(
+        player.sendOverlayMessage(
                 Component.translatable("message.florafauna.mining_anchor.status",
-                        stored, max, pods, fillState.getSerializedName()),
-                true
+                        stored, max, pods, fillState.getSerializedName())
         );
     }
 

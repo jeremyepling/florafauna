@@ -72,7 +72,7 @@ public final class MobSymbioteHelper {
      * @return true if upgrade succeeded, false if mob is not eligible
      */
     public static boolean applyMobSymbioteLevel2(Mob mob, long currentTick) {
-        if (!mob.getType().is(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_LEVEL2_ELIGIBLE)) {
+        if (!mob.is(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_LEVEL2_ELIGIBLE)) {
             return false;
         }
         MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
@@ -99,7 +99,7 @@ public final class MobSymbioteHelper {
      * @return true if the mob cannot receive a MobSymbiote
      */
     public static boolean isMobSymbioteExcluded(Mob mob) {
-        return mob.getType().is(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_EXCLUDED);
+        return mob.is(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_EXCLUDED);
     }
 
     // ==================== RELEASE IMMUNITY ====================
