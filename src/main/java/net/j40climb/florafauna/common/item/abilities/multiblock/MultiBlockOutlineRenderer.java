@@ -3,7 +3,6 @@ package net.j40climb.florafauna.common.item.abilities.multiblock;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -32,21 +31,22 @@ public class MultiBlockOutlineRenderer {
                 .filter(pos -> !pos.equals(target))
                 .map(pos -> event.getLevel().getBlockState(pos)
                         .getShape(event.getLevel(), pos, event.getCollisionContext())
-                        .move(pos.getX(), pos.getY(), pos.getZ()))
+                        .move(pos.getX() - target.getX(), pos.getY() - target.getY(), pos.getZ() - target.getZ()))
                 .filter(shape -> !shape.isEmpty())
                 .toList();
         if (outlines.isEmpty()) {
             return;
         }
 
-        event.addCustomRenderer((state, buffers, poseStack, translucentPass, levelState) -> {
-            if (translucentPass == state.isTranslucent()) {
-                Vec3 camera = levelState.cameraRenderState.pos;
-                var vertices = buffers.getBuffer(RenderTypes.lines());
-                for (VoxelShape outline : outlines) {
-                    ShapeRenderer.renderShape(poseStack, vertices, outline, -camera.x, -camera.y, -camera.z, 0x66000000, 2.0F);
-                }
+        event.addCustomRenderer((state, collector, poseStack, levelState) -> {
+            Vec3 camera = levelState.cameraRenderState.pos;
+            poseStack.pushPose();
+            poseStack.translate(target.getX() - camera.x, target.getY() - camera.y, target.getZ() - camera.z);
+            for (VoxelShape outline : outlines) {
+                collector.submitShapeOutline(poseStack, outline, RenderTypes.linesTranslucentNoDepthWrite(),
+                        0x66000000, 2.0F, state.isTranslucent());
             }
+            poseStack.popPose();
             return false; // Vanilla draws the targeted block.
         });
     }

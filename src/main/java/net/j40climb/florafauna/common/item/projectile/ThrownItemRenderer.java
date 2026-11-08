@@ -51,9 +51,9 @@ public class ThrownItemRenderer extends EntityRenderer<ThrownItemEntity, ThrownI
 
         // Rotate to face direction of travel
         // First rotate around Y to match horizontal direction
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yRot + 90.0f));
+        poseStack.rotateDegrees(Axis.YP, state.yRot + 90.0f);
         // Then pitch forward 90 degrees so item points in direction of travel
-        poseStack.mulPose(Axis.XP.rotationDegrees(state.xRot + 90.0f));
+        poseStack.rotateDegrees(Axis.XP, state.xRot + 90.0f);
 
         // Scale up slightly for visibility
         poseStack.scale(1.5f, 1.5f, 1.5f);

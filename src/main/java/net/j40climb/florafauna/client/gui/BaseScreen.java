@@ -14,7 +14,7 @@ import net.minecraft.resources.Identifier;
  * <h2>When to use BaseScreen vs BaseContainerScreen:</h2>
  * <ul>
  *   <li><b>BaseScreen</b> - Button-only GUIs, config screens, text editors. No item slots.
- *       Opens directly via {@code Minecraft.getInstance().setScreen(new MyScreen())}.
+ *       Opens directly via {@code Minecraft.getInstance().gui.setScreen(new MyScreen())}.
  *       Examples: Sign editing, Book editing, Command Block, MobBarrierConfigScreen.</li>
  *   <li><b>BaseContainerScreen</b> - GUIs with inventory slots that need server sync.
  *       Opens via Menu system ({@code player.openMenu()}). Requires a Menu class.

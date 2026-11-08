@@ -4,7 +4,7 @@ import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * - Restoration husk: BONDED_WEAKENED state with active husk
  * - Mining anchor: Active waypoint anchor in same dimension
  */
-@Mixin(Gui.class)
-public class GuiMixin {
+@Mixin(Hud.class)
+public class HudMixin {
 
     @Shadow
     @Final
@@ -31,7 +31,7 @@ public class GuiMixin {
      * or when player has an active waypoint anchor in the same dimension.
      */
     @Inject(method = "nextContextualInfoState", at = @At("HEAD"), cancellable = true)
-    private void florafauna$forceLocatorBar(CallbackInfoReturnable<Gui.ContextualInfo> cir) {
+    private void florafauna$forceLocatorBar(CallbackInfoReturnable<Hud.ContextualInfo> cir) {
         LocalPlayer player = this.minecraft.player;
         if (player == null) {
             return;
@@ -47,7 +47,7 @@ public class GuiMixin {
             data.restorationHuskDim().equals(player.level().dimension())) {
 
             // Force the locator bar to show for husk waypoint
-            cir.setReturnValue(Gui.ContextualInfo.LOCATOR);
+            cir.setReturnValue(Hud.ContextualInfo.LOCATOR);
             return;
         }
 
@@ -58,7 +58,7 @@ public class GuiMixin {
             data.activeWaypointAnchorDim().equals(player.level().dimension())) {
 
             // Force the locator bar to show for anchor waypoint
-            cir.setReturnValue(Gui.ContextualInfo.LOCATOR);
+            cir.setReturnValue(Hud.ContextualInfo.LOCATOR);
         }
     }
 }

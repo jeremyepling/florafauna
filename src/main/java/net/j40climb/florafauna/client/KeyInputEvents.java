@@ -16,7 +16,6 @@ import net.j40climb.florafauna.setup.ClientSetup;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -45,7 +44,7 @@ public class KeyInputEvents {
             // Component-based check - works with any item that has LIGHTNING_ABILITY
             if (itemStack.has(FloraFaunaRegistry.LIGHTNING_ABILITY)) {
                 Vec3 vec3 = ClientUtils.raycastFromPlayer(player, 10).getLocation();
-                BlockPos targetPos = new BlockPos(new Vec3i((int) vec3.x, (int) vec3.y, (int) vec3.z));
+                BlockPos targetPos = BlockPos.containing(vec3);
                 ClientPacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
             }
         }
@@ -58,7 +57,7 @@ public class KeyInputEvents {
         while (ClientSetup.HAMMER_CONFIG_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has TOOL_CONFIG
             if (itemStack.has(FloraFaunaRegistry.TOOL_CONFIG)) {
-                mc.setScreen(new ToolConfigScreen());
+                mc.gui.setScreen(new ToolConfigScreen());
             }
         }
         while (ClientSetup.DASH_KEY.get().consumeClick()) {
@@ -72,7 +71,7 @@ public class KeyInputEvents {
             // Component-based check - works with any item that has THROWABLE_ABILITY
             if (itemStack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
                 // Play throw animation (arm swing)
-                player.swing(InteractionHand.MAIN_HAND);
+                player.swing(InteractionHand.MAIN_HAND, itemStack.getAttackAnimation(), false);
                 ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
             }
         }
@@ -85,7 +84,7 @@ public class KeyInputEvents {
         while (ClientSetup.MOB_BARRIER_CONFIG_KEY.get().consumeClick()) {
             // Check if player is holding a MobBarrier block item
             if (itemStack.is(FloraFaunaRegistry.MOB_BARRIER.asItem())) {
-                mc.setScreen(new MobBarrierConfigScreen());
+                mc.gui.setScreen(new MobBarrierConfigScreen());
             }
         }
         while (ClientSetup.NOCLIP_KEY.get().consumeClick()) {
