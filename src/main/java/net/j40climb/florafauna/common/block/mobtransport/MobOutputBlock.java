@@ -140,10 +140,9 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
                 mobInput.pairWithOutput(pos);
                 mobOutput.pairInput(linkingFrom);
                 MobInputLinkingState.clearLinking(player);
-                player.displayClientMessage(
+                player.sendOverlayMessage(
                         Component.translatable("message.florafauna.mob_input.paired_to_output",
-                                linkingFrom.getX(), linkingFrom.getY(), linkingFrom.getZ()),
-                        true
+                                linkingFrom.getX(), linkingFrom.getY(), linkingFrom.getZ())
                 );
                 return InteractionResult.SUCCESS;
             }
@@ -155,9 +154,8 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
             if (be instanceof MobOutputBlockEntity output) {
                 int inputs = output.getInputCount();
                 int queued = output.getPendingReleaseCount();
-                player.displayClientMessage(
-                        Component.translatable("message.florafauna.mob_output.status", inputs, queued),
-                        true
+                player.sendOverlayMessage(
+                        Component.translatable("message.florafauna.mob_output.status", inputs, queued)
                 );
             }
             return InteractionResult.SUCCESS;

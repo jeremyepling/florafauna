@@ -90,10 +90,9 @@ public class CocoonRespawnHandler {
         player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
         // Notify player
-        player.displayClientMessage(
+        player.sendSystemMessage(
                 Component.translatable("symbiote.florafauna.cocoon_destroyed")
-                        .withStyle(style -> style.withColor(0xFF6B6B)),
-                false
+                        .withStyle(style -> style.withColor(0xFF6B6B))
         );
     }
 }

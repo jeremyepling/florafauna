@@ -11,6 +11,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -87,11 +88,6 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     public boolean canBreatheUnderwater() {
         return true; // Frenchie can breathe underwater to prevent drowning
-    }
-
-    @Override
-    public boolean canStartSwimming() {
-        return true; // Allow swimming
     }
 
     @Override
@@ -366,18 +362,10 @@ public class FrenchieEntity extends TamableAnimal {
         }
     }
 
-    /**
-     * Checks if it's night time when players can sleep in beds.
-     * In clear weather: ticks 12542-23459 (when stars appear)
-     * In rainy weather: ticks 12010-23991 (earlier sleep window)
-     */
     private boolean isPlayerSleepTime() {
-        long time = this.level().getDayTime() % 24000;
-        if (this.level().isRaining()) {
-            return time >= 12010 && time < 23991;
-        } else {
-            return time >= 12542 && time < 23459;
-        }
+        return this.level().environmentAttributes()
+                .getValue(EnvironmentAttributes.BED_RULE, this.blockPosition())
+                .canSleep(this.level());
     }
 
     @Override

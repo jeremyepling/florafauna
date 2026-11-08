@@ -81,16 +81,14 @@ public class MobInputBlock extends BaseEntityBlock {
             if (player.isShiftKeyDown()) {
                 if (mobInput.isPaired()) {
                     mobInput.unpairOutput();
-                    player.displayClientMessage(
-                            Component.translatable("message.florafauna.mob_input.unpaired"),
-                            true
+                    player.sendOverlayMessage(
+                            Component.translatable("message.florafauna.mob_input.unpaired")
                     );
                 } else {
                     // Enter linking mode
                     MobInputLinkingState.setLinkingFrom(player, pos);
-                    player.displayClientMessage(
-                            Component.translatable("message.florafauna.mob_input.linking_mode"),
-                            true
+                    player.sendOverlayMessage(
+                            Component.translatable("message.florafauna.mob_input.linking_mode")
                     );
                 }
                 return InteractionResult.SUCCESS;
@@ -110,14 +108,12 @@ public class MobInputBlock extends BaseEntityBlock {
         boolean paired = mobInput.isPaired();
 
         if (paired) {
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mob_input.status_paired", queued, maxQueue),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mob_input.status_paired", queued, maxQueue)
             );
         } else {
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mob_input.status_unpaired"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mob_input.status_unpaired")
             );
         }
     }

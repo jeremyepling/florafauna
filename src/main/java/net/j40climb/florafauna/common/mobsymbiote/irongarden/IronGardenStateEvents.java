@@ -102,7 +102,7 @@ public class IronGardenStateEvents {
         switch (currentState) {
             case UNBONDED -> handleUnbonded(golem, eligible, currentTick);
             case BONDED_NOT_CALM -> handleBondedNotCalm(golem, eligible, currentTick);
-            case CALM, CALM_PLANTING, CALM_HARVESTING -> handleCalm(golem, eligible, currentTick);
+            case CALM -> handleCalm(golem, eligible, currentTick);
         }
 
         // Convert nearby vanilla poppies to ferric poppies when calm
@@ -239,7 +239,7 @@ public class IronGardenStateEvents {
                     }
 
                     // Roll for conversion
-                    if (level.random.nextInt(Config.ferricPoppyConversionChance) != 0) {
+                    if (level.getRandom().nextInt(Config.ferricPoppyConversionChance) != 0) {
                         continue;
                     }
 

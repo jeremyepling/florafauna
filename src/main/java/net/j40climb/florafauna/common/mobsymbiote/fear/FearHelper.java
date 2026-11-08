@@ -94,7 +94,7 @@ public final class FearHelper {
         }
 
         // Must be in FEARFUL_MOBS tag
-        return mob.getType().is(FloraFaunaTags.EntityTypes.FEARFUL_MOBS);
+        return mob.is(FloraFaunaTags.EntityTypes.FEARFUL_MOBS);
     }
 
     // ==================== LEAK COUNT MANAGEMENT ====================

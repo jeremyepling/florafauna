@@ -29,9 +29,8 @@ public class MiningAnchorInteractions {
 
         // Must have a bonded symbiote to use waypoints
         if (!data.symbioteState().isBonded()) {
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mining_anchor.requires_symbiote"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mining_anchor.requires_symbiote")
             );
             return false;
         }
@@ -47,18 +46,16 @@ public class MiningAnchorInteractions {
             PlayerSymbioteData newData = data.clearActiveWaypointAnchor();
             player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mining_anchor.waypoint_cleared"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mining_anchor.waypoint_cleared")
             );
         } else {
             // Set as waypoint
             PlayerSymbioteData newData = data.withActiveWaypointAnchor(pos, dim);
             player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mining_anchor.waypoint_set"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mining_anchor.waypoint_set")
             );
         }
 
@@ -79,9 +76,8 @@ public class MiningAnchorInteractions {
 
         // Must have a bonded symbiote to bind anchors
         if (!data.symbioteState().isBonded()) {
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mining_anchor.requires_symbiote"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mining_anchor.requires_symbiote")
             );
             return false;
         }
@@ -100,9 +96,8 @@ public class MiningAnchorInteractions {
             }
             player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mining_anchor.unbound"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mining_anchor.unbound")
             );
         } else {
             // Bind anchor (also sets as waypoint automatically)
@@ -111,9 +106,8 @@ public class MiningAnchorInteractions {
                     .withActiveWaypointAnchor(pos, dim);
             player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.mining_anchor.bound"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.mining_anchor.bound")
             );
         }
 

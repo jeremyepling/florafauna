@@ -109,10 +109,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         CocoonProgressionHooks.onCocoonSpawnSet(player, chamberPos);
 
         // Send feedback
-        player.displayClientMessage(
+        player.sendSystemMessage(
                 Component.translatable("symbiote.florafauna.spawn_set")
-                        .withStyle(style -> style.withColor(0x9B59B6)),
-                false
+                        .withStyle(style -> style.withColor(0x9B59B6))
         );
     }
 
@@ -120,9 +119,8 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (data.cocoonSpawnPos() == null) {
-            player.displayClientMessage(
-                    Component.translatable("symbiote.florafauna.no_cocoon_spawn"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("symbiote.florafauna.no_cocoon_spawn")
             );
             return;
         }
@@ -144,10 +142,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         PlayerSymbioteData updatedData = data.withCocoonSpawn(null, null);
         player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
-        player.displayClientMessage(
+        player.sendSystemMessage(
                 Component.translatable("symbiote.florafauna.spawn_cleared")
-                        .withStyle(style -> style.withColor(0x9B59B6)),
-                false
+                        .withStyle(style -> style.withColor(0x9B59B6))
         );
     }
 
@@ -156,10 +153,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
 
         // Check bindable state
         if (!data.symbioteBindable()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                     Component.translatable("symbiote.florafauna.not_bindable")
-                            .withStyle(style -> style.withColor(0xFF6B6B)),
-                    false
+                            .withStyle(style -> style.withColor(0xFF6B6B))
             );
             return;
         }
@@ -167,10 +163,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         // Find dormant symbiote in inventory
         ItemStack symbioteItem = SymbioteBindingHelper.findDormantSymbioteInInventory(player);
         if (symbioteItem.isEmpty()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                     Component.translatable("symbiote.florafauna.no_dormant_symbiote")
-                            .withStyle(style -> style.withColor(0xFF6B6B)),
-                    false
+                            .withStyle(style -> style.withColor(0xFF6B6B))
             );
             return;
         }
@@ -189,10 +184,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         }
 
         // Send feedback
-        player.displayClientMessage(
+        player.sendSystemMessage(
                 Component.translatable(result.messageKey())
-                        .withStyle(style -> style.withColor(result.success() ? 0x9B59B6 : 0xFF6B6B)),
-                false
+                        .withStyle(style -> style.withColor(result.success() ? 0x9B59B6 : 0xFF6B6B))
         );
     }
 
@@ -211,10 +205,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         }
 
         // Send feedback
-        player.displayClientMessage(
+        player.sendSystemMessage(
                 Component.translatable(result.messageKey())
-                        .withStyle(style -> style.withColor(result.success() ? 0x9B59B6 : 0xFF6B6B)),
-                false
+                        .withStyle(style -> style.withColor(result.success() ? 0x9B59B6 : 0xFF6B6B))
         );
     }
 }

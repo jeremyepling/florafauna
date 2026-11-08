@@ -35,13 +35,7 @@ public enum IronGardenState {
     /**
      * Calm golem is actively gardening - planting and harvesting ferric poppies.
      */
-    CALM,
-
-    // Legacy states for backwards compatibility with saved data
-    /** @deprecated Use CALM instead */
-    @Deprecated CALM_PLANTING,
-    /** @deprecated Use CALM instead */
-    @Deprecated CALM_HARVESTING;
+    CALM;
 
     /**
      * @return true if this state represents an active gardening state
@@ -54,7 +48,7 @@ public enum IronGardenState {
      * @return true if this state is a calm state where the golem can garden
      */
     public boolean isCalm() {
-        return this == CALM || this == CALM_PLANTING || this == CALM_HARVESTING;
+        return this == CALM;
     }
 
     /**

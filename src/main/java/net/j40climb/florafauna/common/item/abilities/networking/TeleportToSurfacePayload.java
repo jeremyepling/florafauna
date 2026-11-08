@@ -43,13 +43,13 @@ public enum TeleportToSurfacePayload implements CustomPacketPayload {
                 double centerZ = scanPos.getZ() + 0.5;
 
                 player.teleportTo(centerX, centerY, centerZ);
-                player.displayClientMessage(Component.translatable("ability.florafauna.teleport_surface.success"), true);
+                player.sendOverlayMessage(Component.translatable("ability.florafauna.teleport_surface.success"));
                 return;
             }
         }
 
         // No surface found
-        player.displayClientMessage(Component.translatable("ability.florafauna.teleport_surface.no_surface"), true);
+        player.sendOverlayMessage(Component.translatable("ability.florafauna.teleport_surface.no_surface"));
     }
 
     @Override

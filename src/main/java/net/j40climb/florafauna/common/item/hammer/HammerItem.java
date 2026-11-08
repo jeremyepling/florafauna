@@ -15,6 +15,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.TooltipFlag;
@@ -100,7 +101,7 @@ public class HammerItem extends Item {
      * @return true if this item can perform the action
      */
     @Override
-    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+    public boolean canPerformAction(ItemInstance stack, ItemAbility itemAbility) {
         MultiToolAbilityData multiTool = stack.get(FloraFaunaRegistry.MULTI_TOOL_ABILITY);
         if (multiTool == null) {
             return false;

@@ -237,7 +237,7 @@ public class MobInputBlockEntity extends BlockEntity {
 
             // Play capture sound
             level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    SoundEvents.GENERIC_EAT.value(), SoundSource.BLOCKS, 1.0f, 0.8f + level.random.nextFloat() * 0.4f);
+                    SoundEvents.GENERIC_EAT.value(), SoundSource.BLOCKS, 1.0f, 0.8f + level.getRandom().nextFloat() * 0.4f);
 
             break; // One capture per tick
         }
@@ -255,7 +255,7 @@ public class MobInputBlockEntity extends BlockEntity {
         // Calculate release delay
         int minDelay = Config.minTravelDelayTicks;
         int maxDelay = Config.maxTravelDelayTicks;
-        int delay = minDelay + level.random.nextInt(maxDelay - minDelay + 1);
+        int delay = minDelay + level.getRandom().nextInt(maxDelay - minDelay + 1);
 
         // Create ticket
         CapturedMobTicket ticket = CapturedMobTicket.create(

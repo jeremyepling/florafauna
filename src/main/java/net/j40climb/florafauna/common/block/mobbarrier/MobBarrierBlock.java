@@ -114,9 +114,8 @@ public class MobBarrierBlock extends BaseEntityBlock {
             if (!level.isClientSide()) {
                 MobBarrierConfig placedConfig = getConfigAtPos(level, pos);
                 stack.set(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get(), placedConfig);
-                player.displayClientMessage(
-                        Component.translatable("message.florafauna.mob_barrier.copied"),
-                        true
+                player.sendOverlayMessage(
+                        Component.translatable("message.florafauna.mob_barrier.copied")
                 );
             }
             return InteractionResult.SUCCESS;

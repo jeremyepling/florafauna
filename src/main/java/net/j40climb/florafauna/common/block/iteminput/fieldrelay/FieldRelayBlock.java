@@ -83,9 +83,8 @@ public class FieldRelayBlock extends BaseEntityBlock {
             // Sneak + right-click: unpair
             if (player.isShiftKeyDown() && itemInput.isPaired()) {
                 itemInput.unpairAnchor();
-                player.displayClientMessage(
-                        Component.translatable("message.florafauna.field_relay.unpaired"),
-                        true
+                player.sendOverlayMessage(
+                        Component.translatable("message.florafauna.field_relay.unpaired")
                 );
                 return InteractionResult.SUCCESS;
             }
@@ -95,15 +94,13 @@ public class FieldRelayBlock extends BaseEntityBlock {
                 BlockPos anchorPos = findNearestStorageAnchor(level, pos);
                 if (anchorPos != null) {
                     itemInput.pairWithAnchor(anchorPos);
-                    player.displayClientMessage(
+                    player.sendOverlayMessage(
                             Component.translatable("message.florafauna.field_relay.paired",
-                                    anchorPos.getX(), anchorPos.getY(), anchorPos.getZ()),
-                            true
+                                    anchorPos.getX(), anchorPos.getY(), anchorPos.getZ())
                     );
                 } else {
-                    player.displayClientMessage(
-                            Component.translatable("message.florafauna.field_relay.no_anchor"),
-                            true
+                    player.sendOverlayMessage(
+                            Component.translatable("message.florafauna.field_relay.no_anchor")
                     );
                 }
                 return InteractionResult.SUCCESS;
@@ -153,15 +150,13 @@ public class FieldRelayBlock extends BaseEntityBlock {
         int totalItems = itemInput.getBuffer().getTotalItemCount();
 
         if (paired) {
-            player.displayClientMessage(
+            player.sendOverlayMessage(
                     Component.translatable("message.florafauna.field_relay.status_paired",
-                            buffered, maxSlots, totalItems),
-                    true
+                            buffered, maxSlots, totalItems)
             );
         } else {
-            player.displayClientMessage(
-                    Component.translatable("message.florafauna.field_relay.status_unpaired"),
-                    true
+            player.sendOverlayMessage(
+                    Component.translatable("message.florafauna.field_relay.status_unpaired")
             );
         }
     }
