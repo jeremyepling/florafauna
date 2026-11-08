@@ -1,8 +1,8 @@
 #Requires -Version 7.0
 # Run Minecraft clients against fresh copies of a closed save. Each scenario has its own copy.
 param(
-    [ValidateSet('recovery', 'hammer', 'pods')]
-    [string[]]$Scenario = @('recovery', 'hammer', 'pods'),
+    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie')]
+    [string[]]$Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie'),
     [string]$SourceWorld,
     [switch]$Offline
 )
@@ -61,7 +61,7 @@ try {
     $failed = @()
     foreach ($name in $Scenario) {
         $gameDir = Join-Path $runRoot $name
-        $phases = if ($name -eq 'hammer') { @(1) } else { @(1, 2) }
+        $phases = if ($name -in 'hammer', 'frenchie') { @(1) } else { @(1, 2) }
         foreach ($phase in $phases) {
             Write-Host "Launching $name phase $phase ..."
             $log = Join-Path $gameDir "phase-$phase.log"

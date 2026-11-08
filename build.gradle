@@ -34,14 +34,15 @@ def wt = rootProject.projectDir.name
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull
 def playtestPhase = providers.gradleProperty('playtestPhase').orNull
-if (playtestId != null) {
-    if (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario in ['recovery', 'hammer', 'pods']) || !(playtestPhase in ['1', '2'])) {
-        throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
-    }
-    sourceSets.create('playtest') {
-        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
-        runtimeClasspath += sourceSets.main.runtimeClasspath
-    }
+if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario ==~ /[a-z]+/) || !(playtestPhase in ['1', '2']))) {
+    throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
+}
+sourceSets.create('playtest') {
+    compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+    runtimeClasspath += sourceSets.main.runtimeClasspath
+}
+tasks.named('check') {
+    dependsOn tasks.named('compilePlaytestJava')
 }
 
 neoForge {

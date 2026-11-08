@@ -50,7 +50,15 @@ Close the source world, then run this from the checkout in PowerShell 7 with Jav
 .\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
 ```
 
-Each scenario launches a real Minecraft client in a fresh copy of the save. Recovery drinks stew, binds at a cocoon, walks, dies, respawns, restarts the game, and recovers counted items. Hammer opens the tool screen, changes settings, mines a wall and floor, and strips a log. Pods mines drops into storage, restarts the game, moves the packed pod, and checks hopper output. Let the test control the client until it exits.
+Each scenario launches a real Minecraft client in a fresh copy of the save. Let the test control the client until it exits.
+
+| Scenario | What the client and integrated server check |
+| --- | --- |
+| `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
+| `hammer` | Change tool settings, capture wall and floor outlines, mine the matching 3×3 areas, and strip a log. |
+| `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
+| `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
+| `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
 
 The script prints the output directory under `.tmp/world-playtests`. Each run keeps its disposable worlds, per-phase logs and results, and the hammer screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 

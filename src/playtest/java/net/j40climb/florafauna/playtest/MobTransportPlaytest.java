@@ -94,20 +94,33 @@ final class MobTransportPlaytest {
             return;
         }
 
+        long[] lastStoredTick = new long[1];
+        long[] firstReleasedTick = new long[1];
         t.server("Verify the same stored cow and paused route after relaunch", p -> {
             require(!input(p).isPaired() && output(p).getInputCount() == 0, "Paused route was not saved");
             verifyQueuedCow(p);
+            lastStoredTick[0] = p.level().getGameTime();
         });
         link(t);
-        t.awaitServer("Observe the original cow emerge from Mob Output", p -> p.level().getEntity(COW_ID) instanceof Cow);
-        long[] immunityRemaining = new long[1];
+        t.awaitServer("Observe the original cow emerge from Mob Output", p -> {
+            if (p.level().getEntity(COW_ID) instanceof Cow) {
+                firstReleasedTick[0] = p.level().getGameTime();
+                return true;
+            }
+            lastStoredTick[0] = p.level().getGameTime();
+            return false;
+        });
         t.server("Verify released identity, name, bond and a single release", p -> {
             Cow cow = (Cow) p.level().getEntity(COW_ID);
             require(cow.blockPosition().equals(OUT.above()), "Cow arrived at the wrong output: " + cow.blockPosition());
             require(cow.hasCustomName() && NAME.equals(cow.getCustomName().getString()), "Cow lost its custom name");
             require(MobSymbioteHelper.getMobSymbioteLevel(cow) == 1, "Released cow lost its symbiote");
             require(MobSymbioteHelper.hasReleaseImmunity(cow, p.level().getGameTime()), "Released cow has no capture immunity");
-            immunityRemaining[0] = cow.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA).recentlyReleasedUntil() - p.level().getGameTime();
+            long until = cow.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA).recentlyReleasedUntil();
+            long duration = Config.recentlyReleasedImmunityTicks;
+            require(until >= lastStoredTick[0] + duration && until <= firstReleasedTick[0] + duration,
+                    "Immunity expires at " + until + "; cow was released between ticks " + lastStoredTick[0]
+                            + " and " + firstReleasedTick[0] + ", configured duration " + duration);
             verifyOnlyReleasedCow(p);
         });
         long[] settleUntil = new long[1];
@@ -115,9 +128,8 @@ final class MobTransportPlaytest {
                 settleUntil[0] = p.level().getGameTime() + 2L * Config.releaseCheckIntervalTicks);
         t.awaitServer("Allow the route to tick", p -> p.level().getGameTime() >= settleUntil[0]);
         t.server("Verify one surviving cow and empty queues after further output checks", MobTransportPlaytest::verifyOnlyReleasedCow);
-        t.server("Check that release immunity fits the configured duration", p ->
-                require(immunityRemaining[0] <= Config.recentlyReleasedImmunityTicks,
-                        "Remaining release immunity was " + immunityRemaining[0] + " ticks, configured duration is " + Config.recentlyReleasedImmunityTicks));
+        t.awaitServer("Observe immunity expire on the live cow", p ->
+                p.level().getEntity(COW_ID) instanceof Cow cow && !MobSymbioteHelper.hasReleaseImmunity(cow, p.level().getGameTime()));
     }
 
     private static void link(Playtest t) {
