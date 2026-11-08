@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.mobtransport;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -35,8 +35,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock {
 
-    public static final MapCodec<MobOutputBlock> CODEC = simpleCodec(MobOutputBlock::new);
-
     // Cardinal direction offsets for MobInput spawning (like MiningAnchor pods)
     private static final BlockPos[] INPUT_OFFSETS = {
             new BlockPos(1, 0, 0),   // East
@@ -47,11 +45,6 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
 
     public MobOutputBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Nullable
@@ -68,7 +61,7 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
     // ==================== BONEMEAL GROWTH ====================
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, BonemealSource source) {
         // Can grow if there's an empty adjacent space
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof MobOutputBlockEntity output)) {
@@ -91,12 +84,12 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
     }
 
     @Override
-    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
         return true; // Always succeeds if valid
     }
 
     @Override
-    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof MobOutputBlockEntity output)) {
             return;

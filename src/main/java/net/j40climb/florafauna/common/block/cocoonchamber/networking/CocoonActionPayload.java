@@ -15,6 +15,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelData;
@@ -197,7 +198,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
             // Add the dormant symbiote item to player inventory
             if (!player.getInventory().add(result.symbioteItem())) {
                 // If inventory is full, drop the item
-                player.drop(result.symbioteItem(), false);
+                player.drop(result.symbioteItem(), false, Prediction.SERVER_ONLY);
             }
 
             // Trigger progression hook

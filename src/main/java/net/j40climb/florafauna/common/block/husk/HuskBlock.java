@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.husk;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -31,16 +30,9 @@ import org.jetbrains.annotations.Nullable;
 public class HuskBlock extends BaseEntityBlock {
 
     public static final EnumProperty<HuskType> HUSK_TYPE = EnumProperty.create("husk_type", HuskType.class);
-    public static final MapCodec<HuskBlock> CODEC = simpleCodec(HuskBlock::new);
-
     public HuskBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(HUSK_TYPE, HuskType.RESTORATION));
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

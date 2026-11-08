@@ -6,13 +6,14 @@ import net.j40climb.florafauna.setup.FloraFaunaTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.golem.SnowGolem;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -60,7 +61,7 @@ public class FearSourceDetector {
         if (mob instanceof Creeper creeper) {
             return detectCreeperFearSource(creeper, range);
         }
-        if (mob instanceof EnderMan enderman) {
+        if (mob instanceof Enderman enderman) {
             return detectEndermanFearSource(enderman, range);
         }
         if (mob instanceof Blaze blaze) {
@@ -115,7 +116,7 @@ public class FearSourceDetector {
      * @param range    Detection range in blocks
      * @return The nearest fear source (armor stand or block position)
      */
-    public static Optional<FearSource> detectEndermanFearSource(EnderMan enderman, double range) {
+    public static Optional<FearSource> detectEndermanFearSource(Enderman enderman, double range) {
         if (enderman.level().isClientSide()) {
             return Optional.empty();
         }
@@ -287,7 +288,7 @@ public class FearSourceDetector {
     public static boolean isCreeperFearSource(Entity entity) {
         // Cats (tamed or wild) and ocelots
         EntityType<?> type = entity.getType();
-        return type == EntityType.CAT || type == EntityType.OCELOT;
+        return type == EntityTypes.CAT || type == EntityTypes.OCELOT;
     }
 
     /**

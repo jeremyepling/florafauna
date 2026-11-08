@@ -93,7 +93,7 @@ The `MULTI_TOOL_ABILITY` component enables tool modifications on right-click:
 
 **Priority**: Multi-tool actions take priority over `RIGHT_CLICK_ACTION`. If a block can be modified (stripped, pathed, or tilled), only that action occurs. Otherwise, the right-click ability executes.
 
-**Note**: The multi-tool ability requires the item to override `canPerformAction()` to declare support for the tool actions. Currently only `HammerItem` implements this - other items with the component will not perform tool modifications until they add the override.
+Items with the component use the registered vanilla block transformers. The strip setting works on logs, wood and bamboo blocks. FloraFauna adds its driftwood log and wood to NeoForge's transformables data map so axes and the hammer both preserve the pillar axis when stripping driftwood.
 
 ## Adding Abilities to Items
 

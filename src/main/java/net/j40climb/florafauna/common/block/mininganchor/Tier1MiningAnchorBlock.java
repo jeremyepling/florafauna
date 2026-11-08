@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.mininganchor;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.VacuumState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -35,16 +34,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class Tier1MiningAnchorBlock extends BaseEntityBlock {
 
-    public static final MapCodec<Tier1MiningAnchorBlock> CODEC = simpleCodec(Tier1MiningAnchorBlock::new);
-
     public Tier1MiningAnchorBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override

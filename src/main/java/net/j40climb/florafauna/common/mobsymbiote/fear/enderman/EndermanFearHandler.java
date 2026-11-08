@@ -8,7 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +31,7 @@ public final class EndermanFearHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndermanFearHandler.class);
     private static final Random RANDOM = new Random();
 
-    // Cached reference to EnderMan.DATA_CREEPY for setting creepy state directly
+    // Cached reference to Enderman.DATA_CREEPY for setting creepy state directly
     @SuppressWarnings("unchecked")
     private static final EntityDataAccessor<Boolean> DATA_CREEPY = getDataCreepyAccessor();
 
@@ -40,17 +40,17 @@ public final class EndermanFearHandler {
     }
 
     /**
-     * Gets the DATA_CREEPY field from EnderMan via reflection.
+     * Gets the DATA_CREEPY field from Enderman via reflection.
      * This allows us to trigger the creepy animation without needing a target entity.
      */
     @SuppressWarnings("unchecked")
     private static EntityDataAccessor<Boolean> getDataCreepyAccessor() {
         try {
-            Field field = EnderMan.class.getDeclaredField("DATA_CREEPY");
+            Field field = Enderman.class.getDeclaredField("DATA_CREEPY");
             field.setAccessible(true);
             return (EntityDataAccessor<Boolean>) field.get(null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            LOGGER.error("Failed to access EnderMan.DATA_CREEPY field", e);
+            LOGGER.error("Failed to access Enderman.DATA_CREEPY field", e);
             return null;
         }
     }
@@ -59,7 +59,7 @@ public final class EndermanFearHandler {
      * Sets the creepy state on an enderman directly.
      * This triggers the mouth-open, jittering animation.
      */
-    private static void setCreepyState(EnderMan enderman, boolean creepy) {
+    private static void setCreepyState(Enderman enderman, boolean creepy) {
         if (DATA_CREEPY != null) {
             enderman.getEntityData().set(DATA_CREEPY, creepy);
         }
@@ -74,7 +74,7 @@ public final class EndermanFearHandler {
      * @param enderman   The enderman entering panic
      * @param fearSource The detected fear source
      */
-    public static void onEnterPanicked(EnderMan enderman, FearSource fearSource) {
+    public static void onEnterPanicked(Enderman enderman, FearSource fearSource) {
         if (enderman.level().isClientSide()) {
             return;
         }
@@ -100,7 +100,7 @@ public final class EndermanFearHandler {
      * Called when an enderman exits the PANICKED state.
      * Disables the creepy animation.
      */
-    public static void onExitPanicked(EnderMan enderman) {
+    public static void onExitPanicked(Enderman enderman) {
         if (enderman.level().isClientSide()) {
             return;
         }
@@ -115,7 +115,7 @@ public final class EndermanFearHandler {
      * Called each fear update tick while in PANICKED state.
      * Spawns panic particles and prevents teleportation.
      */
-    public static void onTickPanicked(EnderMan enderman) {
+    public static void onTickPanicked(Enderman enderman) {
         spawnPanicParticles(enderman);
     }
 
@@ -125,7 +125,7 @@ public final class EndermanFearHandler {
      * Called when an enderman triggers a LEAK event.
      * Drops ender pearls and plays teleport sound.
      */
-    public static void onLeakEvent(EnderMan enderman) {
+    public static void onLeakEvent(Enderman enderman) {
         if (enderman.level().isClientSide()) {
             return;
         }
@@ -180,7 +180,7 @@ public final class EndermanFearHandler {
      * Called when an enderman reaches OVERSTRESS state.
      * The enderman dies from the stress (no explosion like creeper).
      */
-    public static void onOverstress(EnderMan enderman) {
+    public static void onOverstress(Enderman enderman) {
         if (enderman.level().isClientSide()) {
             return;
         }
@@ -220,7 +220,7 @@ public final class EndermanFearHandler {
      * Spawns portal particles around the enderman.
      * Called during PANICKED state ticks.
      */
-    private static void spawnPanicParticles(EnderMan enderman) {
+    private static void spawnPanicParticles(Enderman enderman) {
         if (enderman.level().isClientSide()) {
             return;
         }
@@ -246,7 +246,7 @@ public final class EndermanFearHandler {
     /**
      * Spawns a burst of particles when a LEAK event occurs.
      */
-    private static void spawnLeakParticles(EnderMan enderman, ServerLevel level) {
+    private static void spawnLeakParticles(Enderman enderman, ServerLevel level) {
         // Burst of portal particles
         level.sendParticles(
                 ParticleTypes.PORTAL,

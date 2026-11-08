@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.iteminput.storageanchor;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -24,15 +23,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class StorageAnchorBlock extends BaseEntityBlock {
 
-    public static final MapCodec<StorageAnchorBlock> CODEC = simpleCodec(StorageAnchorBlock::new);
-
     public StorageAnchorBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Nullable

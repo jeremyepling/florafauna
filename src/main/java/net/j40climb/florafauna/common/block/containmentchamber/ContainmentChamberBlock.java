@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.containmentchamber;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -26,15 +25,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class ContainmentChamberBlock extends BaseEntityBlock {
 
-    public static final MapCodec<ContainmentChamberBlock> CODEC = simpleCodec(ContainmentChamberBlock::new);
-
     public ContainmentChamberBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Nullable

@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.cocoonchamber;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,15 +25,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CocoonChamberBlock extends BaseEntityBlock {
 
-    public static final MapCodec<CocoonChamberBlock> CODEC = simpleCodec(CocoonChamberBlock::new);
-
     public CocoonChamberBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Nullable

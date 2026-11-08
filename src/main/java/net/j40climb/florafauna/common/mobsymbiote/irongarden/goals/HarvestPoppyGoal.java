@@ -6,6 +6,7 @@ import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.level.Level;
@@ -140,7 +141,7 @@ public class HarvestPoppyGoal extends Goal {
 
         // Swing arm periodically during harvesting for visual feedback
         if (harvestingTicks % 10 == 0) {
-            golem.swing(InteractionHand.MAIN_HAND);
+            golem.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
 
         if (harvestingTicks >= HARVESTING_DURATION) {

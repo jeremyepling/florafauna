@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.mobbarrier;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -41,18 +40,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MobBarrierBlock extends BaseEntityBlock {
 
-    public static final MapCodec<MobBarrierBlock> CODEC = simpleCodec(MobBarrierBlock::new);
-
     // 24 pixels = 1.5 blocks tall, same as fences - prevents jumping over
     private static final VoxelShape BARRIER_SHAPE = Block.box(0, 0, 0, 16, 24, 16);
 
     public MobBarrierBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Nullable

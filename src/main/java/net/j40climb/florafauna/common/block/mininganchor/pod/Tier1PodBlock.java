@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.mininganchor.pod;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.block.mininganchor.AbstractMiningAnchorBlockEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -21,15 +20,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class Tier1PodBlock extends BaseEntityBlock {
 
-    public static final MapCodec<Tier1PodBlock> CODEC = simpleCodec(Tier1PodBlock::new);
-
     public Tier1PodBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Nullable

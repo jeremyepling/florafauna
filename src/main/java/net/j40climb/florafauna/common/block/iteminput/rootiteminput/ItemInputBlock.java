@@ -1,6 +1,5 @@
 package net.j40climb.florafauna.common.block.iteminput.rootiteminput;
 
-import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.block.vacuum.AbstractVacuumBlockEntity;
 import net.j40climb.florafauna.common.block.vacuum.VacuumState;
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlock;
@@ -39,16 +38,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class ItemInputBlock extends BaseEntityBlock {
 
-    public static final MapCodec<ItemInputBlock> CODEC = simpleCodec(ItemInputBlock::new);
-
     public ItemInputBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override
