@@ -45,7 +45,7 @@ public record OpenCocoonScreenPayload(BlockPos chamberPos) implements CustomPack
     public static void onClientReceived(final OpenCocoonScreenPayload data, final IPayloadContext context) {
         // Must run on main thread for screen opening
         context.enqueueWork(() -> {
-            Minecraft.getInstance().setScreen(new CocoonChamberScreen(data.chamberPos));
+            Minecraft.getInstance().gui.setScreen(new CocoonChamberScreen(data.chamberPos));
         });
     }
 }

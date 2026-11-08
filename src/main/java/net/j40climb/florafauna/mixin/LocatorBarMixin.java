@@ -7,7 +7,8 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
+import net.minecraft.client.gui.contextualbar.ContextualBar;
+import net.minecraft.client.gui.contextualbar.LocatorBar;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
@@ -29,8 +30,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * - Husk waypoint: Shows restoration husk location when player is in BONDED_WEAKENED state
  * - Anchor waypoint: Shows mining anchor location with color based on fill state (teal/orange/red)
  */
-@Mixin(LocatorBarRenderer.class)
-public class LocatorBarRendererMixin {
+@Mixin(LocatorBar.class)
+public class LocatorBarMixin {
 
     // Distance-based sprites (matching our waypoint_style pattern)
     @Unique
@@ -151,8 +152,7 @@ public class LocatorBarRendererMixin {
 
         // Calculate position on the locator bar
         // The bar is at the BOTTOM of the screen, above the hotbar
-        // From ContextualBarRenderer: top = guiHeight - MARGIN_BOTTOM(24) - HEIGHT(5)
-        int barTop = guiGraphics.guiHeight() - 24 - 5;
+        int barTop = guiGraphics.guiHeight() - ContextualBar.MARGIN_BOTTOM - ContextualBar.HEIGHT;
         // Center the sprite horizontally, accounting for its size
         int halfWidth = Mth.ceil((guiGraphics.guiWidth() - spriteSize) / 2.0F);
 
@@ -251,7 +251,7 @@ public class LocatorBarRendererMixin {
         int color = florafauna$getAnchorColor(data.lastAnnouncedFillState());
 
         // Calculate position on the locator bar
-        int barTop = guiGraphics.guiHeight() - 24 - 5;
+        int barTop = guiGraphics.guiHeight() - ContextualBar.MARGIN_BOTTOM - ContextualBar.HEIGHT;
         int halfWidth = Mth.ceil((guiGraphics.guiWidth() - spriteSize) / 2.0F);
 
         // Map angle to bar position (-60 to +60 maps to -86.5 to +86.5 pixels)

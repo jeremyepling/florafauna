@@ -8,8 +8,8 @@
     "noclip.ServerGamePacketListenerImplMixin"
   ],
   "client": [
-    "GuiMixin",
-    "LocatorBarRendererMixin"
+    "HudMixin",
+    "LocatorBarMixin"
   ],
   "injectors": {
     "defaultRequire": 1
