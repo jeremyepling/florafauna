@@ -41,6 +41,19 @@ The dev environment auto-loads into a "dev" world. The master template lives in 
 
 Delete `run/client-*/saves/dev` to reset from template.
 
+### Automated client playtests
+
+Close the source world, then run this from the checkout in PowerShell 7 with Java 25. The default source is that checkout's singleplayer `dev` save.
+
+```powershell
+.\scripts\test_dev_world.ps1
+.\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
+```
+
+Each scenario launches a real Minecraft client in a fresh copy of the save. Recovery drinks stew, binds at a cocoon, walks, dies, respawns, restarts the game, and recovers counted items. Hammer opens the tool screen, changes settings, mines a wall and floor, and strips a log. Pods mines drops into storage, restarts the game, moves the packed pod, and checks hopper output. Let the test control the client until it exits.
+
+The script prints the output directory under `.tmp/world-playtests`. Each run keeps its disposable worlds, per-phase logs and results, and the hammer screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
+
 ### Worktree Workflow
 
 From the checkout on `main`, choose an unused slot number:

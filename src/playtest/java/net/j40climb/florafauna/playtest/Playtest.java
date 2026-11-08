@@ -3,6 +3,7 @@ package net.j40climb.florafauna.playtest;
 import com.mojang.logging.LogUtils;
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
@@ -71,6 +72,14 @@ public final class Playtest {
 
     void awaitClient(String name, Predicate<Minecraft> ready) {
         steps.add(new Step(name, mc -> CompletableFuture.completedFuture(ready.test(mc))));
+    }
+
+    void screenshot(String stem) {
+        String filename = stem + ".png";
+        client("Capture " + filename, mc ->
+                Screenshot.grab(mc.gameDirectory, filename, mc.getMainRenderTarget(), 1, ignored -> {}));
+        awaitClient("Write " + filename, mc ->
+                Files.isRegularFile(directory.resolve("screenshots").resolve(filename)));
     }
 
     void server(String name, Consumer<ServerPlayer> action) {

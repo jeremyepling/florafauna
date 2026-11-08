@@ -109,6 +109,7 @@ final class RecoveryPlaytest {
         t.server("Kill the real player and create the restoration husk", p -> p.kill(p.level()));
         t.awaitClient("Wait for the vanilla Respawn button", mc ->
                 mc.screen instanceof DeathScreen && enabledButton(mc.screen, "deathScreen.respawn") != null);
+        t.screenshot("recovery-death");
         t.client("Click Respawn", mc -> click(mc, "deathScreen.respawn"));
         t.awaitServer("Verify respawn at the cocoon with an empty inventory", p -> p.isAlive()
                 && CHAMBER.distSqr(p.blockPosition()) <= 4 && p.getInventory().isEmpty() && hasWaypoint(p));
@@ -122,6 +123,7 @@ final class RecoveryPlaytest {
             checkHusk(p);
         });
         t.awaitClient("Wait for the saved waypoint to reach the rejoined client", mc -> mc.screen == null && hasWaypoint(mc.player));
+        t.screenshot("recovery-after-restart");
         t.client("Walk toward the persisted husk", mc -> {
             Vec3 target = Vec3.atCenterOf(data(mc.player).restorationHuskPos());
             Vec3 delta = target.subtract(mc.player.position());
@@ -146,6 +148,7 @@ final class RecoveryPlaytest {
         t.server("Allow the second interaction to reach the server", p -> checkAt[0] = p.level().getGameTime() + 5);
         t.awaitServer("Wait five world ticks", p -> p.level().getGameTime() >= checkAt[0]);
         t.server("Verify recovery cannot duplicate the items", p -> checkRecovered(p, recovered[0]));
+        t.screenshot("recovery-complete");
     }
 
     private static PlayerSymbioteData data(Player player) {
