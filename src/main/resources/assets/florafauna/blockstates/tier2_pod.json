@@ -1,12 +1,6 @@
 {
   "variants": {
-    "state=normal": {
-      "model": "florafauna:block/tier2_pod"
-    },
-    "state=working": {
-      "model": "florafauna:block/tier2_pod"
-    },
-    "state=blocked": {
+    "": {
       "model": "florafauna:block/tier2_pod"
     }
   }

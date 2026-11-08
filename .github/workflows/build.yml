@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CI_GRADLE_JVMARGS: -Xms256m -Xmx4g -XX:MaxMetaspaceSize=1g
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,15 +26,10 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Generate Minecraft data
-        run: ./gradlew runData --no-daemon --stacktrace
-        env:
-          # Apply JVM args (adjusted for CI memory limits)
-          GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
+        run: ./gradlew runData --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
 
       - name: Build the mod and run GameTests
-        run: ./gradlew build runGameTestServer --no-daemon --stacktrace
-        env:
-          GRADLE_OPTS: -Xmx4G -Xms2G -XX:+UseG1GC -XX:MaxMetaspaceSize=1G
+        run: ./gradlew build runGameTestServer --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
