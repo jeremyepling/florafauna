@@ -138,6 +138,10 @@ public class FloraFaunaGameTests {
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
+        Identifier silkGarden = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
+        registerStructureTest(event, defaultEnv, "silk_early_shear", silkGarden, 250, SpiderSilkTests::earlyCut);
+        registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", silkGarden, 320, SpiderSilkTests::dispenser);
+        registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", silkGarden, 145, SpiderSilkTests::blocked);
     }
 
     // ==================== Voice Cooldown Tests ====================

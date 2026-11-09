@@ -1,5 +1,10 @@
 package net.j40climb.florafauna.setup;
 
+import com.google.common.reflect.TypeToken;
+import net.minecraft.client.renderer.entity.SpiderRenderer;
+import net.minecraft.world.entity.monster.spider.Spider;
+import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.debug.DebugOverlay;
@@ -109,6 +114,7 @@ public class ClientSetup {
      */
     public static void init(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerRenderers);
+        modEventBus.addListener(ClientSetup::registerSilkPose);
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
@@ -116,9 +122,12 @@ public class ClientSetup {
 
     // ==================== EVENT HANDLERS ====================
 
-    /**
-     * Client setup: register entity renderers.
-     */
+    private static void registerSilkPose(RegisterRenderStateModifiersEvent event) {
+        event.registerEntityModifier(new TypeToken<SpiderRenderer<Spider>>() {}, (spider, state) -> {
+            if (spider.hasData(FloraFaunaRegistry.SILK_HANGING) && spider.getData(FloraFaunaRegistry.SILK_HANGING)) state.isUpsideDown = true;
+        });
+    }
+
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
         event.registerEntityRenderer(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);

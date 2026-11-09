@@ -63,6 +63,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
+| `spider` | Bond a spider, see it hanging upside down, shear its line, and collect one string. |
 
 The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the recovery, hammer and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
@@ -93,3 +94,4 @@ The Java entry point is `FloraFauna.java`; gameplay lives under `common/`, and r
 - [Player symbiote](src/main/java/net/j40climb/florafauna/common/symbiote/README.md) and [husk recovery](src/main/java/net/j40climb/florafauna/common/block/husk/README.md)
 - [Tool abilities](src/main/java/net/j40climb/florafauna/common/item/abilities/README.md), [mining anchors and pods](src/main/java/net/j40climb/florafauna/common/block/mininganchor/README.md), and [item intake](src/main/java/net/j40climb/florafauna/common/block/iteminput/README.md)
 - [Mob barriers](src/main/java/net/j40climb/florafauna/common/block/mobbarrier/README.md) and [mob fear](src/main/java/net/j40climb/florafauna/common/mobsymbiote/fear/README.md)
+- [Spider silk habitat](src/main/java/net/j40climb/florafauna/common/mobsymbiote/silk/README.md)

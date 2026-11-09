@@ -1,0 +1,72 @@
+{
+  "textures": {
+    "silk": "minecraft:block/white_wool",
+    "particle": "minecraft:block/white_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        -6,
+        11,
+        6
+      ],
+      "to": [
+        0,
+        12,
+        7
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    },
+    {
+      "from": [
+        -6,
+        11,
+        9
+      ],
+      "to": [
+        0,
+        12,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    }
+  ]
+}
