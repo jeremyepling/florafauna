@@ -172,6 +172,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.equals(FloraFaunaRegistry.MOB_INPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.MOB_OUTPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.SLIME_GRATE))
+                .filter(x -> !x.equals(FloraFaunaRegistry.SILK_LINE))
                 .filter(x -> !x.equals(FloraFaunaRegistry.FERRIC_POPPY));
     }
 }
