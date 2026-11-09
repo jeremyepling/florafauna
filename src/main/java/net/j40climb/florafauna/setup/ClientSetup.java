@@ -10,6 +10,7 @@ import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
+import net.j40climb.florafauna.common.block.slimegrate.SlimeSplitLayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -109,6 +110,8 @@ public class ClientSetup {
      */
     public static void init(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerRenderers);
+        modEventBus.addListener(SlimeSplitLayer::addLayer);
+        modEventBus.addListener(SlimeSplitLayer::registerState);
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);

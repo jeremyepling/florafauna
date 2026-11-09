@@ -117,6 +117,7 @@ public class FloraFaunaGameTests {
 
         // Register mob barrier tests
         registerMobBarrierTests(event, defaultEnv);
+        registerTest(event, defaultEnv, "slime_grate_harvest_and_reverse", SlimeGrateTests::harvestAndReverse);
 
         // Register mining anchor tests
         registerMiningAnchorTests(event, defaultEnv);

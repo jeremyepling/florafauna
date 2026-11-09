@@ -175,6 +175,7 @@ public class FloraFaunaBlockTagsProvider extends BlockTagsProvider {
 
         // Mineable with pickaxe
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+                .add(FloraFaunaRegistry.SLIME_GRATE.get())
                 .add(FloraFaunaRegistry.HUSK.get())
                 .add(FloraFaunaRegistry.STORAGE_ANCHOR.get());
 

@@ -155,6 +155,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.getRegisteredName().equals("florafauna:hardened_pod"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:mob_input"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:mob_output"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:slime_grate"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:ferric_poppy"));
     }
 
@@ -170,6 +171,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER2_POD))
                 .filter(x -> !x.equals(FloraFaunaRegistry.MOB_INPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.MOB_OUTPUT))
+                .filter(x -> !x.equals(FloraFaunaRegistry.SLIME_GRATE))
                 .filter(x -> !x.equals(FloraFaunaRegistry.FERRIC_POPPY));
     }
 }
