@@ -138,6 +138,7 @@ public class FloraFaunaGameTests {
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
+        WalkthroughGameTests.register(event, defaultEnv);
     }
 
     // ==================== Voice Cooldown Tests ====================
@@ -2700,7 +2701,7 @@ public class FloraFaunaGameTests {
     /**
      * Register a test with a custom structure.
      */
-    private static void registerStructureTest(
+    static void registerStructureTest(
             RegisterGameTestsEvent event,
             Holder<TestEnvironmentDefinition<?>> env,
             String name,

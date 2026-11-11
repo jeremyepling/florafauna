@@ -47,7 +47,7 @@ To update the shared dev world, follow these steps.
 
 ### Test plots
 
-Use the shared dev world for a walkthrough. The original signed stations are near X 38, Z -49. The managed plots start at X 96, Z -48. In a development client with commands enabled, run these in chat.
+Use the shared dev world for a walkthrough. The managed plots start at X 96, Z -48. Each setup comes from a checked-in Minecraft structure and can also run in its own world. In a development client with commands enabled, run these in chat.
 
 ```mcfunction
 /ffplot build all
@@ -63,19 +63,43 @@ Each plot has a named sign and a lectern with three pages covering preparation, 
 | `recovery` | Bind at a cocoon, die on the runway and recover the same inventory after rejoining. |
 | `pods` | Mine three stones into a pod and count the hopper payout after moving it. |
 | `frenchie` | Observe a tamed dog's sleep, sit and wake transitions in a lit pen. |
-| `hammer` | Mine a 3×3 wall and floor, check the backing and strip a log. |
+| `hammer` | Mine a 3Ã—3 wall and floor, check the backing and strip a log. |
 | `transport` | Link an input and output, then capture and release a bonded cow. |
 | `barrier` | Configure a barrier and check its outline against the dark backdrop. |
+| `anchor_bench` | Compare the original feral and hardened anchor stations. Count three cobblestone delivered by the detached pod into its hopper. |
+| `barrier_pens` | Try the Frenchie filter in the west pen and the copper-golem ID and friendly-mob tag in the east pen. |
+| `creeper_fear` | Bring a cat and a bonded creeper to the facing sides of the two pens. Watch for gunpowder and cooldown. |
+| `blaze_fear` | Use the snow and tall barrier walls to observe a bonded blaze drop rods. |
+| `enderman_fear` | Use the original diorite surfaces or pumpkin-headed stands to trigger pearl drops. |
+| `long_route` | Pair the saved transport station's endpoints, offset by 13 blocks east and 6 south, and release a bonded cow. |
+| `tool_actions` | Compare fresh hammer use targets with the original strip of leaves, stripped logs, farmland and path. |
 
 For **one plot in its own world**, create a Creative superflat save with commands enabled, run `/ffplot build hammer` and then `/ffplot visit hammer`. Reopen that save directly with `.\gradlew.bat "-PdevSave=hammer-lab" runClient`, using its actual folder name under `run/client-<checkout>/saves/`. You can also place the same structure at a chosen position with vanilla `/place template florafauna:plots/hammer ~ ~ ~` in a clear area. Use `/ffplot build` for plots you want to visit by name.
 
 Run `/ffplot build all` again to add newly registered plots. Existing installations keep your changes. `/ffplot reset hammer` replaces the blocks, book and supplies within that fixture. Mobs, player inventories, bonds, time and gamerules belong to the world or player. Use an isolated save for tests that need fresh player state or change the time of day.
 
+#### What came from the original saves
+
+The shared template supplied both anchor tiers and their hoppers near X 21, Z -43, the two barrier pens near X 33, Z -54, the paired cat and creeper pens near X 36, Z -66, the blaze and enderman enclosures near Z -81 and -93, and the long transport route. The older playable save supplied the tool-action strip near X 22, Z -66. The original cocoon and its supply chest are in `recovery`. The intake, anchor and chest keep their original relative layout in `item_input`. The current GameTest and the walkthrough use that plot. The older `florafauna:test_item_input_to_chest` identifier remains available to saved structure blocks.
+
+The captured pens retain their wall filters, heights and sight lines. Portable fixtures start with fresh actors from the kits, empty mob queues and unpaired machines. The anchor bench leaves space for attached pods to regrow. Its detached pod starts with a counted sample. Signs and lecterns replace the original labels and authoring blocks. A walkthrough can be rebuilt from the structures on fresh terrain with `/ffplot build all`.
+
+#### Coverage and next checks
+
+The headless suite runs the three fear pens through panic, a counted species-specific drop and cooldown. It also checks the captured barrier collision filters, extraction from the bench pod, and blocked intake retry after space opens in a full chest. The `plots` client scenario visits every entrance, pairs and resets the long route, restarts the world and opens a field guide. The gameplay client scenarios below exercise inputs, rendering and save persistence.
+
+| Priority | Area to exercise next | Test and expected result |
+| --- | --- | --- |
+| 1 | Recovery under pressure, extending `recovery` | Use two players on a dedicated server. Only the owner can claim the husk. Fill the owner's inventory, free a slot and verify all remaining items can be recovered once, including after rejoining. |
+| 2 | Iron garden, a new soil and poppy plot | Follow a bonded golem through calm, poppy conversion, planting and harvest. Interrupt it with combat and verify the cooldown before gardening resumes. Current tests cover state and eligibility. |
+| 3 | Frenchie frontpack, extending `frenchie` | Pick up a tamed dog, reconnect and put it down. Check the rendered pack while carried and verify one dog returns with its owner and variant. |
+| 4 | Asset and screen coverage | Open the containment and cocoon screens and render the station items in a client. Check missing models and textures alongside interaction assertions. |
+
 #### Adding a plot
 
 1. Build the setup in a scratch world. An existing plot makes a convenient starting point. Face south from the entrance at relative `(2, 1, 0)`. Place the sign at `(0, 1, 1)`, lectern at `(2, 1, 1)` and supply barrel at `(4, 1, 1)`. Put the plot ID on the third sign line and give the book a setup page, action page and expected-result page.
 2. Use a structure block in Save mode with the name `florafauna:plots/<id>`. Include the floor, clear air and the entrance. Exclude entities and the authoring block. Start with empty test inventories and unpaired machines so the fixture can move between worlds. Copy the exported `.nbt` from the save's `generated/florafauna/structure/plots/` into [the structure directory](src/main/resources/data/florafauna/structure/plots/).
-3. Add an entry with a new permanent slot to [DevPlot.java](src/main/java/net/j40climb/florafauna/dev/DevPlot.java). The lowercase enum name is the ID. Slots form four columns on 32-block centers. Each template can occupy up to 28×48×28 blocks (X×Y×Z). The manager finds the surface on first placement and saves the elevation.
+3. Add an entry with a new permanent slot to [DevPlot.java](src/main/java/net/j40climb/florafauna/dev/DevPlot.java). The lowercase enum name is the ID. Slots form four columns on 32-block centers. Each template can occupy up to 28Ã—48Ã—28 blocks (XÃ—YÃ—Z). The manager finds the surface on first placement and saves the elevation.
 4. A headless GameTest can reference `DevPlot.<NAME>.structure()` and assert positions relative to the structure origin. A client scenario can call `DevPlot.<NAME>.place(level, origin)` once during setup and drive the player through the interaction. Leave restart phases to read the saved state. The item-input GameTest and hammer client scenario demonstrate both paths.
 
 ### Automated client playtests

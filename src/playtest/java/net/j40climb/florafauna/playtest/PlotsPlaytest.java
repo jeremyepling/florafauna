@@ -1,5 +1,7 @@
 package net.j40climb.florafauna.playtest;
 
+import net.j40climb.florafauna.common.block.mobtransport.MobInputBlockEntity;
+import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlockEntity;
 import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.client.gui.screens.inventory.LecternScreen;
 import net.minecraft.core.BlockPos;
@@ -46,6 +48,21 @@ final class PlotsPlaytest {
                 }
                 command(player, "visit hammer");
                 require(player.level().getBlockState(floorMarker(player)).is(Blocks.GOLD_BLOCK), "Build replaced a manual edit");
+            });
+            t.server("Pair the relocated long route and reset it to the unpaired fixture", player -> {
+                command(player, "visit long_route");
+                var level = player.level();
+                BlockPos origin = player.blockPosition().offset(-2, -1, 0);
+                BlockPos inputPos = origin.offset(14, 1, 10);
+                BlockPos outputPos = origin.offset(1, 1, 4);
+                var input = (MobInputBlockEntity) level.getBlockEntity(inputPos);
+                var output = (MobOutputBlockEntity) level.getBlockEntity(outputPos);
+                require(!input.isPaired() && output.getInputCount() == 0, "Route imported an old world link");
+                input.pairWithOutput(outputPos);
+                require(output.getPairedInputs().contains(inputPos), "Relocated endpoints failed to pair");
+                command(player, "reset long_route");
+                require(!((MobInputBlockEntity) level.getBlockEntity(inputPos)).isPaired()
+                        && ((MobOutputBlockEntity) level.getBlockEntity(outputPos)).getInputCount() == 0, "Reset retained links");
             });
             return;
         }
