@@ -8,6 +8,7 @@ import net.j40climb.florafauna.common.block.mobtransport.MobOutputBlockEntity;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.UUIDUtil;
@@ -44,9 +45,7 @@ final class MobTransportPlaytest {
     static void steps(Playtest t, int phase) {
         if (phase == 1) {
             t.server("Prepare a survival platform with transport blocks and one symbiote", p -> {
-                for (BlockPos pos : BlockPos.betweenClosed(-5, 199, -4, 5, 203, 5)) {
-                    p.level().setBlockAndUpdate(pos, pos.getY() == 199 ? Blocks.SMOOTH_STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
-                }
+                DevPlot.TRANSPORT.place(p.level(), new BlockPos(-5, 199, -7));
                 p.teleportTo(0.5, 200, 2.5);
                 p.setGameMode(GameType.SURVIVAL);
                 p.getInventory().clearContent();

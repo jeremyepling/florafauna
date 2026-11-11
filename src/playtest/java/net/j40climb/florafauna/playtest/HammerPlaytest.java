@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -97,17 +98,7 @@ public final class HammerPlaytest {
 
     private static void prepare(ServerPlayer player) {
         ServerLevel level = player.level().getServer().overworld();
-        for (int x = -2; x <= 2; x++) {
-            for (int y = -2; y <= 2; y++) {
-                for (int depth = 0; depth <= 1; depth++) {
-                    level.setBlockAndUpdate(WALL.offset(x, y, depth), Blocks.STONE.defaultBlockState());
-                    level.setBlockAndUpdate(FLOOR.offset(x, -depth, y), Blocks.STONE.defaultBlockState());
-                }
-                for (int h = 1; h <= 4; h++) {
-                    level.setBlockAndUpdate(FLOOR.offset(x, h, y), Blocks.AIR.defaultBlockState());
-                }
-            }
-        }
+        DevPlot.HAMMER.place(level, new BlockPos(-2, 199, -5));
         player.setGameMode(GameType.SURVIVAL);
         player.removeAllEffects();
         player.getInventory().clearContent();

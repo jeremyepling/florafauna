@@ -58,6 +58,7 @@ public final class Playtest {
             return true;
         });
         switch (scenario) {
+            case "plots" -> PlotsPlaytest.steps(this, phase);
             case "recovery" -> RecoveryPlaytest.steps(this, phase);
             case "hammer" -> HammerPlaytest.steps(this, phase);
             case "pods" -> PodPlaytest.steps(this, phase);

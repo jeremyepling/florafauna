@@ -5,6 +5,7 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -30,15 +31,7 @@ final class FrenchiePlaytest {
             ServerLevel level = p.level().getServer().overworld();
             setTime(level, ClockTimeMarkers.NOON);
             level.getServer().setWeatherParameters(6000, 0, false, false);
-            for (int x = -3; x <= 3; x++) {
-                for (int z = -3; z <= 4; z++) {
-                    BlockPos feet = PEN.offset(x, 0, z);
-                    level.setBlockAndUpdate(feet.below(), Blocks.SEA_LANTERN.defaultBlockState());
-                    boolean edge = Math.abs(x) == 3 || z == -3 || z == 4;
-                    level.setBlockAndUpdate(feet, (edge ? Blocks.OAK_FENCE : Blocks.AIR).defaultBlockState());
-                    level.setBlockAndUpdate(feet.above(), Blocks.AIR.defaultBlockState());
-                }
-            }
+            DevPlot.FRENCHIE.place(level, new BlockPos(-3, 200, -6));
             p.teleportTo(level, 0.5, 201, 2.5, Set.of(), 180, 19, true);
             p.setGameMode(GameType.SURVIVAL);
             p.getInventory().clearContent();

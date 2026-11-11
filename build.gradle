@@ -31,6 +31,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 // Worktree-specific run directory suffix for multi-agent parallel development
 def wt = rootProject.projectDir.name
+def devSave = providers.gradleProperty('devSave').orElse('dev').get()
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull
 def playtestPhase = providers.gradleProperty('playtestPhase').orNull
@@ -79,7 +80,7 @@ neoForge {
             //   - World Type: Superflat
             //   - Customize: Tunneler's Dream preset
             // DevWorldSetup.java will handle gamerules on join
-            programArguments.addAll '--quickPlaySingleplayer', 'dev'
+            programArguments.addAll '--quickPlaySingleplayer', devSave
 
             // Gametests disabled in client/server - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -287,7 +288,8 @@ tasks.register('copyDevWorld', Copy) {
 
 // Run dev setup tasks before client starts
 tasks.matching { it.name == 'runClient' }.configureEach {
-    dependsOn 'copyDevOptions', 'copyDevWorld'
+    dependsOn 'copyDevOptions'
+    if (devSave == 'dev') dependsOn 'copyDevWorld'
 }
 
 // https://discord.com/channels/313125603924639766/1185197721477468160/1330729872213151806
