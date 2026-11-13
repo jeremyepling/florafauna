@@ -52,6 +52,8 @@ final class WalkthroughGameTests {
                 WalkthroughGameTests::checkHopperPayout);
         registerStructureTest(event, env, "intake_retries_full_chest", DevPlot.ITEM_INPUT.structure(), 800,
                 WalkthroughGameTests::checkFullChestRetry);
+        registerStructureTest(event, env, "iron_garden_cycle", DevPlot.IRON_GARDEN.structure(), 10000,
+                IronGardenGameTest::run);
     }
 
     private static void checkFearCycle(GameTestHelper helper, Mob mob, Item drop, int minimum, int maximum) {
