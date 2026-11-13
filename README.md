@@ -91,7 +91,7 @@ The headless suite runs the three fear pens through panic, a counted species-spe
 
 The iron garden GameTests use the same soil bed, flowers and chest as the walkthrough. For husk ownership, run `.\scripts\test_husk_multiplayer.ps1 -Offline` to start a local dedicated server with two clients. The owner dies with 17 shards. A visitor tries to claim them, then the owner makes room for one shard and reconnects to recover the other 16. The Frenchie frontpack client scenario checks the dog's identity, ownership and coat across a restart.
 
-One remaining coverage gap is the containment and cocoon screens and the station item models. A client scenario could open each screen and render those items to check for missing models or textures.
+The recovery scenario already opens the cocoon screen and uses its spawn and bind buttons. A remaining visual check is to render the containment screen and the station item models and inspect their textures.
 
 #### Adding a plot
 
@@ -121,7 +121,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
 | `frontpack` | Pick up a tamed Frenchie, check the pack before and after restarting, and put down the same dog exactly once. |
 
-The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the plots, recovery, hammer and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
+The script prints the output directory under `.tmp/world-playtests`. Each scenario has its own world and per-phase results. The `frontpack/screenshots` folder contains matched third-person views before and after putdown. The plots, recovery, hammer and sleep scenarios also save screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
 ### Worktree Workflow
 
