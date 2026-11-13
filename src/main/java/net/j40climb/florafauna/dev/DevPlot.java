@@ -16,7 +16,8 @@ import java.util.Set;
 /** Permanent grid slots. Keep a plot's slot when adding or reordering entries. */
 public enum DevPlot {
     ITEM_INPUT(0), RECOVERY(1), PODS(2), FRENCHIE(3), HAMMER(4), TRANSPORT(5), BARRIER(6),
-    ANCHOR_BENCH(7), BARRIER_PENS(8), CREEPER_FEAR(9), BLAZE_FEAR(10), ENDERMAN_FEAR(11), LONG_ROUTE(12), TOOL_ACTIONS(13);
+    ANCHOR_BENCH(7), BARRIER_PENS(8), CREEPER_FEAR(9), BLAZE_FEAR(10), ENDERMAN_FEAR(11), LONG_ROUTE(12), TOOL_ACTIONS(13),
+    IRON_GARDEN(14);
 
     private static final int COLUMNS = 4;
     private static final int SPACING = 32;
