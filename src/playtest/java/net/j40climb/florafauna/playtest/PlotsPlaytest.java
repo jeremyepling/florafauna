@@ -7,17 +7,19 @@ import net.minecraft.client.gui.screens.inventory.LecternScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
-import net.minecraft.world.level.block.entity.LecternBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static net.j40climb.florafauna.playtest.Playtest.require;
@@ -98,9 +100,21 @@ final class PlotsPlaytest {
         BlockPos entry = player.blockPosition();
         require(level.getBlockEntity(entry.offset(-2, 0, 1)) instanceof SignBlockEntity sign
                 && sign.getFrontText().getMessage(2, false).getString().equals(plot.id()), "Wrong entrance for " + plot.id());
-        require(level.getBlockEntity(entry.south()) instanceof LecternBlockEntity lectern
-                && lectern.hasBook() && lectern.getBook().get(DataComponents.WRITTEN_BOOK_CONTENT).pages().size() == 3,
-                "Missing field guide for " + plot.id());
+        var lectern = level.getBlockEntity(entry.south(), BlockEntityType.LECTERN);
+        var book = lectern.map(block -> block.getBook().get(DataComponents.WRITTEN_BOOK_CONTENT))
+                .orElseThrow(() -> new AssertionError("Missing field guide for " + plot.id()));
+        List<String> pages = switch (plot) {
+            case FRENCHIE -> List.of("setup", "steps", "expect", "carry", "release");
+            case RECOVERY -> List.of("setup", "steps", "expect", "owner", "full", "partial", "rejoin");
+            default -> List.of("setup", "steps", "expect");
+        };
+        require(book.pages().size() == pages.size(), "Wrong page count for " + plot.id());
+        for (int i = 0; i < pages.size(); i++) {
+            String key = "plot.florafauna." + plot.id() + "." + pages.get(i);
+            var page = book.pages().get(i).raw();
+            require(page.getContents() instanceof TranslatableContents contents
+                    && contents.getKey().equals(key) && !page.getString().equals(key), "Missing field guide text for " + key);
+        }
         if (plot != DevPlot.ITEM_INPUT) {
             require(level.getBlockEntity(entry.offset(2, 0, 1)) instanceof BarrelBlockEntity kit && !kit.isEmpty(),
                     "Missing supplies for " + plot.id());

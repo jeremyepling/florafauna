@@ -55,14 +55,14 @@ Use the shared dev world for a walkthrough. The managed plots start at X 96, Z -
 /ffplot visit hammer
 ```
 
-Each plot has a named sign and a lectern with three pages covering preparation, actions and expected results. The supply barrel holds the starting kit. At `item_input`, bring one diamond from Creative so the test chest is the only nearby storage destination.
+Each plot has a named sign and a lectern with instructions, supplies to collect and expected results. The second walkthrough begins on page four in both the recovery and Frenchie guides. The supply barrel holds the starting kit. At `item_input`, bring one diamond from Creative so the test chest is the only nearby storage destination.
 
 | Plot ID | What you can check |
 | --- | --- |
 | `item_input` | Pair an input to an anchor and follow a dropped diamond to its chest. |
-| `recovery` | Bind at a cocoon, die on the runway and recover the same inventory after rejoining. |
+| `recovery` | Recover an inventory after rejoining. With a second player, try another player's husk and count a partial stack through a restart. |
 | `pods` | Mine three stones into a pod and count the hopper payout after moving it. |
-| `frenchie` | Observe a tamed dog's sleep, sit and wake transitions in a lit pen. |
+| `frenchie` | Check sleep, sitting and waking in the pen. Carry a tamed dog in the frontpack through a restart and put it down once. |
 | `hammer` | Mine a 3×3 wall and floor, check the backing and strip a log. |
 | `transport` | Link an input and output, then capture and release a bonded cow. |
 | `barrier` | Configure a barrier and check its outline against the dark backdrop. |
@@ -73,10 +73,11 @@ Each plot has a named sign and a lectern with three pages covering preparation, 
 | `enderman_fear` | Use the original diorite surfaces or pumpkin-headed stands to trigger pearl drops. |
 | `long_route` | Pair the saved transport station's endpoints, offset by 13 blocks east and 6 south, and release a bonded cow. |
 | `tool_actions` | Compare fresh hammer use targets with the original strip of leaves, stripped logs, farmland and path. |
+| `iron_garden` | Bond an iron golem and watch it plant, convert and harvest poppies. Interrupt it and time its return to gardening. |
 
 For **one plot in its own world**, create a Creative superflat save with commands enabled, run `/ffplot build hammer` and then `/ffplot visit hammer`. Reopen that save directly with `.\gradlew.bat "-PdevSave=hammer-lab" runClient`, using its actual folder name under `run/client-<checkout>/saves/`. You can also place the same structure at a chosen position with vanilla `/place template florafauna:plots/hammer ~ ~ ~` in a clear area. Use `/ffplot build` for plots you want to visit by name.
 
-Run `/ffplot build all` again to add newly registered plots. Existing installations keep your changes. `/ffplot reset hammer` replaces the blocks, book and supplies within that fixture. Mobs, player inventories, bonds, time and gamerules belong to the world or player. Use an isolated save for tests that need fresh player state or change the time of day.
+Run `/ffplot build all` again to add newly registered plots. Existing installations keep your changes. In an older save, `/ffplot reset recovery` and `/ffplot reset frenchie` install their expanded books and restock their kits. Resetting a plot replaces its blocks and storage. Mobs, player inventories, bonds, time and gamerules belong to the world or player. Use an isolated save for tests that need fresh player state or change the time of day.
 
 #### What came from the original saves
 
@@ -88,12 +89,9 @@ The captured pens retain their wall filters, heights and sight lines. Portable f
 
 The headless suite runs the three fear pens through panic, a counted species-specific drop and cooldown. It also checks the captured barrier collision filters, extraction from the bench pod, and blocked intake retry after space opens in a full chest. The `plots` client scenario visits every entrance, pairs and resets the long route, restarts the world and opens a field guide. The gameplay client scenarios below exercise inputs, rendering and save persistence.
 
-| Priority | Area to exercise next | Test and expected result |
-| --- | --- | --- |
-| 1 | Recovery under pressure, extending `recovery` | Use two players on a dedicated server. Only the owner can claim the husk. Fill the owner's inventory, free a slot and verify all remaining items can be recovered once, including after rejoining. |
-| 2 | Iron garden, a new soil and poppy plot | Follow a bonded golem through calm, poppy conversion, planting and harvest. Interrupt it with combat and verify the cooldown before gardening resumes. Current tests cover state and eligibility. |
-| 3 | Frenchie frontpack, extending `frenchie` | Pick up a tamed dog, reconnect and put it down. Check the rendered pack while carried and verify one dog returns with its owner and variant. |
-| 4 | Asset and screen coverage | Open the containment and cocoon screens and render the station items in a client. Check missing models and textures alongside interaction assertions. |
+The iron garden GameTests use the same soil bed, flowers and chest as the walkthrough. For husk ownership, run `.\scripts\test_husk_multiplayer.ps1 -Offline` to start a local dedicated server with two clients. The owner dies with 17 shards. A visitor tries to claim them, then the owner makes room for one shard and reconnects to recover the other 16. The Frenchie frontpack client scenario checks the dog's identity, ownership and coat across a restart.
+
+One remaining coverage gap is the containment and cocoon screens and the station item models. A client scenario could open each screen and render those items to check for missing models or textures.
 
 #### Adding a plot
 
@@ -121,6 +119,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
+| `frontpack` | Pick up a tamed Frenchie, check the pack before and after restarting, and put down the same dog exactly once. |
 
 The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the plots, recovery, hammer and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
