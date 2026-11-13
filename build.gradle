@@ -35,6 +35,11 @@ def devSave = providers.gradleProperty('devSave').orElse('dev').get()
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull
 def playtestPhase = providers.gradleProperty('playtestPhase').orNull
+def huskTestId = providers.gradleProperty('huskTestId').orNull
+def huskTestPort = providers.gradleProperty('huskTestPort').orNull
+if (huskTestId != null && (!(huskTestId ==~ /[0-9a-f]{32}/) || !(huskTestPort ==~ /[0-9]{1,5}/) || !(1..65535).contains(huskTestPort.toInteger()))) {
+    throw new GradleException('Use scripts/test_husk_multiplayer.ps1 to prepare the multiplayer run.')
+}
 if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario ==~ /[a-z]+/) || !(playtestPhase in ['1', '2']))) {
     throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
 }
@@ -56,6 +61,26 @@ neoForge {
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.
     runs {
+        if (huskTestId != null) {
+            def directory = file(".tmp/husk-multiplayer/${huskTestId}")
+            huskServer {
+                server()
+                gameDirectory = new File(directory, 'server')
+                programArgument '--nogui'
+                systemProperty 'florafauna.huskTest.root', directory.absolutePath
+                jvmArgument '-Xmx1G'
+            }
+            ['Owner', 'Visitor'].each { role ->
+                create("husk${role}") {
+                    client()
+                    gameDirectory = new File(directory, role)
+                    programArguments.addAll '--username', "FF${role}".toString(), '--width', '640', '--height', '360',
+                            '--quickPlayMultiplayer', "127.0.0.1:${huskTestPort}".toString()
+                    systemProperty 'florafauna.huskTest.client', role
+                    jvmArgument '-Xmx1G'
+                }
+            }
+        }
         if (playtestId != null) {
             worldPlaytest {
                 client()
@@ -142,7 +167,7 @@ neoForge {
         // but multi mod projects should define one per mod
         "${mod_id}" {
             sourceSet(sourceSets.main)
-            if (playtestId != null) {
+            if (playtestId != null || huskTestId != null) {
                 sourceSet(sourceSets.playtest)
             }
         }
