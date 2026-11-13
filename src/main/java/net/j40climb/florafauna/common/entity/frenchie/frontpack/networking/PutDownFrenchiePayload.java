@@ -53,7 +53,7 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         frenchie.load(input);
         frenchie.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0f);
 
-        player.level().addFreshEntity(frenchie);
+        if (!player.level().addFreshEntity(frenchie)) return;
 
         // Clear attachment
         player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, FrontpackData.DEFAULT);

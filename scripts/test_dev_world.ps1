@@ -1,8 +1,8 @@
 #Requires -Version 7.0
 # Run Minecraft clients against fresh copies of a closed save. Each scenario has its own copy.
 param(
-    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'plots')]
-    [string[]]$Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'plots'),
+    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'plots')]
+    [string[]]$Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'plots'),
     [string]$SourceWorld,
     [switch]$Offline
 )
