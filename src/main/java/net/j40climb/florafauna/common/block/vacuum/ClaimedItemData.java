@@ -15,18 +15,20 @@ import net.minecraft.network.codec.StreamCodec;
  * 1. Vacuum block claims an item entity -> attaches ClaimedItemData
  * 2. Animation plays on client (item moves toward block)
  * 3. After animationDuration ticks, item is absorbed into buffer
- * 4. ItemEntity is discarded
+ * 4. The accepted quantity is removed and any remainder becomes available again
  *
  * @param claimed Whether this item is claimed (always true when attached)
  * @param vacuumBlockPos Position of the vacuum block that claimed this item
  * @param claimedAtTick Server tick when the item was claimed
  * @param animationDuration Duration in ticks for the absorption animation
+ * @param quantity Maximum items this claim may absorb. Old saves allow the whole stack.
  */
 public record ClaimedItemData(
         boolean claimed,
         BlockPos vacuumBlockPos,
         long claimedAtTick,
-        int animationDuration
+        int animationDuration,
+        int quantity
 ) {
     /**
      * Codec for persistence.
@@ -36,7 +38,8 @@ public record ClaimedItemData(
                     Codec.BOOL.fieldOf("claimed").forGetter(ClaimedItemData::claimed),
                     BlockPos.CODEC.fieldOf("vacuumBlockPos").forGetter(ClaimedItemData::vacuumBlockPos),
                     Codec.LONG.fieldOf("claimedAtTick").forGetter(ClaimedItemData::claimedAtTick),
-                    Codec.INT.fieldOf("animationDuration").forGetter(ClaimedItemData::animationDuration)
+                    Codec.INT.fieldOf("animationDuration").forGetter(ClaimedItemData::animationDuration),
+                    Codec.intRange(1, Integer.MAX_VALUE).optionalFieldOf("quantity", Integer.MAX_VALUE).forGetter(ClaimedItemData::quantity)
             ).apply(builder, ClaimedItemData::new)
     );
 
@@ -48,13 +51,18 @@ public record ClaimedItemData(
             BlockPos.STREAM_CODEC.cast(), ClaimedItemData::vacuumBlockPos,
             ByteBufCodecs.VAR_LONG, ClaimedItemData::claimedAtTick,
             ByteBufCodecs.VAR_INT, ClaimedItemData::animationDuration,
-            ClaimedItemData::new
+            // The quantity is only used by the server. Keep the animation wire format stable.
+            ClaimedItemData::newClientClaim
     );
+
+    private static ClaimedItemData newClientClaim(boolean claimed, BlockPos pos, long tick, int duration) {
+        return new ClaimedItemData(claimed, pos, tick, duration, Integer.MAX_VALUE);
+    }
 
     /**
      * Default state: not claimed.
      */
-    public static final ClaimedItemData DEFAULT = new ClaimedItemData(false, BlockPos.ZERO, 0L, 0);
+    public static final ClaimedItemData DEFAULT = new ClaimedItemData(false, BlockPos.ZERO, 0L, 0, Integer.MAX_VALUE);
 
     /**
      * Creates a new ClaimedItemData for an item that has just been claimed.
@@ -65,7 +73,11 @@ public record ClaimedItemData(
      * @return New ClaimedItemData instance
      */
     public static ClaimedItemData create(BlockPos vacuumBlockPos, long currentTick, int animationDuration) {
-        return new ClaimedItemData(true, vacuumBlockPos, currentTick, animationDuration);
+        return create(vacuumBlockPos, currentTick, animationDuration, Integer.MAX_VALUE);
+    }
+
+    public static ClaimedItemData create(BlockPos vacuumBlockPos, long currentTick, int animationDuration, int quantity) {
+        return new ClaimedItemData(true, vacuumBlockPos, currentTick, animationDuration, quantity);
     }
 
     /**

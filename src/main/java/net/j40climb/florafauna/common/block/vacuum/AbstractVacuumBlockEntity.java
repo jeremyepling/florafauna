@@ -198,16 +198,17 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
             }
 
             // Claim the item
-            claimItem(level, itemEntity);
+            int quantity = Math.min(itemEntity.getItem().getCount(), getMaxItemsPerCollect() - claimedItems);
+            claimItem(level, itemEntity, quantity);
             claimedEntities++;
-            claimedItems += itemEntity.getItem().getCount();
+            claimedItems += quantity;
         }
     }
 
     /**
      * Claims an item entity, preventing player pickup and starting animation.
      */
-    protected void claimItem(Level level, ItemEntity itemEntity) {
+    protected void claimItem(Level level, ItemEntity itemEntity, int quantity) {
         // Prevent player pickup
         itemEntity.setPickUpDelay(Integer.MAX_VALUE);
 
@@ -216,7 +217,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
         ClaimedItemData claimData = ClaimedItemData.create(
                 worldPosition,
                 currentTick,
-                getAnimationDuration()
+                getAnimationDuration(), quantity
         );
         itemEntity.setData(FloraFaunaRegistry.CLAIMED_ITEM_DATA, claimData);
 
@@ -256,27 +257,33 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
 
             // Check if animation is complete
             if (claimData.isAnimationComplete(currentTick)) {
-                absorbItem(itemEntity);
+                ItemStack stack = itemEntity.getItem();
+                int offered = Math.min(stack.getCount(), claimData.quantity());
+                int accepted = storeItems(stack.copyWithCount(offered));
+                if (accepted == stack.getCount()) {
+                    itemEntity.discard();
+                } else {
+                    itemEntity.setItem(stack.copyWithCount(stack.getCount() - accepted));
+                    releaseClaim(itemEntity);
+                }
             }
         }
     }
 
     /**
-     * Absorbs an item entity into the buffer and removes it from the world.
+     * Stores as much of the offered stack as fits and returns the quantity accepted.
      */
-    protected void absorbItem(ItemEntity itemEntity) {
-        ItemStack stack = itemEntity.getItem().copy();
-
-        // Add to buffer
-        int added = buffer.add(stack);
-
+    protected int storeItems(ItemStack offered) {
+        int added = buffer.add(offered);
         if (added > 0) {
-            // Mark as changed for saving
             setChanged();
         }
+        return added;
+    }
 
-        // Remove the entity (even if we couldn't add everything - safety rule)
-        itemEntity.discard();
+    private static void releaseClaim(ItemEntity itemEntity) {
+        itemEntity.setData(FloraFaunaRegistry.CLAIMED_ITEM_DATA, ClaimedItemData.DEFAULT);
+        itemEntity.setPickUpDelay(0);
     }
 
     // ==================== STATE MANAGEMENT ====================
@@ -328,9 +335,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
         for (ItemEntity itemEntity : nearbyItems) {
             ClaimedItemData claimData = itemEntity.getData(FloraFaunaRegistry.CLAIMED_ITEM_DATA);
             if (claimData.claimed() && claimData.vacuumBlockPos().equals(worldPosition)) {
-                // Reset claim and pickup delay
-                itemEntity.setData(FloraFaunaRegistry.CLAIMED_ITEM_DATA, ClaimedItemData.DEFAULT);
-                itemEntity.setPickUpDelay(0);
+                releaseClaim(itemEntity);
             }
         }
     }
