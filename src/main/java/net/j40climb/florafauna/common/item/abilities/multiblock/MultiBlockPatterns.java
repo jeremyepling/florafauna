@@ -9,7 +9,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
@@ -29,7 +31,11 @@ public final class MultiBlockPatterns {
     private MultiBlockPatterns() {}
 
     /** Positions are computed from the original hit, before any player break callbacks run. */
-    public record Plan(List<BlockPos> blocks, List<BlockPos> stairs, Direction stairFacing) {}
+    public record Plan(List<BlockPos> blocks, List<BlockPos> stairs, Direction stairFacing) {
+        BlockState stairState() {
+            return Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, stairFacing);
+        }
+    }
 
     public static Plan plan(Player player, ItemStack tool, BlockPos center, Direction face) {
         MiningModeData mode = tool.getOrDefault(FloraFaunaRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
