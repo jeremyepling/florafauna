@@ -138,6 +138,7 @@ final class FrenchiePlaytest {
         t.awaitClient("See the seated dog reach the pillow and settle", mc ->
                 mc.screen instanceof InBedChatScreen && mc.level.getEntity(id[0]) instanceof FrenchieEntity dog
                         && dog.isFrenchieSleeping() && dog.isBedtimeBuddy()
+                        && CompanionIconsPlaytest.shows(mc, dog, "sleep")
                         && dog.position().distanceToSqr(Vec3.atBottomCenterOf(bed)) <= 2.25);
         t.client("Leave the bed early", mc -> mc.screen.onClose());
         t.awaitServer("Early waking restores sitting without granting Well Rested", p ->
