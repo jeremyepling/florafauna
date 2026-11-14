@@ -67,7 +67,7 @@ public final class DeliveryMultiplayerClient {
         var dog = (FrenchieEntity) mc.level.getEntity(DeliveryMultiplayerServer.DOG);
         switch (step) {
             case USE_BUNDLE -> {
-                if (!ItemStack.matches(mc.player.getMainHandItem(), DeliveryPlaytest.parcel()) || !aim(mc, dog)) return;
+                if (!ItemStack.matches(mc.player.getMainHandItem(), CourierParcel.parcel()) || !aim(mc, dog)) return;
                 KeyMapping.click(mc.options.keyUse.getKey());
                 step = Step.CHOOSE;
             }
