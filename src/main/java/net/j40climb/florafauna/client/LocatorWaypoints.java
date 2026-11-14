@@ -1,13 +1,11 @@
-package net.j40climb.florafauna.mixin;
+package net.j40climb.florafauna.client;
 
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.contextualbar.LocatorBarRenderer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
@@ -16,78 +14,42 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * Mixin to render custom waypoints on the locator bar.
- * - Husk waypoint: Shows restoration husk location when player is in BONDED_WEAKENED state
- * - Anchor waypoint: Shows mining anchor location with color based on fill state (teal/orange/red)
- */
-@Mixin(LocatorBarRenderer.class)
-public class LocatorBarRendererMixin {
-
+public final class LocatorWaypoints {
     // Distance-based sprites (matching our waypoint_style pattern)
-    @Unique
     private static final Identifier HUSK_SPRITE_NEAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/husk_near");
-    @Unique
     private static final Identifier HUSK_SPRITE_MID = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/husk_mid");
-    @Unique
     private static final Identifier HUSK_SPRITE_FAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/husk_far");
 
     // Distance thresholds for sprite selection
-    @Unique
     private static final float NEAR_DISTANCE = 50.0f;
-    @Unique
     private static final float FAR_DISTANCE = 200.0f;
 
-    @Unique
     private static final Identifier LOCATOR_BAR_ARROW_UP = Identifier.withDefaultNamespace("hud/locator_bar_arrow_up");
 
-    @Unique
     private static final Identifier LOCATOR_BAR_ARROW_DOWN = Identifier.withDefaultNamespace("hud/locator_bar_arrow_down");
 
     // Sculk teal color in ARGB format
-    @Unique
     private static final int TEAL_COLOR = 0xFF0F8080;
 
     // Mining Anchor sprites (reuse husk sprites with different colors based on fill state)
-    @Unique
     private static final Identifier ANCHOR_SPRITE_NEAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/anchor_near");
-    @Unique
     private static final Identifier ANCHOR_SPRITE_MID = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/anchor_mid");
-    @Unique
     private static final Identifier ANCHOR_SPRITE_FAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/anchor_far");
 
     // Fill state colors
-    @Unique
     private static final int ANCHOR_COLOR_NORMAL = 0xFF0F8080;   // Teal (same as husk)
-    @Unique
     private static final int ANCHOR_COLOR_WARNING = 0xFFFF8800;  // Orange
-    @Unique
     private static final int ANCHOR_COLOR_FULL = 0xFFFF0000;     // Red
 
-    @Unique
     private static final int VISIBLE_DEGREE_RANGE = 60;
 
-    @Unique
-    private static final int DOT_SIZE = 9;
-
-    @Shadow
-    @Final
-    private Minecraft minecraft;
+    private LocatorWaypoints() {}
 
     /**
-     * Inject at the end of extractRenderState() to add our husk waypoint.
+     * Draw the player’s active husk on the locator bar.
      */
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void florafauna$renderHuskWaypoint(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        LocalPlayer player = this.minecraft.player;
+    public static void renderHuskWaypoint(LocalPlayer player, GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, int barTop) {
         if (player == null) {
             return;
         }
@@ -149,10 +111,6 @@ public class LocatorBarRendererMixin {
             spriteSize = 7;  // Mid sprite is 7x7
         }
 
-        // Calculate position on the locator bar
-        // The bar is at the BOTTOM of the screen, above the hotbar
-        // From ContextualBarRenderer: top = guiHeight - MARGIN_BOTTOM(24) - HEIGHT(5)
-        int barTop = guiGraphics.guiHeight() - 24 - 5;
         // Center the sprite horizontally, accounting for its size
         int halfWidth = Mth.ceil((guiGraphics.guiWidth() - spriteSize) / 2.0F);
 
@@ -184,11 +142,9 @@ public class LocatorBarRendererMixin {
     }
 
     /**
-     * Inject after the husk waypoint to render mining anchor waypoint.
+     * Draw the player’s active mining anchor on the locator bar.
      */
-    @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void florafauna$renderAnchorWaypoint(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        LocalPlayer player = this.minecraft.player;
+    public static void renderAnchorWaypoint(LocalPlayer player, GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, int barTop) {
         if (player == null) {
             return;
         }
@@ -248,10 +204,8 @@ public class LocatorBarRendererMixin {
         }
 
         // Determine color based on fill state
-        int color = florafauna$getAnchorColor(data.lastAnnouncedFillState());
+        int color = getAnchorColor(data.lastAnnouncedFillState());
 
-        // Calculate position on the locator bar
-        int barTop = guiGraphics.guiHeight() - 24 - 5;
         int halfWidth = Mth.ceil((guiGraphics.guiWidth() - spriteSize) / 2.0F);
 
         // Map angle to bar position (-60 to +60 maps to -86.5 to +86.5 pixels)
@@ -281,8 +235,7 @@ public class LocatorBarRendererMixin {
     /**
      * Returns the color for the anchor waypoint based on fill state.
      */
-    @Unique
-    private static int florafauna$getAnchorColor(AnchorFillState fillState) {
+    private static int getAnchorColor(AnchorFillState fillState) {
         return switch (fillState) {
             case NORMAL -> ANCHOR_COLOR_NORMAL;
             case WARNING -> ANCHOR_COLOR_WARNING;

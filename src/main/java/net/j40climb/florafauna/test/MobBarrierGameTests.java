@@ -12,7 +12,11 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.VarInt;
 import net.minecraft.world.InteractionHand;
+//? if <26.3 {
 import net.minecraft.world.entity.EntityType;
+//?} else {
+/*import net.minecraft.world.entity.EntityTypes;*/
+//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;

@@ -37,17 +37,21 @@ import org.jetbrains.annotations.Nullable;
  */
 public class FieldRelayBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<FieldRelayBlock> CODEC = simpleCodec(FieldRelayBlock::new);
+    //?}
 
     public FieldRelayBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

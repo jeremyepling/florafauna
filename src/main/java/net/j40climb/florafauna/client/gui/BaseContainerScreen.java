@@ -20,7 +20,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
  *       Opens via {@code player.openMenu()} on server side.
  *       Examples: Chests, Furnaces, ContainmentChamberScreen.</li>
  *   <li><b>BaseScreen</b> - Button-only GUIs, config screens, no item slots.
- *       Opens directly on client via {@code Minecraft.getInstance().setScreen()}.
+ *       Opens directly on client via {@code Minecraft.getInstance().setScreen(screen)}.
  *       Examples: Sign editing, MobBarrierConfigScreen, CocoonChamberScreen.</li>
  * </ul>
  * <p>

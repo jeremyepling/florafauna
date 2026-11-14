@@ -24,16 +24,20 @@ import org.jetbrains.annotations.Nullable;
  */
 public class StorageAnchorBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<StorageAnchorBlock> CODEC = simpleCodec(StorageAnchorBlock::new);
+    //?}
 
     public StorageAnchorBlock(Properties properties) {
         super(properties);
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Nullable
     @Override

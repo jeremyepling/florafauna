@@ -22,10 +22,10 @@ The abilities system provides reusable tool functionality through data component
 
 | Shape | Pattern | Radius |
 |-------|---------|--------|
-| SINGLE | 1×1 | 0 |
-| FLAT_3X3 | 3×3 plane | 1 |
-| FLAT_5X5 | 5×5 plane | 2 |
-| FLAT_7X7 | 7×7 plane | 3 |
+| SINGLE | 1Ã—1 | 0 |
+| FLAT_3X3 | 3Ã—3 plane | 1 |
+| FLAT_5X5 | 5Ã—5 plane | 2 |
+| FLAT_7X7 | 7Ã—7 plane | 3 |
 | SHAPELESS | Vein mining | 1 |
 | TUNNEL_UP | Staircase up | 0 |
 | TUNNEL_DOWN | Staircase down | 0 |
@@ -70,7 +70,7 @@ When breaking a block with `MULTI_BLOCK_MINING` component:
 3. On break, destroy all blocks in pattern
 4. Collect drops through the normal player mining and loot callbacks. A canceled center break leaves all neighbors intact. Each extra block gets its own protection checks and break callback.
 
-Flat planes follow the original hit face. Shapeless mining follows matching blocks through faces, edges and corners and defaults to 64 blocks, including the center. Existing component values are bounded to a radius of 0–3 and a vein limit of 1–64.
+Flat planes follow the original hit face. Shapeless mining follows matching blocks through faces, edges and corners and defaults to 64 blocks, including the center. Existing component values are bounded to a radius of 0â€“3 and a vein limit of 1â€“64.
 
 Instabreak sets mining speed to 100. Block hardness still determines how long a strike takes.
 
@@ -101,7 +101,9 @@ The `MULTI_TOOL_ABILITY` component enables tool modifications on right-click:
 
 **Priority**: Multi-tool actions take priority over `RIGHT_CLICK_ACTION`. If a block can be modified (stripped, pathed, or tilled), only that action occurs. Otherwise, the right-click ability executes.
 
-**Note**: The multi-tool ability requires the item to override `canPerformAction()` to declare support for the tool actions. Currently only `HammerItem` implements this - other items with the component will not perform tool modifications until they add the override.
+On 26.3, items with the component use vanilla block transformers. The strip setting supports logs, wood and bamboo. FloraFauna adds driftwood to NeoForge’s transformables data map so axes and hammers preserve its axis.
+
+On 26.1, the multi-tool ability requires the item to override `canPerformAction()` to declare support for the tool actions. Currently only `HammerItem` implements this - other items with the component will not perform tool modifications until they add the override.
 
 ## Adding Abilities to Items
 

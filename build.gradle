@@ -25,7 +25,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 def wt = rootProject.projectDir.name
 // Preserve established 26.1 dev saves when an existing worktree adopts Stonecutter.
 def runRoot = project.name == '26.1-neoforge' ? rootProject.file('run') : file('run')
-def devOptions = rootProject.file('dev/options-template.txt')
+def devOptions = project.name == '26.3-neoforge' ? file('dev/options-template.txt') : rootProject.file('dev/options-template.txt')
 def generatedResources = layout.buildDirectory.dir('generated/resources/datagen').get().asFile
 def sharedResources = rootProject.file('src/main/resources')
 def devSave = providers.gradleProperty('devSave').orElse('dev').get()
@@ -40,7 +40,38 @@ if (huskTestId != null && (!(huskTestId ==~ /[0-9a-f]{32}/) || !(huskTestPort ==
 if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario ==~ /[a-z]+/) || !(playtestPhase in ['1', '2']))) {
     throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
 }
+// Sources that use different provider contracts or rendering hooks live with their target.
+sourceSets.main.java.srcDir 'target/java'
+sourceSets.main.resources.srcDir 'target/resources'
+
+stonecutter {
+    replacements {
+        string {
+            direction = project.minecraft_version == '26.3'
+            replace('mc.screen', 'mc.gui.screen()')
+            replace('mc.setScreen(', 'mc.gui.setScreen(')
+            replace('Minecraft.getInstance().setScreen(', 'Minecraft.getInstance().gui.setScreen(')
+            replace('monster.Slime;', 'monster.cubemob.Slime;')
+            replace('PushReaction.DESTROY', 'PushReaction.POPPED')
+            replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
+            replace('BlockEvent.BreakEvent', 'BreakBlockEvent')
+        }
+        // Match vanilla constants, leaving EntityType.Builder and FloraFaunaTags.EntityTypes alone.
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/(?<![\w.])EntityType\.(?=[A-Z_]+\b)/, 'EntityTypes.',
+                    /(?<![\w.])EntityTypes\.(?=[A-Z_]+\b)/, 'EntityType.')
+        }
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/\bEnderMan(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'Enderman',
+                    /\bEnderman(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'EnderMan')
+        }
+    }
+}
+
 sourceSets.create('playtest') {
+    java.srcDir 'target/playtest'
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
@@ -58,8 +89,7 @@ neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
 
-    // This line is optional. Access Transformers are automatically detected
-    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers.from(file('target/resources/META-INF/accesstransformer.cfg'))
 
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.

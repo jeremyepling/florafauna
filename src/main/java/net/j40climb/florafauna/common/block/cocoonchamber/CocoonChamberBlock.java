@@ -26,16 +26,20 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CocoonChamberBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<CocoonChamberBlock> CODEC = simpleCodec(CocoonChamberBlock::new);
+    //?}
 
     public CocoonChamberBlock(Properties properties) {
         super(properties);
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Nullable
     @Override

@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
@@ -70,14 +71,18 @@ public final class HammerPlaytest {
         t.client("Select the hammer and press its configured menu key", mc -> {
             mc.player.getInventory().setSelectedSlot(0);
             mc.options.setCameraType(CameraType.FIRST_PERSON);
+            //? if <26.3 {
             mc.options.hideGui = false;
+            //?} else {
+            /*if (mc.gui.hud.isHidden()) mc.gui.hud.toggle();*/
+            //?}
             KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey());
         });
         t.awaitClient("Open the tool configuration screen", mc -> mc.screen instanceof ToolConfigScreen);
         t.client("Click the speed control to switch from Efficiency to Instabreak", mc -> {
             Button button = speedButton(mc, "efficiency");
             var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
-                    button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(0, 0));
+                    button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
             Playtest.require(mc.screen.mouseClicked(click, false), "Speed button click was ignored");
             mc.screen.mouseReleased(click);
             mc.screen.onClose();

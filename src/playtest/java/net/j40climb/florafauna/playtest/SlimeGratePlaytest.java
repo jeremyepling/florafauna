@@ -15,7 +15,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.entity.EntitySpawnReason;
+//? if <26.3 {
 import net.minecraft.world.entity.EntityType;
+//?} else {
+/*import net.minecraft.world.entity.EntityTypes;*/
+//?}
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -90,7 +94,11 @@ final class SlimeGratePlaytest {
         });
         t.awaitClient("Face the upright grate once the habitat is on the client", mc -> {
             if (mc.level.getEntity(id[0]) == null || !mc.level.getBlockState(GRATE).is(FloraFaunaRegistry.SLIME_GRATE)) return false;
+            //? if <26.3 {
             mc.options.hideGui = true;
+            //?} else {
+            /*if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();*/
+            //?}
             mc.player.lookAt(Anchor.EYES, Vec3.atCenterOf(GRATE));
             return true;
         });

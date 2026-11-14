@@ -5,6 +5,7 @@ import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.PauseScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.api.distmarker.Dist;
@@ -38,6 +39,9 @@ public final class Playtest {
     private long deadline;
     private CompletableFuture<Boolean> pending;
     private boolean finished;
+    //? if >=26.3 {
+    /*private Screen lastUpgradePrompt;*/
+    //?}
 
     private record Step(String name, Function<Minecraft, CompletableFuture<Boolean>> run) {}
 
@@ -46,21 +50,26 @@ public final class Playtest {
         this.scenario = scenario;
         this.phase = phase;
         awaitClient("Join the copied world", mc -> {
+            //? if >=26.3 {
+            /*lastUpgradePrompt = CopyUpgradePrompt.handle(mc, lastUpgradePrompt, () -> verifyCopyDirectory(mc));*/
+            //?}
             if (mc.player == null || mc.level == null || mc.getSingleplayerServer() == null || mc.screen != null) return false;
             try {
                 Path expected = directory.resolve("saves/playtest").toRealPath();
-                require(mc.gameDirectory.toPath().toRealPath().equals(directory.toRealPath()), "Wrong game directory");
+                verifyCopyDirectory(mc);
                 require(mc.getSingleplayerServer().getWorldPath(LevelResource.ROOT).toRealPath().equals(expected), "Wrong save");
-                require(Files.readString(directory.resolve(".florafauna-playtest")).trim().equals(scenario), "Missing test marker");
             } catch (IOException e) {
                 throw new IllegalStateException("Cannot verify the copied world", e);
             }
             return true;
         });
+        // The server ignores interaction packets until the client acknowledges the level load.
+        awaitServer("Wait for the server to accept player input", player -> player.connection.hasClientLoaded());
         switch (scenario) {
             case "plots" -> PlotsPlaytest.steps(this, phase);
             case "recovery" -> RecoveryPlaytest.steps(this, phase);
             case "hammer" -> HammerPlaytest.steps(this, phase);
+            case "barrier" -> BarrierPlaytest.steps(this, phase);
             case "pods" -> PodPlaytest.steps(this, phase);
             case "frontpack" -> FrontpackPlaytest.steps(this, phase);
             case "slime" -> SlimeGratePlaytest.steps(this, phase);
@@ -70,6 +79,15 @@ public final class Playtest {
             default -> throw new IllegalArgumentException("Unknown playtest " + scenario);
         }
         deadline = System.nanoTime() + Duration.ofSeconds(90).toNanos();
+    }
+
+    private void verifyCopyDirectory(Minecraft mc) {
+        try {
+            require(mc.gameDirectory.toPath().toRealPath().equals(directory.toRealPath()), "Wrong game directory");
+            require(Files.readString(directory.resolve(".florafauna-playtest")).trim().equals(scenario), "Missing test marker");
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot verify the copy's game directory", e);
+        }
     }
 
     void client(String name, Consumer<Minecraft> action) {
@@ -83,7 +101,11 @@ public final class Playtest {
     void screenshot(String stem) {
         String filename = stem + ".png";
         client("Capture " + filename, mc ->
+                //? if <26.3 {
                 Screenshot.grab(mc.gameDirectory, filename, mc.getMainRenderTarget(), 1, ignored -> {}));
+                //?} else {
+                /*Screenshot.grab(mc.gameDirectory, filename, mc.gameRenderer.mainRenderTarget(), 1, ignored -> {}));*/
+                //?}
         awaitClient("Write " + filename, mc ->
                 Files.isRegularFile(directory.resolve("screenshots").resolve(filename)));
     }
@@ -128,8 +150,11 @@ public final class Playtest {
                 return;
             }
             if (mc.screen instanceof PauseScreen) mc.setScreen(null);
-            if (System.nanoTime() > deadline) throw new AssertionError("Timed out; screen="
-                    + (mc.screen == null ? "none" : mc.screen.getClass().getSimpleName()));
+            if (System.nanoTime() > deadline) {
+                Screen screen = mc.screen;
+                throw new AssertionError("Timed out; screen=" + (screen == null ? "none"
+                        : screen.getClass().getSimpleName() + " (" + screen.getTitle().getString() + ")"));
+            }
             if (pending == null) pending = step.run().apply(mc);
             if (!pending.isDone()) return;
             if (pending.join()) {

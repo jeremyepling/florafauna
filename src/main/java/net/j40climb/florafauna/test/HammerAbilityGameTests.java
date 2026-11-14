@@ -28,6 +28,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -47,7 +48,7 @@ final class HammerAbilityGameTests {
     private static ServerPlayer player(GameTestHelper helper) {
         ServerPlayer player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "hammer-test"));
         player.setGameMode(GameType.SURVIVAL);
-        player.setPos(helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
+        player.setPos(Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1))));
         player.setOnGround(true);
         return player;
     }

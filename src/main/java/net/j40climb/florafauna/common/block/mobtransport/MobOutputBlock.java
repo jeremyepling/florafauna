@@ -16,6 +16,9 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
+//? if >=26.3 {
+/*import net.minecraft.world.level.block.BonemealSource;*/
+//?}
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -39,8 +42,9 @@ import java.util.function.BiConsumer;
  */
 public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock {
 
+    //? if <26.3 {
     public static final MapCodec<MobOutputBlock> CODEC = simpleCodec(MobOutputBlock::new);
-
+    //?}
     // Cardinal direction offsets for MobInput spawning (like MiningAnchor pods)
     private static final BlockPos[] INPUT_OFFSETS = {
             new BlockPos(1, 0, 0),   // East
@@ -53,10 +57,12 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
         super(properties);
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Nullable
     @Override
@@ -72,7 +78,11 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
     // ==================== BONEMEAL GROWTH ====================
 
     @Override
+    //? if <26.3 {
     public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+    //?} else {
+    /*public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, BonemealSource source) {*/
+    //?}
         // Can grow if there's an empty adjacent space
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof MobOutputBlockEntity output)) {
@@ -95,12 +105,20 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
     }
 
     @Override
+    //? if <26.3 {
     public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+    //?} else {
+    /*public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {*/
+    //?}
         return true; // Always succeeds if valid
     }
 
     @Override
+    //? if <26.3 {
     public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    //?} else {
+    /*public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {*/
+    //?}
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof MobOutputBlockEntity output)) {
             return;
