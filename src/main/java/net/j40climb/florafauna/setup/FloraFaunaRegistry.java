@@ -46,6 +46,8 @@ import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAncho
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
+import net.j40climb.florafauna.common.entity.frenchie.WellRestedEffect;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackWarning;
 import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
@@ -396,6 +398,8 @@ public class FloraFaunaRegistry {
 
     // ==================== MOB EFFECTS ====================
 
+    public static final Holder<MobEffect> WELL_RESTED = MOB_EFFECTS.register("well_rested", WellRestedEffect::new);
+
     public static final Holder<MobEffect> SYMBIOTE_PREPARED = MOB_EFFECTS.register(
             "symbiote_prepared",
             SymbiotePreparedEffect::new);
@@ -463,6 +467,10 @@ public class FloraFaunaRegistry {
                             .sync(PlayerSymbioteData.STREAM_CODEC)
                             .copyOnDeath()
                             .build());
+
+    public static final Supplier<AttachmentType<FrontpackWarning>> FRENCHIE_WARNING =
+            ATTACHMENT_TYPES.register("frenchie_warning", () -> AttachmentType.builder(() -> FrontpackWarning.NONE)
+                    .sync(FrontpackWarning.STREAM_CODEC).build());
 
     public static final Supplier<AttachmentType<FrontpackData>> FRENCH_FRONTPACK_DATA =
             ATTACHMENT_TYPES.register("french_frontpack_data", () ->
