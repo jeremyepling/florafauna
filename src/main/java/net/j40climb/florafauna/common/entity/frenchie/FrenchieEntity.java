@@ -127,6 +127,11 @@ public class FrenchieEntity extends TamableAnimal {
         return this.entityData.get(IS_SLEEPING);
     }
 
+    @Override
+    public boolean shouldShowName() {
+        return super.shouldShowName() || FrenchieStatusIcon.of(this) != null;
+    }
+
     public void setFrenchieSleeping(boolean sleeping) {
         if (this.entityData.get(IS_SLEEPING) != sleeping) {
             this.entityData.set(IS_SLEEPING, sleeping);
