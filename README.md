@@ -11,7 +11,7 @@ Tame a Frenchie with a bone, feed it glow berries, and right-click with an empty
 | Behavior | Player controls |
 | --- | --- |
 | Death Tracking | Use an ordinary compass on your dog. Follow the compass icon to your last death in this dimension. Your dog waits when you fall behind and signals when you reach the spot. |
-| Delivery Dog | Use a bundle on your dog, choose **Your bed** or an online player, check the estimated arrival time and select **Send bundle**. |
+| Delivery Dog | Use a bundle on your dog, choose **Your bed** or an online player, check the estimated arrival time and select **Send**. |
 | Creeper Warning | An awake dog turns toward a visible creeper within 12 blocks and barks twice. The green face flashes with the barks, including above the hotbar when you carry the dog. The warning has an eight-second cooldown. |
 | Bedtime Buddy | Use a bed within ten blocks of your dog. A nearby sitting dog can join you too. Sleep marks appear when the dog settles by the pillow. Completing the night together grants two minutes of **Well Rested**, increasing block breaking speed by 10%. |
 

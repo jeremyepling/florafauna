@@ -25,7 +25,7 @@ import java.nio.file.Files;
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public final class DeliveryMultiplayerClient {
     private static final String ROLE = System.getProperty("florafauna.deliveryTest.client");
-    private enum Step { IDLE, USE_BUNDLE, CHOOSE, CONFIRM, FRAME, CAPTURE, ACCEPT, EXIT }
+    private enum Step { IDLE, USE_BUNDLE, CHOOSE, PREVIEW, CONFIRM, FRAME, CAPTURE, ACCEPT, EXIT }
     private static Step step = Step.IDLE;
     private static volatile boolean heardBark;
     private static int frames;
@@ -72,11 +72,17 @@ public final class DeliveryMultiplayerClient {
                 step = Step.CHOOSE;
             }
             case CHOOSE -> {
-                if (DeliveryPlaytest.pressLabel(mc, "FFVisitor")) step = Step.CONFIRM;
+                if (DeliveryPlaytest.pressLabel(mc, "FFVisitor")) step = Step.PREVIEW;
+            }
+            case PREVIEW -> {
+                if (!(mc.screen instanceof DeliveryScreen) || !mc.screen.getNarrationMessage().getString().contains("FFVisitor")
+                        || !mc.screen.getNarrationMessage().getString().contains(DeliveryPlaytest.eta(DeliveryMultiplayerServer.ETA))
+                        || ++frames < 5) return;
+                Screenshot.grab(mc.gameDirectory, "courier-envelope.png", mc.getMainRenderTarget(), 1, ignored -> {});
+                step = Step.CONFIRM;
             }
             case CONFIRM -> {
-                if (!(mc.screen instanceof DeliveryScreen) || !mc.screen.getNarrationMessage().getString().contains("FFVisitor")
-                        || !mc.screen.getNarrationMessage().getString().contains(DeliveryPlaytest.eta(DeliveryMultiplayerServer.ETA))) return;
+                if (!Files.isRegularFile(mc.gameDirectory.toPath().resolve("screenshots/courier-envelope.png"))) return;
                 if (DeliveryPlaytest.pressLabel(mc, Component.translatable("frenchie.florafauna.delivery.confirm").getString())) {
                     LogUtils.getLogger().info("Owner confirmed delivery to FFVisitor at the displayed {} s ETA", DeliveryMultiplayerServer.ETA);
                     step = Step.IDLE;

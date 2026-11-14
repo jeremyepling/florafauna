@@ -28,6 +28,7 @@ public final class DeliveryScreen extends Screen {
     private final DeliveryPopupPayload data;
     private final Component description;
     private int left, top, cardWidth, cardHeight, footer;
+    private int textTop, textWidth;
     private int page, pages;
 
     public DeliveryScreen(DeliveryPopupPayload data) {
@@ -38,9 +39,7 @@ public final class DeliveryScreen extends Screen {
             var clock = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(minecraft.getLanguageManager().getJavaLocale());
             String arrival = clock.format(ZonedDateTime.now().plusSeconds(preview.seconds()));
             return Component.empty().append(label("address", destination.label())).append("\n")
-                    .append(label("eta", duration(preview.seconds()), arrival)).append("\n\n")
-                    .append(label(destination.address().equals("home") ? "preview_bed" : "preview_player"))
-                    .append("\n").append(label("recall_hint"));
+                    .append(label("eta", duration(preview.seconds()), arrival));
         }).orElseGet(() -> Component.empty().append(label(data.choices().isEmpty() ? "no_destinations" : "instructions")));
     }
 
@@ -60,7 +59,10 @@ public final class DeliveryScreen extends Screen {
         cardWidth = Math.min(212, width - 12);
         left = (width - cardWidth) / 2;
         int inside = cardWidth - PAD * 2;
-        int bodyEnd = 37 + font.wordWrapHeight(description, inside) + 5;
+        boolean addressed = data.preview().isPresent();
+        textTop = addressed ? 12 : 37;
+        textWidth = addressed ? inside - 28 : inside;
+        int bodyEnd = Math.max(32, textTop + font.wordWrapHeight(description, textWidth)) + 5;
         int perPage = Math.clamp((height - bodyEnd - 37) / ROW, 1, 4);
         int count = data.choices().size();
         pages = Math.max(1, (count + perPage - 1) / perPage);
@@ -143,9 +145,11 @@ public final class DeliveryScreen extends Screen {
         }
         g.fill(stampX + 3, stampY + 3, stampX + 19, stampY + 18, 0xFFD7DDCE);
         g.blitSprite(RenderPipelines.GUI_TEXTURED, PARCEL, stampX + 3, stampY + 2, 16, 16);
-        g.text(font, title, left + PAD, top + 16, INK, false);
-        g.fill(left + PAD, top + 32, right - PAD, top + 33, RULE);
-        g.textWithWordWrap(font, description, left + PAD, top + 37, cardWidth - PAD * 2, INK, false);
+        if (data.preview().isEmpty()) {
+            g.text(font, title, left + PAD, top + 16, INK, false);
+            g.fill(left + PAD, top + 32, right - PAD, top + 33, RULE);
+        }
+        g.textWithWordWrap(font, description, left + PAD, top + textTop, textWidth, INK, false);
         g.fill(left + PAD, footer - 4, right - PAD, footer - 3, RULE);
         if (pages > 1) {
             String number = (page + 1) + "/" + pages;
