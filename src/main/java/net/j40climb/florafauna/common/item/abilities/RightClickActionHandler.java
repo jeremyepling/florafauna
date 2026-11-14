@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.item.abilities;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.HammerAction;
 import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
@@ -99,12 +100,20 @@ public class RightClickActionHandler {
 
         long currentTick = player.level().getGameTime();
         ItemStack stack = player.getItemInHand(hand);
+        HammerAction selected = stack.getOrDefault(FloraFaunaRegistry.HAMMER_ACTION, HammerAction.AUTO);
+        if (selected == HammerAction.THROW) {
+            if (!stack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) return false;
+            ThrowItemPayload.throwItem(serverPlayer, hand);
+            return true;
+        }
 
         // Priority 1: Try multi-tool modifications if targeting a block
         if (clickedPos != null && hitResult != null) {
             MultiToolAbilityData multiTool = stack.get(FloraFaunaRegistry.MULTI_TOOL_ABILITY);
-            if (multiTool != null && multiTool.hasAnyEnabled()) {
-                if (tryToolModification(serverPlayer, hand, clickedPos, hitResult, multiTool)) {
+            if (multiTool != null) {
+                var actions = selected.toolActions(multiTool);
+                if (selected != HammerAction.AUTO && !canModifyTarget(serverPlayer, hand, hitResult, actions)) return false;
+                if (actions.hasAnyEnabled() && tryToolModification(serverPlayer, hand, clickedPos, hitResult, actions)) {
                     // Track that we did a tool modification this tick
                     // This prevents RightClickItem from also executing the ability
                     recentToolModifications.put(player.getUUID(), currentTick);
@@ -112,6 +121,9 @@ public class RightClickActionHandler {
                 }
             }
         }
+
+        // A selected block action that cannot apply leaves the interaction to vanilla.
+        if (selected != HammerAction.AUTO) return false;
 
         // Check if we already did a tool modification this tick
         // (Handles case where RightClickItem fires after RightClickBlock did a tool modification)
@@ -150,6 +162,15 @@ public class RightClickActionHandler {
             }
         }
         return true; // Ability executed, cancel the event
+    }
+
+    // Let the player open a chest or use a workbench even if a neighboring block is eligible.
+    private static boolean canModifyTarget(ServerPlayer player, InteractionHand hand, BlockHitResult hit, MultiToolAbilityData actions) {
+        if (!actions.hasAnyEnabled()) return false;
+        var ability = actions.strip() ? ItemAbilities.AXE_STRIP : actions.flatten() ? ItemAbilities.SHOVEL_FLATTEN : ItemAbilities.HOE_TILL;
+        BlockState state = player.level().getBlockState(hit.getBlockPos());
+        var changed = state.getToolModifiedState(new UseOnContext(player, hand, hit), ability, true);
+        return changed != null && changed != state;
     }
 
     /**

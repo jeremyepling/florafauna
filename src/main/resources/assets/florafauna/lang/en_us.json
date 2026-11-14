@@ -103,6 +103,13 @@
   "key.florafauna.hammer_config": "Hammer Config",
   "key.florafauna.cycle_mining_mode": "Cycle Mining Mode",
   "key.florafauna.precision_mining": "Hold for Single-Block Mining",
+  "key.florafauna.hammer_action_wheel": "Open Hammer Action Wheel",
+  "gui.florafauna.hammer_action.title": "Right-click action",
+  "gui.florafauna.hammer_action.auto": "Auto",
+  "gui.florafauna.hammer_action.strip": "Strip",
+  "gui.florafauna.hammer_action.path": "Path",
+  "gui.florafauna.hammer_action.till": "Till",
+  "gui.florafauna.hammer_action.throw": "Throw",
   "key.florafauna.noclip": "Toggle No-Clip",
 
   "command.florafauna.noclip.enabled": "No-clip enabled",

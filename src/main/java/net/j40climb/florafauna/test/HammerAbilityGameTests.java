@@ -1,6 +1,8 @@
 package net.j40climb.florafauna.test;
 
 import com.mojang.authlib.GameProfile;
+import net.j40climb.florafauna.common.item.abilities.RightClickActionHandler;
+import net.j40climb.florafauna.common.item.abilities.data.HammerAction;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
@@ -11,6 +13,7 @@ import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfig
 import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -26,12 +29,14 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
 import java.util.UUID;
@@ -40,6 +45,7 @@ import java.util.function.Consumer;
 final class HammerAbilityGameTests {
     static void register(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         FloraFaunaGameTests.registerTest(event, env, "hammer_fresh_and_configured_loot", HammerAbilityGameTests::checkConfigurations);
+        FloraFaunaGameTests.registerTest(event, env, "hammer_action_wheel_dispatch", HammerAbilityGameTests::checkWheel);
         FloraFaunaGameTests.registerTest(event, env, "hammer_throw_single_item_and_reload", HammerAbilityGameTests::checkThrow);
         FloraFaunaGameTests.registerTest(event, env, "hammer_throw_rejected_or_inventory_full", HammerAbilityGameTests::checkThrowFailure);
     }
@@ -50,6 +56,49 @@ final class HammerAbilityGameTests {
         player.setPos(helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
         player.setOnGround(true);
         return player;
+    }
+
+    private static void checkWheel(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        ItemStack hammer = new ItemStack(FloraFaunaRegistry.HAMMER.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, hammer);
+        BlockPos target = helper.absolutePos(new BlockPos(1, 1, 1));
+        var hit = new BlockHitResult(target.getCenter(), Direction.UP, target, false);
+        hammer.set(FloraFaunaRegistry.MULTI_BLOCK_MINING, new MiningModeData(MiningShape.FLAT_3X3, 1, 64, true));
+        for (var mode : HammerAction.values()) {
+            hammer.set(FloraFaunaRegistry.HAMMER_ACTION, mode);
+            var original = mode == HammerAction.STRIP || mode == HammerAction.THROW ? Blocks.OAK_LOG : Blocks.DIRT;
+            helper.getLevel().setBlockAndUpdate(target, original.defaultBlockState());
+            helper.getLevel().setBlockAndUpdate(target.above(), Blocks.AIR.defaultBlockState());
+            var use = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, target, hit);
+            RightClickActionHandler.onRightClickBlock(use);
+            var expected = switch (mode) {
+                case AUTO, PATH -> Blocks.DIRT_PATH;
+                case STRIP -> Blocks.STRIPPED_OAK_LOG;
+                case TILL -> Blocks.FARMLAND;
+                case THROW -> Blocks.OAK_LOG;
+            };
+            helper.assertTrue(use.isCanceled() && helper.getLevel().getBlockState(target).is(expected), "Wrong effect for " + mode);
+            if (mode == HammerAction.THROW) {
+                var thrown = helper.getLevel().getEntities(FloraFaunaRegistry.THROWN_ITEM.get(), e -> e.getOwner() == player);
+                helper.assertTrue(hammer.isEmpty() && thrown.size() == 1 &&
+                        thrown.getFirst().getThrownItem().get(FloraFaunaRegistry.HAMMER_ACTION) == mode, "Throw lost the selected action or the tool");
+                thrown.getFirst().discard();
+            } else if (mode != HammerAction.AUTO) {
+                helper.getLevel().setBlockAndUpdate(target, Blocks.CRAFTING_TABLE.defaultBlockState());
+                var neighbor = mode == HammerAction.STRIP ? Blocks.OAK_LOG : Blocks.DIRT;
+                helper.getLevel().setBlockAndUpdate(target.east(), neighbor.defaultBlockState());
+                helper.getLevel().setBlockAndUpdate(target.east().above(), Blocks.AIR.defaultBlockState());
+                var table = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, target, hit);
+                RightClickActionHandler.onRightClickBlock(table);
+                var air = new PlayerInteractEvent.RightClickItem(player, InteractionHand.MAIN_HAND);
+                RightClickActionHandler.onRightClickItem(air);
+                helper.assertTrue(!table.isCanceled() && !air.isCanceled() && !hammer.isEmpty()
+                                && helper.getLevel().getBlockState(target.east()).is(neighbor),
+                        "An inapplicable explicit action consumed vanilla interaction or threw the tool");
+            }
+        }
+        helper.succeed();
     }
 
     private static void checkConfigurations(GameTestHelper helper) {

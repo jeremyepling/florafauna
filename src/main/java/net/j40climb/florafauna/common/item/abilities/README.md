@@ -58,6 +58,7 @@ Each Hammer remembers its settings.
 | Key | Action | Component Required |
 |-----|--------|-------------------|
 | **C** | Cycle mining mode | `MULTI_BLOCK_MINING` |
+| **K** | Open the right-click action wheel and select Auto, Strip, Path, Till or Throw | `HAMMER_ACTION` |
 | **J** (hold) | Mine only the targeted block. Release to resume the selected shape. | `MULTI_BLOCK_MINING` |
 | **P** | Open tool config screen | `TOOL_CONFIG` |
 | **R** | Spawn lightning | `LIGHTNING_ABILITY` |
@@ -65,6 +66,8 @@ Each Hammer remembers its settings.
 | **T** | Throw item | `THROWABLE_ABILITY` |
 
 These are the registered defaults. The dev options template binds throw to **comma**. Check the current binding in Minecraft's Controls menu.
+
+Each Hammer remembers its right-click selection. **Auto** applies enabled block transformations in their usual order and then tries the configured fallback. **Strip**, **Path** and **Till** use just the selected enabled transformation. A target that cannot be transformed keeps its usual block interaction. **Throw** throws the held Hammer immediately.
 
 ## Multi-Block Mining
 
