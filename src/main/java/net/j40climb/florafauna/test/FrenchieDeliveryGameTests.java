@@ -4,6 +4,7 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackEvents;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -18,7 +19,10 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -121,101 +125,152 @@ final class FrenchieDeliveryGameTests {
     static void fullRecipient(GameTestHelper h) {
         var owner = h.makeMockServerPlayerInLevel();
         var recipient = h.makeMockServerPlayerInLevel();
-        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 1, 1, 1);
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 2);
         var expected = prepareDelivery(owner, recipient, dog).copy();
-        recipient.snapTo(dog.position().add(1, 0, 0), 0, 0);
+        var id = dog.getUUID();
+        var level = h.getLevel();
+        // The landings are high above the departure point, with no walkable connection.
+        BlockPos address = dog.blockPosition().above(96);
+        BlockPos moved = address.south(12);
+        platform(h, address);
+        platform(h, moved);
+        recipient.snapTo(address, 0, 0);
         for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
             recipient.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
         }
         confirm(owner, recipient, dog);
-        h.runAfterDelay(24, () -> {
-            h.assertTrue(dog.isDelivering() && recipient.getInventory().countItem(Items.BUNDLE) == 0,
-                    "Full recipient inventory should leave the bundle on the dog");
-            recipient.getInventory().setItem(7, ItemStack.EMPTY);
-        });
-        h.runAfterDelay(55, () -> {
-            try {
-                h.assertTrue(!dog.isDelivering() && owner.getInventory().countItem(Items.BUNDLE) == 0
-                                && recipient.getInventory().countItem(Items.BUNDLE) == 1
-                                && ItemStack.isSameItemSameComponents(expected, recipient.getInventory().getItem(7)),
-                        "Freeing a slot should deliver the original bundle exactly once");
-            } finally {
-                disconnect(recipient);
-                disconnect(owner);
-            }
-            h.succeed();
-        });
+        h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
+                "The chooser should accept a player 96 blocks away");
+        h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null, "Courier never departed"))
+                .thenExecute(() -> recipient.snapTo(moved, 0, 0))
+                // Even after a short walk-off, this distance needs substantially more than the three-second base time.
+                .thenExecuteFor(120, () -> h.assertTrue(level.getEntity(id) == null
+                        && recipient.getInventory().countItem(Items.BUNDLE) == 0,
+                        "Courier arrived before the distant destination's timer"))
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) instanceof FrenchieEntity arrived
+                                && arrived.isDelivering() && arrived.distanceToSqr(recipient) < 36,
+                        "Original Frenchie did not arrive at the recipient's new position"))
+                .thenExecuteAfter(25, () -> {
+                    h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 0
+                                    && level.getEntity(id) instanceof FrenchieEntity arrived && arrived.isDelivering(),
+                            "A full inventory should leave the named parcel on the waiting dog");
+                    recipient.getInventory().setItem(7, ItemStack.EMPTY);
+                })
+                .thenWaitUntil(() -> h.assertTrue(ItemStack.matches(recipient.getInventory().getItem(7), expected)
+                                && recipient.getInventory().countItem(Items.BUNDLE) == 1,
+                        "A free slot should receive the original filled bundle exactly once"))
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null, "Courier never departed for home"))
+                .thenExecuteFor(80, () -> h.assertTrue(level.getEntity(id) == null, "Return journey skipped the timer"))
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) instanceof FrenchieEntity returned
+                                && !returned.isDelivering() && returned.isOwnedBy(owner) && returned.distanceToSqr(owner) < 36,
+                        "The same dog should return to its owner after the handoff"))
+                .thenExecute(() -> {
+                    h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 1
+                                    && owner.getInventory().countItem(Items.BUNDLE) == 0,
+                            "Returning the dog must not transfer the delivered bundle again");
+                    disconnect(recipient);
+                    disconnect(owner);
+                }).thenSucceed();
     }
 
     static void disconnectedRecipient(GameTestHelper h) {
         var owner = h.makeMockServerPlayerInLevel();
         var recipient = h.makeMockServerPlayerInLevel();
-        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 1, 1, 1);
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 2, 1, 2);
         var expected = prepareDelivery(owner, recipient, dog).copy();
+        var id = dog.getUUID();
         confirm(owner, recipient, dog);
-        disconnect(recipient);
-        h.runAfterDelay(30, () -> {
-            try {
-                owner.snapTo(dog.position().add(1, 0, 0), 0, 0);
-                if (dog.isDelivering()) click(owner, dog);
-                h.assertTrue(owner.getInventory().countItem(Items.BUNDLE) == 1
-                                && ItemStack.isSameItemSameComponents(expected, owner.getMainHandItem())
-                                && !dog.isDelivering(), "Missing recipient lost the bundle or left a live delivery");
-            } finally {
-                disconnect(owner);
-            }
-            h.succeed();
-        });
+        h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(h.getLevel().getEntity(id) == null, "Courier never entered transit"))
+                .thenExecute(() -> disconnect(recipient))
+                .thenWaitUntil(() -> h.assertTrue(h.getLevel().getEntity(id) instanceof FrenchieEntity returned
+                                && returned.isOwnedBy(owner) && returned.distanceToSqr(owner) < 36,
+                        "A disconnect in transit should send the original courier back"))
+                .thenExecute(() -> {
+                    var returned = (FrenchieEntity) h.getLevel().getEntity(id);
+                    if (returned.isDelivering()) click(owner, returned);
+                    h.assertTrue(owner.getInventory().countItem(Items.BUNDLE) == 1
+                                    && ItemStack.matches(owner.getMainHandItem(), expected)
+                                    && !returned.isDelivering(),
+                            "Missing recipient lost the parcel or duplicated the handoff");
+                    disconnect(owner);
+                }).thenSucceed();
     }
 
-    static void blockedRoute(GameTestHelper h) {
-        // Build an enclosed recipient and a clear approach inside the rectangular pen.
-        for (BlockPos pos : BlockPos.betweenClosed(0, 0, 0, 6, 3, 9)) {
-            h.setBlock(pos, pos.getY() == 0 ? Blocks.STONE : Blocks.AIR);
+    static void blockedDeparture(GameTestHelper h) {
+        // A glass enclosure lets the owner click from inside but prevents the departure walk.
+        for (BlockPos pos : BlockPos.betweenClosed(1, 0, 1, 5, 3, 5)) {
+            boolean wall = pos.getX() == 1 || pos.getX() == 5 || pos.getZ() == 1 || pos.getZ() == 5;
+            h.setBlock(pos, wall || pos.getY() == 0 || pos.getY() == 3 ? Blocks.GLASS : Blocks.AIR);
         }
-        var cell = new BlockPos(3, 1, 7);
-        for (BlockPos pos : BlockPos.betweenClosed(cell.offset(-1, 0, -1), cell.offset(1, 2, 1))) {
-            if (pos.getY() == 3 || pos.getX() != cell.getX() || pos.getZ() != cell.getZ()) {
-                h.setBlock(pos, Blocks.STONE);
-            }
-        }
-
         var owner = h.makeMockServerPlayerInLevel();
         var recipient = h.makeMockServerPlayerInLevel();
-        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 1);
-        var start = dog.position();
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 3);
         var expected = prepareDelivery(owner, recipient, dog).copy();
-        recipient.snapTo(h.absolutePos(cell), 0, 0);
+        var landing = dog.blockPosition().above(40);
+        platform(h, landing);
+        recipient.snapTo(landing, 0, 0);
+        var id = dog.getUUID();
         confirm(owner, recipient, dog);
-
+        h.runAfterDelay(100, () -> h.assertTrue(h.getLevel().getEntity(id) == null,
+                "An enclosed dog must be able to leave without finding a route"));
         h.startSequence()
-                .thenWaitUntil(() -> h.assertTrue(start.distanceToSqr(dog.position()) >= 4 && dog.isDelivering(),
-                        "Dog never advanced toward the recipient"))
-                .thenExecuteAfter(350, () -> {
-                    try {
-                        var level = h.getLevel();
-                        var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
-                        dog.saveWithoutId(output);
-                        var tag = output.buildResult();
-                        h.assertTrue(dog.isDelivering() && tag.getBooleanOr("FrenchieReturning", false)
-                                        && recipient.getInventory().countItem(Items.BUNDLE) == 0,
-                                "A blocked route should time out and return with the parcel still on the dog");
-                        var restored = FloraFaunaRegistry.FRENCHIE.get().create(level, EntitySpawnReason.LOAD);
-                        h.assertTrue(restored != null, "Could not create restored courier");
-                        restored.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
-                        dog.discard();
-                        h.assertTrue(level.addFreshEntity(restored) && restored.isDelivering(), "Reload lost the returning courier");
-                        owner.snapTo(restored.position().add(1, 0, 0), 0, 0);
-                        click(owner, restored);
-                        h.assertTrue(!restored.isDelivering() && restored.isOrderedToSit()
-                                        && ItemStack.matches(expected, owner.getMainHandItem())
-                                        && owner.getInventory().countItem(Items.BUNDLE) == 1,
-                                "Could not recover the original parcel once after the failed route and reload");
-                    } finally {
-                        disconnect(recipient);
-                        disconnect(owner);
-                    }
+                .thenWaitUntil(() -> h.assertTrue(ItemStack.matches(recipient.getMainHandItem(), expected),
+                        "Courier never arrived across the blocked departure route"))
+                .thenWaitUntil(() -> h.assertTrue(h.getLevel().getEntity(id) instanceof FrenchieEntity returned
+                                && !returned.isDelivering() && returned.distanceToSqr(owner) < 36,
+                        "Courier never returned after completing its blocked-route delivery"))
+                .thenExecute(() -> {
+                    h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 1
+                                    && owner.getInventory().countItem(Items.BUNDLE) == 0,
+                            "Blocked departure must produce one completed delivery");
+                    disconnect(recipient);
+                    disconnect(owner);
                 }).thenSucceed();
+    }
+
+    static void legacyBedPickup(GameTestHelper h) {
+        var owner = h.makeMockServerPlayerInLevel();
+        try {
+            var level = h.getLevel();
+            var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 2);
+            owner.getInventory().clearContent();
+            dog.tame(owner);
+            dog.standUp();
+            var id = dog.getUUID();
+            BlockPos bed = dog.blockPosition().east();
+            var bedState = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
+            level.setBlock(bed.west(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
+            level.setBlock(bed, bedState.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
+            dog.snapTo(bed.north(), 0, 0);
+            var expected = parcel();
+            var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+            dog.saveWithoutId(output);
+            output.store("FrenchieHomeBed", GlobalPos.CODEC, GlobalPos.of(level.dimension(), bed));
+            output.store("FrenchieParcel", ItemStack.CODEC, expected);
+            output.putBoolean("FrenchieAtHandoff", true);
+            var restored = FloraFaunaRegistry.FRENCHIE.get().create(level, EntitySpawnReason.LOAD);
+            h.assertTrue(restored != null, "Could not create legacy courier");
+            dog.discard();
+            restored.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), output.buildResult()));
+            h.assertTrue(level.addFreshEntity(restored) && id.equals(restored.getUUID()) && restored.isDelivering(),
+                    "Loading a pre-timer bed delivery lost the courier or bundle");
+            owner.snapTo(restored.position().add(0, 0, -1), 0, 0);
+            click(owner, restored);
+            h.assertTrue(!restored.isDelivering() && restored.isOrderedToSit()
+                            && ItemStack.matches(expected, owner.getMainHandItem()) && owner.getInventory().countItem(Items.BUNDLE) == 1,
+                    "The owner should still collect exactly one legacy parcel from the waiting dog");
+        } finally {
+            disconnect(owner);
+        }
+        h.succeed();
+    }
+
+    private static void platform(GameTestHelper h, BlockPos feet) {
+        for (var pos : BlockPos.betweenClosed(feet.offset(-3, -1, -3), feet.offset(3, -1, 3))) {
+            h.getLevel().setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+        }
     }
 
     private static ItemStack prepareDelivery(ServerPlayer owner, ServerPlayer recipient, FrenchieEntity dog) {

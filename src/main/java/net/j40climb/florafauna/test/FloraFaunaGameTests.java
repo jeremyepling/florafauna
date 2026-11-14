@@ -142,10 +142,13 @@ public class FloraFaunaGameTests {
         registerTest(event, defaultEnv, "frenchie_death_trail", FrenchieTrackingGameTests::trackDeath);
         registerTest(event, defaultEnv, "frenchie_compass_orders", FrenchieDeliveryGameTests::compassOrders);
         registerTest(event, defaultEnv, "frenchie_delivery_packed_cancel", FrenchieDeliveryGameTests::packAndCancel);
-        registerTest(event, defaultEnv, "frenchie_delivery_recipient_full", FrenchieDeliveryGameTests::fullRecipient);
-        registerTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect", FrenchieDeliveryGameTests::disconnectedRecipient);
-        registerStructureTest(event, defaultEnv, "frenchie_delivery_blocked_route",
-                DevPlot.FRENCHIE.structure(), 500, FrenchieDeliveryGameTests::blockedRoute);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_full",
+                DevPlot.FRENCHIE.structure(), 900, FrenchieDeliveryGameTests::fullRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect",
+                DevPlot.FRENCHIE.structure(), 500, FrenchieDeliveryGameTests::disconnectedRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_blocked_departure",
+                DevPlot.FRENCHIE.structure(), 650, FrenchieDeliveryGameTests::blockedDeparture);
+        registerTest(event, defaultEnv, "frenchie_delivery_legacy_bed_pickup", FrenchieDeliveryGameTests::legacyBedPickup);
         registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
         registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 
