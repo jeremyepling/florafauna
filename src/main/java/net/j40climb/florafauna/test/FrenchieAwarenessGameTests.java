@@ -5,6 +5,7 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BedBlock;
@@ -24,10 +25,18 @@ final class FrenchieAwarenessGameTests {
         h.assertTrue(FrenchieAwareness.findCreeper(h.getLevel(), dog) == null, "A solid wall must block the warning");
         h.setBlock(2, 1, 1, Blocks.AIR);
         h.setBlock(2, 2, 1, Blocks.AIR);
-        h.succeedWhen(() -> {
+        h.startSequence().thenWaitUntil(() -> {
             h.assertTrue(FrenchieAwareness.findCreeper(h.getLevel(), dog) == creeper, "A nearby visible creeper should trigger the alarm");
             h.assertTrue(dog.isWarningFlash(), "The visible creeper should trigger a warning");
-        });
+        }).thenWaitUntil(() -> h.assertTrue(!dog.isWarningFlash(), "The face should blink off between barks"))
+                .thenWaitUntil(() -> {
+                    h.assertTrue(dog.isWarningFlash(), "The second bark should show a second flash");
+                    float bearing = (float)Math.toDegrees(Math.atan2(creeper.getZ() - dog.getZ(), creeper.getX() - dog.getX())) - 90;
+                    h.assertTrue(Math.abs(Mth.wrapDegrees(dog.yBodyRot - bearing)) < 10, "The sitting dog did not turn to the threat");
+                })
+                .thenWaitUntil(() -> h.assertTrue(!dog.isWarningFlash(), "The second flash should end"))
+                .thenExecuteAfter(28, () -> h.assertTrue(!dog.isWarningFlash(), "The same creeper restarted the barks during cooldown"))
+                .thenSucceed();
     }
 
     static void bedtime(GameTestHelper h) {
