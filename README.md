@@ -138,7 +138,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe natural sleep and waking. Order the dog to sit, use the bed, leave early, then complete the night together and check Well Rested. |
 | `companions` | Start a compass trail, observe named and unnamed status icons, interrupt the trail display with a creeper warning, and check the frontpack HUD. |
-| `delivery` | Assign a bed, send a filled bundle from 102 blocks away using the postal popup, restart in transit, collect it at the bed, then cancel a second trip. |
+| `delivery` | Send a filled bundle to an assigned bed 102 blocks away, restart in transit, and collect it. Cancel a second trip, then choose an online player and wait for the dog to deliver and return. |
 | `frontpack` | Carry a Frenchie through death, respawn and restart, verify its coat on the player, then release the original dog once. |
 | `slime` | Play a note, watch the bonded slime split and rejoin at the grate, and check the hopper and bond after restarting. |
 | `spider` | Bond a spider, see it hanging upside down, shear its line, and collect one string. |

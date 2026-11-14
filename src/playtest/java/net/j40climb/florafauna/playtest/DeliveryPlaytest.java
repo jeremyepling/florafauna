@@ -1,5 +1,7 @@
 package net.j40climb.florafauna.playtest;
 
+import com.mojang.authlib.GameProfile;
+import io.netty.channel.embedded.EmbeddedChannel;
 import net.j40climb.florafauna.common.entity.frenchie.DeliveryScreen;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -14,9 +16,12 @@ import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.ItemStack;
@@ -38,6 +43,8 @@ import java.util.stream.Stream;
 
 final class DeliveryPlaytest {
     private static final UUID DOG_ID = UUID.fromString("268d4bee-c265-442c-b07b-562099a21a79");
+    private static final UUID RECIPIENT_ID = UUID.fromString("98368ad4-5a18-4b67-90e6-ce57e2d76d87");
+    private static final String RECIPIENT = "Amelie";
     private static final BlockPos START = new BlockPos(0, 240, 0);
     private static final BlockPos BED = START.east(6);
     private static final BlockPos DISPATCH = START.west(96);
@@ -92,13 +99,51 @@ final class DeliveryPlaytest {
         t.server("Stay in interaction range to cancel during the walk-off", DeliveryPlaytest::standBesideDog);
         useDog(t, false);
         t.awaitServer("Cancel the second trip and recover the entire bundle before arrival", DeliveryPlaytest::hasReturnedParcel);
-        t.client("Select an empty slot after cancellation", mc -> {
-            mc.player.getInventory().setSelectedSlot(1);
-            mc.player.connection.send(new ServerboundSetCarriedItemPacket(1));
-        });
+        selectSlot(t, 1);
         useDog(t, false);
         t.awaitServer("The next empty-hand order resumes follow with exactly one parcel", p ->
                 !dog(p).isOrderedToSit() && !dog(p).isDelivering() && p.getInventory().countItem(Items.BUNDLE) == 1);
+        t.server("Connect an online recipient 88 blocks from the sender", DeliveryPlaytest::connectRecipient);
+        selectSlot(t, 0);
+        useDog(t, true);
+        openChooser(t);
+        t.screenshot("delivery-choose-player");
+        press(t, "send_player", RECIPIENT);
+        t.awaitClient("Preview the online recipient with the bundle still in hand", mc ->
+                mc.screen instanceof DeliveryScreen && mc.screen.getNarrationMessage().getString().contains(RECIPIENT)
+                        && ItemStack.matches(mc.player.getMainHandItem(), parcel()));
+        t.screenshot("delivery-confirm-player");
+        press(t, "confirm");
+        t.awaitServer("The chosen player receives the original filled bundle", p -> {
+            var recipient = p.level().getServer().getPlayerList().getPlayer(RECIPIENT_ID);
+            return ItemStack.matches(recipient.getMainHandItem(), parcel()) && recipient.getInventory().countItem(Items.BUNDLE) == 1;
+        });
+        t.awaitServer("The same Frenchie returns to the sender after the timed round trip", p ->
+                dog(p) != null && dog(p).isOwnedBy(p) && !dog(p).isDelivering() && dog(p).distanceToSqr(p) <= 36
+                        && p.getInventory().countItem(Items.BUNDLE) == 0);
+        t.server("Disconnect the test recipient", p -> {
+            var list = p.level().getServer().getPlayerList();
+            list.remove(list.getPlayer(RECIPIENT_ID));
+        });
+    }
+
+    private static void selectSlot(Playtest t, int slot) {
+        t.client("Select hotbar slot " + slot, mc -> {
+            mc.player.getInventory().setSelectedSlot(slot);
+            mc.player.connection.send(new ServerboundSetCarriedItemPacket(slot));
+        });
+    }
+
+    private static void connectRecipient(ServerPlayer owner) {
+        var server = owner.level().getServer();
+        var cookie = CommonListenerCookie.createInitial(new GameProfile(RECIPIENT_ID, RECIPIENT), false);
+        var recipient = new ServerPlayer(server, owner.level(), cookie.gameProfile(), cookie.clientInformation());
+        var connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        server.getPlayerList().placeNewPlayer(connection, recipient, cookie);
+        recipient.setGameMode(GameType.SURVIVAL);
+        recipient.getInventory().clearContent();
+        recipient.teleportTo(owner.level(), DISPATCH.getX() + 0.5, DISPATCH.getY(), DISPATCH.getZ() + 0.5, Set.of(), 0, 0, true);
     }
 
     private static void prepare(ServerPlayer owner) {
