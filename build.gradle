@@ -38,6 +38,8 @@ def playtestScenario = providers.gradleProperty('playtestScenario').orNull
 def playtestPhase = providers.gradleProperty('playtestPhase').orNull
 def huskTestId = providers.gradleProperty('huskTestId').orNull
 def huskTestPort = providers.gradleProperty('huskTestPort').orNull
+def multiplayerScenario = providers.gradleProperty('multiplayerScenario').orElse('husk').get()
+if (!(multiplayerScenario in ['husk', 'delivery'])) throw new GradleException('Unknown multiplayer scenario')
 if (huskTestId != null && (!(huskTestId ==~ /[0-9a-f]{32}/) || !(huskTestPort ==~ /[0-9]{1,5}/) || !(1..65535).contains(huskTestPort.toInteger()))) {
     throw new GradleException('Use scripts/test_husk_multiplayer.ps1 to prepare the multiplayer run.')
 }
@@ -69,12 +71,12 @@ neoForge {
     // These can be tweaked, removed, or duplicated as needed.
     runs {
         if (huskTestId != null) {
-            def directory = file(".tmp/husk-multiplayer/${huskTestId}")
+            def directory = file(".tmp/${multiplayerScenario}-multiplayer/${huskTestId}")
             huskServer {
                 server()
                 gameDirectory = new File(directory, 'server')
                 programArgument '--nogui'
-                systemProperty 'florafauna.huskTest.root', directory.absolutePath
+                systemProperty "florafauna.${multiplayerScenario}Test.root", directory.absolutePath
                 jvmArgument '-Xmx1G'
             }
             ['Owner', 'Visitor'].each { role ->
@@ -83,7 +85,7 @@ neoForge {
                     gameDirectory = new File(directory, role)
                     programArguments.addAll '--username', "FF${role}".toString(), '--width', '640', '--height', '360',
                             '--quickPlayMultiplayer', "127.0.0.1:${huskTestPort}".toString()
-                    systemProperty 'florafauna.huskTest.client', role
+                    systemProperty "florafauna.${multiplayerScenario}Test.client", role
                     jvmArgument '-Xmx1G'
                 }
             }
