@@ -11,14 +11,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -91,12 +95,13 @@ public final class CourierTrips extends SavedData {
             var owner = server.getPlayerList().getPlayer(trip.owner);
             ServerLevel level;
             BlockPos destination;
+            ServerPlayer target = null;
             if (trip.bed.isPresent()) {
                 GlobalPos bed = trip.bed.get();
                 level = server.getLevel(bed.dimension());
                 destination = bed.pos();
             } else {
-                var target = trip.returning() ? owner : server.getPlayerList().getPlayer(trip.player.orElseThrow());
+                target = trip.returning() ? owner : server.getPlayerList().getPlayer(trip.player.orElseThrow());
                 level = DeliveryGoal.available(target) ? target.level() : null;
                 destination = level == null ? null : target.blockPosition();
             }
@@ -107,7 +112,7 @@ public final class CourierTrips extends SavedData {
                 level.getChunkSource().addTicketWithRadius(FloraFaunaRegistry.COURIER_STOP.get(), chunk, 2);
                 if (!level.areEntitiesActuallyLoadedAndTicking(chunk)) continue;
                 if (trip.bed.isEmpty() || DeliveryGoal.isBedHead(level, destination)) {
-                    Vec3 landing = findLanding(level, destination, trip.bed.isPresent());
+                    Vec3 landing = findLanding(level, destination, target);
                     if (landing != null) {
                         if (restore(level, trip, landing)) {
                             iterator.remove();
@@ -130,14 +135,20 @@ public final class CourierTrips extends SavedData {
         }
     }
 
-    private static @Nullable Vec3 findLanding(ServerLevel level, BlockPos target, boolean besideBed) {
+    private static @Nullable Vec3 findLanding(ServerLevel level, BlockPos target, @Nullable ServerPlayer player) {
+        Vec3 fallback = null;
         for (BlockPos pos : BlockPos.withinManhattan(target, 2, 2, 2)) {
-            if (besideBed && pos.getX() == target.getX() && pos.getZ() == target.getZ()) continue;
             if (!level.isInWorldBounds(pos) || !level.hasChunkAt(pos) || !level.getFluidState(pos).isEmpty()) continue;
+            if (player == null && (level.getBlockState(pos).getBlock() instanceof BedBlock
+                    || level.getBlockState(pos.below()).getBlock() instanceof BedBlock)) continue;
             Vec3 safe = DismountHelper.findSafeDismountLocation(FloraFaunaRegistry.FRENCHIE.get(), level, pos, true);
-            if (safe != null) return safe;
+            if (safe == null) continue;
+            if (player != null && level.clip(new ClipContext(safe.add(0, 0.4, 0), player.getEyePosition(),
+                    ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player)).getType() != HitResult.Type.MISS) continue;
+            if (pos.getX() != target.getX() || pos.getZ() != target.getZ()) return safe;
+            if (player != null && fallback == null) fallback = safe;
         }
-        return null;
+        return fallback;
     }
 
     private static boolean restore(ServerLevel level, Trip trip, Vec3 position) {
