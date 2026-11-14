@@ -147,7 +147,7 @@ public class FloraFaunaGameTests {
         registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect",
                 DevPlot.FRENCHIE.structure(), 500, FrenchieDeliveryGameTests::disconnectedRecipient);
         registerStructureTest(event, defaultEnv, "frenchie_delivery_cross_dimension",
-                DevPlot.FRENCHIE.structure(), 1000, FrenchieDeliveryGameTests::crossDimension);
+                DevPlot.FRENCHIE.structure(), 2400, FrenchieDeliveryGameTests::crossDimension);
         registerStructureTest(event, defaultEnv, "frenchie_delivery_blocked_departure",
                 DevPlot.FRENCHIE.structure(), 650, FrenchieDeliveryGameTests::blockedDeparture);
         registerTest(event, defaultEnv, "frenchie_delivery_legacy_bed_pickup", FrenchieDeliveryGameTests::legacyBedPickup);

@@ -221,6 +221,9 @@ final class FrenchieDeliveryGameTests {
         var nether = level.getServer().getLevel(Level.NETHER);
         h.assertTrue(nether != null, "The test world needs a Nether");
         var address = BlockPos.containing(dog.getX() / 8, 132, dog.getZ() / 8);
+        var chunk = ChunkPos.containing(address);
+        // Mock players do not acknowledge terrain loading like a game client.
+        nether.getChunkSource().addTicketWithRadius(TicketType.FORCED, chunk, 2);
         for (var pos : BlockPos.betweenClosed(address.offset(-2, -1, -2), address.offset(2, -1, 2))) {
             nether.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
         }
@@ -231,7 +234,7 @@ final class FrenchieDeliveryGameTests {
             recipient.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
         }
         h.startSequence()
-                .thenWaitUntil(() -> h.assertTrue(nether.areEntitiesActuallyLoadedAndTicking(ChunkPos.containing(address)),
+                .thenWaitUntil(() -> h.assertTrue(nether.areEntitiesActuallyLoadedAndTicking(chunk),
                         "The recipient did not finish entering the Nether"))
                 .thenExecute(() -> {
                     confirm(owner, recipient, dog);
@@ -253,6 +256,7 @@ final class FrenchieDeliveryGameTests {
                     h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 1
                                     && owner.getInventory().countItem(Items.BUNDLE) == 0,
                             "Cross-dimension return duplicated the parcel");
+                    nether.getChunkSource().removeTicketWithRadius(TicketType.FORCED, chunk, 2);
                     disconnect(recipient);
                     disconnect(owner);
                 }).thenSucceed();
