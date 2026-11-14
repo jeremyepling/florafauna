@@ -5,6 +5,9 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.debug.DebugOverlay;
 import net.j40climb.florafauna.common.item.projectile.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
+import net.j40climb.florafauna.common.entity.frenchie.FrenchieModel;
+import net.j40climb.florafauna.common.entity.gecko.GeckoModel;
+import net.j40climb.florafauna.common.entity.lizard.LizardModel;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
@@ -108,10 +111,17 @@ public class ClientSetup {
      * Call this from the main mod class.
      */
     public static void init(IEventBus modEventBus) {
+        modEventBus.addListener(ClientSetup::registerLayers);
         modEventBus.addListener(ClientSetup::registerRenderers);
         modEventBus.addListener(ClientSetup::registerScreens);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
+    }
+
+    private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(GeckoModel.GECKO, GeckoModel::createBodyLayer);
+        event.registerLayerDefinition(LizardModel.LIZARD, LizardModel::createBodyLayer);
+        event.registerLayerDefinition(FrenchieModel.FRENCHIE, FrenchieModel::createBodyLayer);
     }
 
     // ==================== EVENT HANDLERS ====================

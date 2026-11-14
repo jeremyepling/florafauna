@@ -147,6 +147,7 @@ public class MobOutputBlock extends BaseEntityBlock implements BonemealableBlock
                 );
                 return InteractionResult.SUCCESS;
             }
+            MobInputLinkingState.clearLinking(player);
         }
 
         // Show status

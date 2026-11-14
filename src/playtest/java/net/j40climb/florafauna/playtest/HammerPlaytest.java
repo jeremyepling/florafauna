@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
+import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.ClientSetup;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.CameraType;
@@ -32,6 +33,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
@@ -39,10 +41,16 @@ public final class HammerPlaytest {
     private static final BlockPos WALL = new BlockPos(0, 202, 3);
     private static final BlockPos FLOOR = new BlockPos(0, 200, 0);
     private static BlockPos lastCustomOutline;
+    private static boolean observingCracks;
+    private static final Set<BlockPos> cracks = new HashSet<>();
 
     // LevelRenderer resets this state at the end of each frame, before the playtest's next client tick.
     @SubscribeEvent
     public static void captureOutline(ExtractLevelRenderStateEvent event) {
+        if (observingCracks) {
+            cracks.clear();
+            event.getRenderState().blockBreakingRenderStates.forEach(state -> cracks.add(state.blockPos()));
+        }
         var outline = event.getRenderState().blockOutlineRenderState;
         lastCustomOutline = outline != null && !outline.customRenderers().isEmpty() ? outline.pos() : null;
     }
@@ -87,6 +95,7 @@ public final class HammerPlaytest {
         t.awaitServer("Select flat 3×3 mining on the server", p ->
                 p.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.FLAT_3X3);
 
+        interruptSwing(t);
         minePlane(t, WALL, Direction.NORTH, "wall");
         minePlane(t, FLOOR, Direction.UP, "floor");
 
@@ -121,6 +130,42 @@ public final class HammerPlaytest {
         checkTransform(t, "Till dirt when flattening is disabled", Blocks.DIRT.defaultBlockState(),
                 MultiToolAbilityData.DEFAULT.withFlatten(false), Blocks.FARMLAND.defaultBlockState());
         HammerQuarryPlaytest.start(t);
+    }
+
+    private static void interruptSwing(Playtest t) {
+        t.server("Prepare a Standard-speed swing on the 3×3 stone wall", p -> setSpeed(p, MiningSpeed.STANDARD));
+        t.awaitClient("Aim at the wall with Standard speed selected", mc -> aimedAt(mc, WALL, Direction.NORTH)
+                && mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).miningSpeed() == MiningSpeed.STANDARD);
+        t.client("Hold attack to begin mining", mc -> {
+            observingCracks = true;
+            KeyMapping.click(mc.options.keyAttack.getKey());
+            mc.options.keyAttack.setDown(true);
+        });
+        Set<BlockPos> expected = new HashSet<>();
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) expected.add(WALL.offset(x, y, 0));
+        }
+        t.awaitClient("Render cracks at exactly the nine target positions, then release attack", mc -> {
+            if (!cracks.equals(expected)) return false;
+            mc.options.keyAttack.setDown(false);
+            return true;
+        });
+        t.awaitClient("Clear all cracks when the swing is interrupted", mc -> !mc.gameMode.isDestroying() && cracks.isEmpty());
+        t.client("Finish observing the interrupted swing", mc -> observingCracks = false);
+        t.server("Verify every block survived the interrupted swing", p -> {
+            for (BlockPos pos : expected) {
+                Playtest.require(p.level().getBlockState(pos).is(Blocks.STONE), "Interrupted swing broke " + pos);
+            }
+            setSpeed(p, MiningSpeed.INSTABREAK);
+        });
+        t.awaitClient("Receive Instabreak before the completed wall strike", mc ->
+                mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).miningSpeed() == MiningSpeed.INSTABREAK);
+    }
+
+    private static void setSpeed(ServerPlayer player, MiningSpeed speed) {
+        var config = player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG);
+        UpdateToolConfigPayload.applyToHeldItem(player, config.withMiningSpeed(speed));
+        player.inventoryMenu.broadcastChanges();
     }
 
     private static void checkTransform(Playtest t, String label, BlockState before, MultiToolAbilityData modes, BlockState after) {

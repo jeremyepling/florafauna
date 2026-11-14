@@ -1,11 +1,14 @@
 package net.j40climb.florafauna;
 
+import com.mojang.logging.LogUtils;
 import net.neoforged.neoforge.common.ModConfigSpec;
+import org.slf4j.Logger;
 
 /**
  * Central configuration for the FloraFauna mod.
  */
 public class Config {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     // ==================== ITEM INPUT SYSTEM ====================
@@ -460,7 +463,7 @@ public class Config {
 
     private static int checkedMaximum(String key, int minimum, int maximum) {
         if (maximum >= minimum) return maximum;
-        com.mojang.logging.LogUtils.getLogger().warn("{} ({}) is below its minimum ({}), using {}", key, maximum, minimum, minimum);
+        LOGGER.warn("{} ({}) is below its minimum ({}), using {}", key, maximum, minimum, minimum);
         return minimum;
     }
 }

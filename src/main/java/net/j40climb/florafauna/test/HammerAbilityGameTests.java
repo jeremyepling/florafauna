@@ -1,7 +1,11 @@
 package net.j40climb.florafauna.test;
 
 import com.mojang.authlib.GameProfile;
-import net.j40climb.florafauna.common.item.abilities.data.*;
+import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
+import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
+import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
+import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
@@ -16,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -23,15 +28,20 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 final class HammerAbilityGameTests {
     static void register(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         FloraFaunaGameTests.registerTest(event, env, "hammer_fresh_and_configured_loot", HammerAbilityGameTests::checkConfigurations);
         FloraFaunaGameTests.registerTest(event, env, "hammer_throw_single_item_and_reload", HammerAbilityGameTests::checkThrow);
+        FloraFaunaGameTests.registerTest(event, env, "hammer_throw_rejected_or_inventory_full", HammerAbilityGameTests::checkThrowFailure);
     }
 
     private static ServerPlayer player(GameTestHelper helper) {
@@ -77,6 +87,40 @@ final class HammerAbilityGameTests {
                 }
             }
         }
+        helper.succeed();
+    }
+
+    private static void checkThrowFailure(GameTestHelper helper) {
+        var player = player(helper);
+        var hammer = new ItemStack(FloraFaunaRegistry.HAMMER.get());
+        hammer.set(DataComponents.CUSTOM_NAME, Component.literal("Quarry Hammer"));
+        var expected = hammer.copy();
+        player.setItemInHand(InteractionHand.MAIN_HAND, hammer);
+        Consumer<EntityJoinLevelEvent> cancel = event -> {
+            if (event.getEntity() instanceof ThrownItemEntity item && item.getOwner() == player) event.setCanceled(true);
+        };
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, EntityJoinLevelEvent.class, cancel);
+        try {
+            ThrowItemPayload.throwItem(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(ItemStack.matches(expected, player.getMainHandItem()), "Rejected throw consumed the Hammer");
+        } finally {
+            NeoForge.EVENT_BUS.unregister(cancel);
+        }
+
+        ThrowItemPayload.throwItem(player, InteractionHand.MAIN_HAND);
+        var entities = helper.getLevel().getEntities(FloraFaunaRegistry.THROWN_ITEM.get(), e -> e.getOwner() == player);
+        helper.assertTrue(entities.size() == 1 && player.getMainHandItem().isEmpty(), "Expected a single accepted throw");
+        for (int slot = 0; slot < player.getInventory().getNonEquipmentItems().size(); slot++) {
+            player.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
+        }
+        var entity = entities.getFirst();
+        entity.setPos(player.position().add(40, 0, 0));
+        entity.tick();
+        entity.setPos(player.position());
+        entity.tick();
+        var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(3),
+                e -> ItemStack.matches(expected, e.getItem()));
+        helper.assertTrue(entity.isRemoved() && drops.size() == 1, "A full inventory should leave one recoverable Hammer");
         helper.succeed();
     }
 

@@ -65,7 +65,7 @@ public record MobBarrierConfig(
 
         // Check direct entity ID matches
         for (String id : entityIds) {
-            if (id.equals(entityId.toString())) {
+            if (entityId.equals(Identifier.tryParse(id))) {
                 return true;
             }
         }
@@ -155,7 +155,7 @@ public record MobBarrierConfig(
         return BuiltInRegistries.ENTITY_TYPE.containsKey(id);
     }
 
-    /**re
+    /**
      * Validates an entity tag string.
      * Note: Tags are data-driven and may not be loaded on client.
      * This just validates the format, not existence.
@@ -164,7 +164,7 @@ public record MobBarrierConfig(
     public static boolean isValidTagFormat(String tagString) {
         String tagPath = tagString.startsWith("#") ? tagString.substring(1) : tagString;
         Identifier tagId = Identifier.tryParse(tagPath);
-        return tagId != null;
+        return tagId != null && !tagId.getPath().isEmpty();
     }
 
     /**

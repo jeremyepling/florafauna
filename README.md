@@ -22,6 +22,8 @@ From the checkout you want to test, generate resources before packaging. The bui
 .\gradlew.bat runClient
 ```
 
+For a quick Hammer configuration check, run `.\gradlew.bat test`. The JUnit suite exercises shape and speed cycling, enchantment rules and legacy component decoding. The headless GameTests mine through the server player action path and check the blocks, loot and stairs produced. The real client scenario below checks input, rendering, walking and restart behavior.
+
 ### IDE Setup
 
 Open the checkout you want to test as an IntelliJ Gradle project using JDK 25. To open a worker from the main checkout, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1` and choose a new window if prompted. Let Gradle sync so NeoForge can generate that checkout's run configurations. Use **Client** for playing or debugging the mod and **GameTestServer** for headless gameplay tests. Run the Gradle `runData` task before testing a fresh checkout or changes to generated content.
@@ -59,7 +61,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | Scenario | What the client and integrated server check |
 | --- | --- |
 | `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
-| `hammer` | Change tool settings, verify wall and floor outlines and 3×3 cuts, strip a log, then walk and mine three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
+| `hammer` | Change settings, interrupt a swing and check that all nine cracks clear. Mine a wall and floor, strip logs, flatten and till dirt, then walk three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |

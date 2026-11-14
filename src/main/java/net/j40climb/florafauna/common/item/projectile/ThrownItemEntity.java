@@ -18,6 +18,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.minecraft.world.level.storage.ValueInput;
@@ -70,7 +71,7 @@ public class ThrownItemEntity extends AbstractArrow {
         this.entityData.set(DATA_AUTO_RETURN, abilityData.autoReturn());
         this.entityData.set(DATA_RETURN_SPEED, abilityData.returnSpeed());
 
-        // Allow pickup when not auto-returning
+        // Vanilla persists the pickup policy, including creative throws that never consumed an item.
         this.pickup = shooter instanceof Player player && player.hasInfiniteMaterials()
                 ? Pickup.CREATIVE_ONLY : Pickup.ALLOWED;
     }
@@ -137,7 +138,7 @@ public class ThrownItemEntity extends AbstractArrow {
 
     private boolean isAcceptableReturnOwner(@Nullable Entity owner) {
         if (owner == null || !owner.isAlive()) return false;
-        if (owner instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+        if (owner instanceof ServerPlayer serverPlayer) {
             return !serverPlayer.isSpectator();
         }
         return true;
@@ -200,6 +201,8 @@ public class ThrownItemEntity extends AbstractArrow {
         BlockState state = level.getBlockState(pos);
         ItemStack tool = getThrownItem();
         if (state.isAir() || state.getDestroySpeed(level, pos) < 0 || !level.mayInteract(owner, pos)
+                || owner.blockActionRestricted(level, pos, owner.gameMode.getGameModeForPlayer())
+                || (state.getBlock() instanceof GameMasterBlock && !owner.canUseGameMasterBlocks())
                 || !tool.canDestroyBlock(state, level, pos, owner)
                 || CommonHooks.fireBlockBreak(level, owner.gameMode.getGameModeForPlayer(), owner, pos, state).isCanceled()) {
             return false;

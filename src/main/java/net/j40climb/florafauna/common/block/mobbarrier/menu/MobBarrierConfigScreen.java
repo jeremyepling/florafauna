@@ -228,9 +228,11 @@ public class MobBarrierConfigScreen extends BaseScreen {
         if (input.isEmpty()) return;
 
         if (input.startsWith("#")) {
+            if (!MobBarrierConfig.isValidTagFormat(input)) return;
             config = config.withAddedEntityTag(input);
         } else {
-            config = config.withAddedEntityId(input);
+            if (!MobBarrierConfig.isValidEntityId(input)) return;
+            config = config.withAddedEntityId(Identifier.parse(input).toString());
         }
 
         inputField.setValue("");

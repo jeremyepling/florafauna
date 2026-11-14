@@ -4,6 +4,9 @@ import com.mojang.authlib.GameProfile;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
+import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +17,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Items;
@@ -22,6 +26,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
@@ -42,6 +47,7 @@ final class HammerMiningGameTests {
             String name = "hammer_" + mode.getSerializedName() + "_all_faces";
             FloraFaunaGameTests.registerStructureTest(event, env, name, MINE, 100, h -> allFaces(h, mode));
         }
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_ore_drops", MINE, 100, HammerMiningGameTests::oreDrops);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_repeated_excavation", MINE, 100, HammerMiningGameTests::repeat);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_limit_and_connectivity", MINE, 100, HammerMiningGameTests::vein);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_tunnel_gaps", MINE, 100, HammerMiningGameTests::gaps);
@@ -103,6 +109,30 @@ final class HammerMiningGameTests {
                     if (block == Blocks.COBBLESTONE_STAIRS) stair(h, pos, stairsFace);
                 }
             }
+        }
+        h.succeed();
+    }
+
+    private static void oreDrops(GameTestHelper h) {
+        ServerPlayer player = player(h, MiningShape.FLAT_3X3);
+        player.setGameMode(GameType.SURVIVAL);
+        player.setOnGround(true);
+        for (boolean silk : new boolean[]{false, true}) {
+            var center = h.absolutePos(new BlockPos(silk ? 14 : 5, 10, 5));
+            UpdateToolConfigPayload.applyToHeldItem(player, new ToolConfig(!silk, silk, MiningSpeed.INSTABREAK));
+            set(player, center, Blocks.DIAMOND_ORE);
+            set(player, center.east(), Blocks.DIAMOND_ORE);
+            swing(player, center, Direction.UP, Direction.SOUTH);
+            check(h, center, Blocks.AIR, "ore center");
+            check(h, center.east(), Blocks.AIR, "ore neighbor");
+            var drops = h.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(center.getCenter(), center.east().getCenter()).inflate(2));
+            int count = 0;
+            for (var drop : drops) {
+                var stack = drop.getItem();
+                h.assertTrue(stack.is(silk ? Items.DIAMOND_ORE : Items.DIAMOND), "Unexpected ore drop: " + stack);
+                count += stack.getCount();
+            }
+            h.assertTrue(silk ? count == 2 : count >= 2 && count <= 8, "Wrong total ore loot: " + count);
         }
         h.succeed();
     }

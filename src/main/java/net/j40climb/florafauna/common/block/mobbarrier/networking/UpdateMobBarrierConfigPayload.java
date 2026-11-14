@@ -31,7 +31,9 @@ public record UpdateMobBarrierConfigPayload(MobBarrierConfig config) implements 
         Player player = context.player();
         ItemStack heldItem = player.getMainHandItem();
 
-        if (heldItem.is(FloraFaunaRegistry.MOB_BARRIER.asItem())) {
+        if (heldItem.is(FloraFaunaRegistry.MOB_BARRIER.asItem())
+                && data.config.entityIds().stream().allMatch(MobBarrierConfig::isValidEntityId)
+                && data.config.entityTags().stream().allMatch(MobBarrierConfig::isValidTagFormat)) {
             heldItem.set(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get(), data.config);
         }
     }

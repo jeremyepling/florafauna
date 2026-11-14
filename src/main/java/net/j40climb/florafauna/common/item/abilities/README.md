@@ -72,6 +72,8 @@ When breaking a block with `MULTI_BLOCK_MINING` component:
 
 Flat planes follow the original hit face. Shapeless mining follows matching blocks through faces, edges and corners and defaults to 64 blocks, including the center. Existing component values are bounded to a radius of 0–3 and a vein limit of 1–64.
 
+Instabreak sets mining speed to 100. Block hardness still determines how long a strike takes.
+
 Tunnel modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center. Descending stairs can bridge air. Ascending stairs are placed only where this swing removed a floor block.
 
 ## Right-Click Action

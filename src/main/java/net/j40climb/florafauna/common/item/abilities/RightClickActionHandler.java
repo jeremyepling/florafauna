@@ -25,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,6 +50,11 @@ public class RightClickActionHandler {
      * when RightClickBlock already performed a tool modification.
      */
     private static final Map<UUID, Long> recentToolModifications = new ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        recentToolModifications.remove(event.getEntity().getUUID());
+    }
 
     /**
      * Handle right-click on a block.
@@ -123,8 +129,14 @@ public class RightClickActionHandler {
         if (!action.abilityId().getNamespace().equals(FloraFauna.MOD_ID)) return false;
         String abilityName = action.abilityId().getPath();
         switch (abilityName) {
-            case "throwable_ability" -> ThrowItemPayload.throwItem(serverPlayer, hand);
-            case "multi_block_mining" -> CycleMiningModePayload.cycleMiningMode(serverPlayer, stack);
+            case "throwable_ability" -> {
+                if (!stack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) return false;
+                ThrowItemPayload.throwItem(serverPlayer, hand);
+            }
+            case "multi_block_mining" -> {
+                if (!stack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) return false;
+                CycleMiningModePayload.cycleMiningMode(serverPlayer, stack);
+            }
             case "lightning_ability" -> {
                 if (clickedPos == null || !stack.has(FloraFaunaRegistry.LIGHTNING_ABILITY)) return false;
                 SpawnLightningPayload.spawnLightningBolt(player.level(), clickedPos);
