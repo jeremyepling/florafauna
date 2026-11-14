@@ -10,6 +10,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -129,8 +131,10 @@ final class FrenchieDeliveryGameTests {
         var expected = prepareDelivery(owner, recipient, dog).copy();
         var id = dog.getUUID();
         var level = h.getLevel();
+        var start = dog.position();
+        platform(h, dog.blockPosition());
         // The landings are high above the departure point, with no walkable connection.
-        BlockPos address = dog.blockPosition().above(96);
+        BlockPos address = dog.blockPosition().above(96).south(12);
         BlockPos moved = address.south(12);
         platform(h, address);
         platform(h, moved);
@@ -142,6 +146,8 @@ final class FrenchieDeliveryGameTests {
         h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
                 "The chooser should accept a player 96 blocks away");
         h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(!dog.isRemoved() && dog.position().distanceToSqr(start) >= 1,
+                        "The dog never walked away from the owner"))
                 .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null, "Courier never departed"))
                 .thenExecute(() -> recipient.snapTo(moved, 0, 0))
                 // Even after a short walk-off, this distance needs substantially more than the three-second base time.
@@ -226,6 +232,62 @@ final class FrenchieDeliveryGameTests {
                                     && owner.getInventory().countItem(Items.BUNDLE) == 0,
                             "Blocked departure must produce one completed delivery");
                     disconnect(recipient);
+                    disconnect(owner);
+                }).thenSucceed();
+    }
+
+    static void unloadedHomeBed(GameTestHelper h) {
+        var level = h.getLevel();
+        var owner = h.makeMockServerPlayerInLevel();
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 2, 1, 2);
+        var id = dog.getUUID();
+        BlockPos start = dog.blockPosition();
+        // Keep both the bed and its landing floor in a previously untouched chunk.
+        BlockPos bed = new ChunkPos(start.east(640)).getMiddleBlockPosition(start.getY() + 12);
+        platform(h, bed);
+        var bedState = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
+        level.setBlock(bed.west(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
+        level.setBlock(bed, bedState.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
+        owner.getInventory().clearContent();
+        owner.setItemInHand(HAND, parcel());
+        dog.tame(owner);
+        dog.sitDown();
+        dog.snapTo(bed.north(), 0, 0);
+        owner.snapTo(dog.position().add(1, 0, 0), 0, 0);
+        click(owner, dog);
+        order(owner, dog, "bed");
+        dog.snapTo(start, 0, 0);
+        owner.snapTo(dog.position().add(0, 0, -1), 0, 0);
+        h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(!level.hasChunkAt(bed), "Bed chunk never unloaded"))
+                .thenExecute(() -> {
+                    click(owner, dog);
+                    order(owner, dog, "choose home");
+                    order(owner, dog, "send home");
+                    h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
+                            "The owner could not confirm an unloaded bed");
+                })
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null, "Bed delivery never departed"))
+                .thenExecuteAfter(200, () -> h.assertTrue(!level.hasChunkAt(bed) && level.getEntity(id) == null,
+                        "The dog or destination chunk was simulated during long-distance transit"))
+                .thenExecuteAfter(800, () -> {
+                    // The owner visits after arrival, when the bed and waiting courier may have unloaded again.
+                    level.getChunkSource().addTicketWithRadius(TicketType.PLAYER_SPAWN, new ChunkPos(bed), 2);
+                    level.getChunkAt(bed);
+                    owner.snapTo(bed.north(2), 0, 0);
+                })
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) instanceof FrenchieEntity waiting
+                                && waiting.isDelivering() && waiting.position().distanceToSqr(bed.getBottomCenter()) < 36,
+                        "No waiting courier at the distant bed after the owner's visit"))
+                .thenExecute(() -> {
+                    var waiting = (FrenchieEntity) level.getEntity(id);
+                    owner.snapTo(waiting.position().add(1, 0, 0), 0, 0);
+                    click(owner, waiting);
+                    h.assertTrue(!waiting.isDelivering() && waiting.isOrderedToSit()
+                                    && ItemStack.matches(parcel(), owner.getMainHandItem())
+                                    && owner.getInventory().countItem(Items.BUNDLE) == 1,
+                            "The distant-bed delivery should return the original parcel once");
+                    level.getChunkSource().removeTicketWithRadius(TicketType.PLAYER_SPAWN, new ChunkPos(bed), 2);
                     disconnect(owner);
                 }).thenSucceed();
     }
