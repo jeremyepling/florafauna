@@ -9,11 +9,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
@@ -62,7 +64,9 @@ final class DeliveryGoal extends Goal {
     }
 
     void collect(ServerPlayer owner, InteractionHand emptyHand) {
-        boolean delivered = !returning && recipient == null && waiting;
+        boolean delivered = !returning && recipient == null && waiting && home != null
+                && home.dimension().equals(dog.level().dimension())
+                && dog.position().distanceToSqr(Vec3.atBottomCenterOf(home.pos())) <= 6.25;
         owner.setItemInHand(emptyHand, takeParcel());
         dog.sitDown();
         tell(owner, delivered ? "collected" : "returned");
@@ -123,7 +127,7 @@ final class DeliveryGoal extends Goal {
 
         Vec3 delta = destination.subtract(dog.position());
         double distance = delta.length();
-        if (distance <= 2.5 && (player == null || returning || dog.hasLineOfSight(player))) {
+        if (distance <= 2.5 && canHandOff(level, player, destination)) {
             dog.getNavigation().stop();
             if (returning) {
                 if (!waiting) tell(owner, "recover");
@@ -155,8 +159,16 @@ final class DeliveryGoal extends Goal {
             returnToOwner(owner, "blocked");
             return;
         }
-        Vec3 waypoint = dog.position().add(delta.scale(Math.min(distance, 14) / Math.max(distance, 0.01)));
+        Vec3 waypoint = distance <= 14 ? destination : dog.position().add(delta.scale(14 / distance));
         dog.getNavigation().moveTo(dog.getNavigation().createPath(BlockPos.containing(waypoint), 1), 1.2);
+    }
+
+    private boolean canHandOff(ServerLevel level, @Nullable ServerPlayer player, Vec3 destination) {
+        if (returning) return true;
+        if (player != null) return dog.hasLineOfSight(player);
+        var hit = level.clip(new ClipContext(dog.getEyePosition(), destination.add(0, 0.6, 0),
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, dog));
+        return hit.getType() == HitResult.Type.MISS || hit.getBlockPos().equals(home.pos());
     }
 
     private void returnToOwner(@Nullable ServerPlayer owner, String reason) {

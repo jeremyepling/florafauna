@@ -1,6 +1,8 @@
 {
   "frenchie.florafauna.order.sit": "%s will sit here.",
   "frenchie.florafauna.order.follow": "%s will follow you.",
+  "frenchie.florafauna.order.packed": "Job paused. Put your dog down to continue.",
+  "frenchie.florafauna.order.resumed": "Back on the job.",
   "frenchie.florafauna.order.cancel": "Trail canceled. %s will sit here.",
   "frenchie.florafauna.order.busy": "%s has a job. Use an empty hand to cancel.",
   "frenchie.florafauna.tracking.wait": "%s is waiting for you.",

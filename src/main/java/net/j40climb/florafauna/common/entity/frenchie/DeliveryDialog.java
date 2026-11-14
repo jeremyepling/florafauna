@@ -60,9 +60,12 @@ public final class DeliveryDialog {
         if (nearbyBed != null && (home == null || !home.dimension().equals(level.dimension()) || !nearbyBed.equals(home.pos()))) {
             buttons.add(button(label("assign", nearbyBed.toShortString()), "bed"));
         }
-        buttons.add(closeButton());
-        owner.openDialog(Holder.direct(new MultiActionDialog(
-                common(label("title"), label("instructions")), buttons, Optional.empty(), 1)));
+        var info = common(label("title"), label("instructions"));
+        if (buttons.isEmpty()) {
+            owner.openDialog(Holder.direct(new NoticeDialog(info, closeButton())));
+        } else {
+            owner.openDialog(Holder.direct(new MultiActionDialog(info, buttons, Optional.of(closeButton()), 1)));
+        }
     }
 
     private static CommonDialogData common(Component title, Component body) {
@@ -75,8 +78,8 @@ public final class DeliveryDialog {
                 Optional.of(new StaticAction(new ClickEvent.RunCommand("/frenchiedelivery " + dog.getStringUUID() + " " + action))));
     }
 
-    private static ActionButton closeButton() {
-        return new ActionButton(new CommonButtonData(Component.translatable("gui.cancel"), 120), Optional.empty());
+    private ActionButton closeButton() {
+        return button(Component.translatable("gui.cancel"), "dismiss");
     }
 
     private boolean eligiblePlayer(ServerPlayer owner, ServerPlayer candidate) {
@@ -86,7 +89,8 @@ public final class DeliveryDialog {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         var dogId = Commands.argument("dog", UuidArgument.uuid())
-                .then(Commands.literal("bed").executes(ctx -> reply(ctx, "bed", "")));
+                .then(Commands.literal("bed").executes(ctx -> reply(ctx, "bed", "")))
+                .then(Commands.literal("dismiss").executes(ctx -> reply(ctx, "dismiss", "")));
         for (String action : List.of("choose", "send")) {
             dogId.then(Commands.literal(action)
                     .then(Commands.literal("home").executes(ctx -> reply(ctx, action, "home")))
@@ -111,6 +115,10 @@ public final class DeliveryDialog {
     }
 
     private boolean handle(ServerPlayer owner, String action, String destination) {
+        if (action.equals("dismiss")) {
+            dog.deliveryDialog = null;
+            return true;
+        }
         if (action.equals("bed")) {
             if (nearbyBed == null || dog.blockPosition().distSqr(nearbyBed) > 64
                     || !DeliveryGoal.isBedHead(owner.level(), nearbyBed)) return false;
