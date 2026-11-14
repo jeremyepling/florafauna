@@ -6,6 +6,7 @@ import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -19,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Items;
@@ -36,6 +38,7 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -51,6 +54,8 @@ final class HammerMiningGameTests {
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_ore_drops", MINE, 100, HammerMiningGameTests::oreDrops);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_repeated_excavation", MINE, 100, HammerMiningGameTests::repeat);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_limit_and_connectivity", MINE, 100, HammerMiningGameTests::vein);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_material_pairs", MINE, 100, HammerMiningGameTests::veinMaterialPairs);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_exact_and_boundaries", MINE, 100, HammerMiningGameTests::veinBoundaries);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_tunnel_gaps", MINE, 100, HammerMiningGameTests::gaps);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_dimension_floor", MINE, 100, HammerMiningGameTests::buildFloor);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_precision_is_per_player", MINE, 100, HammerMiningGameTests::precision);
@@ -230,6 +235,81 @@ final class HammerMiningGameTests {
             check(h, tread.above(5), Blocks.STONE, "roof");
             check(h, tread.below(), Blocks.STONE, "floor");
             check(h, tread.north(), Blocks.STONE, "side wall");
+        }
+        h.succeed();
+    }
+
+    private static void veinMaterialPairs(GameTestHelper h) {
+        var player = player(h, MiningShape.SHAPELESS);
+        BlockPos center = h.absolutePos(new BlockPos(5, 12, 5));
+        Map<Block, Block> pairs = Map.of(
+                Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE,
+                Blocks.COPPER_ORE, Blocks.DEEPSLATE_COPPER_ORE,
+                Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE,
+                Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE,
+                Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE,
+                Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE,
+                Blocks.LAPIS_ORE, Blocks.DEEPSLATE_LAPIS_ORE,
+                Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE);
+        pairs.forEach((stone, deep) -> {
+            checkMixedVein(h, player, center, stone, deep);
+            checkMixedVein(h, player, center, deep, stone);
+        });
+        h.succeed();
+    }
+
+    private static void checkMixedVein(GameTestHelper h, ServerPlayer player, BlockPos center, Block start, Block variant) {
+        BlockPos neighbor = center.offset(1, 1, 0);
+        BlockPos end = neighbor.offset(1, 1, 1);
+        BlockPos island = end.east(2);
+        Block other = start == Blocks.IRON_ORE || variant == Blocks.IRON_ORE ? Blocks.COPPER_ORE : Blocks.IRON_ORE;
+        set(player, center, start);
+        set(player, neighbor, variant);
+        set(player, end, start);
+        set(player, island, variant);
+        set(player, center.north(), other);
+        set(player, center.south(), Blocks.NETHER_GOLD_ORE);
+
+        var plan = MultiBlockPatterns.plan(player, player.getMainHandItem(), center, Direction.UP);
+        if (!plan.blocks().equals(List.of(center, neighbor, end))) throw h.assertionException("Incorrect mixed vein preview for " + start);
+        swing(player, center, Direction.UP, Direction.NORTH);
+        for (BlockPos pos : plan.blocks()) check(h, pos, Blocks.AIR, "mixed vein swing");
+        check(h, island, variant, "disconnected island");
+        check(h, center.north(), other, "touching different material");
+        check(h, center.south(), Blocks.NETHER_GOLD_ORE, "touching Nether gold");
+    }
+
+    private static void veinBoundaries(GameTestHelper h) {
+        var player = player(h, MiningShape.SHAPELESS);
+        BlockPos center = h.absolutePos(new BlockPos(5, 12, 5));
+        UpdateToolConfigPayload.applyToHeldItem(player, ToolConfig.DEFAULT.withToggledVeinMatching());
+        set(player, center, Blocks.IRON_ORE);
+        set(player, center.west(), Blocks.IRON_ORE);
+        set(player, center.east(), Blocks.DEEPSLATE_IRON_ORE);
+        set(player, center.east(2), Blocks.IRON_ORE);
+        swing(player, center, Direction.UP, Direction.NORTH);
+        check(h, center, Blocks.AIR, "exact center");
+        check(h, center.west(), Blocks.AIR, "exact neighbor");
+        check(h, center.east(), Blocks.DEEPSLATE_IRON_ORE, "exact mode rejects variant");
+        check(h, center.east(2), Blocks.IRON_ORE, "variant cannot bridge exact blocks");
+
+        UpdateToolConfigPayload.applyToHeldItem(player, ToolConfig.DEFAULT);
+        player.getMainHandItem().set(FloraFaunaRegistry.MULTI_BLOCK_MINING, new MiningModeData(MiningShape.SHAPELESS, 1, 2, true));
+        set(player, center, Blocks.IRON_ORE);
+        swing(player, center, Direction.UP, Direction.NORTH);
+        check(h, center, Blocks.AIR, "capped mixed vein center");
+        check(h, center.east(), Blocks.AIR, "variant consumes one slot");
+        check(h, center.east(2), Blocks.IRON_ORE, "mixed vein respects two-block cap");
+
+        configure(player, MiningShape.SHAPELESS);
+        for (var entry : Map.of(Blocks.NETHER_GOLD_ORE, Blocks.GOLD_ORE, Blocks.WOOL.pick(DyeColor.WHITE), Blocks.WOOL.pick(DyeColor.BLACK)).entrySet()) {
+            set(player, center, entry.getKey());
+            set(player, center.west(), entry.getKey());
+            set(player, center.east(), entry.getValue());
+            swing(player, center, Direction.UP, Direction.NORTH);
+            check(h, center, Blocks.AIR, "exact block center");
+            check(h, center.west(), Blocks.AIR, "identical neighbor");
+            check(h, center.east(), entry.getValue(), "unpaired block stays exact");
         }
         h.succeed();
     }

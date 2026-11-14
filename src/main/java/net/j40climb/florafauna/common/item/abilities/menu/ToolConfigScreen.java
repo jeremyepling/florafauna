@@ -17,11 +17,12 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * Works with any item that has the TOOL_CONFIG data component.
  */
 public class ToolConfigScreen extends BaseScreen {
-    private static final int BUTTON_WIDTH = 100;
+    private static final int BUTTON_WIDTH = 88;
     private static final int BUTTON_HEIGHT = 20;
     private static final int BUTTON_SPACING = 24;
 
     private ToolConfig config;
+    private final boolean hasVeinMining;
     private Button enchantmentButton;
     private Button miningSpeedButton;
 
@@ -32,8 +33,10 @@ public class ToolConfigScreen extends BaseScreen {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
             ItemStack heldItem = player.getMainHandItem();
+            this.hasVeinMining = heldItem.has(FloraFaunaRegistry.MULTI_BLOCK_MINING);
             this.config = heldItem.getOrDefault(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
         } else {
+            this.hasVeinMining = false;
             this.config = ToolConfig.DEFAULT;
         }
     }
@@ -41,7 +44,7 @@ public class ToolConfigScreen extends BaseScreen {
     @Override
     protected void initContent() {
         // Position buttons in the content area
-        int buttonX = leftPos + 38;
+        int buttonX = getContentX() + CONTENT_WIDTH - BUTTON_WIDTH;
         int startY = getContentY() + 2;
 
         // Enchantment toggle button - shows current enchantment
@@ -57,6 +60,14 @@ public class ToolConfigScreen extends BaseScreen {
                 button -> cycleMiningSpeed()
         ).bounds(buttonX, startY + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build();
         this.addRenderableWidget(this.miningSpeedButton);
+
+        if (hasVeinMining) {
+            this.addRenderableWidget(Button.builder(veinMatchingName(), button -> {
+                config = config.withToggledVeinMatching();
+                button.setMessage(veinMatchingName());
+                sendConfigUpdate();
+            }).bounds(buttonX, startY + 2 * BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+        }
     }
 
     @Override
@@ -67,6 +78,10 @@ public class ToolConfigScreen extends BaseScreen {
         // Draw static labels to the left of buttons
         guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.enchantment"), labelX, startY + 6, 0xFF404040);
         guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.mining_speed"), labelX, startY + BUTTON_SPACING + 6, 0xFF404040);
+        if (hasVeinMining) {
+            guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.vein_matching"),
+                    labelX, startY + 2 * BUTTON_SPACING + 6, 0xFF404040);
+        }
     }
 
     private void toggleEnchantment() {
@@ -100,6 +115,11 @@ public class ToolConfigScreen extends BaseScreen {
             case EFFICIENCY -> Component.translatable("gui.florafauna.tool_config.speed.efficiency");
             case INSTABREAK -> Component.translatable("gui.florafauna.tool_config.speed.instabreak");
         };
+    }
+
+    private Component veinMatchingName() {
+        return Component.translatable(config.exactVein() ? "gui.florafauna.tool_config.vein.exact"
+                : "gui.florafauna.tool_config.vein.same_ore");
     }
 
     private void sendConfigUpdate() {
