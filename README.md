@@ -149,6 +149,8 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 
 The script prints the output directory under `.tmp/world-playtests`. Each scenario has its own world and per-phase results. The `frontpack/screenshots` folder contains matched third-person views before and after putdown. The plots, recovery, hammer and sleep scenarios also save screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
+Run `.\scripts\test_husk_multiplayer.ps1 -Scenario delivery -Offline` for the two-client courier playtest. The sender confirms the ETA, the recipient hears the bark and right-clicks the Frenchie, and the server verifies the bundle contents and the dog's return. The recipient's screenshot is under `.tmp/delivery-multiplayer/` in the run's `Visitor/screenshots` folder.
+
 ### Worktree Workflow
 
 From the checkout on `main`, choose an unused slot number:
