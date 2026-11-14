@@ -41,7 +41,7 @@ public class FrontpackClientEvents {
             if (warning == null || !warning.visible(now)) return;
             var pack = mc.player.getExistingDataOrNull(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
             if (pack == null || !pack.hasCarriedFrenchie()) return;
-            gui.blitSprite(RenderPipelines.GUI_TEXTURED, CREEPER_SPRITE, gui.guiWidth() / 2 - 8, gui.guiHeight() - 66, 16, 16);
+            gui.blitSprite(RenderPipelines.GUI_TEXTURED, CREEPER_SPRITE, gui.guiWidth() / 2 - 8, gui.guiHeight() - 51, 16, 16);
         });
     }
 
