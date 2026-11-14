@@ -109,6 +109,14 @@ public class ClientSetup {
             KEY_CATEGORY
     ));
 
+    public static final Lazy<KeyMapping> HAMMER_ACTION_WHEEL_KEY = Lazy.of(() -> new KeyMapping(
+            "key.florafauna.hammer_action_wheel",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_K,
+            KEY_CATEGORY
+    ));
+
     public static final Lazy<KeyMapping> NOCLIP_KEY = Lazy.of(() -> new KeyMapping(
             "key.florafauna.noclip",
             KeyConflictContext.IN_GAME,
@@ -190,6 +198,7 @@ public class ClientSetup {
         event.register(CYCLE_MINING_MODE_KEY.get());
         event.register(PRECISION_MINING_KEY.get());
         event.register(MOB_BARRIER_CONFIG_KEY.get());
+        event.register(HAMMER_ACTION_WHEEL_KEY.get());
         event.register(NOCLIP_KEY.get());
     }
 

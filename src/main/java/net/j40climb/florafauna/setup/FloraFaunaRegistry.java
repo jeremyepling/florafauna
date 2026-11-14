@@ -53,6 +53,7 @@ import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
+import net.j40climb.florafauna.common.item.abilities.data.HammerAction;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.hammer.HammerItem;
@@ -438,6 +439,10 @@ public class FloraFaunaRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<RightClickAction>> RIGHT_CLICK_ACTION =
             DATA_COMPONENTS.registerComponentType("right_click_action",
                     builder -> builder.persistent(RightClickAction.CODEC).networkSynchronized(RightClickAction.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<HammerAction>> HAMMER_ACTION =
+            DATA_COMPONENTS.registerComponentType("hammer_action",
+                    builder -> builder.persistent(HammerAction.CODEC).networkSynchronized(HammerAction.STREAM_CODEC));
 
     // Multi-tool ability data component - enables strip/path/till on right-click
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MultiToolAbilityData>> MULTI_TOOL_ABILITY =
