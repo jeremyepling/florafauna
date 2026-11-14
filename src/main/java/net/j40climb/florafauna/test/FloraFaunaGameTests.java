@@ -137,6 +137,11 @@ public class FloraFaunaGameTests {
         registerMobTransportTests(event, defaultEnv);
         MobTransportReleaseGameTests.register(event, defaultEnv);
         registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
+        registerTest(event, defaultEnv, "frenchie_death_trail", FrenchieTrackingGameTests::trackDeath);
+        registerTest(event, defaultEnv, "frenchie_compass_orders", FrenchieDeliveryGameTests::compassOrders);
+        registerTest(event, defaultEnv, "frenchie_delivery_packed_cancel", FrenchieDeliveryGameTests::packAndCancel);
+        registerTest(event, defaultEnv, "frenchie_delivery_recipient_full", FrenchieDeliveryGameTests::fullRecipient);
+        registerTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect", FrenchieDeliveryGameTests::disconnectedRecipient);
         registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
         registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 
