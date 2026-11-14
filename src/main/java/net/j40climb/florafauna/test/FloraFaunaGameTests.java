@@ -87,6 +87,8 @@ public class FloraFaunaGameTests {
         modEventBus.addListener(FloraFaunaGameTests::registerTests);
     }
 
+    // Empty 6 x 4 x 5 room. Keep each test's blocks and entities inside the loaded structure.
+    static final Identifier SMALL_TEST_ROOM = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
     private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
 
     private static void registerTests(RegisterGameTestsEvent event) {
@@ -122,7 +124,7 @@ public class FloraFaunaGameTests {
 
         // Register mob barrier tests
         registerMobBarrierTests(event, defaultEnv);
-        registerTest(event, defaultEnv, "slime_grate_harvest_and_reverse", SlimeGrateTests::harvestAndReverse);
+        registerStructureTest(event, defaultEnv, "slime_grate_harvest_and_reverse", SMALL_TEST_ROOM, 100, SlimeGrateTests::harvestAndReverse);
 
         // Register mining anchor tests
         registerMiningAnchorTests(event, defaultEnv);
@@ -149,10 +151,9 @@ public class FloraFaunaGameTests {
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
-        Identifier silkGarden = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
-        registerStructureTest(event, defaultEnv, "silk_early_shear", silkGarden, 250, SpiderSilkTests::earlyCut);
-        registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", silkGarden, 320, SpiderSilkTests::dispenser);
-        registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", silkGarden, 145, SpiderSilkTests::blocked);
+        registerStructureTest(event, defaultEnv, "silk_early_shear", SMALL_TEST_ROOM, 250, SpiderSilkTests::earlyCut);
+        registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", SMALL_TEST_ROOM, 320, SpiderSilkTests::dispenser);
+        registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", SMALL_TEST_ROOM, 145, SpiderSilkTests::blocked);
         WalkthroughGameTests.register(event, defaultEnv);
     }
 
