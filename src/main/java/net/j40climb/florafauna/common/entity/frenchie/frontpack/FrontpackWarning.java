@@ -19,7 +19,7 @@ public record FrontpackWarning(long start, float bearing) {
             ByteBufCodecs.VAR_LONG, FrontpackWarning::start, ByteBufCodecs.FLOAT, FrontpackWarning::bearing, FrontpackWarning::new);
 
     public boolean visible(long now) {
-        return now >= start && now - start < FrenchieAwareness.WARNING_TICKS;
+        return FrenchieAwareness.flashing(now - start);
     }
 
     @SubscribeEvent
@@ -33,7 +33,7 @@ public record FrontpackWarning(long start, float bearing) {
         }
         long now = player.level().getGameTime();
         if (previous != null) {
-            if (now - previous.start == 5) FrenchieAwareness.bark(player, 1.18F);
+            if (now - previous.start == FrenchieAwareness.SECOND_BARK_TICK) FrenchieAwareness.bark(player, 1.18F);
             if (now - previous.start < FrenchieAwareness.COOLDOWN_TICKS) return;
         }
         if (player.tickCount % 8 != 0) return;
