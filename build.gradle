@@ -100,13 +100,20 @@ neoForge {
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
+        // An optional Minecraft test selector narrows a headless run to one test or feature.
         // By default, the server will crash when no gametests are provided.
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
             gameDirectory = file("run/gameTestServer-${wt}")
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            def selector = providers.gradleProperty('gameTestFilter').orNull
+            if (selector != null) {
+                if (!(selector ==~ /[a-z0-9_.*?-]+:[a-z0-9_.*?\/-]+/)) {
+                    throw new GradleException('Use a namespaced GameTest ID or wildcard, e.g. florafauna:hammer_tunnel_gaps')
+                }
+                programArguments.addAll '--tests', selector
+            }
         }
 
         clientData {

@@ -22,7 +22,7 @@ From the checkout you want to test, generate resources before packaging. The bui
 .\gradlew.bat runClient
 ```
 
-For a quick Hammer configuration check, run `.\gradlew.bat test`. The JUnit suite exercises shape and speed cycling, enchantment rules and legacy component decoding. The headless GameTests mine through the server player action path and check the blocks, loot and stairs produced. The real client scenario below checks input, rendering, walking and restart behavior.
+During iteration, use `.\gradlew.bat test --tests '*HammerConfigTest'` for Hammer configuration or `.\gradlew.bat '-PgameTestFilter=florafauna:hammer_tunnel_gaps' runGameTestServer` for stair placement. The selector also accepts wildcard patterns such as `florafauna:hammer_*`. The shared guide covers when to expand verification. [Test scope](AGENTS.md#verify-from-the-assigned-checkout)
 
 ### IDE Setup
 
@@ -52,8 +52,9 @@ To update the shared dev world, follow these steps.
 Close the source world, then run this from the checkout in PowerShell 7 with Java 25. The default source is that checkout's singleplayer `dev` save.
 
 ```powershell
-.\scripts\test_dev_world.ps1
+.\scripts\test_dev_world.ps1 -Scenario hammer
 .\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
+.\scripts\test_dev_world.ps1 -All  # Full gameplay pass
 ```
 
 Each scenario launches a real Minecraft client in a fresh copy of the save. Let the test control the client until it exits.

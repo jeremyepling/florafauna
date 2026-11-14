@@ -1,14 +1,23 @@
 #Requires -Version 7.0
 # Run Minecraft clients against fresh copies of a closed save. Each scenario has its own copy.
+[CmdletBinding(DefaultParameterSetName = 'Selected')]
 param(
+    [Parameter(ParameterSetName = 'Selected', Position = 0)]
     [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack')]
-    [string[]]$Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack'),
+    [string[]]$Scenario,
+    [Parameter(ParameterSetName = 'Full')]
+    [switch]$All,
     [string]$SourceWorld,
     [switch]$Offline
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+if ($All) {
+    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack')
+} elseif (!$Scenario) {
+    throw 'Choose a client scenario, e.g. -Scenario hammer, or use -All for the full gameplay suite.'
+}
 $checkout = Split-Path $PSScriptRoot -Parent
 if (!$SourceWorld) {
     $SourceWorld = Join-Path $checkout "run/client-$(Split-Path $checkout -Leaf)/saves/dev"
