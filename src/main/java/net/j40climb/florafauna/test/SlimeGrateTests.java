@@ -26,7 +26,8 @@ final class SlimeGrateTests {
         Slime farmed = helper.spawn(EntityType.SLIME, grate.west(2));
         farmed.setSize(2, true);
         MobSymbioteHelper.applyMobSymbioteLevel1(farmed, helper.getLevel().getGameTime());
-        Slime wild = helper.spawn(EntityType.SLIME, near.above().north());
+        Slime wild = helper.spawn(EntityType.SLIME, near.above().north(2));
+        wild.setSize(1, true);
         wild.setNoAi(true);
         helper.setBlock(far.south(), Blocks.REDSTONE_BLOCK);
         helper.runAtTickTime(26, () -> {

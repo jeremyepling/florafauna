@@ -30,17 +30,18 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static net.j40climb.florafauna.test.FloraFaunaGameTests.createTestPlayer;
-import static net.j40climb.florafauna.test.FloraFaunaGameTests.registerTest;
+import static net.j40climb.florafauna.test.FloraFaunaGameTests.registerStructureTest;
+import static net.j40climb.florafauna.test.FloraFaunaGameTests.SMALL_TEST_ROOM;
 
 final class MobTransportReleaseGameTests {
     private static final BlockPos CENTER = new BlockPos(1, 1, 1);
 
     static void register(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
-        registerTest(event, env, "mob_output_retries_canceled_spawn", MobTransportReleaseGameTests::regularRetry);
-        registerTest(event, env, "mob_output_retains_failed_release_during_break", h -> breakRetry(h, false));
-        registerTest(event, env, "mob_input_retains_failed_release_during_break", h -> breakRetry(h, true));
-        registerTest(event, env, "mob_output_explosion_release_retry", h -> explosionRetry(h, false));
-        registerTest(event, env, "mob_input_explosion_release_retry", h -> explosionRetry(h, true));
+        registerStructureTest(event, env, "mob_output_retries_canceled_spawn", SMALL_TEST_ROOM, 100, MobTransportReleaseGameTests::regularRetry);
+        registerStructureTest(event, env, "mob_output_retains_failed_release_during_break", SMALL_TEST_ROOM, 100, h -> breakRetry(h, false));
+        registerStructureTest(event, env, "mob_input_retains_failed_release_during_break", SMALL_TEST_ROOM, 100, h -> breakRetry(h, true));
+        registerStructureTest(event, env, "mob_output_explosion_release_retry", SMALL_TEST_ROOM, 100, h -> explosionRetry(h, false));
+        registerStructureTest(event, env, "mob_input_explosion_release_retry", SMALL_TEST_ROOM, 100, h -> explosionRetry(h, true));
     }
 
     private static CapturedMobTicket cow(GameTestHelper h, UUID id, long readyAt) {
