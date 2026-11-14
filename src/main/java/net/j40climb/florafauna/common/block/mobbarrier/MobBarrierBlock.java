@@ -41,8 +41,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MobBarrierBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<MobBarrierBlock> CODEC = simpleCodec(MobBarrierBlock::new);
-
+    //?}
     // 24 pixels = 1.5 blocks tall, same as fences - prevents jumping over
     private static final VoxelShape BARRIER_SHAPE = Block.box(0, 0, 0, 16, 24, 16);
 
@@ -50,10 +51,12 @@ public class MobBarrierBlock extends BaseEntityBlock {
         super(properties);
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Nullable
     @Override

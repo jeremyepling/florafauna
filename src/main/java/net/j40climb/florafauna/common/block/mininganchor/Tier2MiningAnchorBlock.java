@@ -35,17 +35,21 @@ import org.jetbrains.annotations.Nullable;
  */
 public class Tier2MiningAnchorBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<Tier2MiningAnchorBlock> CODEC = simpleCodec(Tier2MiningAnchorBlock::new);
+    //?}
 
     public Tier2MiningAnchorBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

@@ -69,7 +69,11 @@ public class KeyInputEvents {
             // Component-based check - works with any item that has THROWABLE_ABILITY
             if (itemStack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
                 // Play throw animation (arm swing)
+                //? if <26.3 {
                 player.swing(InteractionHand.MAIN_HAND);
+                //?} else {
+                /*player.swing(InteractionHand.MAIN_HAND, itemStack.getAttackAnimation(), false);
+                *///?}
                 ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
             }
         }

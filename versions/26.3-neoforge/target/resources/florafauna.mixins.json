@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "package": "net.j40climb.florafauna.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "minVersion": "0.8",
+  "mixins": [
+    "HammerMiningMixin",
+    "noclip.PlayerNoClipMixin",
+    "noclip.ServerGamePacketListenerImplMixin"
+  ],
+  "client": [
+    "HudMixin",
+    "LocatorBarMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

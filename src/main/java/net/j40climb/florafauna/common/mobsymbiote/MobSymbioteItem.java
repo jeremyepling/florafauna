@@ -4,7 +4,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+//? if <26.3 {
 import net.minecraft.world.entity.EntityType;
+//?} else {
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;

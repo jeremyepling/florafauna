@@ -1,12 +1,19 @@
 #Requires -Version 7.0
 # Two offline development clients connect only to a disposable loopback server.
-param([switch]$Offline)
+param(
+    [switch]$Offline,
+    [ValidateSet('26.1', '26.3')][string]$Target = '26.1'
+)
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $checkout = Split-Path $PSScriptRoot -Parent
+$project = "$Target-neoforge"
+$targetDir = Join-Path $checkout "versions/$project"
+$optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
+if ($Target -eq '26.3') { $optionsTemplate = Join-Path $targetDir 'dev/options-template.txt' }
 $runId = [guid]::NewGuid().ToString('N')
-$root = Join-Path $checkout ".tmp/husk-multiplayer/$runId"
+$root = Join-Path $targetDir ".tmp/husk-multiplayer/$runId"
 $roles = 'Server', 'Owner', 'Visitor'
 foreach ($role in $roles) {
     [IO.Directory]::CreateDirectory((Join-Path $root $role)) | Out-Null
@@ -21,7 +28,13 @@ $listener.Stop()
     'gamemode=survival', 'spawn-protection=0', 'view-distance=3', 'simulation-distance=3', 'max-players=2'
 ) | Set-Content -LiteralPath (Join-Path $root 'server/server.properties')
 
-$gameOptions = (Get-Content -LiteralPath (Join-Path $checkout 'dev/options-template.txt')) `
+# Offline-mode UUIDs for the two fixed development usernames in build.gradle.
+@(
+    @{ name = 'FFOwner'; uuid = '3c356f1a-04a8-321d-a108-f35619b350df' }
+    @{ name = 'FFVisitor'; uuid = '03aa91f9-0976-37de-bafa-3852f271766a' }
+) | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root 'server/whitelist.json')
+
+$gameOptions = (Get-Content -LiteralPath $optionsTemplate) `
     -replace '^pauseOnLostFocus:.*', 'pauseOnLostFocus:false' -replace '^renderDistance:.*', 'renderDistance:3' `
     -replace '^maxFps:.*', 'maxFps:30' -replace '^enableVsync:.*', 'enableVsync:false'
 foreach ($role in 'Owner', 'Visitor') {
@@ -33,10 +46,10 @@ try {
     Write-Host "Multiplayer test world and logs: $root"
     $options = @('--console=plain', '--max-workers=4')
     if ($Offline) { $options += '--offline' }
-    & .\gradlew.bat @options runData *> (Join-Path $root 'datagen.log')
+    & .\gradlew.bat @options ":${project}:runData" *> (Join-Path $root 'datagen.log')
     if ($LASTEXITCODE -ne 0) { throw "Data generation failed. See $root/datagen.log" }
-    & .\gradlew.bat @options "-PhuskTestId=$runId" "-PhuskTestPort=$port" playtestClasses `
-        createHuskServerLaunchScript createHuskOwnerLaunchScript createHuskVisitorLaunchScript *> (Join-Path $root 'prepare.log')
+    & .\gradlew.bat @options "-PhuskTestId=$runId" "-PhuskTestPort=$port" ":${project}:playtestClasses" `
+        ":${project}:createHuskServerLaunchScript" ":${project}:createHuskOwnerLaunchScript" ":${project}:createHuskVisitorLaunchScript" *> (Join-Path $root 'prepare.log')
     if ($LASTEXITCODE -ne 0) { throw "Could not prepare the multiplayer launchers. See $root/prepare.log" }
 
     # Snapshot the generated launchers and argfiles: later Gradle runs reuse build/moddev.
@@ -45,11 +58,11 @@ try {
     foreach ($role in $roles) {
         foreach ($suffix in 'RunClasspath.txt', 'RunVmArgs.txt', 'RunProgramArgs.txt', 'Log4j2.xml') {
             $name = "husk$role$suffix"
-            Copy-Item -LiteralPath (Join-Path $checkout "build/moddev/$name") -Destination (Join-Path $launchDir $name)
+            Copy-Item -LiteralPath (Join-Path $targetDir "build/moddev/$name") -Destination (Join-Path $launchDir $name)
         }
         $scriptName = "runHusk$role.cmd"
-        $script = Get-Content -Raw -LiteralPath (Join-Path $checkout "build/moddev/$scriptName")
-        $script.Replace((Join-Path $checkout 'build\moddev'), $launchDir) | Set-Content -LiteralPath (Join-Path $launchDir $scriptName)
+        $script = Get-Content -Raw -LiteralPath (Join-Path $targetDir "build/moddev/$scriptName")
+        $script.Replace((Join-Path $targetDir 'build\moddev'), $launchDir) | Set-Content -LiteralPath (Join-Path $launchDir $scriptName)
     }
 
     foreach ($phase in 1, 2) {

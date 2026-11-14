@@ -23,16 +23,20 @@ import org.jetbrains.annotations.Nullable;
  */
 public class Tier2PodBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<Tier2PodBlock> CODEC = simpleCodec(Tier2PodBlock::new);
+    //?}
 
     public Tier2PodBlock(Properties properties) {
         super(properties);
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Nullable
     @Override

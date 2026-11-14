@@ -6,7 +6,11 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+//? if <26.3 {
 import net.minecraft.world.entity.EntityType;
+//?} else {
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -29,19 +33,23 @@ final class SlimeGrateTests {
         Slime wild = helper.spawn(EntityType.SLIME, near.above().north());
         wild.setNoAi(true);
         helper.setBlock(far.south(), Blocks.REDSTONE_BLOCK);
-        helper.runAtTickTime(26, () -> {
-            helper.assertTrue(farmed.getData(FloraFaunaRegistry.SLIME_LAST_SHED) >= 0, "A played note must lure the slime through the grate");
-            helper.assertTrue(farmed.getX() > helper.absolutePos(grate).getX() + 0.5, "Slime must reach far side");
-            helper.assertTrue(!wild.hasData(FloraFaunaRegistry.SLIME_NOTE), "Ordinary slimes must ignore the note");
-            helper.setBlock(near.south(), Blocks.REDSTONE_BLOCK);
-        });
-        helper.runAtTickTime(58, () -> {
-            helper.assertTrue(farmed.getX() < helper.absolutePos(grate).getX() + 0.5, "Return note must lure the slime back");
-            HopperBlockEntity hopper = helper.getBlockEntity(grate.below(), HopperBlockEntity.class);
-            helper.assertTrue(hopper.countItem(Items.SLIME_BALL) == 1, "Hopper must collect exactly one ball across both crossings");
-            helper.assertTrue(farmed.getSize() == 2 && farmed.getHealth() == 4 && farmed.isPersistenceRequired(),
-                    "The same bonded animal must retain size, health and persistence");
-            helper.succeed();
-        });
+        double panelX = helper.absolutePos(grate).getX() + 0.5;
+        HopperBlockEntity hopper = helper.getBlockEntity(grate.below(), HopperBlockEntity.class);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    helper.assertTrue(farmed.getData(FloraFaunaRegistry.SLIME_LAST_SHED) >= 0,
+                            "A played note must lure the slime through the grate");
+                    helper.assertTrue(farmed.getX() > panelX, "Slime must reach far side");
+                })
+                .thenExecute(() -> {
+                    helper.assertTrue(!wild.hasData(FloraFaunaRegistry.SLIME_NOTE), "Ordinary slimes must ignore the note");
+                    helper.setBlock(near.south(), Blocks.REDSTONE_BLOCK);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(farmed.getX() < panelX, "Return note must lure the slime back"))
+                .thenWaitUntil(() -> helper.assertTrue(hopper.countItem(Items.SLIME_BALL) == 1,
+                        "Hopper must collect exactly one ball across both crossings"))
+                .thenExecute(() -> helper.assertTrue(farmed.getSize() == 2 && farmed.getHealth() == 4 && farmed.isPersistenceRequired(),
+                        "The same bonded animal must retain size, health and persistence"))
+                .thenSucceed();
     }
 }

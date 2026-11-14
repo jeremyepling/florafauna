@@ -4,7 +4,11 @@ import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if <26.3 {
 import net.minecraft.world.entity.EntityType;
+//?} else {
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -21,7 +25,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class SlimeGrateBlock extends Block {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+    //? if <26.3 {
     private static final MapCodec<SlimeGrateBlock> CODEC = simpleCodec(SlimeGrateBlock::new);
+    //?}
     private static final VoxelShape X_PANEL = Block.box(7, 0, 0, 9, 16, 16);
     private static final VoxelShape Z_PANEL = Block.box(0, 0, 7, 16, 16, 9);
 
@@ -30,10 +36,12 @@ public final class SlimeGrateBlock extends Block {
         registerDefaultState(defaultBlockState().setValue(AXIS, Direction.Axis.Z));
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<SlimeGrateBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

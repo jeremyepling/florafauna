@@ -7,15 +7,6 @@ plugins {
     id 'idea'
 }
 
-tasks.named('wrapper', Wrapper).configure {
-    // Define wrapper values here so as to not have to always do so when updating gradlew.properties.
-    // Switching this to Wrapper.DistributionType.ALL will download the full gradle sources that comes with
-    // documentation attached on cursor hover of gradle classes and methods. However, this comes with increased
-    // file size for Gradle. If you do switch this to ALL, run the Gradle wrapper task twice afterwards.
-    // (Verify by checking gradle/wrapper/gradle-wrapper.properties to see if distributionUrl now points to `-all`)
-    distributionType = Wrapper.DistributionType.BIN
-}
-
 version = mod_version
 group = mod_group_id
 
@@ -25,13 +16,18 @@ repositories {
 }
 
 base {
-    archivesName = mod_id
+    archivesName = "$mod_id-$project.name"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 // Worktree-specific run directory suffix for multi-agent parallel development
 def wt = rootProject.projectDir.name
+// Preserve established 26.1 dev saves when an existing worktree adopts Stonecutter.
+def runRoot = project.name == '26.1-neoforge' ? rootProject.file('run') : file('run')
+def devOptions = project.name == '26.3-neoforge' ? file('dev/options-template.txt') : rootProject.file('dev/options-template.txt')
+def generatedResources = layout.buildDirectory.dir('generated/resources/datagen').get().asFile
+def sharedResources = rootProject.file('src/main/resources')
 def devSave = providers.gradleProperty('devSave').orElse('dev').get()
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull
@@ -44,7 +40,42 @@ if (huskTestId != null && (!(huskTestId ==~ /[0-9a-f]{32}/) || !(huskTestPort ==
 if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario ==~ /[a-z]+/) || !(playtestPhase in ['1', '2']))) {
     throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
 }
+// Sources that use different provider contracts or rendering hooks live with their target.
+sourceSets.main.java.srcDir 'target/java'
+sourceSets.main.resources.srcDir 'target/resources'
+
+stonecutter {
+    replacements {
+        string {
+            direction = project.minecraft_version == '26.3'
+            replace('mc.screen', 'mc.gui.screen()')
+            replace('mc.setScreen(', 'mc.gui.setScreen(')
+            replace('Minecraft.getInstance().setScreen(', 'Minecraft.getInstance().gui.setScreen(')
+            replace('monster.Slime;', 'monster.cubemob.Slime;')
+            replace('PushReaction.DESTROY', 'PushReaction.POPPED')
+            replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
+        }
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/(?<![\w.])BlockEvent\.BreakEvent\b/, 'BreakBlockEvent',
+                    /(?<![\w.])BreakBlockEvent\b/, 'BlockEvent.BreakEvent')
+        }
+        // Match vanilla constants, leaving EntityType.Builder and FloraFaunaTags.EntityTypes alone.
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/(?<![\w.])EntityType\.(?=[A-Z_]+\b)/, 'EntityTypes.',
+                    /(?<![\w.])EntityTypes\.(?=[A-Z_]+\b)/, 'EntityType.')
+        }
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/\bEnderMan(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'Enderman',
+                    /\bEnderman(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'EnderMan')
+        }
+    }
+}
+
 sourceSets.create('playtest') {
+    java.srcDir 'target/playtest'
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
@@ -62,8 +93,7 @@ neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
 
-    // This line is optional. Access Transformers are automatically detected
-    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    accessTransformers.from(file('target/resources/META-INF/accesstransformer.cfg'))
 
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.
@@ -101,7 +131,7 @@ neoForge {
         }
         client {
             client()
-            gameDirectory = file("run/client-${wt}")
+            gameDirectory = new File(runRoot, "client-${wt}")
 
             // Set default window size
             programArguments.addAll '--width', '1920', '--height', '1080'
@@ -120,7 +150,7 @@ neoForge {
 
         server {
             server()
-            gameDirectory = file("run/server-${wt}")
+            gameDirectory = new File(runRoot, "server-${wt}")
             programArgument '--nogui'
             // Gametests disabled - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -131,7 +161,7 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
-            gameDirectory = file("run/gameTestServer-${wt}")
+            gameDirectory = new File(runRoot, "gameTestServer-${wt}")
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
             def selector = providers.gradleProperty('gameTestFilter').orNull
             if (selector != null) {
@@ -144,18 +174,18 @@ neoForge {
 
         clientData {
             clientData()
-            gameDirectory = file("run/clientData-${wt}")
+            gameDirectory = new File(runRoot, "clientData-${wt}")
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', generatedResources.absolutePath, '--existing', sharedResources.absolutePath
         }
 
         serverData {
             serverData()
-            gameDirectory = file("run/serverData-${wt}")
+            gameDirectory = new File(runRoot, "serverData-${wt}")
 
             // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', generatedResources.absolutePath, '--existing', sharedResources.absolutePath
         }
 
         // applies to all the run configs above
@@ -194,7 +224,7 @@ tasks.matching { it.name == 'runWorldPlaytest' }.configureEach {
 
 // Include resources generated by data generators.
 sourceSets.main.resources {
-    srcDir 'src/generated/resources'
+    srcDir generatedResources
     exclude '.cache/**'
 }
 
@@ -254,7 +284,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     ]
     inputs.properties replaceProperties
     expand replaceProperties
-    from "src/main/templates"
+    from rootProject.file('src/main/templates')
     into "build/generated/sources/modMetadata"
 }
 // Include the output of "generateModMetadata" as an input directory for the build
@@ -303,8 +333,8 @@ tasks.named('classes').configure { it.finalizedBy(tasks.named('makeBin')) }
 // This sets up dev-friendly defaults (music off, narrator off, etc.)
 // Delete run/client-*/options.txt to reset to template defaults
 tasks.register('copyDevOptions') {
-    def templateFile = file('dev/options-template.txt')
-    def targetFile = file("run/client-${wt}/options.txt")
+    def templateFile = devOptions
+    def targetFile = new File(runRoot, "client-${wt}/options.txt")
 
     onlyIf { templateFile.exists() && !targetFile.exists() }
 
@@ -319,8 +349,8 @@ tasks.register('copyDevOptions') {
 // This auto-loads the dev world with Superflat Tunneler's Dream preset
 // Delete run/client-*/saves/dev to reset to template defaults
 tasks.register('copyDevWorld', Copy) {
-    def templateDir = file('dev/world-template/dev')
-    def targetDir = file("run/client-${wt}/saves/dev")
+    def templateDir = rootProject.file('dev/world-template/dev')
+    def targetDir = new File(runRoot, "client-${wt}/saves/dev")
 
     from templateDir
     into targetDir

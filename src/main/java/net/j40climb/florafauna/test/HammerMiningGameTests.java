@@ -33,7 +33,11 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+//? if <26.3 {
 import net.neoforged.neoforge.event.level.BlockEvent;
+//?} else {
+/*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+*///?}
 
 import java.util.HashMap;
 import java.util.Map;
@@ -128,7 +132,7 @@ final class HammerMiningGameTests {
             swing(player, center, Direction.UP, Direction.SOUTH);
             check(h, center, Blocks.AIR, "ore center");
             check(h, center.east(), Blocks.AIR, "ore neighbor");
-            var bounds = new AABB(center.getCenter(), center.east().getCenter()).inflate(2);
+            var bounds = new AABB(Vec3.atCenterOf(center), Vec3.atCenterOf(center.east())).inflate(2);
             var drops = h.getLevel().getEntitiesOfClass(ItemEntity.class, bounds);
             int count = 0;
             for (var drop : drops) {

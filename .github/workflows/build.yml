@@ -14,8 +14,14 @@ concurrency:
 
 jobs:
   build:
+    name: NeoForge ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [26.1-neoforge, 26.3-neoforge]
     runs-on: ubuntu-latest
     env:
+      TARGET: ${{ matrix.target }}
       CI_GRADLE_JVMARGS: -Xms256m -Xmx4g -XX:MaxMetaspaceSize=1g
     steps:
       - name: Checkout repository
@@ -37,20 +43,21 @@ jobs:
 
       - name: Generate Minecraft data
         if: github.event.pull_request.draft != true
-        run: ./gradlew runData --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
+        run: ./gradlew ":$TARGET:runData" --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
 
       - name: Compile and run unit tests for a draft
         if: github.event.pull_request.draft == true
-        run: ./gradlew check --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
+        run: ./gradlew ":$TARGET:check" --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
 
       - name: Build the mod and run GameTests
         if: github.event.pull_request.draft != true
-        run: ./gradlew build runGameTestServer --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
+        run: ./gradlew ":$TARGET:build" ":$TARGET:runGameTestServer" --no-daemon --max-workers=2 --stacktrace "-Dorg.gradle.jvmargs=$CI_GRADLE_JVMARGS"
 
       - name: Upload build artifacts
         if: github.event.pull_request.draft != true
         uses: actions/upload-artifact@v4
         with:
-          name: florafauna-mod
-          path: build/libs/*.jar
+          name: florafauna-${{ matrix.target }}
+          path: versions/${{ matrix.target }}/build/libs/florafauna-${{ matrix.target }}-*.jar
+          if-no-files-found: error
           retention-days: 14
