@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Util;
@@ -32,9 +33,12 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class FrenchieEntity extends TamableAnimal {
 
@@ -66,6 +70,9 @@ public class FrenchieEntity extends TamableAnimal {
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.BYTE);
     private static final byte TRACKING = 1;
     private static final byte DELIVERING = 2;
+    private static final byte GOING_HOME = 3;
+    private static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> WAITING_RECIPIENT =
+            SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
     private final DeathTrackingGoal trail = new DeathTrackingGoal(this);
     private final DeliveryGoal delivery = new DeliveryGoal(this);
     @Nullable DeliveryDialog deliveryDialog;
@@ -146,10 +153,23 @@ public class FrenchieEntity extends TamableAnimal {
         builder.define(WARNING_START, (long)-FrenchieAwareness.COOLDOWN_TICKS);
         builder.define(BEDTIME, (byte)0);
         builder.define(JOB, (byte) 0);
+        builder.define(WAITING_RECIPIENT, Optional.empty());
     }
 
     public boolean isDelivering() {
-        return level().isClientSide() ? entityData.get(JOB) == DELIVERING : delivery.canUse();
+        return level().isClientSide() ? entityData.get(JOB) == DELIVERING : delivery.hasParcel();
+    }
+
+    public boolean isGoingHome() {
+        return level().isClientSide() ? entityData.get(JOB) == GOING_HOME : delivery.goingHome();
+    }
+
+    public boolean sendHome(ServerPlayer owner, GlobalPos bed) {
+        return delivery.startHome(owner, bed);
+    }
+
+    public boolean recallDelivery(ServerPlayer owner) {
+        return delivery.recall(owner);
     }
 
     public boolean isDeathTracking() {
@@ -157,7 +177,7 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     public boolean hasCompanionJob() {
-        return isDelivering() || isDeathTracking();
+        return isDelivering() || isGoingHome() || isDeathTracking();
     }
 
     DeliveryGoal delivery() {
@@ -165,7 +185,8 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     void syncCompanionJob() {
-        entityData.set(JOB, isDelivering() ? DELIVERING : isDeathTracking() ? TRACKING : (byte) 0);
+        entityData.set(JOB, isDelivering() ? DELIVERING : isGoingHome() ? GOING_HOME : isDeathTracking() ? TRACKING : (byte) 0);
+        entityData.set(WAITING_RECIPIENT, Optional.ofNullable(delivery.waitingRecipient()).map(EntityReference::of));
     }
 
     public boolean isWarningFlash() {
@@ -215,6 +236,16 @@ public class FrenchieEntity extends TamableAnimal {
     /* Interact */
 
     @Override
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        // Accept before vanilla mob interactions can consume a held name tag, lead or other item.
+        if (isAlive() && entityData.get(WAITING_RECIPIENT).filter(ref -> ref.matches(player)).isPresent()) {
+            if (player instanceof ServerPlayer recipient) delivery.accept(recipient);
+            return InteractionResult.SUCCESS;
+        }
+        return super.interact(player, hand, location);
+    }
+
+    @Override
     public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
         ItemStack itemstack = pPlayer.getItemInHand(pHand);
         Item item = itemstack.getItem();
@@ -253,7 +284,7 @@ public class FrenchieEntity extends TamableAnimal {
             deliveryDialog = null;
             if (hasCompanionJob()) {
                 if (empty && pPlayer instanceof ServerPlayer owner) {
-                    if (isDelivering()) delivery.collect(owner, pHand);
+                    if (delivery.canUse()) delivery.collect(owner, pHand);
                     else {
                         trail.cancel();
                         sitDown();
