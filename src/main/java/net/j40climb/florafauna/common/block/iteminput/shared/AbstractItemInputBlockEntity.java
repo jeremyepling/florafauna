@@ -115,7 +115,8 @@ public abstract class AbstractItemInputBlockEntity extends AbstractVacuumBlockEn
             ItemStack toTransfer = buffer.getStack(firstSlot);
             if (toTransfer.isEmpty()) break;
 
-            int transferred = transferToDestinations(level, toTransfer, destinations);
+            int budget = Config.maxItemsPerTransferTick - itemsTransferred;
+            int transferred = transferToDestinations(level, toTransfer, destinations, budget);
             if (transferred > 0) {
                 toTransfer.shrink(transferred);
                 if (toTransfer.isEmpty()) {
@@ -153,9 +154,9 @@ public abstract class AbstractItemInputBlockEntity extends AbstractVacuumBlockEn
      * @param destinations Available storage destinations
      * @return Number of items transferred
      */
-    protected int transferToDestinations(Level level, ItemStack stack, List<StorageDestination> destinations) {
+    protected int transferToDestinations(Level level, ItemStack stack, List<StorageDestination> destinations, int budget) {
         int totalTransferred = 0;
-        int remaining = stack.getCount();
+        int remaining = Math.min(stack.getCount(), budget);
 
         for (StorageDestination dest : destinations) {
             if (remaining <= 0) break;

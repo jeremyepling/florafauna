@@ -148,9 +148,8 @@ public class HuskBlockEntity extends BlockEntity {
                 if (inv.getItem(i).isEmpty()) {
                     inv.setItem(i, stack);
                     clearSlot(i);
-                } else if (inv.add(stack)) {
-                    // Added elsewhere
-                    clearSlot(i);
+                } else {
+                    transferToAvailableSlots(inv, i, stack);
                 }
                 // If can't add, it stays in the husk
             }
@@ -165,8 +164,8 @@ public class HuskBlockEntity extends BlockEntity {
                 if (player.getItemBySlot(armorSlots[i]).isEmpty()) {
                     player.setItemSlot(armorSlots[i], armorStack);
                     clearSlot(ARMOR_START + i);
-                } else if (inv.add(armorStack)) {
-                    clearSlot(ARMOR_START + i);
+                } else {
+                    transferToAvailableSlots(inv, ARMOR_START + i, armorStack);
                 }
             }
         }
@@ -177,12 +176,31 @@ public class HuskBlockEntity extends BlockEntity {
             if (player.getOffhandItem().isEmpty()) {
                 player.setItemSlot(EquipmentSlot.OFFHAND, offhandStack);
                 clearSlot(OFFHAND_SLOT);
-            } else if (inv.add(offhandStack)) {
-                clearSlot(OFFHAND_SLOT);
+            } else {
+                transferToAvailableSlots(inv, OFFHAND_SLOT, offhandStack);
             }
         }
 
         setChanged();
+    }
+
+    private void transferToAvailableSlots(Inventory inventory, int huskSlot, ItemStack remaining) {
+        int originalCount = remaining.getCount();
+        while (!remaining.isEmpty()) {
+            int slot = inventory.getSlotWithRemainingSpace(remaining);
+            if (slot < 0) {
+                slot = inventory.getFreeSlot();
+            }
+            if (slot < 0) {
+                break;
+            }
+            // Offer only what fits. Inventory.add can discard overflow for creative players.
+            int capacity = inventory.getMaxStackSize(remaining) - inventory.getItem(slot).getCount();
+            inventory.add(slot, remaining.split(capacity));
+        }
+        if (remaining.getCount() < originalCount) {
+            handler.set(huskSlot, ItemResource.of(remaining), remaining.getCount());
+        }
     }
 
     /**

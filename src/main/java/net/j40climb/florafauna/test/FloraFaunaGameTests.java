@@ -125,6 +125,7 @@ public class FloraFaunaGameTests {
 
         // Register husk tests
         registerHuskTests(event, defaultEnv);
+        StorageRecoveryGameTests.register(event, defaultEnv);
 
         // Register symbiote state tests
         registerSymbioteStateTests(event, defaultEnv);
@@ -2694,7 +2695,7 @@ public class FloraFaunaGameTests {
 
     // ==================== Helper Methods ====================
 
-    private static ServerPlayer createTestPlayer(GameTestHelper helper) {
+    static ServerPlayer createTestPlayer(GameTestHelper helper) {
         return new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "test-player"));
     }
 

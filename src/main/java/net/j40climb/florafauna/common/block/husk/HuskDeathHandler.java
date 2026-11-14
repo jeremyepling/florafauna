@@ -48,19 +48,24 @@ public class HuskDeathHandler {
                 : HuskType.CONTAINER;
 
         // Find valid placement position
-        BlockPos huskPos = HuskPlacementHelper.findPlacementPosition(player, deathPos, level);
+        HuskPlacementHelper.Placement destination = HuskPlacementHelper.findPlacementPosition(player, deathPos, level);
+        if (destination == null) {
+            return;
+        }
+        ServerLevel huskLevel = destination.level();
+        BlockPos huskPos = destination.pos();
 
         // Place the husk block
         BlockState huskState = FloraFaunaRegistry.HUSK.get()
                 .defaultBlockState()
                 .setValue(HuskBlock.HUSK_TYPE, huskType);
-        level.setBlock(huskPos, huskState, 3);
-
-        // Initialize block entity with owner and inventory
-        if (level.getBlockEntity(huskPos) instanceof HuskBlockEntity huskEntity) {
-            huskEntity.setOwner(player.getUUID());
-            huskEntity.populateFromPlayerInventory(player);
+        if (!huskLevel.setBlock(huskPos, huskState, 3)
+                || !(huskLevel.getBlockEntity(huskPos) instanceof HuskBlockEntity huskEntity)) {
+            return;
         }
+
+        huskEntity.setOwner(player.getUUID());
+        huskEntity.populateFromPlayerInventory(player);
 
         // Clear player inventory to prevent normal drops
         player.getInventory().clearContent();
@@ -70,7 +75,7 @@ public class HuskDeathHandler {
 
         // If this was a RESTORATION husk, track its location
         if (huskType == HuskType.RESTORATION) {
-            updatedData = updatedData.withRestorationHusk(huskPos, level.dimension(), true);
+            updatedData = updatedData.withRestorationHusk(huskPos, huskLevel.dimension(), true);
         }
 
         player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
