@@ -38,6 +38,8 @@
   "frenchie.florafauna.tracking.blocked": "%s cannot find a safe route. Use the compass again from another spot.",
   "frenchie.florafauna.tracking.arrived": "%s found the spot where you last died!",
   "effect.florafauna.well_rested": "Well Rested",
+  "frenchie.florafauna.bedtime.settled": "%s curled up beside your bed.",
+  "frenchie.florafauna.bedtime.rested": "Well Rested: mine 10%% faster for 2 minutes.",
   "block.florafauna.slime_grate": "Slime Grate",
   "block.florafauna.silk_line": "Spider Silk Line",
   "plot.florafauna.iron_garden.title": "Iron garden",

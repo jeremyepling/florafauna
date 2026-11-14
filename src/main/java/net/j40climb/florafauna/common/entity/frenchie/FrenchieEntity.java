@@ -1,13 +1,13 @@
 package net.j40climb.florafauna.common.entity.frenchie;
 
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Util;
@@ -47,6 +47,12 @@ public class FrenchieEntity extends TamableAnimal {
     public final AnimationState standToSleepAnimationState = new AnimationState();
     public final AnimationState sleepToStandAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
+    private final FrenchieAwareness awareness = new FrenchieAwareness(this);
+    private static final EntityDataAccessor<Long> WARNING_START =
+            SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
+    // 0 = ordinary pose, 1 = approaching the bed, 2 = settled beside the owner
+    private static final EntityDataAccessor<Byte> BEDTIME =
+            SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.BYTE);
 
     public static final EntityDataAccessor<Long> LAST_POSE_CHANGE_TICK =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.LONG);
@@ -75,7 +81,8 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(0, new SitWhenOrderedToGoal(this));
+        this.goalSelector.addGoal(1, new BedtimeBuddyGoal(this));
+        this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
         this.goalSelector.addGoal(2, new BreedGoal(this, 1.0D));
         this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, Ingredient.of(Items.GLOW_BERRIES), false));
         this.goalSelector.addGoal(4, new FollowOwnerGoal(this, 1.25d, 18f, 7f));
@@ -136,6 +143,8 @@ public class FrenchieEntity extends TamableAnimal {
         builder.define(LAST_POSE_CHANGE_TICK, 0L);
         builder.define(LAST_SLEEP_CHANGE_TICK, 0L);
         builder.define(IS_SLEEPING, false);
+        builder.define(WARNING_START, (long)-FrenchieAwareness.COOLDOWN_TICKS);
+        builder.define(BEDTIME, (byte)0);
         builder.define(JOB, (byte) 0);
     }
 
@@ -157,6 +166,22 @@ public class FrenchieEntity extends TamableAnimal {
 
     void syncCompanionJob() {
         entityData.set(JOB, isDelivering() ? DELIVERING : isDeathTracking() ? TRACKING : (byte) 0);
+    }
+
+    public boolean isWarningFlash() {
+        return !isFrenchieSleeping() && FrenchieAwareness.flashing(level().getGameTime() - entityData.get(WARNING_START));
+    }
+
+    long warningStart() {
+        return entityData.get(WARNING_START);
+    }
+
+    void startWarning(long now) {
+        entityData.set(WARNING_START, now);
+    }
+
+    public boolean isBedtimeBuddy() {
+        return entityData.get(BEDTIME) == 2;
     }
 
     public boolean isFrenchieSleeping() {
@@ -353,10 +378,17 @@ public class FrenchieEntity extends TamableAnimal {
         if (!this.level().isClientSide()) {
             updateSleepState();
             syncCompanionJob();
+            awareness.tick();
         }
     }
 
     private void handleSittingAnimations() {
+        if (entityData.get(BEDTIME) != 0) {
+            standToSitAnimationState.stop();
+            sitPoseAnimationState.stop();
+            sitToStandAnimationState.stop();
+            return;
+        }
         boolean sitting = this.isSitting();
         long poseTime = this.getPoseTime();
 
@@ -438,21 +470,14 @@ public class FrenchieEntity extends TamableAnimal {
     /* Sleeping */
 
     private void updateSleepState() {
-        if (this.isOrderedToSit() || hasCompanionJob()) {
-            // When ordered to sit, don't sleep
-            if (this.isFrenchieSleeping()) {
-                this.setFrenchieSleeping(false);
-            }
-            return;
+        var bed = BedtimeBuddyGoal.ownerBed(this);
+        boolean settled = bed != null && BedtimeBuddyGoal.besideBed(this, bed);
+        if (settled && !isBedtimeBuddy() && getOwner() instanceof ServerPlayer owner) {
+            owner.sendOverlayMessage(Component.translatable("frenchie.florafauna.bedtime.settled", getName()));
         }
-
-        boolean shouldSleep = isPlayerSleepTime() && !this.isInWater();
-
-        if (shouldSleep && !this.isFrenchieSleeping()) {
-            this.setFrenchieSleeping(true);
-        } else if (!shouldSleep && this.isFrenchieSleeping()) {
-            this.setFrenchieSleeping(false);
-        }
+        entityData.set(BEDTIME, (byte)(settled ? 2 : bed == null ? 0 : 1));
+        if (settled) getNavigation().stop();
+        setFrenchieSleeping(settled || (bed == null && !hasCompanionJob() && !isOrderedToSit() && !isInWater() && isPlayerSleepTime()));
     }
 
     private boolean isPlayerSleepTime() {

@@ -29,7 +29,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class FrontpackClientEvents {
     static final ContextKey<Float> ALERT_YAW = new ContextKey<>(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "frontpack_alert_yaw"));
-    private static final Identifier CREEPER_TEXTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "textures/gui/frenchie/creeper.png");
+    private static final Identifier CREEPER_SPRITE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie/creeper");
 
     @SubscribeEvent
     public static void registerWarningHud(RegisterGuiLayersEvent event) {
@@ -39,9 +39,9 @@ public class FrontpackClientEvents {
             var warning = mc.player.getExistingDataOrNull(FloraFaunaRegistry.FRENCHIE_WARNING);
             long now = mc.player.level().getGameTime();
             if (warning == null || !warning.visible(now)) return;
-            int offset = Math.round(Mth.clamp(Mth.wrapDegrees(warning.bearing() - mc.player.getYRot()), -90F, 90F) * 0.32F);
-            gui.blit(RenderPipelines.GUI_TEXTURED, CREEPER_TEXTURE, gui.guiWidth() / 2 - 8 + offset,
-                    gui.guiHeight() - 66, 0, 0, 16, 16, 16, 16);
+            var pack = mc.player.getExistingDataOrNull(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
+            if (pack == null || !pack.hasCarriedFrenchie()) return;
+            gui.blitSprite(RenderPipelines.GUI_TEXTURED, CREEPER_SPRITE, gui.guiWidth() / 2 - 8, gui.guiHeight() - 66, 16, 16);
         });
     }
 

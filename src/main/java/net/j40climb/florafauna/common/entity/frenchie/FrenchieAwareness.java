@@ -3,13 +3,13 @@ package net.j40climb.florafauna.common.entity.frenchie;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariants;
 import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerWakeUpEvent;
@@ -19,11 +19,11 @@ import java.util.Comparator;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public final class FrenchieAwareness {
-    public static final int WARNING_TICKS = 30;
+    public static final int SECOND_BARK_TICK = 7;
+    public static final int WARNING_TICKS = SECOND_BARK_TICK + 5;
     public static final int COOLDOWN_TICKS = 160;
     private static final int WARNING_RADIUS = 12;
     private final FrenchieEntity dog;
-    private long lastWarning = -COOLDOWN_TICKS;
     private @Nullable Creeper threat;
 
     public FrenchieAwareness(FrenchieEntity dog) {
@@ -32,33 +32,30 @@ public final class FrenchieAwareness {
 
     public void tick() {
         if (!(dog.level() instanceof ServerLevel level) || !dog.isTame() || dog.isFrenchieSleeping()) return;
-        long age = level.getGameTime() - lastWarning;
-        if (age == 5) bark(dog, 1.18F);
+        long age = level.getGameTime() - dog.warningStart();
+        if (age == SECOND_BARK_TICK) bark(dog, 1.18F);
         if (age < WARNING_TICKS && threat != null && threat.isAlive()) {
-            dog.getLookControl().setLookAt(threat, 45, 45);
+            faceThreat(threat);
             return;
         }
         threat = null;
         if (age < COOLDOWN_TICKS || dog.tickCount % 8 != 0) return;
         threat = findCreeper(level, dog);
         if (threat != null) {
-            lastWarning = level.getGameTime();
-            dog.getLookControl().setLookAt(threat, 45, 45);
+            dog.startWarning(level.getGameTime());
+            faceThreat(threat);
             bark(dog, 1.4F);
         }
     }
 
-    public boolean isWarning() {
-        return !dog.isFrenchieSleeping() && dog.level().getGameTime() - lastWarning < WARNING_TICKS;
+    private void faceThreat(Creeper creeper) {
+        dog.lookAt(creeper, 45, 45);
+        dog.setYHeadRot(dog.getYRot());
+        dog.setYBodyRot(dog.getYRot());
     }
 
-    public boolean isBedtimeBuddy() {
-        return dog.getOwner() instanceof Player owner && besideSleepingOwner(dog, owner);
-    }
-
-    private static boolean besideSleepingOwner(FrenchieEntity dog, Player owner) {
-        return dog.isAlive() && !dog.isInWater() && owner.isSleeping() && dog.isOwnedBy(owner)
-                && owner.getSleepingPos().filter(pos -> pos.getCenter().distanceToSqr(dog.position()) <= 9).isPresent();
+    public static boolean flashing(long age) {
+        return age >= 0 && (age < 5 || (age >= SECOND_BARK_TICK && age < WARNING_TICKS));
     }
 
     @SubscribeEvent
@@ -68,8 +65,12 @@ public final class FrenchieAwareness {
         if (!(owner.level() instanceof ServerLevel level) || event.wakeImmediately() || event.updateLevel()
                 || !owner.isSleepingLongEnough()) return;
         boolean hasBuddy = !level.getEntitiesOfClass(FrenchieEntity.class, owner.getBoundingBox().inflate(4),
-                dog -> dog.isFrenchieSleeping() && besideSleepingOwner(dog, owner)).isEmpty();
-        if (hasBuddy) owner.addEffect(new MobEffectInstance(FloraFaunaRegistry.WELL_RESTED, 20 * 120, 0, false, false, true));
+                dog -> dog.isAlive() && dog.isOwnedBy(owner) && dog.isBedtimeBuddy()
+                        && dog.isFrenchieSleeping() && BedtimeBuddyGoal.besideBed(dog, owner.getSleepingPos().orElseThrow())).isEmpty();
+        if (hasBuddy) {
+            owner.addEffect(new MobEffectInstance(FloraFaunaRegistry.WELL_RESTED, 20 * 120, 0, false, false, true));
+            owner.sendOverlayMessage(Component.translatable("frenchie.florafauna.bedtime.rested"));
+        }
     }
 
     public static @Nullable Creeper findCreeper(ServerLevel level, LivingEntity observer) {
