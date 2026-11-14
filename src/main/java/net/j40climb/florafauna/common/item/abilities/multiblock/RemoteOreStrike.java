@@ -27,7 +27,7 @@ public final class RemoteOreStrike {
         var level = owner.level();
         int charge = HammerItem.charge(hammer);
         if (!owner.isAlive() || owner.isSpectator() || !hammer.is(FloraFaunaRegistry.HAMMER.get()) || charge == 0
-                || !MultiBlockPatterns.canInteract(level, owner, origin) || !level.getBlockState(origin).is(Tags.Blocks.ORES)) return;
+                || !MultiBlockPatterns.canInteract(level, owner, origin) || !level.getBlockState(origin).is(Tags.BlockItems.ORES.block())) return;
         var settings = hammer.getOrDefault(FloraFaunaRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
         var vein = new MiningModeData(MiningShape.SHAPELESS, MiningShape.SHAPELESS.getRadius(),
                 settings.maxBlocksToBreak(), settings.ignoreToolRestrictions());
@@ -41,7 +41,7 @@ public final class RemoteOreStrike {
             for (BlockPos pos : positions) {
                 if (!MultiBlockPatterns.canInteract(level, owner, pos)) continue;
                 var before = level.getBlockState(pos);
-                boolean mined = matches.test(before) && before.is(Tags.Blocks.ORES)
+                boolean mined = matches.test(before) && before.is(Tags.BlockItems.ORES.block())
                         && MultiBlockPatterns.isMineable(level, owner, hammer, vein, pos)
                         && owner.gameMode.destroyBlock(pos) && !level.getBlockState(pos).is(before.getBlock());
                 if (mined) {
