@@ -28,6 +28,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import org.jspecify.annotations.Nullable;
 import java.util.function.Consumer;
 
 /**
@@ -35,6 +40,7 @@ import java.util.function.Consumer;
  * This hammer supports multiple mining modes and speed settings configurable via data components.
  */
 public class HammerItem extends Item {
+    public static final int MAX_CHARGE = 64;
     /**
      * The tool material configuration for the Energy Hammer.
      * Note: Durability and enchantability are unused since the hammer is unbreakable and not enchantable.
@@ -68,6 +74,7 @@ public class HammerItem extends Item {
                 })
                 .component(FloraFaunaRegistry.LIGHTNING_ABILITY, Unit.INSTANCE)
                 .component(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
+                .component(FloraFaunaRegistry.HAMMER_CHARGE, MAX_CHARGE)
                 .component(FloraFaunaRegistry.THROWABLE_ABILITY, ThrowableAbilityData.DEFAULT)
                 .component(FloraFaunaRegistry.RIGHT_CLICK_ACTION, new RightClickAction(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "throwable_ability")))
                 .component(FloraFaunaRegistry.MULTI_TOOL_ABILITY, MultiToolAbilityData.DEFAULT)
@@ -157,8 +164,26 @@ public class HammerItem extends Item {
         tooltipComponents.accept(miningModeData.modeDescription());
         ToolConfig toolConfig = itemStack.getOrDefault(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
         tooltipComponents.accept(toolConfig.speedDescription());
+        tooltipComponents.accept(Component.translatable("tooltip.florafauna.hammer.charge", charge(itemStack), MAX_CHARGE));
+        tooltipComponents.accept(Component.translatable("tooltip.florafauna.hammer.ore_strike", Component.keybind("key.florafauna.throw_item")));
         super.appendHoverText(itemStack, context, tooltipDisplay, tooltipComponents, tooltipFlag);
     }
+
+    public static int charge(ItemStack stack) {
+        return Math.clamp(stack.getOrDefault(FloraFaunaRegistry.HAMMER_CHARGE, MAX_CHARGE), 0, MAX_CHARGE);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
+        if (owner instanceof Player && (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND)
+                && owner.tickCount % 20 == 0 && charge(stack) < MAX_CHARGE) {
+            stack.set(FloraFaunaRegistry.HAMMER_CHARGE, charge(stack) + 1);
+        }
+    }
+
+    @Override public boolean isBarVisible(ItemStack stack) { return charge(stack) < MAX_CHARGE; }
+    @Override public int getBarWidth(ItemStack stack) { return Math.round(13.0f * charge(stack) / MAX_CHARGE); }
+    @Override public int getBarColor(ItemStack stack) { return 0x42C7C1; }
 
     /**
      * Determines whether this item should display an enchantment glint effect.

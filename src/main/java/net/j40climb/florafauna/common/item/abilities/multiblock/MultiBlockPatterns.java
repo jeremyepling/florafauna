@@ -74,7 +74,7 @@ public final class MultiBlockPatterns {
         };
     }
 
-    private static List<BlockPos> vein(Player player, ItemStack tool, MiningModeData mode, BlockPos center) {
+    static List<BlockPos> vein(Player player, ItemStack tool, MiningModeData mode, BlockPos center) {
         Level level = player.level();
         boolean exact = tool.getOrDefault(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT).exactVein();
         Predicate<BlockState> matches = veinMatcher(level.getBlockState(center), exact);
@@ -129,7 +129,7 @@ public final class MultiBlockPatterns {
         return new Plan(List.copyOf(blocks), List.of(), face);
     }
 
-    private static Predicate<BlockState> veinMatcher(BlockState origin, boolean exact) {
+    static Predicate<BlockState> veinMatcher(BlockState origin, boolean exact) {
         Block block = origin.getBlock();
         if (exact || !isStoneOrDeepslateOre(origin)) return state -> state.is(block);
 

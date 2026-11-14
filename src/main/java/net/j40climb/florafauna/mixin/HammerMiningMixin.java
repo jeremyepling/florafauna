@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockBreaker;
+import net.j40climb.florafauna.common.item.abilities.multiblock.RemoteOreStrike;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -39,6 +40,7 @@ abstract class HammerMiningMixin {
 
     @WrapMethod(method = "destroyBlock")
     private boolean florafauna$minePattern(BlockPos pos, Operation<Boolean> original) {
+        if (RemoteOreStrike.toolFor(player) != null) return original.call(pos);
         if (!pos.equals(florafauna$target)) return original.call(pos);
         // Consume this player's hit once. Recursive neighbor breaks have no pending hit.
         florafauna$target = null;
