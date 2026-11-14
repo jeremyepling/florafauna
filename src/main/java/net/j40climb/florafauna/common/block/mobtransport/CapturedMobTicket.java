@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.block.mobtransport;
 
 import com.mojang.serialization.Codec;
+import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -8,7 +9,14 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -90,6 +98,36 @@ public record CapturedMobTicket(
     ) {
         Identifier typeId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
         return new CapturedMobTicket(typeId, entityNbt, capturedAt, readyAt, destPos, destDim, Optional.empty());
+    }
+
+    /** Returns true once the saved mob has actually joined the destination level. */
+    boolean release(ServerLevel serverLevel, BlockPos pos) {
+        // Create entity from NBT
+        var type = BuiltInRegistries.ENTITY_TYPE.getOptional(entityTypeId).orElse(null);
+        if (type == null) return false;
+
+        Entity entity = type.create(serverLevel, EntitySpawnReason.TRIGGERED);
+        if (entity == null) return false;
+
+        // Load entity data from NBT
+        ValueInput input = TagValueInput.create(
+                ProblemReporter.DISCARDING,
+                serverLevel.registryAccess(),
+                entityNbt
+        );
+        entity.load(input);
+
+        // Spawn slightly above the block
+        entity.snapTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
+        if (!serverLevel.addFreshEntity(entity)) return false;
+
+        // Mark as recently released (capture immunity) and remove any lure goal
+        if (entity instanceof Mob mob) {
+            MobSymbioteHelper.markRecentlyReleased(mob);
+            MobSymbioteHelper.stopLuring(mob);
+        }
+
+        return true;
     }
 
     /**

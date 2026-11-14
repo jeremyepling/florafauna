@@ -1,11 +1,9 @@
 package net.j40climb.florafauna.common.block.mobtransport;
 
 import net.j40climb.florafauna.Config;
-import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -13,15 +11,9 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
@@ -92,30 +84,7 @@ public class MobOutputBlockEntity extends BlockEntity {
 
     private boolean spawnMob(ServerLevel serverLevel, BlockPos pos, CapturedMobTicket ticket) {
 
-        // Create entity from NBT
-        var type = BuiltInRegistries.ENTITY_TYPE.getOptional(ticket.entityTypeId()).orElse(null);
-        if (type == null) return false;
-
-        Entity entity = type.create(serverLevel, EntitySpawnReason.TRIGGERED);
-        if (entity == null) return false;
-
-        // Load entity data from NBT
-        ValueInput input = TagValueInput.create(
-                ProblemReporter.DISCARDING,
-                serverLevel.registryAccess(),
-                ticket.entityNbt()
-        );
-        entity.load(input);
-
-        // Spawn slightly above the block
-        entity.snapTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
-        if (!serverLevel.addFreshEntity(entity)) return false;
-
-        // Mark as recently released (capture immunity) and remove any lure goal
-        if (entity instanceof Mob mob) {
-            MobSymbioteHelper.markRecentlyReleased(mob);
-            MobSymbioteHelper.stopLuring(mob);
-        }
+        if (!ticket.release(serverLevel, pos)) return false;
 
         // Play emergence sound
         serverLevel.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
@@ -179,28 +148,27 @@ public class MobOutputBlockEntity extends BlockEntity {
     }
 
     /**
-     * Called when the block is removed.
-     * Releases all pending mobs and notifies paired inputs.
+     * Release each mob immediately and keep failed tickets and their links for a retry.
      */
-    public void onRemoved() {
-        // Release all pending mobs at this position
-        if (level != null && !level.isClientSide() && level instanceof ServerLevel serverLevel) {
-            for (CapturedMobTicket ticket : pendingRelease) {
-                spawnMob(serverLevel, worldPosition, ticket);
+    boolean releaseBeforeRemoval(ServerLevel level) {
+        var tickets = pendingRelease.iterator();
+        while (tickets.hasNext()) {
+            if (spawnMob(level, worldPosition, tickets.next())) {
+                tickets.remove();
+                setChanged();
             }
         }
-        pendingRelease.clear();
+        if (!pendingRelease.isEmpty()) return false;
 
         // Unpair all inputs
-        if (level != null) {
-            for (BlockPos inputPos : new HashSet<>(pairedInputs)) {
-                BlockEntity be = level.getBlockEntity(inputPos);
-                if (be instanceof MobInputBlockEntity input) {
-                    input.unpairOutput();
-                }
+        for (BlockPos inputPos : new HashSet<>(pairedInputs)) {
+            BlockEntity be = level.getBlockEntity(inputPos);
+            if (be instanceof MobInputBlockEntity input) {
+                input.unpairOutput();
             }
         }
         pairedInputs.clear();
+        return true;
     }
 
     // ==================== SERIALIZATION ====================

@@ -262,6 +262,7 @@
   "message.florafauna.mob_input.unpaired": "Unpaired from Mob Output",
   "message.florafauna.mob_input.linking_mode": "Linking mode - Right-click a Mob Output to pair",
   "message.florafauna.mob_input.paired_to_output": "Paired to Mob Output at %s, %s, %s",
+  "message.florafauna.mob_transport.release_blocked": "A captured mob could not emerge. It is still inside.",
   "message.florafauna.mob_output.status": "Inputs: %s | Pending release: %s mobs",
 
   "symbiote.dialogue.mob_input_capture": "Another unwilling volunteer.",
