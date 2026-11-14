@@ -122,4 +122,4 @@ Uses NeoForge Transfer API for safe item insertion:
 
 ## Verification
 
-The headless GameTest `florafauna:item_input_collects_and_transfers` exercises transfer into a chest using the checked-in `florafauna:test_item_input_to_chest` structure. From the checkout root, run `.\gradlew.bat --max-workers=4 runData` to prepare generated mod resources, then `.\gradlew.bat --max-workers=4 runGameTestServer`.
+The headless GameTest `florafauna:item_input_collects_and_transfers` exercises transfer into a chest using the checked-in `florafauna:plots/item_input` structure. From the checkout root, run `.\gradlew.bat --max-workers=4 runData` to prepare generated mod resources, then `.\gradlew.bat --max-workers=4 runGameTestServer`.

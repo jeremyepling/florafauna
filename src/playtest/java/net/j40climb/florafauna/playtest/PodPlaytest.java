@@ -5,6 +5,7 @@ import net.j40climb.florafauna.common.block.mininganchor.pod.PodContents;
 import net.j40climb.florafauna.common.block.mininganchor.pod.Tier2PodBlockEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
@@ -37,13 +38,7 @@ final class PodPlaytest {
     static void steps(Playtest t, int phase) {
         if (phase == 1) {
             t.server("Prepare a survival mining platform and three stone blocks", p -> {
-                for (BlockPos pos : BlockPos.betweenClosed(ANCHOR.offset(-4, -1, -4), ANCHOR.offset(6, 3, 6))) {
-                    p.level().setBlockAndUpdate(pos, pos.getY() < ANCHOR.getY()
-                            ? Blocks.SMOOTH_STONE.defaultBlockState() : Blocks.AIR.defaultBlockState());
-                }
-                for (BlockPos stone : STONES) {
-                    p.level().setBlockAndUpdate(stone, Blocks.STONE.defaultBlockState());
-                }
+                DevPlot.PODS.place(p.level(), new BlockPos(-4, 199, -7));
                 p.teleportTo(2.5, 200, 3.5);
                 p.setGameMode(GameType.SURVIVAL);
                 p.getInventory().clearContent();

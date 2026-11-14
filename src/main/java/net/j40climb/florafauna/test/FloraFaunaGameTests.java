@@ -48,6 +48,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.minecraft.core.BlockPos;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
@@ -87,7 +88,6 @@ public class FloraFaunaGameTests {
     }
 
     private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
-    private static final Identifier ITEM_INPUT_TO_CHEST_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_item_input_to_chest");
 
     private static void registerTests(RegisterGameTestsEvent event) {
         // Install our colored test reporter for better visibility
@@ -152,6 +152,7 @@ public class FloraFaunaGameTests {
         registerStructureTest(event, defaultEnv, "silk_early_shear", silkGarden, 250, SpiderSilkTests::earlyCut);
         registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", silkGarden, 320, SpiderSilkTests::dispenser);
         registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", silkGarden, 145, SpiderSilkTests::blocked);
+        WalkthroughGameTests.register(event, defaultEnv);
     }
 
     // ==================== Voice Cooldown Tests ====================
@@ -2356,20 +2357,20 @@ public class FloraFaunaGameTests {
 
     private static void registerItemInputStructureTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerStructureTest(event, env, "item_input_collects_and_transfers",
-                ITEM_INPUT_TO_CHEST_STRUCTURE, 200, FloraFaunaGameTests::testItemInputCollectsAndTransfers);
+                DevPlot.ITEM_INPUT.structure(), 200, FloraFaunaGameTests::testItemInputCollectsAndTransfers);
     }
 
     private static void testItemInputCollectsAndTransfers(GameTestHelper helper) {
         // Structure positions (relative to structure origin)
-        BlockPos itemInputPos = new BlockPos(0, 1, 3);
-        BlockPos storageAnchorPos = new BlockPos(2, 1, 3);
-        BlockPos chestPos = new BlockPos(3, 1, 3);
+        BlockPos itemInputPos = new BlockPos(0, 1, 6);
+        BlockPos storageAnchorPos = new BlockPos(2, 1, 6);
+        BlockPos chestPos = new BlockPos(3, 1, 6);
 
         // Verify structure loaded correctly
         helper.assertBlockPresent(FloraFaunaRegistry.ITEM_INPUT.get(), itemInputPos);
         helper.assertBlockPresent(FloraFaunaRegistry.STORAGE_ANCHOR.get(), storageAnchorPos);
 
-        // Pair the blocks programmatically (structure saves absolute positions which break on relocation)
+        // Exercise the same unpaired setup a player finds at the manual plot.
         var itemInput = helper.getBlockEntity(itemInputPos,
                 net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity.class);
         var storageAnchor = helper.getBlockEntity(storageAnchorPos,
@@ -2385,8 +2386,10 @@ public class FloraFaunaGameTests {
         // Link Chest as destination on Storage Anchor
         storageAnchor.linkContainer(helper.absolutePos(chestPos));
 
+        helper.assertTrue(helper.getBlockEntity(chestPos, ChestBlockEntity.class).isEmpty(), "Fixture chest must start empty");
+
         // Spawn a diamond above the item input
-        BlockPos spawnPos = new BlockPos(0, 2, 3);
+        BlockPos spawnPos = itemInputPos.above();
         helper.spawnItem(Items.DIAMOND, spawnPos);
 
         // Wait for: collection + animation + transfer (give plenty of time)

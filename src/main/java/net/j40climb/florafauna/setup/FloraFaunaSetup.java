@@ -13,6 +13,7 @@ import net.j40climb.florafauna.common.entity.frenchie.frontpack.networking.PutDo
 import net.j40climb.florafauna.common.item.abilities.networking.*;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueLoader;
+import net.j40climb.florafauna.dev.DevPlotCommands;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -115,7 +116,7 @@ public class FloraFaunaSetup {
 
         // Server to client
         registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);
-        registrar.playToClient(OpenCocoonScreenPayload.TYPE, OpenCocoonScreenPayload.STREAM_CODEC, OpenCocoonScreenPayload::onClientReceived);
+        registrar.playToClient(OpenCocoonScreenPayload.TYPE, OpenCocoonScreenPayload.STREAM_CODEC);
         registrar.playToClient(AnchorFillStatePayload.TYPE, AnchorFillStatePayload.STREAM_CODEC, AnchorFillStatePayload::handleClient);
     }
 
@@ -126,6 +127,7 @@ public class FloraFaunaSetup {
      */
     public static void registerCommands(RegisterCommandsEvent event) {
         FloraFaunaCommands.register(event.getDispatcher());
+        DevPlotCommands.register(event.getDispatcher());
     }
 
     // ==================== CAPABILITIES ====================

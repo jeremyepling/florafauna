@@ -7,6 +7,8 @@ import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEve
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
+import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.debug.DebugOverlay;
 import net.j40climb.florafauna.common.item.projectile.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
@@ -17,6 +19,7 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.j40climb.florafauna.common.block.slimegrate.SlimeSplitLayer;
 import net.neoforged.bus.api.IEventBus;
@@ -25,6 +28,7 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.lwjgl.glfw.GLFW;
@@ -123,6 +127,7 @@ public class ClientSetup {
         modEventBus.addListener(SlimeSplitLayer::registerState);
         modEventBus.addListener(ClientSetup::registerSilkPose);
         modEventBus.addListener(ClientSetup::registerScreens);
+        modEventBus.addListener(ClientSetup::registerPayloads);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
     }
@@ -141,6 +146,14 @@ public class ClientSetup {
         });
     }
 
+    private static void registerPayloads(RegisterClientPayloadHandlersEvent event) {
+        event.register(OpenCocoonScreenPayload.TYPE, (data, context) ->
+                Minecraft.getInstance().setScreen(new CocoonChamberScreen(data.chamberPos())));
+    }
+
+    /**
+     * Client setup: register entity renderers.
+     */
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
         event.registerEntityRenderer(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);

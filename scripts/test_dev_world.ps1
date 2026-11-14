@@ -3,7 +3,7 @@
 [CmdletBinding(DefaultParameterSetName = 'Selected')]
 param(
     [Parameter(ParameterSetName = 'Selected', Position = 0)]
-    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider')]
+    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots')]
     [string[]]$Scenario,
     [Parameter(ParameterSetName = 'Full')]
     [switch]$All,
@@ -14,7 +14,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 if ($All) {
-    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider')
+    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots')
 } elseif (!$Scenario) {
     throw 'Choose a client scenario, e.g. -Scenario hammer, or use -All for the full gameplay suite.'
 }

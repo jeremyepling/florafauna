@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.block.Blocks;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -38,11 +38,7 @@ final class FrontpackPlaytest {
         if (phase == 1) {
             t.server("Place the Frenchie plot and a tamed brindle in reach", p -> {
                 var level = p.level().getServer().overworld();
-                for (BlockPos floor : BlockPos.betweenClosed(PEN.offset(-5, -1, -5), PEN.offset(5, -1, 5))) {
-                    level.setBlockAndUpdate(floor, Blocks.SEA_LANTERN.defaultBlockState());
-                    level.setBlockAndUpdate(floor.above(), Blocks.AIR.defaultBlockState());
-                    level.setBlockAndUpdate(floor.above(2), Blocks.AIR.defaultBlockState());
-                }
+                DevPlot.FRENCHIE.place(level, new BlockPos(-3, 200, -6));
                 p.teleportTo(level, 0.5, 201, 2.5, Set.of(), 180, 0, true);
                 p.setGameMode(GameType.SURVIVAL);
                 p.getInventory().clearContent();
