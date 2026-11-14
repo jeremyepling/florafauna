@@ -160,7 +160,12 @@ final class DeliveryGoal extends Goal {
             return;
         }
         Vec3 waypoint = distance <= 14 ? destination : dog.position().add(delta.scale(14 / distance));
-        dog.getNavigation().moveTo(dog.getNavigation().createPath(BlockPos.containing(waypoint), 1), 1.2);
+        BlockPos next = BlockPos.containing(waypoint);
+        if (!returning && !level.isPositionEntityTicking(next)) {
+            returnToOwner(owner, "blocked");
+            return;
+        }
+        dog.getNavigation().moveTo(dog.getNavigation().createPath(next, 1), 1.2);
     }
 
     private boolean canHandOff(ServerLevel level, @Nullable ServerPlayer player, Vec3 destination) {
