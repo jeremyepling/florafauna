@@ -1,7 +1,5 @@
 package net.j40climb.florafauna.playtest;
 
-import com.mojang.authlib.GameProfile;
-import io.netty.channel.embedded.EmbeddedChannel;
 import net.j40climb.florafauna.common.entity.frenchie.DeliveryScreen;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -16,12 +14,10 @@ import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.ItemStack;
@@ -30,9 +26,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.BlockHitResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -42,9 +40,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 final class DeliveryPlaytest {
-    private static final UUID DOG_ID = UUID.fromString("268d4bee-c265-442c-b07b-562099a21a79");
-    private static final UUID RECIPIENT_ID = UUID.fromString("98368ad4-5a18-4b67-90e6-ce57e2d76d87");
-    private static final String RECIPIENT = "Amelie";
+    static final UUID DOG_ID = UUID.fromString("268d4bee-c265-442c-b07b-562099a21a79");
     private static final BlockPos START = new BlockPos(0, 240, 0);
     private static final BlockPos BED = START.east(6);
     private static final BlockPos DISPATCH = START.west(96);
@@ -52,10 +48,15 @@ final class DeliveryPlaytest {
     static void steps(Playtest t, int phase) {
         if (phase == 1) {
             t.server("Set out a named bundle, a Frenchie and an ordinary blue bed", DeliveryPlaytest::prepare);
-            useDog(t, true);
-            press(t, "assign", BED.toShortString());
-            t.awaitClient("Close the assignment dialog with the bundle still in hand", mc ->
-                    mc.screen == null && ItemStack.matches(parcel(), mc.player.getMainHandItem()));
+            selectSlot(t, 1);
+            t.awaitClient("Aim an empty hand at the blue bed", mc -> {
+                mc.player.lookAt(Anchor.EYES, BED.getBottomCenter().add(0, 0.5, 0));
+                return mc.player.getMainHandItem().isEmpty() && mc.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(BED);
+            });
+            t.client("Right-click the bed to set the vanilla respawn point", mc -> KeyMapping.click(mc.options.keyUse.getKey()));
+            t.awaitServer("The blue bed is the owner's respawn point", p -> p.getRespawnConfig() != null
+                    && BED.equals(p.getRespawnConfig().respawnData().pos()) && !p.getRespawnConfig().forced());
+            selectSlot(t, 0);
             t.server("Take the dog well outside the original delivery radius", p -> {
                 dog(p).snapTo(DISPATCH, 0, 0);
                 standBesideDog(p);
@@ -66,7 +67,7 @@ final class DeliveryPlaytest {
             useDog(t, true);
             openChooser(t);
             t.screenshot("delivery-choose-destination");
-            chooseHome(t);
+            chooseHome(t, 14);
             t.screenshot("delivery-confirm-destination");
             press(t, "confirm");
             t.awaitServer("Confirmation transfers the one filled bundle out of the owner's inventory", p ->
@@ -94,7 +95,7 @@ final class DeliveryPlaytest {
         });
         useDog(t, true);
         openChooser(t);
-        chooseHome(t);
+        chooseHome(t, 8);
         press(t, "confirm");
         t.server("Stay in interaction range to cancel during the walk-off", DeliveryPlaytest::standBesideDog);
         useDog(t, false);
@@ -103,28 +104,30 @@ final class DeliveryPlaytest {
         useDog(t, false);
         t.awaitServer("The next empty-hand order resumes follow with exactly one parcel", p ->
                 !dog(p).isOrderedToSit() && !dog(p).isDelivering() && p.getInventory().countItem(Items.BUNDLE) == 1);
-        t.server("Connect an online recipient 88 blocks from the sender", DeliveryPlaytest::connectRecipient);
         selectSlot(t, 0);
         useDog(t, true);
         openChooser(t);
-        t.screenshot("delivery-choose-player");
-        press(t, "send_player", RECIPIENT);
-        t.awaitClient("Preview the online recipient with the bundle still in hand", mc ->
-                mc.screen instanceof DeliveryScreen && mc.screen.getNarrationMessage().getString().contains(RECIPIENT)
-                        && ItemStack.matches(mc.player.getMainHandItem(), parcel()));
-        t.screenshot("delivery-confirm-player");
+        chooseHome(t, 8);
         press(t, "confirm");
-        t.awaitServer("The chosen player receives the original filled bundle", p -> {
-            var recipient = p.level().getServer().getPlayerList().getPlayer(RECIPIENT_ID);
-            return ItemStack.matches(recipient.getMainHandItem(), parcel()) && recipient.getInventory().countItem(Items.BUNDLE) == 1;
+        t.awaitServer("The Frenchie leaves with the only parcel", p -> dog(p) == null && p.getInventory().countItem(Items.BUNDLE) == 0);
+        t.client("Use the owner's recall command while the dog is off-world", mc -> mc.player.connection.sendCommand("frenchie recall"));
+        t.awaitServer("The recalled courier lands beside its sender with the bundle", p ->
+                dog(p) != null && dog(p).isDelivering() && dog(p).distanceToSqr(p) <= 36 && p.getInventory().countItem(Items.BUNDLE) == 0);
+        t.server("Stand beside the recalled courier", DeliveryPlaytest::standBesideDog);
+        useDog(t, false);
+        t.awaitServer("Collect the original bundle once after recall", DeliveryPlaytest::hasReturnedParcel);
+        t.server("Put the parcel away and stand beside the dog with an empty inventory", p -> {
+            p.getInventory().clearContent();
+            dog(p).snapTo(DISPATCH, 0, 0);
+            standBesideDog(p);
         });
-        t.awaitServer("The same Frenchie returns to the sender after the timed round trip", p ->
-                dog(p) != null && dog(p).isOwnedBy(p) && !dog(p).isDelivering() && dog(p).distanceToSqr(p) <= 36
-                        && p.getInventory().countItem(Items.BUNDLE) == 0);
-        t.server("Disconnect the test recipient", p -> {
-            var list = p.level().getServer().getPlayerList();
-            list.remove(list.getPlayer(RECIPIENT_ID));
-        });
+        t.client("Send the dog home without a bundle", mc -> mc.player.connection.sendCommand("frenchie home"));
+        t.awaitServer("The unladen Frenchie leaves its owner", p -> dog(p) == null && p.getInventory().isEmpty());
+        t.awaitServer("The same dog waits at the respawn bed without a parcel", p -> dog(p) != null
+                && dog(p).position().distanceToSqr(BED.getBottomCenter()) <= 16 && dog(p).isOrderedToSit() && p.getInventory().isEmpty());
+        t.client("Recall the Frenchie from its home bed", mc -> mc.player.connection.sendCommand("frenchie recall"));
+        t.awaitServer("The unladen dog rejoins the sender and resumes follow", p -> dog(p) != null
+                && dog(p).isOwnedBy(p) && !dog(p).isOrderedToSit() && dog(p).distanceToSqr(p) <= 36 && p.getInventory().isEmpty());
     }
 
     private static void selectSlot(Playtest t, int slot) {
@@ -134,27 +137,16 @@ final class DeliveryPlaytest {
         });
     }
 
-    private static void connectRecipient(ServerPlayer owner) {
-        var server = owner.level().getServer();
-        var cookie = CommonListenerCookie.createInitial(new GameProfile(RECIPIENT_ID, RECIPIENT), false);
-        var recipient = new ServerPlayer(server, owner.level(), cookie.gameProfile(), cookie.clientInformation());
-        var connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
-        server.getPlayerList().placeNewPlayer(connection, recipient, cookie);
-        recipient.setGameMode(GameType.SURVIVAL);
-        recipient.getInventory().clearContent();
-        recipient.teleportTo(owner.level(), DISPATCH.getX() + 0.5, DISPATCH.getY(), DISPATCH.getZ() + 0.5, Set.of(), 0, 0, true);
-    }
-
     private static void prepare(ServerPlayer owner) {
         var level = owner.level().getServer().overworld();
         for (var pos : BlockPos.betweenClosed(DISPATCH.offset(-4, -1, -4), BED.offset(4, -1, 4))) {
             level.setBlockAndUpdate(pos, Blocks.SMOOTH_STONE.defaultBlockState());
         }
         var bed = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
-        level.setBlockAndUpdate(BED.west(), bed.setValue(BedBlock.PART, BedPart.FOOT));
-        level.setBlockAndUpdate(BED, bed.setValue(BedBlock.PART, BedPart.HEAD));
-        owner.teleportTo(level, START.getX() + 0.5, START.getY(), START.getZ() + 2.5, Set.of(), 180, 15, true);
+        level.setBlock(BED.west(), bed.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
+        level.setBlock(BED, bed.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
+        level.getServer().clockManager().moveToTimeMarker(level.dimensionType().defaultClock().orElseThrow(), ClockTimeMarkers.NOON);
+        owner.teleportTo(level, BED.getX() + 0.5, START.getY(), BED.getZ() + 2.5, Set.of(), 180, 15, true);
         owner.setGameMode(GameType.SURVIVAL);
         owner.getInventory().clearContent();
         owner.getInventory().setSelectedSlot(0);
@@ -177,7 +169,7 @@ final class DeliveryPlaytest {
         return (FrenchieEntity) owner.level().getEntity(DOG_ID);
     }
 
-    private static ItemStack parcel() {
+    static ItemStack parcel() {
         var stack = new ItemStack(Items.BUNDLE);
         stack.set(DataComponents.CUSTOM_NAME, Component.literal("Violet's delivery"));
         stack.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(List.of(new ItemStackTemplate(Items.AMETHYST_SHARD, 7))));
@@ -206,22 +198,33 @@ final class DeliveryPlaytest {
                         && ItemStack.matches(mc.player.getMainHandItem(), parcel()));
     }
 
-    private static void chooseHome(Playtest t) {
-        press(t, "send_home", BED.toShortString());
-        t.awaitClient("Preview the assigned bed's coordinates before giving up the bundle", mc ->
+    private static void chooseHome(Playtest t, int expectedSeconds) {
+        press(t, "home");
+        t.awaitClient("Preview Your bed and the confirmation-to-arrival ETA with the bundle in hand", mc ->
                 mc.screen instanceof DeliveryScreen && mc.screen.getTitle().equals(Component.translatable("frenchie.florafauna.delivery.confirm_title"))
                         && ItemStack.matches(mc.player.getMainHandItem(), parcel())
-                        && mc.screen.getNarrationMessage().getString().contains(BED.toShortString()));
+                        && mc.screen.getNarrationMessage().getString().contains(Component.translatable("frenchie.florafauna.delivery.home").getString())
+                        && mc.screen.getNarrationMessage().getString().contains(eta(expectedSeconds))
+                        && !mc.screen.getNarrationMessage().getString().contains(BED.toShortString()));
+    }
+
+    static String eta(int seconds) {
+        return Component.translatable("frenchie.florafauna.delivery.seconds", seconds).getString();
     }
 
     private static void press(Playtest t, String action, Object... args) {
         t.awaitClient("Select the " + action + " dialog button", mc -> {
             if (mc.screen == null) return false;
             String label = Component.translatable("frenchie.florafauna.delivery." + action, args).getString();
-            Optional<Button> button = widgets(mc.screen).filter(Button.class::isInstance).map(Button.class::cast)
-                    .filter(b -> b.active && b.visible && b.getMessage().getString().equals(label)).findFirst();
-            return button.isPresent() && button.get().keyPressed(new KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0));
+            return pressLabel(mc, label);
         });
+    }
+
+    static boolean pressLabel(Minecraft mc, String label) {
+        if (!(mc.screen instanceof DeliveryScreen)) return false;
+        Optional<Button> button = widgets(mc.screen).filter(Button.class::isInstance).map(Button.class::cast)
+                .filter(b -> b.active && b.visible && b.getMessage().getString().equals(label)).findFirst();
+        return button.isPresent() && button.get().keyPressed(new KeyEvent(GLFW.GLFW_KEY_ENTER, 0, 0));
     }
 
     private static Stream<AbstractWidget> widgets(GuiEventListener root) {
