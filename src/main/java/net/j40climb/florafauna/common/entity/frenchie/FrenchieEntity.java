@@ -5,6 +5,9 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Util;
@@ -20,6 +23,7 @@ import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -52,9 +56,20 @@ public class FrenchieEntity extends TamableAnimal {
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> IS_SLEEPING =
             SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Byte> JOB =
+            SynchedEntityData.defineId(FrenchieEntity.class, EntityDataSerializers.BYTE);
+    private static final byte TRACKING = 1;
+    private static final byte DELIVERING = 2;
+    private final DeathTrackingGoal trail = new DeathTrackingGoal(this);
+    private final DeliveryGoal delivery = new DeliveryGoal(this);
+    @Nullable DeliveryDialog deliveryDialog;
 
     public FrenchieEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
+        if (level instanceof ServerLevel) {
+            goalSelector.addGoal(1, trail);
+            goalSelector.addGoal(1, delivery);
+        }
     }
 
     @Override
@@ -121,6 +136,27 @@ public class FrenchieEntity extends TamableAnimal {
         builder.define(LAST_POSE_CHANGE_TICK, 0L);
         builder.define(LAST_SLEEP_CHANGE_TICK, 0L);
         builder.define(IS_SLEEPING, false);
+        builder.define(JOB, (byte) 0);
+    }
+
+    public boolean isDelivering() {
+        return level().isClientSide() ? entityData.get(JOB) == DELIVERING : delivery.canUse();
+    }
+
+    public boolean isDeathTracking() {
+        return level().isClientSide() ? entityData.get(JOB) == TRACKING : trail.active();
+    }
+
+    public boolean hasCompanionJob() {
+        return isDelivering() || isDeathTracking();
+    }
+
+    DeliveryGoal delivery() {
+        return delivery;
+    }
+
+    void syncCompanionJob() {
+        entityData.set(JOB, isDelivering() ? DELIVERING : isDeathTracking() ? TRACKING : (byte) 0);
     }
 
     public boolean isFrenchieSleeping() {
@@ -170,13 +206,49 @@ public class FrenchieEntity extends TamableAnimal {
                 return InteractionResult.SUCCESS;
             }
         }
-        if (isTame() && isOwnedBy(pPlayer) && pHand == InteractionHand.MAIN_HAND && !isFood(itemstack)) {
-            if (!level().isClientSide()) {
+        if (isTame() && isOwnedBy(pPlayer) && !isFood(itemstack)) {
+            boolean compass = itemstack.is(Items.COMPASS) && !itemstack.has(DataComponents.LODESTONE_TRACKER);
+            boolean bundle = item instanceof BundleItem;
+            boolean empty = itemstack.isEmpty();
+            if (pHand == InteractionHand.MAIN_HAND && empty && !hasCompanionJob()) {
+                ItemStack offhand = pPlayer.getOffhandItem();
+                if (offhand.getItem() instanceof BundleItem || offhand.is(Items.COMPASS) || isFood(offhand)) {
+                    return InteractionResult.PASS;
+                }
+            }
+            if (pHand != InteractionHand.MAIN_HAND && !compass && !bundle && !(empty && hasCompanionJob())) {
+                return super.mobInteract(pPlayer, pHand);
+            }
+            if (level().isClientSide()) return InteractionResult.SUCCESS;
+            deliveryDialog = null;
+            if (hasCompanionJob()) {
+                if (empty && pPlayer instanceof ServerPlayer owner) {
+                    if (isDelivering()) delivery.collect(owner, pHand);
+                    else {
+                        trail.cancel();
+                        sitDown();
+                        orderMessage(owner, "cancel");
+                    }
+                    syncCompanionJob();
+                } else {
+                    orderMessage(pPlayer, "busy");
+                }
+            } else if (compass && pPlayer instanceof ServerPlayer owner) {
+                trail.startTracking(owner);
+                syncCompanionJob();
+            } else if (bundle && pPlayer instanceof ServerPlayer owner) {
+                deliveryDialog = new DeliveryDialog(this, owner, pHand);
+            } else {
                 toggleSitting();
+                orderMessage(pPlayer, isOrderedToSit() ? "sit" : "follow");
             }
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(pPlayer, pHand);
+    }
+
+    private void orderMessage(Player owner, String key) {
+        owner.sendOverlayMessage(Component.translatable("frenchie.florafauna.order." + key, getName()));
     }
     /* SITTING */
     public boolean isSitting() {
@@ -217,6 +289,8 @@ public class FrenchieEntity extends TamableAnimal {
         output.putInt("Variant", this.getTypeVariant());
         output.putString("Pose", this.getPose().name());
         output.putBoolean("IsSleeping", this.isFrenchieSleeping());
+        trail.save(output);
+        delivery.save(output);
         output.putLong("LastPoseChangeTick", this.entityData.get(LAST_POSE_CHANGE_TICK));
         output.putLong("LastSleepChangeTick", this.entityData.get(LAST_SLEEP_CHANGE_TICK));
     }
@@ -224,6 +298,10 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     public void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
+        trail.load(input);
+        delivery.load(input);
+        if (delivery.canUse()) trail.cancel();
+        syncCompanionJob();
         this.setVariant(FrenchieVariant.byId(input.getIntOr("Variant", 0)));
         // Existing worlds store the uppercase enum name. Preserve all recognized poses.
         Pose savedPose = this.isOrderedToSit() ? Pose.SITTING : Pose.STANDING;
@@ -269,6 +347,7 @@ public class FrenchieEntity extends TamableAnimal {
         }
         if (!this.level().isClientSide()) {
             updateSleepState();
+            syncCompanionJob();
         }
     }
 
@@ -354,7 +433,7 @@ public class FrenchieEntity extends TamableAnimal {
     /* Sleeping */
 
     private void updateSleepState() {
-        if (this.isOrderedToSit()) {
+        if (this.isOrderedToSit() || hasCompanionJob()) {
             // When ordered to sit, don't sleep
             if (this.isFrenchieSleeping()) {
                 this.setFrenchieSleeping(false);
@@ -380,6 +459,12 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     protected boolean isImmobile() {
         return super.isImmobile() || this.isFrenchieSleeping();
+    }
+
+    @Override
+    protected void dropEquipment(ServerLevel level) {
+        super.dropEquipment(level);
+        delivery.dropOnDeath(level);
     }
 
     /*

@@ -1,5 +1,7 @@
 package net.j40climb.florafauna.setup;
 
+import net.j40climb.florafauna.common.entity.frenchie.DeliveryDialog;
+
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.CocoonActionPayload;
@@ -126,6 +128,7 @@ public class FloraFaunaSetup {
      * Registers mod commands.
      */
     public static void registerCommands(RegisterCommandsEvent event) {
+        DeliveryDialog.register(event.getDispatcher());
         FloraFaunaCommands.register(event.getDispatcher());
         DevPlotCommands.register(event.getDispatcher());
     }
