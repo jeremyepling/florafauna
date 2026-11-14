@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.Tags;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,7 +37,11 @@ public final class MultiBlockPatterns {
     private MultiBlockPatterns() {}
 
     /** Positions are computed from the original hit, before any player break callbacks run. */
-    public record Plan(List<BlockPos> blocks, List<BlockPos> stairs, Direction stairFacing) {
+    public record Plan(List<BlockPos> blocks, List<BlockPos> stairs, Direction stairFacing, TunnelLighting.@Nullable Passage passage) {
+        Plan(List<BlockPos> blocks, List<BlockPos> stairs, Direction stairFacing) {
+            this(blocks, stairs, stairFacing, null);
+        }
+
         BlockState stairState() {
             return Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, stairFacing);
         }
@@ -126,7 +131,8 @@ public final class MultiBlockPatterns {
                 }
             }
         }
-        return new Plan(List.copyOf(blocks), List.of(), face);
+        var passage = vertical || bore ? null : new TunnelLighting.Passage(center.above(base), travel, 0, widthRadius, depth);
+        return new Plan(List.copyOf(blocks), List.of(), face, passage);
     }
 
     private static Predicate<BlockState> veinMatcher(BlockState origin, boolean exact) {
@@ -167,7 +173,8 @@ public final class MultiBlockPatterns {
                 }
             }
         }
-        return new Plan(List.copyOf(blocks), List.copyOf(stairs), ascending ? travel : travel.getOpposite());
+        var passage = new TunnelLighting.Passage(center.above(baseOffset + 1), travel, ascending ? 1 : -1, 0, STAIR_STEPS);
+        return new Plan(List.copyOf(blocks), List.copyOf(stairs), ascending ? travel : travel.getOpposite(), passage);
     }
 
     static boolean canInteract(Level level, Player player, BlockPos pos) {

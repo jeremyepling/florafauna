@@ -22,7 +22,7 @@ public class ToolConfigScreen extends BaseScreen {
     private static final int BUTTON_SPACING = 24;
 
     private ToolConfig config;
-    private final boolean hasVeinMining;
+    private final boolean hasMiningModes;
     private Button enchantmentButton;
     private Button miningSpeedButton;
 
@@ -33,10 +33,10 @@ public class ToolConfigScreen extends BaseScreen {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
             ItemStack heldItem = player.getMainHandItem();
-            this.hasVeinMining = heldItem.has(FloraFaunaRegistry.MULTI_BLOCK_MINING);
+            this.hasMiningModes = heldItem.has(FloraFaunaRegistry.MULTI_BLOCK_MINING);
             this.config = heldItem.getOrDefault(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
         } else {
-            this.hasVeinMining = false;
+            this.hasMiningModes = false;
             this.config = ToolConfig.DEFAULT;
         }
     }
@@ -61,12 +61,17 @@ public class ToolConfigScreen extends BaseScreen {
         ).bounds(buttonX, startY + BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build();
         this.addRenderableWidget(this.miningSpeedButton);
 
-        if (hasVeinMining) {
+        if (hasMiningModes) {
             this.addRenderableWidget(Button.builder(veinMatchingName(), button -> {
                 config = config.withToggledVeinMatching();
                 button.setMessage(veinMatchingName());
                 sendConfigUpdate();
             }).bounds(buttonX, startY + 2 * BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
+            this.addRenderableWidget(Button.builder(lightingName(), button -> {
+                config = config.withToggledTunnelLighting();
+                button.setMessage(lightingName());
+                sendConfigUpdate();
+            }).bounds(buttonX, startY + 3 * BUTTON_SPACING, BUTTON_WIDTH, BUTTON_HEIGHT).build());
         }
     }
 
@@ -78,9 +83,11 @@ public class ToolConfigScreen extends BaseScreen {
         // Draw static labels to the left of buttons
         guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.enchantment"), labelX, startY + 6, 0xFF404040);
         guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.mining_speed"), labelX, startY + BUTTON_SPACING + 6, 0xFF404040);
-        if (hasVeinMining) {
+        if (hasMiningModes) {
             guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.vein_matching"),
                     labelX, startY + 2 * BUTTON_SPACING + 6, 0xFF404040);
+            guiGraphics.text(this.font, Component.translatable("gui.florafauna.tool_config.tunnel_lighting"),
+                    labelX, startY + 3 * BUTTON_SPACING + 6, 0xFF404040);
         }
     }
 
@@ -120,6 +127,11 @@ public class ToolConfigScreen extends BaseScreen {
     private Component veinMatchingName() {
         return Component.translatable(config.exactVein() ? "gui.florafauna.tool_config.vein.exact"
                 : "gui.florafauna.tool_config.vein.same_ore");
+    }
+
+    private Component lightingName() {
+        return Component.translatable(config.tunnelLighting() ? "gui.florafauna.tool_config.lighting.on"
+                : "gui.florafauna.tool_config.lighting.off");
     }
 
     private void sendConfigUpdate() {
