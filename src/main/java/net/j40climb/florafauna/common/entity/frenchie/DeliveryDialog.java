@@ -48,6 +48,9 @@ public final class DeliveryDialog {
             destinations.put("home", label("home", address));
             choices.add(new DeliveryPopupPayload.Choice("home", label("send_home", address)));
         }
+        if (nearbyBed != null && (home == null || !home.dimension().equals(level.dimension()) || !nearbyBed.equals(home.pos()))) {
+            choices.add(new DeliveryPopupPayload.Choice("bed", label("assign", nearbyBed.toShortString())));
+        }
         level.getServer().getPlayerList().getPlayers().stream().filter(p -> eligiblePlayer(owner, p))
                 .sorted(Comparator.comparing(p -> p.getName().getString(), String.CASE_INSENSITIVE_ORDER))
                 .forEach(p -> {
@@ -55,9 +58,6 @@ public final class DeliveryDialog {
                     destinations.put(id, p.getName());
                     choices.add(new DeliveryPopupPayload.Choice(id, label("send_player", p.getName())));
                 });
-        if (nearbyBed != null && (home == null || !home.dimension().equals(level.dimension()) || !nearbyBed.equals(home.pos()))) {
-            choices.add(new DeliveryPopupPayload.Choice("bed", label("assign", nearbyBed.toShortString())));
-        }
         PacketDistributor.sendToPlayer(owner, new DeliveryPopupPayload(dog.getUUID(), choices, Optional.empty()));
     }
 

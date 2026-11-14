@@ -79,10 +79,10 @@ public final class DeliveryScreen extends Screen {
             int end = left + cardWidth - PAD;
             var prev = button(end - 38, footer, 17, Component.literal("<"), false, () -> changePage(-1));
             prev.active = page > 0;
-            prev.setTooltip(Tooltip.create(Component.translatable("gui.previous")));
+            prev.setTooltip(Tooltip.create(Component.translatable("gui.recipebook.previous_page")));
             var next = button(end - 17, footer, 17, Component.literal(">"), false, () -> changePage(1));
             next.active = page < pages - 1;
-            next.setTooltip(Tooltip.create(Component.translatable("gui.next")));
+            next.setTooltip(Tooltip.create(Component.translatable("gui.recipebook.next_page")));
         }
     }
 
