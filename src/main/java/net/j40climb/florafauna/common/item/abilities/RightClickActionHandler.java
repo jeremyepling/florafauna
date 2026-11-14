@@ -29,7 +29,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -154,7 +153,7 @@ public class RightClickActionHandler {
      */
     private static boolean tryToolModification(ServerPlayer player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool) {
         // Get blocks based on mining pattern (reuses existing pattern logic)
-        Set<BlockPos> blocksToModify = MultiBlockPatterns.getTargetBlocks(pos, player);
+        var blocksToModify = MultiBlockPatterns.plan(player, player.getItemInHand(hand), pos, hitResult.getDirection()).blocks();
 
         // Try to modify each block in the pattern
         boolean anyModified = false;

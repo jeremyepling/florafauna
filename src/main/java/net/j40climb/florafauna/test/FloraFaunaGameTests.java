@@ -112,6 +112,7 @@ public class FloraFaunaGameTests {
         // Register mining mode tests
         registerMiningModeTests(event, defaultEnv);
         HammerAbilityGameTests.register(event, defaultEnv);
+        HammerMiningGameTests.register(event, defaultEnv);
 
         // Register containment chamber tests
         registerContainmentChamberTests(event, defaultEnv);
@@ -2697,7 +2698,7 @@ public class FloraFaunaGameTests {
     /**
      * Register a test with a custom structure.
      */
-    private static void registerStructureTest(
+    static void registerStructureTest(
             RegisterGameTestsEvent event,
             Holder<TestEnvironmentDefinition<?>> env,
             String name,

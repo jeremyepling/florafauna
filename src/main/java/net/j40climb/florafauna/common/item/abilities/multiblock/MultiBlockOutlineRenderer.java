@@ -28,7 +28,7 @@ public class MultiBlockOutlineRenderer {
         }
 
         BlockPos target = event.getBlockPos();
-        List<VoxelShape> outlines = MultiBlockPatterns.getTargetBlocks(target, player).stream()
+        List<VoxelShape> outlines = MultiBlockPatterns.plan(player, player.getMainHandItem(), target, event.getHitResult().getDirection()).blocks().stream()
                 .filter(pos -> !pos.equals(target))
                 .map(pos -> event.getLevel().getBlockState(pos)
                         .getShape(event.getLevel(), pos, event.getCollisionContext())
