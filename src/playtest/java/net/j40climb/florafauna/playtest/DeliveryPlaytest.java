@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import net.j40climb.florafauna.common.entity.frenchie.DeliveryScreen;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.KeyMapping;
@@ -8,8 +9,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.screens.dialog.MultiButtonDialogScreen;
-import net.minecraft.client.gui.screens.dialog.SimpleDialogScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
@@ -41,6 +40,7 @@ final class DeliveryPlaytest {
     private static final UUID DOG_ID = UUID.fromString("268d4bee-c265-442c-b07b-562099a21a79");
     private static final BlockPos START = new BlockPos(0, 240, 0);
     private static final BlockPos BED = START.east(6);
+    private static final BlockPos DISPATCH = START.west(96);
 
     static void steps(Playtest t, int phase) {
         if (phase == 1) {
@@ -49,25 +49,35 @@ final class DeliveryPlaytest {
             press(t, "assign", BED.toShortString());
             t.awaitClient("Close the assignment dialog with the bundle still in hand", mc ->
                     mc.screen == null && ItemStack.matches(parcel(), mc.player.getMainHandItem()));
+            t.server("Take the dog well outside the original delivery radius", p -> {
+                dog(p).snapTo(DISPATCH, 0, 0);
+                standBesideDog(p);
+            });
             useDog(t, true);
+            t.awaitClient("Escape the chooser without transferring the bundle", mc ->
+                    mc.screen instanceof DeliveryScreen && mc.screen.keyPressed(new KeyEvent(GLFW.GLFW_KEY_ESCAPE, 0, 0)));
+            useDog(t, true);
+            openChooser(t);
+            t.screenshot("delivery-choose-destination");
             chooseHome(t);
             t.screenshot("delivery-confirm-destination");
             press(t, "confirm");
             t.awaitServer("Confirmation transfers the one filled bundle out of the owner's inventory", p ->
-                    dog(p).isDelivering() && p.getInventory().countItem(Items.BUNDLE) == 0);
-            t.awaitServer("Let the courier walk from the owner to the bed", p ->
-                    dog(p).position().distanceToSqr(BED.getBottomCenter()) <= 6.25 && dog(p).getNavigation().isDone());
-            t.server("Stand in reach of the parcel at the bed", DeliveryPlaytest::standBesideDog);
-            awaitParcelIcon(t);
-            t.screenshot("delivery-parcel-at-bed");
+                    dog(p) != null && dog(p).isDelivering() && p.getInventory().countItem(Items.BUNDLE) == 0);
+            t.awaitServer("Save with the courier off-world and the owner's hand empty", p ->
+                    dog(p) == null && p.getInventory().countItem(Items.BUNDLE) == 0);
             return;
         }
 
-        t.awaitServer("Rejoin with the original dog at the bed and no parcel in the inventory", p -> p.level().getEntity(DOG_ID)
+        t.server("Rejoin and wait by the bed for the timed courier", p ->
+                p.teleportTo(p.level(), BED.getX() + 0.5, BED.getY(), BED.getZ() + 2.5, Set.of(), 180, 15, true));
+        t.awaitServer("The original dog finishes its saved trip with the parcel", p -> p.level().getEntity(DOG_ID)
                 instanceof FrenchieEntity dog && dog.isOwnedBy(p) && dog.isDelivering()
-                && dog.position().distanceToSqr(BED.getBottomCenter()) <= 6.25
+                && dog.position().distanceToSqr(BED.getBottomCenter()) <= 16
                 && p.getInventory().countItem(Items.BUNDLE) == 0);
+        t.server("Stand within reach of the waiting dog", DeliveryPlaytest::standBesideDog);
         awaitParcelIcon(t);
+        t.screenshot("delivery-parcel-at-bed");
         useDog(t, false);
         t.awaitServer("Claim the same named bundle and all seven shards once after restart", DeliveryPlaytest::hasReturnedParcel);
 
@@ -76,8 +86,10 @@ final class DeliveryPlaytest {
             standBesideDog(p);
         });
         useDog(t, true);
+        openChooser(t);
         chooseHome(t);
         press(t, "confirm");
+        t.server("Stay in interaction range to cancel during the walk-off", DeliveryPlaytest::standBesideDog);
         useDog(t, false);
         t.awaitServer("Cancel the second trip and recover the entire bundle before arrival", DeliveryPlaytest::hasReturnedParcel);
         t.client("Select an empty slot after cancellation", mc -> {
@@ -91,7 +103,7 @@ final class DeliveryPlaytest {
 
     private static void prepare(ServerPlayer owner) {
         var level = owner.level().getServer().overworld();
-        for (var pos : BlockPos.betweenClosed(START.offset(-12, -1, -3), BED.offset(3, -1, 3))) {
+        for (var pos : BlockPos.betweenClosed(DISPATCH.offset(-4, -1, -4), BED.offset(4, -1, 4))) {
             level.setBlockAndUpdate(pos, Blocks.SMOOTH_STONE.defaultBlockState());
         }
         var bed = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
@@ -128,7 +140,8 @@ final class DeliveryPlaytest {
     }
 
     private static boolean hasReturnedParcel(ServerPlayer owner) {
-        return dog(owner).isOrderedToSit() && !dog(owner).isDelivering() && owner.getInventory().countItem(Items.BUNDLE) == 1
+        var courier = dog(owner);
+        return courier != null && courier.isOrderedToSit() && !courier.isDelivering() && owner.getInventory().countItem(Items.BUNDLE) == 1
                 && ItemStack.matches(owner.getMainHandItem(), parcel());
     }
 
@@ -142,13 +155,18 @@ final class DeliveryPlaytest {
         t.client("Right-click the courier", mc -> KeyMapping.click(mc.options.keyUse.getKey()));
     }
 
-    private static void chooseHome(Playtest t) {
+    private static void openChooser(Playtest t) {
         t.awaitClient("Open the destination chooser with the parcel still in hand", mc ->
-                mc.screen instanceof MultiButtonDialogScreen && ItemStack.matches(mc.player.getMainHandItem(), parcel()));
+                mc.screen instanceof DeliveryScreen && mc.screen.getTitle().equals(Component.translatable("frenchie.florafauna.delivery.title"))
+                        && ItemStack.matches(mc.player.getMainHandItem(), parcel()));
+    }
+
+    private static void chooseHome(Playtest t) {
         press(t, "send_home", BED.toShortString());
         t.awaitClient("Preview the assigned bed's coordinates before giving up the bundle", mc ->
-                mc.screen instanceof SimpleDialogScreen<?> && ItemStack.matches(mc.player.getMainHandItem(), parcel())
-                        && widgets(mc.screen).anyMatch(w -> w.getMessage().getString().contains(BED.toShortString())));
+                mc.screen instanceof DeliveryScreen && mc.screen.getTitle().equals(Component.translatable("frenchie.florafauna.delivery.confirm_title"))
+                        && ItemStack.matches(mc.player.getMainHandItem(), parcel())
+                        && mc.screen.getNarrationMessage().getString().contains(BED.toShortString()));
     }
 
     private static void press(Playtest t, String action, Object... args) {

@@ -7,15 +7,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.dialog.*;
-import net.minecraft.server.dialog.action.StaticAction;
-import net.minecraft.server.dialog.body.PlainMessage;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -25,7 +23,6 @@ import static net.j40climb.florafauna.common.entity.frenchie.DeliveryGoal.tell;
 
 /** Server-owned preview. Only the live dog's owner can confirm the held bundle and offered address. */
 public final class DeliveryDialog {
-    private static final int PLAYER_RANGE = 32;
     private final FrenchieEntity dog;
     private final InteractionHand hand;
     private final ItemStack previewStack;
@@ -43,48 +40,29 @@ public final class DeliveryDialog {
         var origin = dog.blockPosition();
         nearbyBed = BlockPos.findClosestMatch(origin, 8, 8, pos -> origin.distSqr(pos) <= 64
                 && DeliveryGoal.isBedHead(level, pos)).map(BlockPos::immutable).orElse(null);
-        List<ActionButton> buttons = new ArrayList<>();
+        List<DeliveryPopupPayload.Choice> choices = new ArrayList<>();
         var home = dog.delivery().home();
-        if (home != null && home.dimension().equals(level.dimension())) {
+        if (home != null && level.getServer().getLevel(home.dimension()) != null) {
             String address = home.pos().toShortString();
+            if (!home.dimension().equals(level.dimension())) address += " (" + home.dimension().identifier() + ")";
             destinations.put("home", label("home", address));
-            buttons.add(button(label("send_home", address), "choose home"));
+            choices.add(new DeliveryPopupPayload.Choice("home", label("send_home", address)));
         }
-        level.players().stream().filter(p -> eligiblePlayer(owner, p))
-                .sorted(Comparator.comparingDouble(p -> dog.distanceToSqr(p)))
+        level.getServer().getPlayerList().getPlayers().stream().filter(p -> eligiblePlayer(owner, p))
+                .sorted(Comparator.comparing(p -> p.getName().getString(), String.CASE_INSENSITIVE_ORDER))
                 .forEach(p -> {
                     String id = p.getUUID().toString();
                     destinations.put(id, p.getName());
-                    buttons.add(button(label("send_player", p.getName()), "choose " + id));
+                    choices.add(new DeliveryPopupPayload.Choice(id, label("send_player", p.getName())));
                 });
         if (nearbyBed != null && (home == null || !home.dimension().equals(level.dimension()) || !nearbyBed.equals(home.pos()))) {
-            buttons.add(button(label("assign", nearbyBed.toShortString()), "bed"));
+            choices.add(new DeliveryPopupPayload.Choice("bed", label("assign", nearbyBed.toShortString())));
         }
-        var info = common(label("title"), label("instructions"));
-        if (buttons.isEmpty()) {
-            owner.openDialog(Holder.direct(new NoticeDialog(info, closeButton())));
-        } else {
-            owner.openDialog(Holder.direct(new MultiActionDialog(info, buttons, Optional.of(closeButton()), 1)));
-        }
+        PacketDistributor.sendToPlayer(owner, new DeliveryPopupPayload(dog.getUUID(), choices, Optional.empty()));
     }
 
-    private static CommonDialogData common(Component title, Component body) {
-        return new CommonDialogData(title, Optional.empty(), true, false, DialogAction.CLOSE,
-                List.of(new PlainMessage(body, 290)), List.of());
-    }
-
-    private ActionButton button(Component text, String action) {
-        return new ActionButton(new CommonButtonData(text, 235),
-                Optional.of(new StaticAction(new ClickEvent.RunCommand("/frenchiedelivery " + dog.getStringUUID() + " " + action))));
-    }
-
-    private ActionButton closeButton() {
-        return button(Component.translatable("gui.cancel"), "dismiss");
-    }
-
-    private boolean eligiblePlayer(ServerPlayer owner, ServerPlayer candidate) {
-        return candidate != owner && candidate.isAlive() && !candidate.isSpectator()
-                && dog.distanceToSqr(candidate) <= PLAYER_RANGE * PLAYER_RANGE;
+    private static boolean eligiblePlayer(ServerPlayer owner, ServerPlayer candidate) {
+        return candidate != owner && candidate.isAlive() && !candidate.isSpectator();
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -130,26 +108,30 @@ public final class DeliveryDialog {
         Component name = destinations.get(destination);
         if (name == null) return false;
         ServerPlayer recipient = null;
+        ServerLevel targetLevel;
+        Vec3 target;
         if (destination.equals("home")) {
             var home = dog.delivery().home();
-            if (home == null || !home.dimension().equals(owner.level().dimension())
-                    || (owner.level().hasChunkAt(home.pos()) && !DeliveryGoal.isBedHead(owner.level(), home.pos()))) {
+            targetLevel = home == null ? null : owner.level().getServer().getLevel(home.dimension());
+            if (targetLevel == null || (targetLevel.hasChunkAt(home.pos()) && !DeliveryGoal.isBedHead(targetLevel, home.pos()))) {
                 tell(owner, "reassign");
                 return true;
             }
+            target = home.pos().getBottomCenter();
         } else {
-            if (!(owner.level().getPlayerByUUID(UUID.fromString(destination)) instanceof ServerPlayer player)
-                    || !eligiblePlayer(owner, player)) {
-                tell(owner, "out_of_range");
+            recipient = owner.level().getServer().getPlayerList().getPlayer(UUID.fromString(destination));
+            if (recipient == null || !eligiblePlayer(owner, recipient)) {
+                tell(owner, "recipient_unavailable");
                 return true;
             }
-            recipient = player;
+            targetLevel = recipient.level();
+            target = recipient.position();
         }
         if (action.equals("choose")) {
             selected = destination;
-            owner.openDialog(Holder.direct(new ConfirmationDialog(common(label("confirm_title"),
-                    label(recipient == null ? "preview_bed" : "preview_player", name)),
-                    button(label("confirm"), "send " + destination), closeButton())));
+            var preview = new DeliveryPopupPayload.Preview(new DeliveryPopupPayload.Choice(destination, name),
+                    DeliveryGoal.travelSeconds(owner.level(), dog.position(), targetLevel, target));
+            PacketDistributor.sendToPlayer(owner, new DeliveryPopupPayload(dog.getUUID(), List.of(), Optional.of(preview)));
         } else {
             if (!destination.equals(selected)) return false;
             dog.deliveryDialog = null;

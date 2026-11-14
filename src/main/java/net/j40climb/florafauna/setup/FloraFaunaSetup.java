@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.setup;
 
 import net.j40climb.florafauna.common.entity.frenchie.DeliveryDialog;
+import net.j40climb.florafauna.common.entity.frenchie.DeliveryPopupPayload;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.FloraFaunaCommands;
@@ -119,6 +120,7 @@ public class FloraFaunaSetup {
         // Server to client
         registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);
         registrar.playToClient(OpenCocoonScreenPayload.TYPE, OpenCocoonScreenPayload.STREAM_CODEC);
+        registrar.playToClient(DeliveryPopupPayload.TYPE, DeliveryPopupPayload.STREAM_CODEC);
         registrar.playToClient(AnchorFillStatePayload.TYPE, AnchorFillStatePayload.STREAM_CODEC, AnchorFillStatePayload::handleClient);
     }
 
