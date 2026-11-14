@@ -1,61 +1,78 @@
 package net.j40climb.florafauna.common.item.abilities.multiblock;
 
+import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-/**
- * Handles client-side visual feedback for multi-block mining (crumbling animations).
- * Maintains state for tracking mining progress across game ticks.
- */
+import java.util.List;
+
+/** The local player's additional block cracks, cleared using the positions actually drawn. */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public final class MultiBlockVisualFeedback {
-    private static BlockPos destroyPos = BlockPos.ZERO;
-    private static int gameTicksMining = 0;
+    private static BlockPos target = BlockPos.ZERO;
+    private static Direction hitFace = Direction.UP;
+    private static int ticksMining;
+    private static List<BlockPos> cracks = List.of();
 
-    private MultiBlockVisualFeedback() {} // Utility class
+    private MultiBlockVisualFeedback() {}
 
-    /**
-     * Processes left-click block events to manage visual feedback for multi-block mining.
-     */
-    public static void processLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+    @SubscribeEvent
+    public static void onLeftClick(PlayerInteractEvent.LeftClickBlock event) {
         Player player = event.getEntity();
-        Level level = player.level();
-        BlockPos blockPos = event.getPos();
-        BlockState blockState = level.getBlockState(blockPos);
-
+        if (!player.level().isClientSide()) return;
         switch (event.getAction()) {
+            case STOP, ABORT -> clear(player);
             case START -> {
-                if (level.isClientSide()) {
-                    gameTicksMining = 0;
-                    destroyPos = blockPos;
-                }
+                clear(player);
+                target = event.getPos().immutable();
+                hitFace = event.getFace();
+                ticksMining = 0;
             }
-            case STOP, ABORT -> MultiBlockBreaker.cancelDestroyProgress(blockPos, player);
             case CLIENT_HOLD -> {
-                if (blockPos.equals(destroyPos)) {
-                    gameTicksMining++;
-                } else {
-                    gameTicksMining = 0;
-                    destroyPos = blockPos;
+                if (!event.getPos().equals(target) || !event.getItemStack().has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
+                    clear(player);
+                    return;
                 }
-                MultiBlockBreaker.updateDestroyProgress(level, blockState, blockPos, player);
+                if (ticksMining == 0) {
+                    cracks = MultiBlockPatterns.plan(player, event.getItemStack(), target, hitFace).blocks().stream()
+                            .filter(pos -> !pos.equals(target)).toList();
+                }
+                ticksMining++;
+                var state = player.level().getBlockState(target);
+                float progress = state.getDestroyProgress(player, player.level(), target) * ticksMining;
+                draw(player, Math.min(9, (int) (progress * 10)));
             }
         }
     }
 
-    /**
-     * Gets the current number of game ticks spent mining the current block.
-     */
-    public static int getGameTicksMining() {
-        return gameTicksMining;
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
+        if (cracks.isEmpty()) return;
+        var client = Minecraft.getInstance();
+        if (client.player == null || client.gameMode == null) {
+            cracks = List.of();
+        } else if (!client.gameMode.isDestroying()) {
+            clear(client.player);
+        }
     }
 
-    /**
-     * Gets the current block position being destroyed.
-     */
-    public static BlockPos getDestroyPos() {
-        return destroyPos;
+    private static void clear(Player player) {
+        draw(player, -1);
+        cracks = List.of();
+        ticksMining = 0;
+    }
+
+    private static void draw(Player player, int stage) {
+        for (BlockPos pos : cracks) {
+            player.level().destroyBlockProgress(player.getId() + pos.hashCode(), pos, stage);
+        }
     }
 }
