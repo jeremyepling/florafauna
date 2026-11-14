@@ -13,7 +13,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,9 +20,7 @@ import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -33,11 +30,12 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.BlockHitResult;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import static net.j40climb.florafauna.playtest.CourierParcel.parcel;
 
 final class DeliveryPlaytest {
     static final UUID DOG_ID = UUID.fromString("268d4bee-c265-442c-b07b-562099a21a79");
@@ -167,13 +165,6 @@ final class DeliveryPlaytest {
 
     private static FrenchieEntity dog(ServerPlayer owner) {
         return (FrenchieEntity) owner.level().getEntity(DOG_ID);
-    }
-
-    static ItemStack parcel() {
-        var stack = new ItemStack(Items.BUNDLE);
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Violet's delivery"));
-        stack.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(List.of(new ItemStackTemplate(Items.AMETHYST_SHARD, 7))));
-        return stack;
     }
 
     private static boolean hasReturnedParcel(ServerPlayer owner) {

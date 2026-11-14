@@ -86,12 +86,12 @@ public final class DeliveryMultiplayerServer {
                 require(!owner.getUUID().equals(recipient.getUUID()), "Distinct client identities required");
                 level.getServer().setDifficulty(Difficulty.PEACEFUL, true);
                 level.getServer().clockManager().moveToTimeMarker(level.dimensionType().defaultClock().orElseThrow(), ClockTimeMarkers.NOON);
-                for (var point : BlockPos.betweenClosed(START.offset(-4,-1,-4), END.offset(4,-1,4))) {
+                for (var point : BlockPos.betweenClosed(START.offset(-4, -1, -4), END.offset(4, -1, 4))) {
                     level.setBlockAndUpdate(point, Blocks.SMOOTH_STONE.defaultBlockState());
                 }
                 prepare(owner, START.south(2));
                 prepare(recipient, END);
-                owner.setItemInHand(InteractionHand.MAIN_HAND, DeliveryPlaytest.parcel());
+                owner.setItemInHand(InteractionHand.MAIN_HAND, CourierParcel.parcel());
                 dog = FloraFaunaRegistry.FRENCHIE.get().create(level, EntitySpawnReason.COMMAND);
                 require(dog != null, "Frenchie creation failed");
                 dog.setUUID(DOG);
@@ -126,14 +126,14 @@ public final class DeliveryMultiplayerServer {
                     return;
                 }
                 if (recipient.getInventory().countItem(Items.BUNDLE) == 0) return;
-                require(ItemStack.matches(recipient.getMainHandItem(), DeliveryPlaytest.parcel()), "The recipient's parcel changed");
+                require(ItemStack.matches(recipient.getMainHandItem(), CourierParcel.parcel()), "The recipient's parcel changed");
                 step = Step.RETURN;
             }
             case RETURN -> {
                 if (dog == null || dog.isDelivering() || dog.distanceToSqr(owner) > 36) return;
                 require(dog.isOwnedBy(owner) && owner.getInventory().isEmpty(), "The courier or sender's inventory changed");
                 require(recipient.getInventory().countItem(Items.BUNDLE) == 1
-                        && ItemStack.matches(recipient.getMainHandItem(), DeliveryPlaytest.parcel()), "Handoff lost or duplicated the bundle");
+                        && ItemStack.matches(recipient.getMainHandItem(), CourierParcel.parcel()), "Handoff lost or duplicated the bundle");
                 require(Files.isRegularFile(root.resolve("Visitor/screenshots/courier-arrival.png")), "Missing recipient's screenshot");
                 finish(owner, recipient, "PASS");
             }
@@ -144,7 +144,7 @@ public final class DeliveryMultiplayerServer {
         player.setGameMode(GameType.SURVIVAL);
         player.getInventory().clearContent();
         player.getInventory().setSelectedSlot(0);
-        player.teleportTo(player.level(), pos.getX()+0.5, pos.getY(), pos.getZ()+0.5, Set.of(), 180, 15, true);
+        player.teleportTo(player.level(), pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, Set.of(), 180, 15, true);
     }
 
     private static void finish(ServerPlayer owner, ServerPlayer recipient, String result) throws IOException {
