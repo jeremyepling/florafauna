@@ -6,6 +6,7 @@ import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.item.abilities.multiblock.LavaExposure;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -26,6 +27,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.AABB;
@@ -39,6 +41,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -56,9 +59,41 @@ final class HammerMiningGameTests {
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_material_pairs", MINE, 100, HammerMiningGameTests::veinMaterialPairs);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_exact_and_boundaries", MINE, 100, HammerMiningGameTests::veinBoundaries);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_tunnel_gaps", MINE, 100, HammerMiningGameTests::gaps);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_lava_exposure", MINE, 100, HammerMiningGameTests::lavaExposure);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_dimension_floor", MINE, 100, HammerMiningGameTests::buildFloor);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_precision_is_per_player", MINE, 100, HammerMiningGameTests::precision);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_permission_and_tool_rules", MINE, 100, HammerMiningGameTests::eligibility);
+    }
+
+    private static void lavaExposure(GameTestHelper h) {
+        var player = player(h, MiningShape.BORE);
+        var center = h.absolutePos(new BlockPos(6, 12, 10));
+        fill(player, center.offset(-1, -2, -2), center.offset(9, 2, 2), Blocks.STONE);
+        set(player, center.below(), Blocks.LAVA);
+        set(player, center.east(3).south(), Blocks.LAVA);
+        player.level().setBlock(center.east(5).above(), Blocks.LAVA.defaultBlockState().setValue(LiquidBlock.LEVEL, 3), Block.UPDATE_CLIENTS);
+        set(player, center.east(7), Blocks.LAVA);
+        set(player, center.east(4).north().above(), Blocks.LAVA); // Only touches an edge.
+        set(player, center.east(4).south(), Blocks.WATER);
+        set(player, center.east(), Blocks.AIR);
+        set(player, center.east().above(), Blocks.LAVA);
+        set(player, center.east(2), Blocks.BEDROCK);
+        set(player, center.east(2).north(), Blocks.LAVA);
+
+        var expected = Set.of(new LavaExposure(center, Direction.DOWN), new LavaExposure(center.east(3), Direction.SOUTH),
+                new LavaExposure(center.east(5), Direction.UP), new LavaExposure(center.east(6), Direction.EAST));
+        var plan = MultiBlockPatterns.plan(player, player.getMainHandItem(), center, Direction.WEST);
+        h.assertTrue(Set.copyOf(LavaExposure.find(player.level(), plan)).equals(expected), "Wrong exposed faces along the bore");
+        player.setData(FloraFaunaRegistry.PRECISION_MINING, true);
+        var precise = MultiBlockPatterns.plan(player, player.getMainHandItem(), center, Direction.WEST);
+        h.assertTrue(LavaExposure.find(player.level(), precise).equals(List.of(new LavaExposure(center, Direction.DOWN))),
+                "Precision preview marked lava outside the single block");
+        check(h, center.east(6), Blocks.STONE, "Preview changed the wall");
+        player.setData(FloraFaunaRegistry.PRECISION_MINING, false);
+        swing(player, center, Direction.WEST, Direction.EAST);
+        check(h, center.east(6), Blocks.AIR, "Lava warning blocked the cut");
+        check(h, center.east(7), Blocks.LAVA, "Lava warning consumed lava");
+        h.succeed();
     }
 
     private static void precision(GameTestHelper h) {

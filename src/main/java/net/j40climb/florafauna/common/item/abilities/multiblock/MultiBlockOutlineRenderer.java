@@ -12,9 +12,11 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,24 +25,27 @@ import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** Draws the additional outlines for a multi-block mining tool. */
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class MultiBlockOutlineRenderer {
-    // Planned treads can be inside the rock being excavated or across open air.
-    private static final RenderPipeline PLACEMENT_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-            .withLocation(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "pipeline/hammer_placement"))
+    // Show planned placements and newly exposed lava even inside the unbroken wall.
+    private static final RenderPipeline PREVIEW_PIPELINE = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "pipeline/hammer_preview"))
             .withDepthStencilState(Optional.empty())
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .build();
-    private static final RenderType PLACEMENT_LINES = RenderType.create("florafauna_hammer_placement",
-            RenderSetup.builder(PLACEMENT_PIPELINE).createRenderSetup());
+    private static final RenderType PREVIEW_LINES = RenderType.create("florafauna_hammer_preview",
+            RenderSetup.builder(PREVIEW_PIPELINE).createRenderSetup());
     private static final int PLACEMENT_COLOR = 0xD92DE7B1;
+    private static final int LAVA_COLOR = 0xFFFF780D;
+    private static final Map<Direction, VoxelShape> FACE_OUTLINES = Shapes.rotateAll(Shapes.box(0, 0, 0, 1, 1, 0.005));
 
     @SubscribeEvent
     public static void registerPipeline(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(PLACEMENT_PIPELINE);
+        event.registerPipeline(PREVIEW_PIPELINE);
     }
 
     @SubscribeEvent
@@ -63,7 +68,8 @@ public class MultiBlockOutlineRenderer {
                 .map(pos -> plan.stairState().getShape(event.getLevel(), pos)
                         .move(pos.getX(), pos.getY(), pos.getZ()))
                 .toList();
-        if (outlines.isEmpty() && placements.isEmpty()) {
+        List<LavaExposure> lava = LavaExposure.find(event.getLevel(), plan);
+        if (outlines.isEmpty() && placements.isEmpty() && lava.isEmpty()) {
             return;
         }
 
@@ -74,10 +80,15 @@ public class MultiBlockOutlineRenderer {
                 for (VoxelShape outline : outlines) {
                     ShapeRenderer.renderShape(poseStack, vertices, outline, -camera.x, -camera.y, -camera.z, 0x66000000, 2.0F);
                 }
-                if (!placements.isEmpty()) {
-                    var placementVertices = buffers.getBuffer(PLACEMENT_LINES);
+                if (!placements.isEmpty() || !lava.isEmpty()) {
+                    var previewVertices = buffers.getBuffer(PREVIEW_LINES);
                     for (VoxelShape stair : placements) {
-                        ShapeRenderer.renderShape(poseStack, placementVertices, stair, -camera.x, -camera.y, -camera.z, PLACEMENT_COLOR, 2.5F);
+                        ShapeRenderer.renderShape(poseStack, previewVertices, stair, -camera.x, -camera.y, -camera.z, PLACEMENT_COLOR, 2.5F);
+                    }
+                    for (LavaExposure exposure : lava) {
+                        BlockPos pos = exposure.pos();
+                        ShapeRenderer.renderShape(poseStack, previewVertices, FACE_OUTLINES.get(exposure.face()),
+                                pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z, LAVA_COLOR, 3.0F);
                     }
                 }
             }
