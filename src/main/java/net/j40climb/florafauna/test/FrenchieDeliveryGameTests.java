@@ -244,24 +244,28 @@ final class FrenchieDeliveryGameTests {
         BlockPos start = dog.blockPosition();
         // Keep both the bed and its landing floor in a previously untouched chunk.
         BlockPos bed = ChunkPos.containing(start.east(640)).getMiddleBlockPosition(start.getY() + 12);
+        var chunk = ChunkPos.containing(bed);
+        level.getChunkAt(bed);
         platform(h, bed);
         var bedState = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
         level.setBlock(bed.west(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
         level.setBlock(bed, bedState.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
         owner.getInventory().clearContent();
         owner.setItemInHand(HAND, parcel());
+        owner.setGameMode(GameType.SURVIVAL);
         dog.tame(owner);
         dog.sitDown();
-        dog.snapTo(bed.north(), 0, 0);
-        owner.snapTo(dog.position().add(1, 0, 0), 0, 0);
-        click(owner, dog);
-        order(owner, dog, "bed");
-        dog.snapTo(start, 0, 0);
+        // The dog already has a home in this chunk from an earlier visit.
+        var assigned = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        dog.saveWithoutId(assigned);
+        assigned.store("FrenchieHomeBed", GlobalPos.CODEC, GlobalPos.of(level.dimension(), bed));
+        dog.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), assigned.buildResult()));
         owner.snapTo(dog.position().add(0, 0, -1), 0, 0);
         h.startSequence()
                 .thenWaitUntil(() -> h.assertTrue(!level.hasChunkAt(bed), "Bed chunk never unloaded"))
                 .thenExecute(() -> {
                     click(owner, dog);
+                    h.assertTrue(owner.getMainHandItem().is(Items.BUNDLE), "Preview took the held bundle");
                     order(owner, dog, "choose home");
                     order(owner, dog, "send home");
                     h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
@@ -272,7 +276,7 @@ final class FrenchieDeliveryGameTests {
                         "The dog or destination chunk was simulated during long-distance transit"))
                 .thenExecuteAfter(800, () -> {
                     // The owner visits after arrival, when the bed and waiting courier may have unloaded again.
-                    level.getChunkSource().addTicketWithRadius(TicketType.PLAYER_SPAWN, ChunkPos.containing(bed), 2);
+                    level.getChunkSource().addTicketWithRadius(TicketType.PLAYER_SPAWN, chunk, 2);
                     level.getChunkAt(bed);
                     owner.snapTo(bed.north(2), 0, 0);
                 })
@@ -287,7 +291,7 @@ final class FrenchieDeliveryGameTests {
                                     && ItemStack.matches(parcel(), owner.getMainHandItem())
                                     && owner.getInventory().countItem(Items.BUNDLE) == 1,
                             "The distant-bed delivery should return the original parcel once");
-                    level.getChunkSource().removeTicketWithRadius(TicketType.PLAYER_SPAWN, ChunkPos.containing(bed), 2);
+                    level.getChunkSource().removeTicketWithRadius(TicketType.PLAYER_SPAWN, chunk, 2);
                     disconnect(owner);
                 }).thenSucceed();
     }
