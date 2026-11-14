@@ -209,7 +209,7 @@ final class CompanionIconsPlaytest {
         if (image == null) return false;
         int width = mc.getWindow().getGuiScaledWidth(), height = mc.getWindow().getGuiScaledHeight();
         int green = 0;
-        for (int y = height - 66; y < height - 50; y++) {
+        for (int y = height - 51; y < height - 35; y++) {
             for (int x = width / 2 - 8; x < width / 2 + 8; x++) {
                 int rgb = image.getRGB(x * image.getWidth() / width, y * image.getHeight() / height);
                 int r = rgb >> 16 & 255, g = rgb >> 8 & 255, b = rgb & 255;
