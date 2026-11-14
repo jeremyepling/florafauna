@@ -18,6 +18,7 @@ public final class DeathTrackingGoal extends Goal {
     private int nextPathTick;
     private int stalledTicks;
     private double closestDistance = Double.POSITIVE_INFINITY;
+    private boolean waiting;
 
     public DeathTrackingGoal(FrenchieEntity dog) {
         this.dog = dog;
@@ -53,6 +54,7 @@ public final class DeathTrackingGoal extends Goal {
         nextPathTick = 0;
         stalledTicks = 0;
         closestDistance = Double.POSITIVE_INFINITY;
+        waiting = false;
     }
 
     @Override
@@ -78,7 +80,7 @@ public final class DeathTrackingGoal extends Goal {
             cancel();
             return;
         }
-        if (!(dog.getOwner() instanceof ServerPlayer owner) || !owner.isAlive() || dog.distanceToSqr(owner) > 100) {
+        if (!(dog.getOwner() instanceof ServerPlayer owner) || !owner.isAlive()) {
             dog.getNavigation().stop();
             nextPathTick = 0;
             return;
@@ -87,6 +89,16 @@ public final class DeathTrackingGoal extends Goal {
         Vec3 destination = Vec3.atBottomCenterOf(target.pos());
         Vec3 remaining = destination.subtract(dog.position());
         double distance = remaining.length();
+        if (dog.distanceToSqr(owner) > (waiting ? 49 : 100)
+                || distance <= 2.5 && owner.position().distanceToSqr(destination) > 25) {
+            if (!waiting) tell(owner, "wait");
+            waiting = true;
+            dog.getNavigation().stop();
+            dog.getLookControl().setLookAt(owner);
+            nextPathTick = 0;
+            return;
+        }
+        waiting = false;
         if (distance <= 2.5) {
             dog.getLookControl().setLookAt(destination.x, destination.y, destination.z);
             tell(owner, "arrived");
