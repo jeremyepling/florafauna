@@ -3,7 +3,6 @@ package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieVariant;
-import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -11,10 +10,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.player.Player;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.minecraft.util.context.ContextKey;
 
 /**
  * Renders the Frenchie frontpack on players who are carrying a Frenchie.
@@ -23,6 +19,9 @@ import java.util.Map;
  * The texture for this model is the same as the frenchie entity
  */
 public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
+
+    static final ContextKey<FrenchieVariant> CARRIED_COAT = new ContextKey<>(
+            Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "frontpack_coat"));
 
     private final FrontpackModel frontpackModel;
 
@@ -48,24 +47,10 @@ public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
     public void submit(PoseStack poseStack, SubmitNodeCollector nodeCollector,
                       int packedLight, AvatarRenderState renderState, float yRot, float xRot) {
 
-        // Get the cached frontpack state for this player (using entity ID)
-        FrontpackRenderStateManager.FrontpackRenderState frontpackState =
-                FrontpackRenderStateManager.getState(renderState.id);
+        FrenchieVariant coat = renderState.getRenderData(CARRIED_COAT);
+        if (coat == null || renderState.isInvisible) return;
 
-        // Don't render if player isn't carrying a Frenchie
-        if (!frontpackState.hasFrontpack) {
-            return;
-        }
-
-        // Don't render on invisible players
-        if (renderState.isInvisible) {
-            return;
-        }
-
-        // Select the appropriate texture based on the Frenchie variant
-        Identifier texture = frontpackState.variant == FrenchieVariant.BRINDLE
-                ? BRINDLE_TEXTURE
-                : FAWN_TEXTURE; // Default to fawn for any other variant
+        Identifier texture = coat == FrenchieVariant.BRINDLE ? BRINDLE_TEXTURE : FAWN_TEXTURE;
 
         // Position the frontpack model on the player's front
         poseStack.pushPose();
@@ -91,53 +76,4 @@ public class FrontpackLayer extends RenderLayer<AvatarRenderState, PlayerModel> 
         poseStack.popPose();
     }
 
-    /**
-     * Client-side manager for caching frontpack render state data extracted from player attachments.
-     * This bridges the gap between the attachment system and the render layer,
-     * since AvatarRenderState doesn't contain a direct player reference.
-     */
-    public static class FrontpackRenderStateManager {
-    
-        // Use entity ID as key since AvatarRenderState has 'id' field
-        private static final Map<Integer, FrontpackRenderState> FRONTPACK_STATES = new HashMap<>();
-    
-        /**
-         * Extracts frontpack data from a player's FrenchFrontpackData attachment
-         * and caches it for rendering.
-         */
-        public static void extractFromPlayer(Player player) {
-            FrontpackData data = player.getData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
-    
-            FrontpackRenderState state = new FrontpackRenderState();
-            state.hasFrontpack = data.hasCarriedFrenchie();
-    
-            if (state.hasFrontpack && data.frenchieNBT() != null) {
-                // Extract variant ID from NBT (matches how FrenchieEntity stores it)
-                // getInt returns Optional<Integer> in newer versions
-                int variantId = data.frenchieNBT().getInt("Variant").orElse(0);
-                state.variant = FrenchieVariant.byId(variantId);
-            } else {
-                // Default to FAWN if no valid data
-                state.variant = FrenchieVariant.FAWN;
-            }
-    
-            FRONTPACK_STATES.put(player.getId(), state);
-        }
-    
-        /**
-         * Gets the cached frontpack render state for a player by entity ID.
-         * Returns a default empty state if no data is cached.
-         */
-        public static FrontpackRenderState getState(int entityId) {
-            return FRONTPACK_STATES.getOrDefault(entityId, new FrontpackRenderState());
-        }
-    
-        /**
-         * Simple data holder for frontpack render state.
-         */
-        public static class FrontpackRenderState {
-            public boolean hasFrontpack = false;
-            public FrenchieVariant variant = FrenchieVariant.FAWN;
-        }
-    }
 }

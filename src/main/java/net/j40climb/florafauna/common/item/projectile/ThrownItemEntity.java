@@ -5,9 +5,12 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -16,6 +19,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.GameMasterBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
@@ -55,19 +61,20 @@ public class ThrownItemEntity extends AbstractArrow {
     }
 
     public ThrownItemEntity(Level level, LivingEntity shooter, ItemStack thrownItem, ThrowableAbilityData abilityData) {
-        super(FloraFaunaRegistry.THROWN_ITEM.get(), shooter, level, thrownItem.copy(), null);
+        super(FloraFaunaRegistry.THROWN_ITEM.get(), shooter, level, thrownItem.copyWithCount(1), null);
         this.startPos = shooter.position();
 
         // Set entity data from ability config
-        this.entityData.set(DATA_ITEM, thrownItem.copy());
+        this.entityData.set(DATA_ITEM, getPickupItem());
         this.entityData.set(DATA_DAMAGE, abilityData.damage());
         this.entityData.set(DATA_MAX_RANGE, abilityData.maxRange());
         this.entityData.set(DATA_BREAK_BLOCKS, abilityData.breakBlocks());
         this.entityData.set(DATA_AUTO_RETURN, abilityData.autoReturn());
         this.entityData.set(DATA_RETURN_SPEED, abilityData.returnSpeed());
 
-        // Allow pickup when not auto-returning
-        this.pickup = abilityData.autoReturn() ? Pickup.DISALLOWED : Pickup.ALLOWED;
+        // Vanilla persists the pickup policy, including creative throws that never consumed an item.
+        this.pickup = shooter instanceof Player player && player.hasInfiniteMaterials()
+                ? Pickup.CREATIVE_ONLY : Pickup.ALLOWED;
     }
 
     @Override
@@ -98,38 +105,32 @@ public class ThrownItemEntity extends AbstractArrow {
             returning = true;
         }
 
-        // Handle return behavior (similar to ThrownTrident loyalty)
-        if (autoReturn && (this.dealtDamage || this.isNoPhysics()) && owner != null) {
+        if (autoReturn && (returning || dealtDamage || isNoPhysics())) {
             if (!isAcceptableReturnOwner(owner)) {
-                // Owner invalid - drop item if allowed pickup, then discard
-                if (this.level() instanceof ServerLevel serverLevel && this.pickup == Pickup.ALLOWED) {
-                    this.spawnAtLocation(serverLevel, this.getThrownItem(), 0.1f);
+                if (level() instanceof ServerLevel serverLevel) {
+                    if (pickup != Pickup.CREATIVE_ONLY) spawnAtLocation(serverLevel, getThrownItem());
+                    discard();
                 }
-                this.discard();
-            } else {
-                // Return to owner
-                if (!(owner instanceof Player) && this.position().distanceTo(owner.getEyePosition()) < owner.getBbWidth() + 1.0) {
-                    this.discard();
-                    return;
+                return;
+            }
+
+            setNoPhysics(true);
+            Vec3 toOwner = owner.getEyePosition().subtract(position());
+            setPosRaw(getX(), getY() + toOwner.y * 0.015 * returnSpeed, getZ());
+            setDeltaMovement(getDeltaMovement().scale(0.95).add(toOwner.normalize().scale(0.05 * returnSpeed)));
+            if (clientSideReturnTickCount++ == 0) {
+                playSound(SoundEvents.TRIDENT_RETURN, 10.0F, 1.0F);
+            }
+            if (distanceTo(owner) < 1.5 && level() instanceof ServerLevel serverLevel) {
+                if (pickup != Pickup.CREATIVE_ONLY) {
+                    if (owner instanceof Player player) {
+                        player.getInventory().placeItemBackInInventory(getThrownItem().copy(), Prediction.SERVER_ONLY);
+                    } else {
+                        spawnAtLocation(serverLevel, getThrownItem());
+                    }
                 }
-
-                this.setNoPhysics(true);
-                Vec3 toOwner = owner.getEyePosition().subtract(this.position());
-                this.setPosRaw(this.getX(), this.getY() + toOwner.y * 0.015 * returnSpeed, this.getZ());
-
-                double accelerationFactor = 0.05 * returnSpeed;
-                this.setDeltaMovement(this.getDeltaMovement().scale(0.95).add(toOwner.normalize().scale(accelerationFactor)));
-
-                if (this.clientSideReturnTickCount == 0) {
-                    this.playSound(SoundEvents.TRIDENT_RETURN, 10.0f, 1.0f);
-                }
-                this.clientSideReturnTickCount++;
-
-                // Check if reached owner
-                if (this.distanceTo(owner) < 1.5) {
-                    returnToOwner(owner);
-                    return;
-                }
+                discard();
+                return;
             }
         }
 
@@ -138,24 +139,12 @@ public class ThrownItemEntity extends AbstractArrow {
 
     private boolean isAcceptableReturnOwner(@Nullable Entity owner) {
         if (owner == null || !owner.isAlive()) return false;
-        if (owner instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+        if (owner instanceof ServerPlayer serverPlayer) {
             return !serverPlayer.isSpectator();
         }
         return true;
     }
 
-    private void returnToOwner(Entity owner) {
-        if (owner instanceof Player player) {
-            // Only add item back if not in creative mode (creative doesn't consume on throw)
-            if (!player.getAbilities().instabuild) {
-                ItemStack item = getThrownItem();
-                if (!item.isEmpty()) {
-                    player.getInventory().add(item.copy());
-                }
-            }
-        }
-        this.discard();
-    }
 
     @Override
     protected @Nullable EntityHitResult findHitEntity(Vec3 startVec, Vec3 endVec) {
@@ -193,10 +182,8 @@ public class ThrownItemEntity extends AbstractArrow {
         boolean breakBlocks = getBreakBlocks();
         boolean autoReturn = getAutoReturn();
 
-        if (breakBlocks && this.level() instanceof ServerLevel serverLevel) {
-            // Break the block and continue
-            serverLevel.destroyBlock(result.getBlockPos(), true, this.getOwner());
-            // Don't call super - continue flying
+        if (breakBlocks && level() instanceof ServerLevel level && getOwner() instanceof ServerPlayer owner
+                && breakImpactBlock(level, owner, result.getBlockPos())) {
             return;
         }
 
@@ -211,36 +198,43 @@ public class ThrownItemEntity extends AbstractArrow {
         this.playSound(getDefaultHitGroundSoundEvent(), 1.0f, 1.2f / (this.random.nextFloat() * 0.2f + 0.9f));
     }
 
-    @Override
-    protected boolean tryPickup(Player player) {
-        // Creative mode doesn't need to pick up (item was never consumed)
-        if (player.getAbilities().instabuild) {
-            this.discard();
-            return true;
+    private boolean breakImpactBlock(ServerLevel level, ServerPlayer owner, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        ItemStack tool = getThrownItem();
+        if (state.isAir() || state.getDestroySpeed(level, pos) < 0 || !level.mayInteract(owner, pos)
+                || owner.blockActionRestricted(level, pos, owner.gameMode.getGameModeForPlayer())
+                || (state.getBlock() instanceof GameMasterBlock && !owner.canUseGameMasterBlocks())
+                || !tool.canDestroyBlock(state, level, pos, owner)
+                || CommonHooks.fireBlockBreak(level, owner.gameMode.getGameModeForPlayer(), owner, pos, state).isCanceled()) {
+            return false;
         }
-        // When not auto-returning, allow pickup like normal arrow
-        if (!getAutoReturn()) {
-            return super.tryPickup(player) || (this.isNoPhysics() && this.ownedBy(player) && player.getInventory().add(getThrownItem()));
-        }
-        // Auto-return items are picked up through the return mechanism
-        return this.isNoPhysics() && this.ownedBy(player) && player.getInventory().add(getThrownItem());
+        var block = state.getBlock();
+        var blockEntity = level.getBlockEntity(pos);
+        boolean harvest = !owner.preventsBlockDrops()
+                && (!state.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(state));
+        BlockState adjusted = block.playerWillDestroy(level, pos, state, owner);
+        if (!adjusted.onDestroyedByPlayer(level, pos, owner, tool, harvest, level.getFluidState(pos))) return false;
+        block.destroy(level, pos, adjusted);
+        if (harvest) block.playerDestroy(level, owner, pos, adjusted, blockEntity, tool);
+        return true;
     }
 
     @Override
     public void playerTouch(Player player) {
-        // Allow pickup when not auto-returning and in ground
-        if (!getAutoReturn() && this.isInGround()) {
-            if (this.ownedBy(player) || this.getOwner() == null) {
-                super.playerTouch(player);
-            }
-        } else if (getAutoReturn() && (this.ownedBy(player) || this.getOwner() == null)) {
+        if (!getAutoReturn() && (ownedBy(player) || getOwner() == null)) {
             super.playerTouch(player);
         }
     }
 
     @Override
     protected ItemStack getDefaultPickupItem() {
-        return getThrownItem();
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    protected void setPickupItemStack(ItemStack stack) {
+        super.setPickupItemStack(stack.copyWithCount(1));
+        entityData.set(DATA_ITEM, getPickupItem());
     }
 
     @Override

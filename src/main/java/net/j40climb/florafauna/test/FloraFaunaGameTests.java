@@ -34,6 +34,7 @@ import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.goals.DepositHarvestGoal;
 import net.j40climb.florafauna.common.util.AreaScanner;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
@@ -47,6 +48,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.minecraft.core.BlockPos;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
@@ -58,6 +60,7 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -85,7 +88,6 @@ public class FloraFaunaGameTests {
     }
 
     private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
-    private static final Identifier ITEM_INPUT_TO_CHEST_STRUCTURE = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_item_input_to_chest");
 
     private static void registerTests(RegisterGameTestsEvent event) {
         // Install our colored test reporter for better visibility
@@ -111,24 +113,32 @@ public class FloraFaunaGameTests {
 
         // Register mining mode tests
         registerMiningModeTests(event, defaultEnv);
+        HammerAbilityGameTests.register(event, defaultEnv);
+        HammerMiningGameTests.register(event, defaultEnv);
 
         // Register containment chamber tests
         registerContainmentChamberTests(event, defaultEnv);
 
         // Register mob barrier tests
         registerMobBarrierTests(event, defaultEnv);
+        registerTest(event, defaultEnv, "slime_grate_harvest_and_reverse", SlimeGrateTests::harvestAndReverse);
 
         // Register mining anchor tests
         registerMiningAnchorTests(event, defaultEnv);
 
         // Register husk tests
         registerHuskTests(event, defaultEnv);
+        StorageRecoveryGameTests.register(event, defaultEnv);
 
         // Register symbiote state tests
         registerSymbioteStateTests(event, defaultEnv);
 
         // Register mob transport tests
         registerMobTransportTests(event, defaultEnv);
+        MobTransportReleaseGameTests.register(event, defaultEnv);
+        registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
+        registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
+        registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 
         // Register fear system tests
         registerFearSystemTests(event, defaultEnv);
@@ -138,6 +148,11 @@ public class FloraFaunaGameTests {
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
+        Identifier silkGarden = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
+        registerStructureTest(event, defaultEnv, "silk_early_shear", silkGarden, 250, SpiderSilkTests::earlyCut);
+        registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", silkGarden, 320, SpiderSilkTests::dispenser);
+        registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", silkGarden, 145, SpiderSilkTests::blocked);
+        WalkthroughGameTests.register(event, defaultEnv);
     }
 
     // ==================== Voice Cooldown Tests ====================
@@ -1111,6 +1126,9 @@ public class FloraFaunaGameTests {
     // ==================== Mob Barrier Tests ====================
 
     private static void registerMobBarrierTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
+        registerTest(event, env, "mob_barrier_saved_and_network_filters", MobBarrierGameTests::oldPreset);
+        registerTest(event, env, "mob_barrier_rejects_oversize_edits", MobBarrierGameTests::boundedEdits);
+        registerTest(event, env, "mob_barrier_validates_held_preset", MobBarrierGameTests::heldPreset);
         registerTest(event, env, "mob_barrier_config_default_empty", FloraFaunaGameTests::testMobBarrierConfigDefaultEmpty);
         registerTest(event, env, "mob_barrier_config_add_remove_entity_id", FloraFaunaGameTests::testMobBarrierConfigAddRemoveEntityId);
         registerTest(event, env, "mob_barrier_config_add_remove_tag", FloraFaunaGameTests::testMobBarrierConfigAddRemoveTag);
@@ -2273,14 +2291,20 @@ public class FloraFaunaGameTests {
     }
 
     private static void testFearSourceCreeperSources(GameTestHelper helper) {
-        // Test isCreeperFearSource - it checks EntityType
-        // We can't easily create mock entities in GameTest, but we can verify
-        // the FearSourceDetector.isCreeperFearSource method exists and the logic is correct
-        // by checking that EntityTypes.CAT and EntityTypes.OCELOT are the targets
-
-        // Verify the method recognizes cats
-        // Note: Without actual entity instances, we can only verify the method signature exists
-        // and check that the expected behavior is documented
+        var creeper = helper.spawnWithNoFreeWill(EntityTypes.CREEPER, 0, 1, 1);
+        MobSymbioteHelper.applyMobSymbioteLevel1(creeper, 0L);
+        var cat = helper.spawnWithNoFreeWill(EntityTypes.CAT, 2, 1, 1);
+        var ocelot = helper.spawnWithNoFreeWill(EntityTypes.OCELOT, 3, 1, 1);
+        helper.spawnWithNoFreeWill(EntityTypes.COW, 0, 1, 2);
+        helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).map(source -> source.entity() == cat).orElse(false),
+                "The nearer visible cat should frighten the creeper");
+        cat.discard();
+        helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).map(source -> source.entity() == ocelot).orElse(false),
+                "The visible ocelot should frighten the creeper");
+        helper.setBlock(new BlockPos(1, 1, 1), net.minecraft.world.level.block.Blocks.STONE);
+        helper.setBlock(new BlockPos(1, 2, 1), net.minecraft.world.level.block.Blocks.STONE);
+        helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).isEmpty(),
+                "The wall blocks sight of the ocelot and the nearby cow is harmless");
         helper.succeed();
     }
 
@@ -2333,20 +2357,20 @@ public class FloraFaunaGameTests {
 
     private static void registerItemInputStructureTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerStructureTest(event, env, "item_input_collects_and_transfers",
-                ITEM_INPUT_TO_CHEST_STRUCTURE, 200, FloraFaunaGameTests::testItemInputCollectsAndTransfers);
+                DevPlot.ITEM_INPUT.structure(), 200, FloraFaunaGameTests::testItemInputCollectsAndTransfers);
     }
 
     private static void testItemInputCollectsAndTransfers(GameTestHelper helper) {
         // Structure positions (relative to structure origin)
-        BlockPos itemInputPos = new BlockPos(0, 1, 3);
-        BlockPos storageAnchorPos = new BlockPos(2, 1, 3);
-        BlockPos chestPos = new BlockPos(3, 1, 3);
+        BlockPos itemInputPos = new BlockPos(0, 1, 6);
+        BlockPos storageAnchorPos = new BlockPos(2, 1, 6);
+        BlockPos chestPos = new BlockPos(3, 1, 6);
 
         // Verify structure loaded correctly
         helper.assertBlockPresent(FloraFaunaRegistry.ITEM_INPUT.get(), itemInputPos);
         helper.assertBlockPresent(FloraFaunaRegistry.STORAGE_ANCHOR.get(), storageAnchorPos);
 
-        // Pair the blocks programmatically (structure saves absolute positions which break on relocation)
+        // Exercise the same unpaired setup a player finds at the manual plot.
         var itemInput = helper.getBlockEntity(itemInputPos,
                 net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity.class);
         var storageAnchor = helper.getBlockEntity(storageAnchorPos,
@@ -2362,8 +2386,10 @@ public class FloraFaunaGameTests {
         // Link Chest as destination on Storage Anchor
         storageAnchor.linkContainer(helper.absolutePos(chestPos));
 
+        helper.assertTrue(helper.getBlockEntity(chestPos, ChestBlockEntity.class).isEmpty(), "Fixture chest must start empty");
+
         // Spawn a diamond above the item input
-        BlockPos spawnPos = new BlockPos(0, 2, 3);
+        BlockPos spawnPos = itemInputPos.above();
         helper.spawnItem(Items.DIAMOND, spawnPos);
 
         // Wait for: collection + animation + transfer (give plenty of time)
@@ -2407,6 +2433,7 @@ public class FloraFaunaGameTests {
         registerTest(event, env, "iron_garden_data_increment_harvests", FloraFaunaGameTests::testIronGardenDataIncrementHarvests);
         registerTest(event, env, "iron_garden_data_garden_center", FloraFaunaGameTests::testIronGardenDataGardenCenter);
         registerTest(event, env, "iron_garden_data_carried_poppies", FloraFaunaGameTests::testIronGardenDataCarriedPoppies);
+        registerTest(event, env, "iron_garden_no_storage", FloraFaunaGameTests::testIronGardenNoStorage);
 
         // IronGardenHelper tests
         registerTest(event, env, "iron_garden_helper_eligibility", FloraFaunaGameTests::testIronGardenHelperEligibility);
@@ -2602,6 +2629,33 @@ public class FloraFaunaGameTests {
         helper.succeed();
     }
 
+    private static void testIronGardenNoStorage(GameTestHelper helper) {
+        var golem = helper.spawnWithNoFreeWill(EntityTypes.IRON_GOLEM, 1, 1, 1);
+        var data = IronGardenData.DEFAULT.withState(IronGardenState.CALM, 0L).withCarriedPoppies(3);
+        IronGardenHelper.setData(golem, data);
+        boolean oldDropSetting = Config.ironGardenDropIfNoStorage;
+        int oldRadius = Config.ironGardenStorageSearchRadius;
+        try {
+            Config.ironGardenStorageSearchRadius = 1;
+            var goal = new DepositHarvestGoal(golem);
+            Config.ironGardenDropIfNoStorage = false;
+            helper.assertFalse(goal.canUse(), "Disabled fallback must keep the poppies with the golem");
+            Config.ironGardenDropIfNoStorage = true;
+            helper.assertTrue(goal.canUse() && IronGardenHelper.getData(golem).carriedPoppies() == 3,
+                    "Selecting the fallback must preserve the carried stack until start");
+            goal.start();
+            var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, golem.getBoundingBox().inflate(2),
+                    entity -> entity.getItem().is(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get()));
+            helper.assertTrue(IronGardenHelper.getData(golem).carriedPoppies() == 0
+                    && drops.stream().mapToInt(e -> e.getItem().getCount()).sum() == 3,
+                    "The fallback must release the original three poppies");
+        } finally {
+            Config.ironGardenDropIfNoStorage = oldDropSetting;
+            Config.ironGardenStorageSearchRadius = oldRadius;
+        }
+        helper.succeed();
+    }
+
     private static void testIronGardenDataCarriedPoppies(GameTestHelper helper) {
         IronGardenData data = IronGardenData.DEFAULT;
 
@@ -2691,14 +2745,14 @@ public class FloraFaunaGameTests {
 
     // ==================== Helper Methods ====================
 
-    private static ServerPlayer createTestPlayer(GameTestHelper helper) {
+    static ServerPlayer createTestPlayer(GameTestHelper helper) {
         return new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "test-player"));
     }
 
     /**
      * Register a test with a custom structure.
      */
-    private static void registerStructureTest(
+    static void registerStructureTest(
             RegisterGameTestsEvent event,
             Holder<TestEnvironmentDefinition<?>> env,
             String name,
@@ -2722,7 +2776,7 @@ public class FloraFaunaGameTests {
     /**
      * Register a test with the default empty structure and settings.
      */
-    private static void registerTest(
+    static void registerTest(
             RegisterGameTestsEvent event,
             Holder<TestEnvironmentDefinition<?>> env,
             String name,

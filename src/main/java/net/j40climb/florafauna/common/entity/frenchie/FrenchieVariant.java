@@ -1,14 +1,15 @@
 package net.j40climb.florafauna.common.entity.frenchie;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import net.minecraft.util.ByIdMap;
+
+import java.util.function.IntFunction;
 
 public enum FrenchieVariant {
     FAWN(0),
     BRINDLE(1);
 
-    private static final FrenchieVariant[] BY_ID = Arrays.stream(values()).sorted(
-            Comparator.comparingInt(FrenchieVariant::getId)).toArray(FrenchieVariant[]::new);
+    private static final IntFunction<FrenchieVariant> BY_ID = ByIdMap.continuous(
+            FrenchieVariant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
     private final int id;
 
     FrenchieVariant(int id) {
@@ -20,6 +21,6 @@ public enum FrenchieVariant {
     }
 
     public static FrenchieVariant byId(int id) {
-        return BY_ID[id % BY_ID.length];
+        return BY_ID.apply(id);
     }
 }

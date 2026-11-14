@@ -1,6 +1,9 @@
 package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
+import com.google.common.reflect.TypeToken;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.networking.PutDownFrenchiePayload;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
@@ -10,14 +13,15 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
- * Handles registration of the Frenchie frontpack model layer and adding it to player renderers.
- * Must be on the MOD event bus for registration events.
+ * Client input and rendering for the carried Frenchie.
  */
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
-public class FrontpackRendererEvents {
+public class FrontpackClientEvents {
 
     /**
      * Registers the frontpack model layer definition.
@@ -49,22 +53,20 @@ public class FrontpackRendererEvents {
         }
     }
 
-    /**
-     * Extracts frontpack data from player attachments during client tick.
-     * This allows the FrontpackLayer to access the attachment data
-     * via the FrontpackRenderStateManager cache.
-     *
-     * Note: In Minecraft 1.21+, the rendering system uses RenderState objects
-     * which don't contain entity references, so we extract data here during tick.
-     */
     @SubscribeEvent
-    public static void onClientPlayerTick(PlayerTickEvent.Post event) {
-        if (event.getEntity() instanceof Player player) {
-            // Only run on client side
-            if (player.level().isClientSide()) {
-                // Extract and cache frontpack data for this player
-                FrontpackLayer.FrontpackRenderStateManager.extractFromPlayer(player);
-            }
+    public static void registerRenderStateModifiers(RegisterRenderStateModifiersEvent event) {
+        event.registerEntityModifier(new TypeToken<AvatarRenderer<?>>() {}, (avatar, state) -> {
+            var data = avatar.getExistingDataOrNull(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
+            state.setRenderData(FrontpackLayer.CARRIED_COAT, data == null ? null : data.carriedCoat());
+        });
+    }
+
+    @SubscribeEvent
+    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
+        Player player = event.getEntity();
+        var data = player.getExistingDataOrNull(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
+        if (player.isShiftKeyDown() && data != null && data.hasCarriedFrenchie()) {
+            ClientPacketDistributor.sendToServer(PutDownFrenchiePayload.INSTANCE);
         }
     }
 }

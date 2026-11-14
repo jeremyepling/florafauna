@@ -19,6 +19,7 @@ import net.minecraft.util.Prediction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -56,13 +57,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
             return;
         }
 
-        // Validate: block exists and is CocoonChamber
-        if (!(player.level().getBlockState(data.chamberPos).getBlock() instanceof CocoonChamberBlock)) {
-            return;
-        }
-
-        // Validate: player in range
-        if (player.distanceToSqr(data.chamberPos.getX() + 0.5, data.chamberPos.getY() + 0.5, data.chamberPos.getZ() + 0.5) > 64.0) {
+        if (player.distanceToSqr(Vec3.atCenterOf(data.chamberPos)) > 64.0
+                || !player.level().hasChunkAt(data.chamberPos)
+                || !(player.level().getBlockState(data.chamberPos).getBlock() instanceof CocoonChamberBlock)) {
             return;
         }
 

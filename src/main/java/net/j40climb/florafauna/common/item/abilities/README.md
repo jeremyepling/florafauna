@@ -68,7 +68,15 @@ When breaking a block with `MULTI_BLOCK_MINING` component:
 1. Calculate pattern based on current shape and facing direction
 2. Render block outline preview on client
 3. On break, destroy all blocks in pattern
-4. Drops collected normally (with Fortune/Silk Touch applied)
+4. Collect drops through the normal player mining and loot callbacks. A canceled center break leaves all neighbors intact. Each extra block gets its own protection checks and break callback.
+
+Flat planes follow the original hit face. Shapeless mining follows matching blocks through faces, edges and corners and defaults to 64 blocks, including the center. Existing component values are bounded to a radius of 0–3 and a vein limit of 1–64.
+
+Instabreak sets mining speed to 100. Block hardness still determines how long a strike takes.
+
+Tunnel modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center.
+
+After a successful center hit, flat and tunnel swings skip air and continue through their usual footprint. Both stair directions place a cobblestone tread across an existing air gap at the planned floor height. The flight still ends at the fifth column. Vein mining follows matching neighbors within its configured radius.
 
 ## Right-Click Action
 
@@ -109,11 +117,11 @@ stack.set(FloraFaunaRegistry.MULTI_TOOL_ABILITY, MultiToolAbilityData.DEFAULT);
 
 ## Event Handlers
 
-All abilities use `@EventBusSubscriber` for automatic registration:
+Mining uses a server game-mode mixin for the completed center break. Other abilities use NeoForge events.
 
 | Event | Handler |
 |-------|---------|
-| `BlockEvent.BreakEvent` | Multi-block breaking |
+| Server player mining action | Retain the hit face and complete multi-block mining once the center is removed |
 | `PlayerEvent.BreakSpeed` | Mining speed modification |
 | `PlayerInteractEvent.LeftClickBlock` | Visual feedback |
 | `PlayerInteractEvent.RightClickBlock` | Right-click abilities and multi-tool |

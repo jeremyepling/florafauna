@@ -21,6 +21,7 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    mavenCentral()
 }
 
 base {
@@ -31,9 +32,15 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 // Worktree-specific run directory suffix for multi-agent parallel development
 def wt = rootProject.projectDir.name
+def devSave = providers.gradleProperty('devSave').orElse('dev').get()
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull
 def playtestPhase = providers.gradleProperty('playtestPhase').orNull
+def huskTestId = providers.gradleProperty('huskTestId').orNull
+def huskTestPort = providers.gradleProperty('huskTestPort').orNull
+if (huskTestId != null && (!(huskTestId ==~ /[0-9a-f]{32}/) || !(huskTestPort ==~ /[0-9]{1,5}/) || !(1..65535).contains(huskTestPort.toInteger()))) {
+    throw new GradleException('Use scripts/test_husk_multiplayer.ps1 to prepare the multiplayer run.')
+}
 if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario ==~ /[a-z]+/) || !(playtestPhase in ['1', '2']))) {
     throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
 }
@@ -41,6 +48,12 @@ sourceSets.create('playtest') {
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
+sourceSets.test {
+    // The component value types refer to Minecraft codecs. Give JUnit the same game libraries.
+    compileClasspath += sourceSets.main.compileClasspath
+    runtimeClasspath += sourceSets.main.runtimeClasspath
+}
+
 tasks.named('check') {
     dependsOn tasks.named('compilePlaytestJava')
 }
@@ -55,6 +68,26 @@ neoForge {
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.
     runs {
+        if (huskTestId != null) {
+            def directory = file(".tmp/husk-multiplayer/${huskTestId}")
+            huskServer {
+                server()
+                gameDirectory = new File(directory, 'server')
+                programArgument '--nogui'
+                systemProperty 'florafauna.huskTest.root', directory.absolutePath
+                jvmArgument '-Xmx1G'
+            }
+            ['Owner', 'Visitor'].each { role ->
+                create("husk${role}") {
+                    client()
+                    gameDirectory = new File(directory, role)
+                    programArguments.addAll '--username', "FF${role}".toString(), '--width', '640', '--height', '360',
+                            '--quickPlayMultiplayer', "127.0.0.1:${huskTestPort}".toString()
+                    systemProperty 'florafauna.huskTest.client', role
+                    jvmArgument '-Xmx1G'
+                }
+            }
+        }
         if (playtestId != null) {
             worldPlaytest {
                 client()
@@ -79,7 +112,7 @@ neoForge {
             //   - World Type: Superflat
             //   - Customize: Tunneler's Dream preset
             // DevWorldSetup.java will handle gamerules on join
-            programArguments.addAll '--quickPlaySingleplayer', 'dev'
+            programArguments.addAll '--quickPlaySingleplayer', devSave
 
             // Gametests disabled in client/server - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -93,13 +126,20 @@ neoForge {
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
+        // An optional Minecraft test selector narrows a headless run to one test or feature.
         // By default, the server will crash when no gametests are provided.
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
             gameDirectory = file("run/gameTestServer-${wt}")
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            def selector = providers.gradleProperty('gameTestFilter').orNull
+            if (selector != null) {
+                if (!(selector ==~ /[a-z0-9_.*?-]+:[a-z0-9_.*?\/-]+/)) {
+                    throw new GradleException('Use a namespaced GameTest ID or wildcard, e.g. florafauna:hammer_tunnel_gaps')
+                }
+                programArguments.addAll '--tests', selector
+            }
         }
 
         clientData {
@@ -141,7 +181,7 @@ neoForge {
         // but multi mod projects should define one per mod
         "${mod_id}" {
             sourceSet(sourceSets.main)
-            if (playtestId != null) {
+            if (playtestId != null || huskTestId != null) {
                 sourceSet(sourceSets.playtest)
             }
         }
@@ -166,7 +206,14 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
 dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
@@ -287,7 +334,8 @@ tasks.register('copyDevWorld', Copy) {
 
 // Run dev setup tasks before client starts
 tasks.matching { it.name == 'runClient' }.configureEach {
-    dependsOn 'copyDevOptions', 'copyDevWorld'
+    dependsOn 'copyDevOptions'
+    if (devSave == 'dev') dependsOn 'copyDevWorld'
 }
 
 // https://discord.com/channels/313125603924639766/1185197721477468160/1330729872213151806

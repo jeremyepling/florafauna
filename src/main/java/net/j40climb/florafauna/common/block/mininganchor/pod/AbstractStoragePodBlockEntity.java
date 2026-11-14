@@ -32,6 +32,7 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
 
     protected final ItemBuffer podBuffer;
     protected final int slotCount;
+    private final PodItemHandler itemHandler;
     @Nullable
     protected BlockPos parentAnchorPos;
 
@@ -46,6 +47,7 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
         super(type, pos, state);
         this.slotCount = slotCount;
         this.podBuffer = new ItemBuffer(slotCount);
+        this.itemHandler = new PodItemHandler(this);
     }
 
     /**
@@ -122,10 +124,9 @@ public abstract class AbstractStoragePodBlockEntity extends BlockEntity {
 
     /**
      * Gets the item handler for capability registration.
-     * Creates a new handler each time - it's lightweight since it delegates to the buffer.
      */
     public PodItemHandler getItemHandler() {
-        return new PodItemHandler(this);
+        return itemHandler;
     }
 
     /**

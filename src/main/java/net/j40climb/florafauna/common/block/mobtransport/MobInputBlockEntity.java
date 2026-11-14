@@ -5,7 +5,6 @@ import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -14,15 +13,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -267,7 +262,7 @@ public class MobInputBlockEntity extends BlockEntity {
                 level.dimension()
         );
 
-        buffer.add(ticket);
+        if (!buffer.add(ticket)) return;
 
         // Trigger symbiote dialogue for nearby players
         if (level instanceof ServerLevel serverLevel) {
@@ -391,56 +386,23 @@ public class MobInputBlockEntity extends BlockEntity {
         }
     }
 
-    public void onRemoved() {
-        // Stop luring all mobs that were being lured to this block
-        if (level != null && !level.isClientSide()) {
-            int radius = Config.lureRadius + 10;
-            AABB cleanupArea = new AABB(worldPosition).inflate(radius);
-            List<Mob> nearbyMobs = level.getEntitiesOfClass(Mob.class, cleanupArea);
-            for (Mob mob : nearbyMobs) {
-                if (MobSymbioteHelper.isBeingLuredTo(mob, worldPosition)) {
-                    MobSymbioteHelper.stopLuring(mob);
-                }
+    boolean releaseBeforeRemoval(ServerLevel level) {
+        for (CapturedMobTicket ticket : buffer.getTickets()) {
+            if (ticket.release(level, worldPosition)) {
+                buffer.remove(ticket);
+                setChanged();
             }
         }
+        if (!buffer.isEmpty()) return false;
 
-        // Release all captured mobs at the block position
-        if (level != null && !level.isClientSide() && level instanceof ServerLevel serverLevel) {
-            for (CapturedMobTicket ticket : buffer.getTickets()) {
-                spawnMobFromTicket(serverLevel, worldPosition, ticket);
+        int radius = Config.lureRadius + 10;
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, new AABB(worldPosition).inflate(radius))) {
+            if (MobSymbioteHelper.isBeingLuredTo(mob, worldPosition)) {
+                MobSymbioteHelper.stopLuring(mob);
             }
         }
-        buffer.clear();
         unpairOutput();
-    }
-
-    private void spawnMobFromTicket(ServerLevel level, BlockPos pos, CapturedMobTicket ticket) {
-        // Create entity from NBT
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(ticket.entityTypeId());
-        if (type == null) {
-            return;
-        }
-
-        Entity entity = type.create(level, EntitySpawnReason.TRIGGERED);
-        if (entity == null) {
-            return;
-        }
-
-        // Load entity data from NBT
-        ValueInput input = TagValueInput.create(
-                ProblemReporter.DISCARDING,
-                level.registryAccess(),
-                ticket.entityNbt()
-        );
-        entity.load(input);
-
-        entity.snapTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
-        level.addFreshEntity(entity);
-
-        // Mark as recently released
-        if (entity instanceof Mob mob) {
-            MobSymbioteHelper.markRecentlyReleased(mob);
-        }
+        return true;
     }
 
     // ==================== ACCESSORS ====================

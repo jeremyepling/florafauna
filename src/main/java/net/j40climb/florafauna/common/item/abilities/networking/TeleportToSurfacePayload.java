@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.item.abilities.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -19,7 +20,9 @@ public enum TeleportToSurfacePayload implements CustomPacketPayload {
 
     public static void onServerReceived(final TeleportToSurfacePayload data, final IPayloadContext context) {
         Player player = context.player();
-        teleportToSurface(player);
+        if (player.getMainHandItem().has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY)) {
+            teleportToSurface(player);
+        }
     }
 
     public static void teleportToSurface(Player player) {
@@ -30,7 +33,7 @@ public enum TeleportToSurfacePayload implements CustomPacketPayload {
         BlockPos.MutableBlockPos scanPos = playerPos.mutable();
 
         // Scan upward for the surface. Start by looking at the block above the player's head (i.e., +2)
-        for (int y = playerPos.getY() + 2; y < level.getHeight(); y++) {
+        for (int y = playerPos.getY() + 2; y <= level.getMaxY() - 2; y++) {
             scanPos.setY(y);
             if(!level.getBlockState(scanPos).isAir() &&
                     level.getBlockState(scanPos.above()).isAir() &&

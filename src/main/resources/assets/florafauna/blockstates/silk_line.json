@@ -1,0 +1,62 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "axis": "x"
+      },
+      "apply": {
+        "model": "florafauna:block/silk_line",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "first": "true"
+      },
+      "apply": {
+        "model": "florafauna:block/silk_line_end",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "axis": "x",
+        "last": "true"
+      },
+      "apply": {
+        "model": "florafauna:block/silk_line_end",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "axis": "z"
+      },
+      "apply": {
+        "model": "florafauna:block/silk_line",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "first": "true"
+      },
+      "apply": {
+        "model": "florafauna:block/silk_line_end",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "axis": "z",
+        "last": "true"
+      },
+      "apply": {
+        "model": "florafauna:block/silk_line_end",
+        "y": 270
+      }
+    }
+  ]
+}

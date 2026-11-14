@@ -1,21 +1,34 @@
 package net.j40climb.florafauna.setup;
 
+import com.google.common.reflect.TypeToken;
+import net.minecraft.client.renderer.entity.SpiderRenderer;
+import net.minecraft.world.entity.monster.spider.Spider;
+import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
+import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.debug.DebugOverlay;
 import net.j40climb.florafauna.common.item.projectile.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
+import net.j40climb.florafauna.common.entity.frenchie.FrenchieModel;
+import net.j40climb.florafauna.common.entity.gecko.GeckoModel;
+import net.j40climb.florafauna.common.entity.lizard.LizardModel;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.j40climb.florafauna.common.block.slimegrate.SlimeSplitLayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.util.Lazy;
 
@@ -107,13 +120,35 @@ public class ClientSetup {
      * Call this from the main mod class.
      */
     public static void init(IEventBus modEventBus) {
+        modEventBus.addListener(ClientSetup::registerLayers);
         modEventBus.addListener(ClientSetup::registerRenderers);
+        modEventBus.addListener(SlimeSplitLayer::addLayer);
+        modEventBus.addListener(SlimeSplitLayer::registerState);
+        modEventBus.addListener(ClientSetup::registerSilkPose);
         modEventBus.addListener(ClientSetup::registerScreens);
+        modEventBus.addListener(ClientSetup::registerPayloads);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
     }
 
+    private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(GeckoModel.GECKO, GeckoModel::createBodyLayer);
+        event.registerLayerDefinition(LizardModel.LIZARD, LizardModel::createBodyLayer);
+        event.registerLayerDefinition(FrenchieModel.FRENCHIE, FrenchieModel::createBodyLayer);
+    }
+
     // ==================== EVENT HANDLERS ====================
+
+    private static void registerSilkPose(RegisterRenderStateModifiersEvent event) {
+        event.registerEntityModifier(new TypeToken<SpiderRenderer<Spider>>() {}, (spider, state) -> {
+            if (spider.hasData(FloraFaunaRegistry.SILK_HANGING) && spider.getData(FloraFaunaRegistry.SILK_HANGING)) state.isUpsideDown = true;
+        });
+    }
+
+    private static void registerPayloads(RegisterClientPayloadHandlersEvent event) {
+        event.register(OpenCocoonScreenPayload.TYPE, (data, context) ->
+                Minecraft.getInstance().gui.setScreen(new CocoonChamberScreen(data.chamberPos())));
+    }
 
     /**
      * Client setup: register entity renderers.

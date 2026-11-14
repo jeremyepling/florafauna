@@ -20,6 +20,8 @@ import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.Consumer;
@@ -55,6 +57,11 @@ public class HammerItem extends Item {
                 // Tool ability components (composable - these enable the abilities)
                 .component(FloraFaunaRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT)
                 .component(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT)
+                .delayedComponent(DataComponents.ENCHANTMENTS, registries -> {
+                    var enchantments = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+                    enchantments.set(registries.getOrThrow(Enchantments.FORTUNE), 3);
+                    return enchantments.toImmutable();
+                })
                 .component(FloraFaunaRegistry.LIGHTNING_ABILITY, Unit.INSTANCE)
                 .component(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY, Unit.INSTANCE)
                 .component(FloraFaunaRegistry.THROWABLE_ABILITY, ThrowableAbilityData.DEFAULT)
@@ -116,9 +123,9 @@ public class HammerItem extends Item {
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         MiningModeData miningModeData = itemStack.getOrDefault(FloraFaunaRegistry.MULTI_BLOCK_MINING, MiningModeData.DEFAULT);
-        tooltipComponents.accept(Component.literal(miningModeData.getMiningModeString()));
+        tooltipComponents.accept(miningModeData.modeDescription());
         ToolConfig toolConfig = itemStack.getOrDefault(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT);
-        tooltipComponents.accept(Component.literal(toolConfig.getMiningSppedString()));
+        tooltipComponents.accept(toolConfig.speedDescription());
         super.appendHoverText(itemStack, context, tooltipDisplay, tooltipComponents, tooltipFlag);
     }
 

@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.LevelData;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Helper for finding valid husk placement positions on player death.
@@ -25,15 +25,18 @@ public final class HuskPlacementHelper {
     private static final int MAX_UPWARD_SEARCH = 10;
     private static final int MAX_RADIAL_SEARCH = 5;
 
+    public record Placement(ServerLevel level, BlockPos pos) {}
+
     /**
      * Find a valid placement position for a husk near the death location.
      *
      * @param player The player who died
      * @param deathPos The position where the player died
      * @param level The server level
-     * @return A valid BlockPos for placing the husk
+     * @return A validated destination, or null if no safe location exists
      */
-    public static BlockPos findPlacementPosition(ServerPlayer player, BlockPos deathPos, ServerLevel level) {
+    @Nullable
+    public static Placement findPlacementPosition(ServerPlayer player, BlockPos deathPos, ServerLevel level) {
         // 1. Check for void death (Y < world minimum)
         if (deathPos.getY() < level.getMinY()) {
             return getFallbackSpawn(player, level);
@@ -43,7 +46,7 @@ public final class HuskPlacementHelper {
         if (level.getFluidState(deathPos).isSource()) {
             BlockPos aboveFluid = findHighestAirAbove(level, deathPos);
             if (aboveFluid != null && isValidPlacement(level, aboveFluid)) {
-                return aboveFluid;
+                return new Placement(level, aboveFluid);
             }
         }
 
@@ -51,25 +54,25 @@ public final class HuskPlacementHelper {
         if (!level.getBlockState(deathPos.below()).isSolid()) {
             BlockPos belowSolid = findFirstSolidBelow(level, deathPos);
             if (belowSolid != null && isValidPlacement(level, belowSolid)) {
-                return belowSolid;
+                return new Placement(level, belowSolid);
             }
         }
 
         // 4. Try direct placement at death location
         if (isValidPlacement(level, deathPos)) {
-            return deathPos;
+            return new Placement(level, deathPos);
         }
 
         // 5. Search upward
         BlockPos upward = searchUpward(level, deathPos);
         if (upward != null) {
-            return upward;
+            return new Placement(level, upward);
         }
 
         // 6. Search radially
         BlockPos radial = searchRadial(level, deathPos);
         if (radial != null) {
-            return radial;
+            return new Placement(level, radial);
         }
 
         // 7. Fallback to cocoon spawn or world spawn
@@ -81,6 +84,9 @@ public final class HuskPlacementHelper {
      * Valid: air or replaceable block with solid support below.
      */
     private static boolean isValidPlacement(Level level, BlockPos pos) {
+        if (level.isOutsideBuildHeight(pos) || !level.getWorldBorder().isWithinBounds(pos)) {
+            return false;
+        }
         BlockState state = level.getBlockState(pos);
         BlockState below = level.getBlockState(pos.below());
 
@@ -97,7 +103,7 @@ public final class HuskPlacementHelper {
         BlockPos.MutableBlockPos pos = start.mutable();
 
         // Search upward from the death position
-        for (int y = start.getY(); y < level.getMaxY(); y++) {
+        for (int y = start.getY(); y <= level.getMaxY(); y++) {
             pos.setY(y);
 
             if (!level.getFluidState(pos).isSource()) {
@@ -139,7 +145,7 @@ public final class HuskPlacementHelper {
         for (int dy = 1; dy <= MAX_UPWARD_SEARCH; dy++) {
             pos.setY(start.getY() + dy);
 
-            if (pos.getY() >= level.getMaxY()) {
+            if (pos.getY() > level.getMaxY()) {
                 break;
             }
 
@@ -169,7 +175,7 @@ public final class HuskPlacementHelper {
                         BlockPos testPos = center.offset(dx, dy, dz);
 
                         if (testPos.getY() < level.getMinY() ||
-                                testPos.getY() >= level.getMaxY()) {
+                                testPos.getY() > level.getMaxY()) {
                             continue;
                         }
 
@@ -187,48 +193,33 @@ public final class HuskPlacementHelper {
     /**
      * Get a fallback spawn position (cocoon spawn or world spawn).
      */
-    private static BlockPos getFallbackSpawn(ServerPlayer player, ServerLevel level) {
+    @Nullable
+    private static Placement getFallbackSpawn(ServerPlayer player, ServerLevel deathLevel) {
         PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
-
-        // Try cocoon spawn first
-        if (data.cocoonSpawnPos() != null) {
-            BlockPos cocoonPos = data.cocoonSpawnPos();
-            // Find a valid position near the cocoon spawn
-            if (isValidPlacement(level, cocoonPos)) {
-                return cocoonPos;
-            }
-            // Try above the cocoon
-            BlockPos above = searchUpward(level, cocoonPos);
-            if (above != null) {
-                return above;
-            }
-            // Try radially around cocoon
-            BlockPos radial = searchRadial(level, cocoonPos);
-            if (radial != null) {
-                return radial;
+        if (data.cocoonSpawnPos() != null && data.cocoonSpawnDim() != null) {
+            ServerLevel cocoonLevel = deathLevel.getServer().getLevel(data.cocoonSpawnDim());
+            if (cocoonLevel != null) {
+                Placement atCocoon = findNear(cocoonLevel, data.cocoonSpawnPos());
+                if (atCocoon != null) {
+                    return atCocoon;
+                }
             }
         }
 
-        // Fall back to world spawn (use overworld respawn data, default to origin if not set)
-        ServerLevel overworld = level.getServer().overworld();
-        LevelData.RespawnData respawnData = overworld.getRespawnData();
-        BlockPos worldSpawn = respawnData != null ? respawnData.pos() : BlockPos.ZERO;
-        if (isValidPlacement(level, worldSpawn)) {
-            return worldSpawn;
-        }
+        var spawn = deathLevel.getServer().getRespawnData();
+        ServerLevel spawnLevel = deathLevel.getServer().getLevel(spawn.dimension());
+        return spawnLevel == null ? null : findNear(spawnLevel, spawn.pos());
+    }
 
-        // Find valid position near world spawn
-        BlockPos above = searchUpward(level, worldSpawn);
-        if (above != null) {
-            return above;
+    @Nullable
+    private static Placement findNear(ServerLevel level, BlockPos pos) {
+        if (isValidPlacement(level, pos)) {
+            return new Placement(level, pos);
         }
-
-        BlockPos radial = searchRadial(level, worldSpawn);
-        if (radial != null) {
-            return radial;
+        BlockPos nearby = searchUpward(level, pos);
+        if (nearby == null) {
+            nearby = searchRadial(level, pos);
         }
-
-        // Absolute fallback - just above world spawn
-        return worldSpawn.above();
+        return nearby == null ? null : new Placement(level, nearby);
     }
 }

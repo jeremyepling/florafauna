@@ -89,3 +89,5 @@ When a player with a bonded symbiote dies, their inventory is stored in a Symbio
 ## Verification
 
 From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario recovery` using a closed dev save. The player binds at the cocoon, dies, respawns, and reopens the world. The test checks that the husk retains the counted items and that a second interaction cannot pay them out again.
+
+Run `.\scripts\test_husk_multiplayer.ps1 -Offline` for the dedicated-server ownership and partial-stack test. For the manual version, start at page four of the `recovery` lectern with two players in Survival. The kit has a death stack of 17 amethyst shards, a separate stack of 64 and 35 cobblestone to occupy the other slots. Each player can count what they received after rejoining.

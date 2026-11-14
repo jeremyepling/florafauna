@@ -2,12 +2,15 @@ package net.j40climb.florafauna.common.block.mobtransport;
 
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -19,6 +22,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.BiConsumer;
 
 /**
  * The MobInput "chompy plant" block that lures and captures eligible mobs.
@@ -122,13 +127,26 @@ public class MobInputBlock extends BaseEntityBlock {
     }
 
     @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide()) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof MobInputBlockEntity mobInput) {
-                mobInput.onRemoved();
-            }
+    protected void onExplosionHit(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion,
+                                  BiConsumer<ItemStack, BlockPos> drops) {
+        // Vanilla gathers loot before removing the block. Keep both when a release fails.
+        if (explosion.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK
+                && level.getBlockEntity(pos) instanceof MobInputBlockEntity transport
+                && !transport.releaseBeforeRemoval(level)) {
+            return;
         }
-        return super.playerWillDestroy(level, pos, state, player);
+        super.onExplosionHit(state, level, pos, explosion, drops);
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player,
+                                       ItemStack tool, boolean willHarvest, FluidState fluid) {
+        if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof MobInputBlockEntity transport
+                && !transport.releaseBeforeRemoval(server)) {
+            level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
+            player.sendOverlayMessage(Component.translatable("message.florafauna.mob_transport.release_blocked"));
+            return false;
+        }
+        return super.onDestroyedByPlayer(state, level, pos, player, tool, willHarvest, fluid);
     }
 }

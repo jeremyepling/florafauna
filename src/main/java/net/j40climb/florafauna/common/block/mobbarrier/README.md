@@ -83,3 +83,4 @@ The config screen allows adding/removing blocked entities:
 - Placing a barrier copies the item's config to the block
 - Shift-right-clicking copies the block's config back to the item
 - Allows creating and sharing barrier presets
+- The editor accepts up to 32,767 encoded bytes per update. Larger imported presets still work when placed or copied. Remove entries in the same editing session until the update fits to save a smaller preset.

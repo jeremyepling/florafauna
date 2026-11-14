@@ -86,10 +86,10 @@ public class SymbioteAbilityEvents {
             }
 
             // Send warning message
-            String direction = getDirectionToEntity(player, closestCreeper);
+            Component direction = Component.translatable("direction.florafauna." + getDirectionToEntity(player, closestCreeper));
             player.sendOverlayMessage(
-                    Component.literal("⚠ Symbiote: Creeper detected " + direction + " - " +
-                            String.format("%.1f", closestDistance) + " blocks away!")
+                    Component.translatable("message.florafauna.creeper_detected", direction,
+                            String.format(java.util.Locale.ROOT, "%.1f", closestDistance))
                             .withStyle(style -> style.withColor(0xFF6B6B))
             );
         }
@@ -104,9 +104,9 @@ public class SymbioteAbilityEvents {
 
         // Determine primary direction
         if (Math.abs(dx) > Math.abs(dz)) {
-            return dx > 0 ? "to the East" : "to the West";
+            return dx > 0 ? "east" : "west";
         } else {
-            return dz > 0 ? "to the South" : "to the North";
+            return dz > 0 ? "south" : "north";
         }
     }
 

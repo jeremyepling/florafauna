@@ -70,11 +70,15 @@ public final class Playtest {
         // The server ignores interaction packets until the client acknowledges the level load.
         awaitServer("Wait for the server to accept player input", player -> player.connection.hasClientLoaded());
         switch (scenario) {
+            case "plots" -> PlotsPlaytest.steps(this, phase);
             case "recovery" -> RecoveryPlaytest.steps(this, phase);
             case "hammer" -> HammerPlaytest.steps(this, phase);
             case "barrier" -> BarrierPlaytest.steps(this, phase);
             case "pods" -> PodPlaytest.steps(this, phase);
+            case "frontpack" -> FrontpackPlaytest.steps(this, phase);
+            case "slime" -> SlimeGratePlaytest.steps(this, phase);
             case "frenchie" -> FrenchiePlaytest.steps(this, phase);
+            case "spider" -> SpiderSilkPlaytest.steps(this, phase);
             case "transport" -> MobTransportPlaytest.steps(this, phase);
             default -> throw new IllegalArgumentException("Unknown playtest " + scenario);
         }

@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.common.block.husk;
 
+import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -15,6 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -27,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
  * - Never used as a spawn point
  * - Light level 7 for RESTORATION type (beacon effect)
  */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public class HuskBlock extends BaseEntityBlock {
 
     public static final EnumProperty<HuskType> HUSK_TYPE = EnumProperty.create("husk_type", HuskType.class);
@@ -80,6 +86,15 @@ public class HuskBlock extends BaseEntityBlock {
         return HuskInteractionHandler.handleInteraction(serverPlayer, huskEntity, state, level, pos);
     }
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onBreak(BreakBlockEvent event) {
+        if (event.getState().getBlock() instanceof HuskBlock
+                && event.getLevel().getBlockEntity(event.getPos()) instanceof HuskBlockEntity husk
+                && !husk.isOwner(event.getPlayer())) {
+            event.setCanceled(true);
+        }
+    }
+
     /**
      * Prevent non-owners from breaking the block.
      * Returns 0 (unbreakable) for non-owners.
@@ -108,7 +123,6 @@ public class HuskBlock extends BaseEntityBlock {
                 if (huskEntity.isOwner(player)) {
                     huskEntity.drops();
                 }
-                // Non-owners can't break due to getDestroyProgress returning 0
             }
         }
         return super.playerWillDestroy(level, pos, state, player);

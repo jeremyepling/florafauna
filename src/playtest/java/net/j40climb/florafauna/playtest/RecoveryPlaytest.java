@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
+import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -28,7 +29,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -53,15 +53,7 @@ final class RecoveryPlaytest {
     private static void bindAndDie(Playtest t) {
         t.server("Arrange a Survival player with stew, a dormant symbiote and counted gear", player -> {
             ServerLevel level = player.level().getServer().overworld();
-            for (int x = -3; x <= 3; x++) {
-                for (int z = -2; z <= 16; z++) {
-                    level.setBlockAndUpdate(CHAMBER.offset(x, -1, z), Blocks.STONE.defaultBlockState());
-                    for (int y = 0; y < 4; y++) {
-                        level.setBlockAndUpdate(CHAMBER.offset(x, y, z), Blocks.AIR.defaultBlockState());
-                    }
-                }
-            }
-            level.setBlockAndUpdate(CHAMBER, FloraFaunaRegistry.COCOON_CHAMBER.get().defaultBlockState());
+            DevPlot.RECOVERY.place(level, new BlockPos(-3, 199, -5));
             level.getGameRules().set(GameRules.KEEP_INVENTORY, false, level.getServer());
             level.getGameRules().set(GameRules.IMMEDIATE_RESPAWN, false, level.getServer());
             Playtest.require(player.teleportTo(level, 0.5, 200, 2.5, Set.of(), 0, 0, true), "Failed to move to test platform");

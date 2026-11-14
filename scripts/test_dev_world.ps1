@@ -1,14 +1,23 @@
 #Requires -Version 7.0
 # Run Minecraft clients against fresh copies of a closed save. Each scenario has its own copy.
+[CmdletBinding(DefaultParameterSetName = 'Selected')]
 param(
-    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'barrier')]
-    [string[]]$Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'barrier'),
+    [Parameter(ParameterSetName = 'Selected', Position = 0)]
+    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots', 'barrier')]
+    [string[]]$Scenario,
+    [Parameter(ParameterSetName = 'Full')]
+    [switch]$All,
     [string]$SourceWorld,
     [switch]$Offline
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+if ($All) {
+    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots', 'barrier')
+} elseif (!$Scenario) {
+    throw 'Choose a client scenario, e.g. -Scenario hammer, or use -All for the full gameplay suite.'
+}
 $checkout = Split-Path $PSScriptRoot -Parent
 if (!$SourceWorld) {
     $SourceWorld = Join-Path $checkout "run/client-$(Split-Path $checkout -Leaf)/saves/dev"
@@ -61,7 +70,7 @@ try {
     $failed = @()
     foreach ($name in $Scenario) {
         $gameDir = Join-Path $runRoot $name
-        $phases = if ($name -in 'hammer', 'frenchie', 'barrier') { @(1) } else { @(1, 2) }
+        $phases = if ($name -in 'frenchie', 'spider', 'barrier') { @(1) } else { @(1, 2) }
         foreach ($phase in $phases) {
             Write-Host "Launching $name phase $phase ..."
             $log = Join-Path $gameDir "phase-$phase.log"

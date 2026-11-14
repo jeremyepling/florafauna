@@ -3,9 +3,11 @@ package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.j40climb.florafauna.common.entity.frenchie.FrenchieVariant;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Data structure for storing a carried Frenchie on a player.
@@ -35,10 +37,23 @@ public record FrontpackData(
      */
     public static final StreamCodec<ByteBuf, FrontpackData> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.BOOL, FrontpackData::hasCarriedFrenchie,
-        ByteBufCodecs.COMPOUND_TAG, FrontpackData::frenchieNBT,
+        ByteBufCodecs.COMPOUND_TAG, FrontpackData::appearanceTag,
         ByteBufCodecs.VAR_LONG, FrontpackData::pickupTimestamp,
         FrontpackData::new
     );
+
+    public @Nullable FrenchieVariant carriedCoat() {
+        return hasCarriedFrenchie ? FrenchieVariant.byId(frenchieNBT.getIntOr("Variant", 0)) : null;
+    }
+
+    // Keep the original packet layout. Tracking clients need the coat, not the saved entity.
+    private CompoundTag appearanceTag() {
+        CompoundTag appearance = new CompoundTag();
+        if (hasCarriedFrenchie) {
+            appearance.putInt("Variant", frenchieNBT.getIntOr("Variant", 0));
+        }
+        return appearance;
+    }
 
     /**
      * Default state: not carrying any Frenchie.

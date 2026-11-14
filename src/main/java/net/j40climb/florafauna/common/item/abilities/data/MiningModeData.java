@@ -3,10 +3,17 @@ package net.j40climb.florafauna.common.item.abilities.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlocksToBreak, boolean ignoreToolRestrictions) {
+public record MiningModeData(MiningShape shape, int radius, int maxBlocksToBreak, boolean ignoreToolRestrictions) {
+    // Normalize existing saved and networked components before iterating their bounds.
+    public MiningModeData {
+        radius = Math.clamp(radius, 0, 3);
+        maxBlocksToBreak = Math.clamp(maxBlocksToBreak, 1, 64);
+    }
+
     public static final Codec<MiningModeData> CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
                     MiningShape.CODEC.fieldOf("shape").forGetter(MiningModeData::shape),
@@ -34,7 +41,8 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
         return new MiningModeData(miningShape, miningShape.getRadius(), this.maxBlocksToBreak(), this.ignoreToolRestrictions());
     }
 
-    public String getMiningModeString() {
-        return "Mining Mode: " + this.shape().name();
+    public Component modeDescription() {
+        return Component.translatable("tooltip.florafauna.hammer.mode",
+                Component.translatable("mining_shape.florafauna." + shape.getSerializedName()));
     }
 }

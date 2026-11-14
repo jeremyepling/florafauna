@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -157,59 +156,8 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
      * Spawns pods as needed to store incoming items.
      */
     @Override
-    protected void absorbItem(ItemEntity itemEntity) {
-        if (level == null) {
-            return;
-        }
-
-        ItemStack stack = itemEntity.getItem().copy();
-        int remaining = stack.getCount();
-
-        // Try to add to existing pods first (closest to anchor first)
-        for (BlockPos podPos : getPodPositionsByDistance()) {
-            if (remaining <= 0) break;
-
-            BlockEntity be = level.getBlockEntity(podPos);
-            if (be instanceof AbstractStoragePodBlockEntity pod && !pod.isFull()) {
-                int canAdd = Math.min(remaining, pod.getCapacity() - pod.getStoredCount());
-                if (canAdd > 0) {
-                    ItemStack toAdd = stack.copyWithCount(canAdd);
-                    int added = pod.getBuffer().add(toAdd);
-                    if (added > 0) {
-                        remaining -= added;
-                        pod.markChangedAndSync();
-                    }
-                }
-            }
-        }
-
-        // Spawn new pods if needed and we have capacity
-        while (remaining > 0 && podPositions.size() < getMaxPods()) {
-            if (!trySpawnPod(level)) {
-                break; // No space for more pods
-            }
-
-            // Add to the newly spawned pod
-            BlockPos newPodPos = podPositions.get(podPositions.size() - 1);
-            BlockEntity be = level.getBlockEntity(newPodPos);
-            if (be instanceof AbstractStoragePodBlockEntity pod) {
-                int canAdd = Math.min(remaining, pod.getCapacity());
-                if (canAdd > 0) {
-                    ItemStack toAdd = stack.copyWithCount(canAdd);
-                    int added = pod.getBuffer().add(toAdd);
-                    if (added > 0) {
-                        remaining -= added;
-                        pod.markChangedAndSync();
-                    }
-                }
-            }
-        }
-
-        // Remove the item entity (even if we couldn't store everything)
-        itemEntity.discard();
-
-        // Update fill state after adding items
-        checkFillStateChange(level, worldPosition, getBlockState());
+    protected int storeItems(ItemStack offered) {
+        return addItems(offered);
     }
 
     /**

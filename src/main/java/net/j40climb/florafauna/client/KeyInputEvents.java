@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -43,8 +42,7 @@ public class KeyInputEvents {
         while (ClientSetup.SUMMON_LIGHTNING_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has LIGHTNING_ABILITY
             if (itemStack.has(FloraFaunaRegistry.LIGHTNING_ABILITY)) {
-                Vec3 vec3 = ClientUtils.raycastFromPlayer(player, 10).getLocation();
-                BlockPos targetPos = BlockPos.containing(vec3);
+                BlockPos targetPos = SpawnLightningPayload.targetFromView(player);
                 ClientPacketDistributor.sendToServer(new SpawnLightningPayload(targetPos));
             }
         }

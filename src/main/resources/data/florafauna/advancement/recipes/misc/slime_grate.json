@@ -1,0 +1,25 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_bars": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:iron_bars"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_bars"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "florafauna:slime_grate"
+    ]
+  }
+}

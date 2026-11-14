@@ -2,30 +2,19 @@ package net.j40climb.florafauna.common.entity;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frenchie.FrenchieModel;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
-import net.j40climb.florafauna.common.entity.gecko.GeckoModel;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
-import net.j40climb.florafauna.common.entity.lizard.LizardModel;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public class RegisterEntityEvents {
-
-    @SubscribeEvent
-    public static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(GeckoModel.GECKO, GeckoModel::createBodyLayer);
-        event.registerLayerDefinition(LizardModel.LIZARD, LizardModel::createBodyLayer);
-        event.registerLayerDefinition(FrenchieModel.FRENCHIE, FrenchieModel::createBodyLayer);
-    }
 
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {

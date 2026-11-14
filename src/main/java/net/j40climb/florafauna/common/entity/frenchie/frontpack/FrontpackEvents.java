@@ -2,18 +2,22 @@ package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frenchie.frontpack.networking.PutDownFrenchiePayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.DismountHelper;
+import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
@@ -77,20 +81,26 @@ public class FrontpackEvents {
         event.setCancellationResult(InteractionResult.SUCCESS);
     }
 
-    /**
-     * Handle shift-right-click air to put down Frenchie.
-     * This only fires on client, so we send a packet to server.
-     */
-    @SubscribeEvent
-    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
-        Player player = event.getEntity();
-
-        if (!player.isShiftKeyDown()) return;
-
+    public static void putDown(Player player) {
+        if (!(player.level() instanceof ServerLevel level)) return;
         FrontpackData data = player.getData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
         if (!data.hasCarriedFrenchie()) return;
 
-        // Send packet to server to handle put-down
-        ClientPacketDistributor.sendToServer(PutDownFrenchiePayload.INSTANCE);
+        var type = FloraFaunaRegistry.FRENCHIE.get();
+        // Use yaw for the ground target so looking down never puts the dog inside the floor.
+        Vec3 forward = Vec3.directionFromRotation(0, player.getYRot());
+        BlockPos target = BlockPos.containing(player.position().add(forward.scale(2)));
+        if (!level.isInWorldBounds(target)) return;
+        Vec3 position = DismountHelper.findSafeDismountLocation(type, level, target, true);
+        if (position == null) return;
+
+        var dog = type.create(level, EntitySpawnReason.TRIGGERED);
+        if (dog == null) return;
+        dog.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), data.frenchieNBT()));
+        dog.snapTo(position, player.getYRot(), 0);
+        if (!level.noCollision(dog, dog.getBoundingBox()) || !level.addFreshEntity(dog)) return;
+
+        player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, FrontpackData.DEFAULT);
+        player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0f, 1.0f);
     }
 }

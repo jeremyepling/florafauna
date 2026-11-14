@@ -4,6 +4,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
@@ -61,6 +62,7 @@ public class MobSymbioteItem extends Item {
 
             // Apply Level 1 MobSymbiote
             MobSymbioteHelper.applyMobSymbioteLevel1(mob, currentTick);
+            if (mob.getType() == EntityTypes.SPIDER) mob.setPersistenceRequired();
 
             // Show success message
             player.sendOverlayMessage(

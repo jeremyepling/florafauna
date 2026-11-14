@@ -6,7 +6,11 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.TransferPreconditions;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Item handler that delegates directly to an ItemBuffer.
@@ -17,9 +21,36 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
  */
 public class PodItemHandler implements ResourceHandler<ItemResource> {
     private final AbstractStoragePodBlockEntity pod;
+    private final List<SnapshotJournal<ItemStack>> slots = new ArrayList<>();
 
     public PodItemHandler(AbstractStoragePodBlockEntity pod) {
         this.pod = pod;
+        for (int i = 0; i < size(); i++) {
+            slots.add(new SlotJournal(i));
+        }
+    }
+
+    private final class SlotJournal extends SnapshotJournal<ItemStack> {
+        private final int index;
+
+        SlotJournal(int index) {
+            this.index = index;
+        }
+
+        @Override
+        protected ItemStack createSnapshot() {
+            return buffer().getStack(index).copy();
+        }
+
+        @Override
+        protected void revertToSnapshot(ItemStack snapshot) {
+            buffer().setStack(index, snapshot);
+        }
+
+        @Override
+        protected void onRootCommit(ItemStack originalState) {
+            pod.markChangedAndSync();
+        }
     }
 
     private ItemBuffer buffer() {
@@ -71,12 +102,12 @@ public class PodItemHandler implements ResourceHandler<ItemResource> {
         int toInsert = Math.min(amount, capacity - currentAmount);
 
         if (toInsert > 0) {
+            slots.get(index).updateSnapshots(transaction);
             if (currentAmount == 0) {
                 buffer().setStack(index, resource.toStack(toInsert));
             } else {
                 current.grow(toInsert);
             }
-            pod.markChangedAndSync();
             return toInsert;
         }
         return 0;
@@ -96,12 +127,12 @@ public class PodItemHandler implements ResourceHandler<ItemResource> {
         int toExtract = Math.min(amount, currentAmount);
 
         if (toExtract > 0) {
+            slots.get(index).updateSnapshots(transaction);
             if (toExtract == currentAmount) {
                 buffer().setStack(index, ItemStack.EMPTY);
             } else {
                 current.shrink(toExtract);
             }
-            pod.markChangedAndSync();
             return toExtract;
         }
         return 0;

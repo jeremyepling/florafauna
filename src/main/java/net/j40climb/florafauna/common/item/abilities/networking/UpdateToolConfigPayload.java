@@ -33,34 +33,20 @@ public record UpdateToolConfigPayload(ToolConfig config) implements CustomPacket
     );
 
     public static void onServerReceived(final UpdateToolConfigPayload data, final IPayloadContext context) {
-        Player player = context.player();
-        ItemStack heldItem = player.getMainHandItem();
-
-        // Check if the held item has the TOOL_CONFIG component (component-based check)
-        if (heldItem.has(FloraFaunaRegistry.TOOL_CONFIG)) {
-            // Update the config on the held item
-            heldItem.set(FloraFaunaRegistry.TOOL_CONFIG, data.config);
-
-            // Apply enchantments based on config
-            applyEnchantments(heldItem, data.config, player);
-        }
+        applyToHeldItem(context.player(), data.config);
     }
 
-    private static void applyEnchantments(ItemStack itemStack, ToolConfig config, Player player) {
-        Holder<Enchantment> silkTouchHolder = player.level().registryAccess().holderOrThrow(Enchantments.SILK_TOUCH);
-        Holder<Enchantment> fortuneHolder = player.level().registryAccess().holderOrThrow(Enchantments.FORTUNE);
-
-        // Remove both enchantments first
-        EnchantmentHelper.updateEnchantments(itemStack, enchantments -> {
-            enchantments.removeIf(holder -> holder.is(Enchantments.SILK_TOUCH) || holder.is(Enchantments.FORTUNE));
+    public static void applyToHeldItem(Player player, ToolConfig config) {
+        ItemStack stack = player.getMainHandItem();
+        if (!stack.has(FloraFaunaRegistry.TOOL_CONFIG)) return;
+        stack.set(FloraFaunaRegistry.TOOL_CONFIG, config);
+        var registries = player.level().registryAccess();
+        Holder<Enchantment> fortune = registries.holderOrThrow(Enchantments.FORTUNE);
+        Holder<Enchantment> silk = registries.holderOrThrow(Enchantments.SILK_TOUCH);
+        EnchantmentHelper.updateEnchantments(stack, enchantments -> {
+            enchantments.set(fortune, config.fortune() ? 3 : 0);
+            enchantments.set(silk, config.silkTouch() ? 1 : 0);
         });
-
-        // Apply the appropriate enchantment based on config
-        if (config.fortune()) {
-            itemStack.enchant(fortuneHolder, 3);
-        } else if (config.silkTouch()) {
-            itemStack.enchant(silkTouchHolder, 1);
-        }
     }
 
     @Override

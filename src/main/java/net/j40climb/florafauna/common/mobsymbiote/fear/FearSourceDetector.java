@@ -206,19 +206,19 @@ public class FearSourceDetector {
         boolean hasEnoughGolems = golemCount >= Config.blazeMinSnowGolems;
 
         // Count cold blocks in area
-        int coldBlockCount = AreaScanner.countBlocksWithTag(
+        boolean checkCold = Config.blazeMinColdBlocks > 0;
+        boolean hasEnoughColdBlocks = checkCold && AreaScanner.countBlocksWithTag(
                 level,
                 blazePos,
                 Config.blazeColdScanRadius,
                 FloraFaunaTags.Blocks.COLD_BLOCKS
-        );
-        boolean hasEnoughColdBlocks = coldBlockCount >= Config.blazeMinColdBlocks;
+        ) >= Config.blazeMinColdBlocks;
 
         // Check if fear conditions are met
         boolean fearTriggered;
         if (Config.blazeRequireBothConditions) {
             // Need BOTH golems AND cold blocks
-            fearTriggered = hasEnoughGolems && hasEnoughColdBlocks;
+            fearTriggered = hasEnoughGolems && (!checkCold || hasEnoughColdBlocks);
         } else {
             // Either condition triggers fear
             fearTriggered = hasEnoughGolems || hasEnoughColdBlocks;

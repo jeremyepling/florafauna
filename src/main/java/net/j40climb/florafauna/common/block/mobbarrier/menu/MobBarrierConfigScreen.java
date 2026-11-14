@@ -159,7 +159,8 @@ public class MobBarrierConfigScreen extends BaseScreen {
         addRenderableWidget(Button.builder(
                 getBlockVisionButtonText(),
                 this::onBlockVisionToggled
-        ).bounds(x, y + TOGGLE_Y_OFFSET, TOGGLE_WIDTH, TOGGLE_HEIGHT).build());
+        ).bounds(x, y + TOGGLE_Y_OFFSET, TOGGLE_WIDTH, TOGGLE_HEIGHT).build()).active =
+                UpdateMobBarrierConfigPayload.fitsEditPacket(config);
     }
 
     private Component getBlockVisionButtonText() {
@@ -191,7 +192,8 @@ public class MobBarrierConfigScreen extends BaseScreen {
             String entry = entries.get(index);
             int entryY = listY + i * rowHeight;
 
-            addRenderableWidget(Button.builder(Component.literal("X"), btn -> onRemoveClicked(entry))
+            boolean isTag = index >= config.entityIds().size();
+            addRenderableWidget(Button.builder(Component.literal("X"), btn -> onRemoveClicked(entry, isTag))
                     .bounds(removeX, entryY, REMOVE_BUTTON_SIZE, REMOVE_BUTTON_SIZE).build());
         }
     }
@@ -227,11 +229,16 @@ public class MobBarrierConfigScreen extends BaseScreen {
         String input = inputField.getValue().trim();
         if (input.isEmpty()) return;
 
+        MobBarrierConfig updated;
         if (input.startsWith("#")) {
-            config = config.withAddedEntityTag(input);
+            if (!MobBarrierConfig.isValidTagFormat(input)) return;
+            updated = config.withAddedEntityTag(input);
         } else {
-            config = config.withAddedEntityId(input);
+            if (!MobBarrierConfig.isValidEntityId(input)) return;
+            updated = config.withAddedEntityId(Identifier.parse(input).toString());
         }
+        if (!UpdateMobBarrierConfigPayload.fitsEditPacket(updated)) return;
+        config = updated;
 
         inputField.setValue("");
         suggestions.clear();
@@ -239,8 +246,8 @@ public class MobBarrierConfigScreen extends BaseScreen {
         rebuildWidgets();
     }
 
-    private void onRemoveClicked(String entry) {
-        if (entry.startsWith("#")) {
+    private void onRemoveClicked(String entry, boolean isTag) {
+        if (isTag) {
             config = config.withRemovedEntityTag(entry);
         } else {
             config = config.withRemovedEntityId(entry);
@@ -252,7 +259,8 @@ public class MobBarrierConfigScreen extends BaseScreen {
             scrollOffset = Math.max(0, entries.size() - MAX_VISIBLE_ENTRIES);
         }
 
-        sendConfigToServer();
+        // Imported presets can be larger than an edit packet. Allow trimming until the edit fits.
+        if (UpdateMobBarrierConfigPayload.fitsEditPacket(config)) sendConfigToServer();
         rebuildWidgets();
     }
 

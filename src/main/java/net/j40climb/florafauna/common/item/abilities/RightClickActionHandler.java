@@ -26,11 +26,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -51,6 +51,11 @@ public class RightClickActionHandler {
      * when RightClickBlock already performed a tool modification.
      */
     private static final Map<UUID, Long> recentToolModifications = new ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        recentToolModifications.remove(event.getEntity().getUUID());
+    }
 
     /**
      * Handle right-click on a block.
@@ -120,16 +125,25 @@ public class RightClickActionHandler {
             return false;
         }
 
+        if (!action.abilityId().getNamespace().equals(FloraFauna.MOD_ID)) return false;
         String abilityName = action.abilityId().getPath();
         switch (abilityName) {
-            case "throwable_ability" -> ThrowItemPayload.throwItem(serverPlayer, hand);
-            case "multi_block_mining" -> CycleMiningModePayload.cycleMiningMode(serverPlayer);
-            case "lightning_ability" -> {
-                if (clickedPos != null) {
-                    SpawnLightningPayload.spawnLightningBolt(player.level(), clickedPos);
-                }
+            case "throwable_ability" -> {
+                if (!stack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) return false;
+                ThrowItemPayload.throwItem(serverPlayer, hand);
             }
-            case "teleport_surface_ability" -> TeleportToSurfacePayload.teleportToSurface(serverPlayer);
+            case "multi_block_mining" -> {
+                if (!stack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) return false;
+                CycleMiningModePayload.cycleMiningMode(serverPlayer, stack);
+            }
+            case "lightning_ability" -> {
+                if (clickedPos == null || !stack.has(FloraFaunaRegistry.LIGHTNING_ABILITY)) return false;
+                SpawnLightningPayload.spawnLightningBolt(player.level(), clickedPos);
+            }
+            case "teleport_surface_ability" -> {
+                if (!stack.has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY)) return false;
+                TeleportToSurfacePayload.teleportToSurface(serverPlayer);
+            }
             default -> {
                 return false; // Unknown ability, don't cancel the event
             }
@@ -150,7 +164,7 @@ public class RightClickActionHandler {
      */
     private static boolean tryToolModification(Player player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool) {
         // Get blocks based on mining pattern (reuses existing pattern logic)
-        Set<BlockPos> blocksToModify = MultiBlockPatterns.getTargetBlocks(pos, player);
+        var blocksToModify = MultiBlockPatterns.plan(player, player.getItemInHand(hand), pos, hitResult.getDirection()).blocks();
 
         // Try to modify each block in the pattern
         boolean anyModified = false;
