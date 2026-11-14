@@ -21,6 +21,12 @@ $listener.Stop()
     'gamemode=survival', 'spawn-protection=0', 'view-distance=3', 'simulation-distance=3', 'max-players=2'
 ) | Set-Content -LiteralPath (Join-Path $root 'server/server.properties')
 
+# Offline-mode UUIDs for the two fixed development usernames in build.gradle.
+@(
+    @{ name = 'FFOwner'; uuid = '3c356f1a-04a8-321d-a108-f35619b350df' }
+    @{ name = 'FFVisitor'; uuid = '03aa91f9-0976-37de-bafa-3852f271766a' }
+) | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root 'server/whitelist.json')
+
 $gameOptions = (Get-Content -LiteralPath (Join-Path $checkout 'dev/options-template.txt')) `
     -replace '^pauseOnLostFocus:.*', 'pauseOnLostFocus:false' -replace '^renderDistance:.*', 'renderDistance:3' `
     -replace '^maxFps:.*', 'maxFps:30' -replace '^enableVsync:.*', 'enableVsync:false'
