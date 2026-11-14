@@ -52,6 +52,7 @@ Each Hammer remembers its settings.
 | Enchantment | Fortune III / Silk Touch | Fortune III |
 | Mining Speed | Standard / Efficiency / Instabreak | Efficiency |
 | Vein matching | Same ore / Exact block | Same ore |
+| Auto torches | On / Off | Off |
 
 **Note**: Fortune and Silk Touch are mutually exclusive - exactly one is always active.
 
@@ -93,6 +94,10 @@ Orange outlines mark the faces of planned mining blocks that touch source or flo
 Shapeless mode groups matching stone and deepslate ore variants. An iron vein can cross the stone–deepslate boundary. Copper touching that vein stays in place. Select **Exact block** in the Hammer settings to stop at the variant boundary.
 
 After a successful center hit, flat and tunnel swings skip air and continue through their usual footprint. Both stair directions place a cobblestone tread across an existing air gap at the planned floor height. The flight still ends at the fifth column. Vein mining follows matching neighbors within its configured radius.
+
+## Tunnel Lighting
+
+Enable **Auto torches** in the held Hammer’s settings (default **P**). After cutting a horizontal Walkable or Large Tunnel, or an ascending or descending staircase, it can place one regular torch on the right wall in the direction of travel. It checks the newly opened passage for light level 7 or below and a solid attachment. It uses the offhand torch stack first, then searches the inventory. Survival consumes one torch on successful placement. Creative requires a torch and keeps the stack.
 
 ## Charged Hammer Throw
 
