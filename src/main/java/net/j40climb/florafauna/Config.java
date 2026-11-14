@@ -420,7 +420,7 @@ public class Config {
         captureRadius = MOB_CAPTURE_RADIUS.get();
         captureAnimTicks = MOB_CAPTURE_ANIM_TICKS.get();
         minTravelDelayTicks = MOB_MIN_TRAVEL_DELAY_TICKS.get();
-        maxTravelDelayTicks = MOB_MAX_TRAVEL_DELAY_TICKS.get();
+        maxTravelDelayTicks = checkedMaximum("maxTravelDelayTicks", minTravelDelayTicks, MOB_MAX_TRAVEL_DELAY_TICKS.get());
         maxQueueSizePerInput = MOB_MAX_QUEUE_SIZE.get();
         releaseCheckIntervalTicks = MOB_RELEASE_CHECK_INTERVAL_TICKS.get();
         allowUnbondedCapture = MOB_ALLOW_UNBONDED_CAPTURE.get();
@@ -433,16 +433,16 @@ public class Config {
         maxLeaksBeforeOverstress = MAX_LEAKS_BEFORE_OVERSTRESS.get();
         fearSourceDetectionRange = FEAR_SOURCE_DETECTION_RANGE.get();
         gunpowderDropMin = GUNPOWDER_DROP_MIN.get();
-        gunpowderDropMax = GUNPOWDER_DROP_MAX.get();
+        gunpowderDropMax = checkedMaximum("gunpowderDropMax", gunpowderDropMin, GUNPOWDER_DROP_MAX.get());
         endermanStareDistance = ENDERMAN_STARE_DISTANCE.get();
         enderPearlDropMin = ENDER_PEARL_DROP_MIN.get();
-        enderPearlDropMax = ENDER_PEARL_DROP_MAX.get();
+        enderPearlDropMax = checkedMaximum("enderPearlDropMax", enderPearlDropMin, ENDER_PEARL_DROP_MAX.get());
         blazeMinSnowGolems = BLAZE_MIN_SNOW_GOLEMS.get();
         blazeColdScanRadius = BLAZE_COLD_SCAN_RADIUS.get();
         blazeMinColdBlocks = BLAZE_MIN_COLD_BLOCKS.get();
         blazeRequireBothConditions = BLAZE_REQUIRE_BOTH_CONDITIONS.get();
         blazeRodDropMin = BLAZE_ROD_DROP_MIN.get();
-        blazeRodDropMax = BLAZE_ROD_DROP_MAX.get();
+        blazeRodDropMax = checkedMaximum("blazeRodDropMax", blazeRodDropMin, BLAZE_ROD_DROP_MAX.get());
         blazeSuppressAttacks = BLAZE_SUPPRESS_ATTACKS.get();
 
         // Iron Garden System
@@ -456,5 +456,11 @@ public class Config {
         ironGardenStorageSearchRadius = IRON_GARDEN_STORAGE_SEARCH_RADIUS.get();
         ironNuggetsPerPoppy = IRON_NUGGETS_PER_POPPY.get();
         ironGardenDropIfNoStorage = IRON_GARDEN_DROP_IF_NO_STORAGE.get();
+    }
+
+    private static int checkedMaximum(String key, int minimum, int maximum) {
+        if (maximum >= minimum) return maximum;
+        com.mojang.logging.LogUtils.getLogger().warn("{} ({}) is below its minimum ({}), using {}", key, maximum, minimum, minimum);
+        return minimum;
     }
 }

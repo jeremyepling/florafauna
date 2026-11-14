@@ -2,7 +2,9 @@ package net.j40climb.florafauna.common.item.abilities.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
@@ -24,8 +26,17 @@ public record SpawnLightningPayload(BlockPos targetPos) implements CustomPacketP
     );
 
     public static void onServerReceived(final SpawnLightningPayload data, final IPayloadContext context) {
-        Level level = context.player().level();
-        spawnLightningBolt(level, data.targetPos());
+        Player player = context.player();
+        if (player.getMainHandItem().has(FloraFaunaRegistry.LIGHTNING_ABILITY)) {
+            BlockPos target = targetFromView(player);
+            if (target.equals(data.targetPos()) && player.level().hasChunkAt(target)) {
+                spawnLightningBolt(player.level(), target);
+            }
+        }
+    }
+
+    public static BlockPos targetFromView(Player player) {
+        return BlockPos.containing(player.pick(10.0, 1.0F, false).getLocation());
     }
 
     public static void spawnLightningBolt(Level level, BlockPos targetPos) {

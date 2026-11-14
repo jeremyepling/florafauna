@@ -12,7 +12,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -50,30 +49,17 @@ public class MobBarrierClientEvents {
         BlockPos playerPos = player.blockPosition();
         VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderTypes.lines());
 
-        // Scan a 20-block radius cube around the player
         int radius = 20;
-        for (BlockPos pos : BlockPos.betweenClosed(
-                playerPos.offset(-radius, -radius, -radius),
-                playerPos.offset(radius, radius, radius))) {
-            // Check distance (20 blocks = 400 distance squared)
-            if (playerPos.distSqr(pos) <= 400) {
-                BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof MobBarrierBlock) {
-                    // Render orange outline for this barrier block
-                    poseStack.pushPose();
-                    renderShape(
-                            poseStack,
-                            vertexConsumer,
-                            Shapes.block(),
-                            (double) pos.getX() - cameraPos.x(),
-                            (double) pos.getY() - cameraPos.y(),
-                            (double) pos.getZ() - cameraPos.z(),
-                            1.0F,  // Red
-                            0.65F, // Green (for orange)
-                            0.0F,  // Blue
-                            0.4F   // Alpha
-                    );
-                    poseStack.popPose();
+        for (int cx = (playerPos.getX() - radius) >> 4; cx <= (playerPos.getX() + radius) >> 4; cx++) {
+            for (int cz = (playerPos.getZ() - radius) >> 4; cz <= (playerPos.getZ() + radius) >> 4; cz++) {
+                var chunk = level.getChunkSource().getChunkNow(cx, cz);
+                if (chunk == null) continue;
+                for (var entity : chunk.getBlockEntities().values()) {
+                    BlockPos pos = entity.getBlockPos();
+                    if (entity instanceof MobBarrierBlockEntity && playerPos.distSqr(pos) <= radius * radius) {
+                        renderShape(poseStack, vertexConsumer, Shapes.block(), pos.getX() - cameraPos.x(),
+                                pos.getY() - cameraPos.y(), pos.getZ() - cameraPos.z(), 1F, 0.65F, 0F, 0.4F);
+                    }
                 }
             }
         }

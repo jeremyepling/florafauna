@@ -111,6 +111,7 @@ public class FloraFaunaGameTests {
 
         // Register mining mode tests
         registerMiningModeTests(event, defaultEnv);
+        HammerAbilityGameTests.register(event, defaultEnv);
 
         // Register containment chamber tests
         registerContainmentChamberTests(event, defaultEnv);
@@ -2273,14 +2274,12 @@ public class FloraFaunaGameTests {
     }
 
     private static void testFearSourceCreeperSources(GameTestHelper helper) {
-        // Test isCreeperFearSource - it checks EntityType
-        // We can't easily create mock entities in GameTest, but we can verify
-        // the FearSourceDetector.isCreeperFearSource method exists and the logic is correct
-        // by checking that EntityType.CAT and EntityType.OCELOT are the targets
-
-        // Verify the method recognizes cats
-        // Note: Without actual entity instances, we can only verify the method signature exists
-        // and check that the expected behavior is documented
+        var cat = helper.spawn(EntityType.CAT, new BlockPos(1, 1, 1));
+        var ocelot = helper.spawn(EntityType.OCELOT, new BlockPos(2, 1, 1));
+        var cow = helper.spawn(EntityType.COW, new BlockPos(3, 1, 1));
+        helper.assertTrue(FearSourceDetector.isCreeperFearSource(cat), "Cats frighten creepers");
+        helper.assertTrue(FearSourceDetector.isCreeperFearSource(ocelot), "Ocelots frighten creepers");
+        helper.assertFalse(FearSourceDetector.isCreeperFearSource(cow), "Cows do not frighten creepers");
         helper.succeed();
     }
 
@@ -2722,7 +2721,7 @@ public class FloraFaunaGameTests {
     /**
      * Register a test with the default empty structure and settings.
      */
-    private static void registerTest(
+    static void registerTest(
             RegisterGameTestsEvent event,
             Holder<TestEnvironmentDefinition<?>> env,
             String name,

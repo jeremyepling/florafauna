@@ -81,29 +81,23 @@ public class MobOutputBlockEntity extends BlockEntity {
             CapturedMobTicket ticket = iter.next();
             if (ticket.isReady(currentTick)) {
                 // Spawn the mob
-                spawnMob(level, pos, ticket);
-                iter.remove();
-                setChanged();
-                break; // One release per tick
+                if (level instanceof ServerLevel serverLevel && spawnMob(serverLevel, pos, ticket)) {
+                    iter.remove();
+                    setChanged();
+                    break; // One successful release per interval
+                }
             }
         }
     }
 
-    private void spawnMob(Level level, BlockPos pos, CapturedMobTicket ticket) {
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return;
-        }
+    private boolean spawnMob(ServerLevel serverLevel, BlockPos pos, CapturedMobTicket ticket) {
 
         // Create entity from NBT
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(ticket.entityTypeId());
-        if (type == null) {
-            return;
-        }
+        var type = BuiltInRegistries.ENTITY_TYPE.getOptional(ticket.entityTypeId()).orElse(null);
+        if (type == null) return false;
 
         Entity entity = type.create(serverLevel, EntitySpawnReason.TRIGGERED);
-        if (entity == null) {
-            return;
-        }
+        if (entity == null) return false;
 
         // Load entity data from NBT
         ValueInput input = TagValueInput.create(
@@ -115,7 +109,7 @@ public class MobOutputBlockEntity extends BlockEntity {
 
         // Spawn slightly above the block
         entity.snapTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0, 0);
-        serverLevel.addFreshEntity(entity);
+        if (!serverLevel.addFreshEntity(entity)) return false;
 
         // Mark as recently released (capture immunity) and remove any lure goal
         if (entity instanceof Mob mob) {
@@ -124,8 +118,9 @@ public class MobOutputBlockEntity extends BlockEntity {
         }
 
         // Play emergence sound
-        level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 0.8f + level.getRandom().nextFloat() * 0.4f);
+        serverLevel.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                SoundEvents.SLIME_SQUISH, SoundSource.BLOCKS, 1.0f, 0.8f + serverLevel.getRandom().nextFloat() * 0.4f);
+        return true;
     }
 
     /**

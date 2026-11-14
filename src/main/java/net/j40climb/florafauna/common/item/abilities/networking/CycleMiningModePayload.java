@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
@@ -28,15 +27,14 @@ public enum CycleMiningModePayload implements CustomPacketPayload {
         if (!(context.player() instanceof ServerPlayer player)) {
             return;
         }
-        cycleMiningMode(player);
+        cycleMiningMode(player, player.getMainHandItem());
     }
 
     /**
-     * Cycles the mining mode on the player's main hand item.
+     * Cycles the mining mode on the interacting stack.
      * Can be called directly from items or via network payload.
      */
-    public static void cycleMiningMode(ServerPlayer player) {
-        ItemStack stack = player.getMainHandItem();
+    public static void cycleMiningMode(ServerPlayer player, ItemStack stack) {
 
         // Check if item has multi-block mining component
         if (!stack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
@@ -53,7 +51,7 @@ public enum CycleMiningModePayload implements CustomPacketPayload {
         // Display the new mode to the player
         MiningModeData currentMode = stack.get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
         if (currentMode != null) {
-            player.sendOverlayMessage(Component.literal(currentMode.getMiningModeString()));
+            player.sendOverlayMessage(currentMode.modeDescription());
         }
     }
 

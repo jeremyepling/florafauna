@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.item.abilities.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -93,7 +94,8 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
         return new ToolConfig(fortune, silkTouch, prev);
     }
 
-    public String getMiningSppedString() {
-        return "Mining Speed: " + this.miningSpeed().name();
+    public Component speedDescription() {
+        return Component.translatable("tooltip.florafauna.hammer.speed",
+                Component.translatable("gui.florafauna.tool_config.speed." + miningSpeed.getSerializedName()));
     }
 }

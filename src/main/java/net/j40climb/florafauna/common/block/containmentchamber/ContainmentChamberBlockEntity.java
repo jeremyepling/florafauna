@@ -17,7 +17,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -137,20 +136,6 @@ public class ContainmentChamberBlockEntity extends BlockEntity implements MenuPr
         handler.deserialize(input);
         progress = input.getIntOr("growth_chamber.progress", 0);
         maxProgress = input.getIntOr("growth_chamber.max_progress", 0);
-    }
-
-    public void tick(Level level, BlockPos blockPos, BlockState blockState) {
-//        if(hasRecipe()) {
-//            increaseCraftingProgress();
-//            setChanged(level, blockPos, blockState);
-//
-//            if(hasCraftingFinished()) {
-//                craftItem();
-//                resetProgress();
-//            }
-//        } else {
-//            resetProgress();
-//        }
     }
 
     @Override

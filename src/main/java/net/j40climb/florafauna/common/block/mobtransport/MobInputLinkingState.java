@@ -1,6 +1,11 @@
 package net.j40climb.florafauna.common.block.mobtransport;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.j40climb.florafauna.FloraFauna;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Uses player UUID as key for cross-dimension support.
  * ConcurrentHashMap for thread safety during server tick processing.
  */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public final class MobInputLinkingState {
 
     private MobInputLinkingState() {
@@ -24,7 +30,12 @@ public final class MobInputLinkingState {
     }
 
     // ConcurrentHashMap allows safe concurrent access from multiple threads
-    private static final Map<UUID, BlockPos> linkingPlayers = new ConcurrentHashMap<>();
+    private static final Map<UUID, GlobalPos> linkingPlayers = new ConcurrentHashMap<>();
+
+    @SubscribeEvent
+    public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        clearLinking(event.getEntity());
+    }
 
     /**
      * Sets the MobInput position a player is linking from.
@@ -33,7 +44,7 @@ public final class MobInputLinkingState {
      * @param inputPos The MobInput block position
      */
     public static void setLinkingFrom(Player player, BlockPos inputPos) {
-        linkingPlayers.put(player.getUUID(), inputPos);
+        linkingPlayers.put(player.getUUID(), GlobalPos.of(player.level().dimension(), inputPos.immutable()));
     }
 
     /**
@@ -44,7 +55,11 @@ public final class MobInputLinkingState {
      */
     @Nullable
     public static BlockPos getLinkingFrom(Player player) {
-        return linkingPlayers.get(player.getUUID());
+        GlobalPos origin = linkingPlayers.get(player.getUUID());
+        if (origin == null) return null;
+        if (origin.dimension().equals(player.level().dimension())) return origin.pos();
+        clearLinking(player);
+        return null;
     }
 
     /**

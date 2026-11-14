@@ -43,7 +43,7 @@ public class WoodStripping {
             Block block = event.getState().getBlock();
             Block stripped = getStrippables().get(block);
             if (stripped != null) {
-                event.setFinalState(stripped.defaultBlockState());
+                event.setFinalState(stripped.withPropertiesOf(event.getState()));
             }
         }
     }

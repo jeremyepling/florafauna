@@ -68,7 +68,7 @@ public class DepositHarvestGoal extends Goal {
         // Find a new storage container
         storagePos = findStorage();
         if (storagePos == null) {
-            return false;
+            return Config.ironGardenDropIfNoStorage;
         }
 
         // Remember this storage for future use
@@ -107,6 +107,12 @@ public class DepositHarvestGoal extends Goal {
 
     @Override
     public void start() {
+        if (storagePos == null) {
+            IronGardenData data = IronGardenHelper.getData(golem);
+            dropPoppies(data.carriedPoppies());
+            IronGardenHelper.setData(golem, data.clearCarriedPoppies());
+            return;
+        }
         depositingTicks = 0;
         stuckTicks = 0;
         totalTicks = 0;

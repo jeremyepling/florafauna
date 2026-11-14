@@ -59,7 +59,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | Scenario | What the client and integrated server check |
 | --- | --- |
 | `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
-| `hammer` | Change tool settings, capture wall and floor outlines, mine the matching 3×3 areas, and strip a log. |
+| `hammer` | Change tool settings, verify wall and floor outlines and 3×3 cuts, strip a log, then walk and mine three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |

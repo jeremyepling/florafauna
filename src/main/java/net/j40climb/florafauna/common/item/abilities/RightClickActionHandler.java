@@ -121,16 +121,19 @@ public class RightClickActionHandler {
             return false;
         }
 
+        if (!action.abilityId().getNamespace().equals(FloraFauna.MOD_ID)) return false;
         String abilityName = action.abilityId().getPath();
         switch (abilityName) {
             case "throwable_ability" -> ThrowItemPayload.throwItem(serverPlayer, hand);
-            case "multi_block_mining" -> CycleMiningModePayload.cycleMiningMode(serverPlayer);
+            case "multi_block_mining" -> CycleMiningModePayload.cycleMiningMode(serverPlayer, stack);
             case "lightning_ability" -> {
-                if (clickedPos != null) {
-                    SpawnLightningPayload.spawnLightningBolt(player.level(), clickedPos);
-                }
+                if (clickedPos == null || !stack.has(FloraFaunaRegistry.LIGHTNING_ABILITY)) return false;
+                SpawnLightningPayload.spawnLightningBolt(player.level(), clickedPos);
             }
-            case "teleport_surface_ability" -> TeleportToSurfacePayload.teleportToSurface(serverPlayer);
+            case "teleport_surface_ability" -> {
+                if (!stack.has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY)) return false;
+                TeleportToSurfacePayload.teleportToSurface(serverPlayer);
+            }
             default -> {
                 return false; // Unknown ability, don't cancel the event
             }

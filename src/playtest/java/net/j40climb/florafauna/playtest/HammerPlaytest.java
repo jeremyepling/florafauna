@@ -1,6 +1,9 @@
 package net.j40climb.florafauna.playtest;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.block.wood.WoodType;
+import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
@@ -21,6 +24,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -43,8 +48,12 @@ public final class HammerPlaytest {
     }
 
     static void steps(Playtest t, int phase) {
+        if (phase == 2) {
+            HammerQuarryPlaytest.resume(t);
+            return;
+        }
         if (phase != 1) {
-            throw new IllegalArgumentException("The hammer playtest uses one launch");
+            throw new IllegalArgumentException("Unknown Hammer phase " + phase);
         }
         t.server("Give the survival player a hammer and build the wall and floor", HammerPlaytest::prepare);
         t.awaitClient("Receive the hammer in the local player's hotbar",
@@ -93,6 +102,43 @@ public final class HammerPlaytest {
         t.awaitServer("Verify oak was stripped and the hammer stayed in hand", p ->
                 p.level().getBlockState(WALL).is(Blocks.STRIPPED_OAK_LOG)
                         && p.getMainHandItem().is(FloraFaunaRegistry.HAMMER.get()));
+        var driftwood = WoodType.DRIFTWOOD.getBlockSet();
+        var logX = driftwood.log().get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        var strippedLogX = driftwood.strippedLog().get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.X);
+        var woodZ = driftwood.wood().get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
+        var strippedWoodZ = driftwood.strippedWood().get().defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Z);
+        t.server("Configure mining-mode cycling as the fallback right-click action", p -> {
+            p.getMainHandItem().set(FloraFaunaRegistry.RIGHT_CLICK_ACTION, new RightClickAction(FloraFaunaRegistry.MULTI_BLOCK_MINING.getId()));
+            p.inventoryMenu.broadcastChanges();
+        });
+        // With stripping disabled, cycling from 3x3 to 5x5 acknowledges that the server handled the click.
+        checkTransform(t, "Disabled stripping leaves the driftwood intact and runs the fallback", logX,
+                MultiToolAbilityData.DEFAULT.withStrip(false), logX);
+        checkTransform(t, "Strip driftwood log on its X axis", logX, MultiToolAbilityData.DEFAULT, strippedLogX);
+        checkTransform(t, "Strip driftwood wood on its Z axis", woodZ, MultiToolAbilityData.DEFAULT, strippedWoodZ);
+        checkTransform(t, "Flatten dirt before tilling when both modes are enabled", Blocks.DIRT.defaultBlockState(),
+                MultiToolAbilityData.DEFAULT, Blocks.DIRT_PATH.defaultBlockState());
+        checkTransform(t, "Till dirt when flattening is disabled", Blocks.DIRT.defaultBlockState(),
+                MultiToolAbilityData.DEFAULT.withFlatten(false), Blocks.FARMLAND.defaultBlockState());
+        HammerQuarryPlaytest.start(t);
+    }
+
+    private static void checkTransform(Playtest t, String label, BlockState before, MultiToolAbilityData modes, BlockState after) {
+        t.server("Set up: " + label, p -> {
+            p.level().setBlockAndUpdate(WALL.above(), Blocks.AIR.defaultBlockState());
+            p.level().setBlockAndUpdate(WALL, before);
+            p.getMainHandItem().set(FloraFaunaRegistry.MULTI_TOOL_ABILITY, modes);
+            p.inventoryMenu.broadcastChanges();
+        });
+        t.awaitClient("Receive the target and hammer modes: " + label, mc -> aimedAt(mc, WALL, Direction.NORTH)
+                && mc.level.getBlockState(WALL).equals(before)
+                && modes.equals(mc.player.getMainHandItem().get(FloraFaunaRegistry.MULTI_TOOL_ABILITY)));
+        t.client("Use the hammer: " + label, mc ->
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, (BlockHitResult) mc.hitResult));
+        t.awaitServer(label, p -> p.level().getBlockState(WALL).equals(after) && p.getMainHandItem().is(FloraFaunaRegistry.HAMMER.get())
+                && p.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.FLAT_5X5);
+        t.awaitClient("See the resulting block and mining mode: " + label, mc -> mc.level.getBlockState(WALL).equals(after)
+                && mc.player.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.FLAT_5X5);
     }
 
     private static void prepare(ServerPlayer player) {

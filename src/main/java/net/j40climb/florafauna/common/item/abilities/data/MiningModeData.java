@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.item.abilities.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
@@ -34,7 +35,8 @@ public record MiningModeData(MiningShape shape, Integer radius, Integer maxBlock
         return new MiningModeData(miningShape, miningShape.getRadius(), this.maxBlocksToBreak(), this.ignoreToolRestrictions());
     }
 
-    public String getMiningModeString() {
-        return "Mining Mode: " + this.shape().name();
+    public Component modeDescription() {
+        return Component.translatable("tooltip.florafauna.hammer.mode",
+                Component.translatable("mining_shape.florafauna." + shape.getSerializedName()));
     }
 }
