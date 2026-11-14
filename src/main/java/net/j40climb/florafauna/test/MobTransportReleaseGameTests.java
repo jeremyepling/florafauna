@@ -13,13 +13,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.ServerExplosion;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -33,6 +39,8 @@ final class MobTransportReleaseGameTests {
         registerTest(event, env, "mob_output_retries_canceled_spawn", MobTransportReleaseGameTests::regularRetry);
         registerTest(event, env, "mob_output_retains_failed_release_during_break", h -> breakRetry(h, false));
         registerTest(event, env, "mob_input_retains_failed_release_during_break", h -> breakRetry(h, true));
+        registerTest(event, env, "mob_output_explosion_release_retry", h -> explosionRetry(h, false));
+        registerTest(event, env, "mob_input_explosion_release_retry", h -> explosionRetry(h, true));
     }
 
     private static CapturedMobTicket cow(GameTestHelper h, UUID id, long readyAt) {
@@ -115,6 +123,55 @@ final class MobTransportReleaseGameTests {
                 && level.getEntity(blocked) != null, "Retry failed to remove the block and release exactly the remaining passenger");
         require(h, !input.isPaired() && output.getInputCount() == 0, "Successful break left a pairing");
         h.succeed();
+    }
+
+    private static void explosionRetry(GameTestHelper h, boolean hitInput) {
+        h.setBlock(CENTER, FloraFaunaRegistry.MOB_INPUT.get());
+        h.setBlock(CENTER.east(), FloraFaunaRegistry.MOB_OUTPUT.get());
+        var level = h.getLevel();
+        var input = h.getBlockEntity(CENTER, MobInputBlockEntity.class);
+        var output = h.getBlockEntity(CENTER.east(), MobOutputBlockEntity.class);
+        input.pairWithOutput(output.getBlockPos());
+        var target = hitInput ? input : output;
+        BlockPos pos = target.getBlockPos();
+        UUID first = UUID.randomUUID();
+        UUID blocked = UUID.randomUUID();
+        for (UUID id : new UUID[]{first, blocked}) {
+            var ticket = cow(h, id, Long.MAX_VALUE);
+            if (hitInput) input.getBuffer().add(ticket);
+            else output.acceptTicket(ticket);
+        }
+
+        List<ItemStack> drops = new ArrayList<>();
+        explosionHit(h, pos, Explosion.BlockInteraction.TRIGGER_BLOCK, drops);
+        require(h, level.getBlockEntity(pos) == target && drops.isEmpty() && level.getEntity(first) == null
+                && level.getEntity(blocked) == null && input.isPaired(), "Trigger-only blast disturbed transport");
+
+        var veto = cancelPassenger(h, blocked);
+        try {
+            explosionHit(h, pos, Explosion.BlockInteraction.DESTROY_WITH_DECAY, drops);
+            int waiting = hitInput ? input.getBuffer().size() : output.getPendingReleaseCount();
+            require(h, level.getBlockEntity(pos) == target && waiting == 1 && drops.isEmpty()
+                    && level.getEntity(first) != null && level.getEntity(blocked) == null && input.isPaired(),
+                    "Destructive blast lost custody, pairing or emitted loot after a rejected spawn");
+        } finally {
+            NeoForge.EVENT_BUS.unregister(veto);
+        }
+
+        var firstEntity = level.getEntity(first);
+        var expectedItem = target.getBlockState().getBlock().asItem();
+        explosionHit(h, pos, Explosion.BlockInteraction.DESTROY, drops);
+        require(h, level.isEmptyBlock(pos) && drops.size() == 1 && drops.getFirst().is(expectedItem)
+                && drops.getFirst().getCount() == 1 && level.getEntity(first) == firstEntity && level.getEntity(blocked) != null,
+                "Blast retry failed to release the remaining mob and drop one transport block");
+        require(h, !input.isPaired() && output.getInputCount() == 0, "Blast left a stale pairing");
+        h.succeed();
+    }
+
+    private static void explosionHit(GameTestHelper h, BlockPos pos, Explosion.BlockInteraction mode, List<ItemStack> drops) {
+        var level = h.getLevel();
+        var blast = new ServerExplosion(level, null, null, null, Vec3.atCenterOf(pos), 1, false, mode);
+        level.getBlockState(pos).onExplosionHit(level, pos, blast, (stack, at) -> drops.add(stack));
     }
 
     private static void require(GameTestHelper h, boolean condition, String message) {
