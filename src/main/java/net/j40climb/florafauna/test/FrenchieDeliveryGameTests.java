@@ -367,6 +367,13 @@ final class FrenchieDeliveryGameTests {
                     click(owner, dog);
                     h.assertTrue(owner.getMainHandItem().is(Items.BUNDLE), "Preview took the held bundle");
                     order(owner, dog, "choose home");
+                    owner.setRespawnPosition(null, false);
+                    order(owner, dog, "send home");
+                    h.assertTrue(!dog.hasCompanionJob() && ItemStack.matches(owner.getMainHandItem(), parcel()),
+                            "A bed removed after preview took the held bundle");
+                    owner.setRespawnPosition(new ServerPlayer.RespawnConfig(respawn, false), false);
+                    click(owner, dog);
+                    order(owner, dog, "choose home");
                     order(owner, dog, "send home");
                     h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
                             "The owner could not confirm an unloaded bed");
