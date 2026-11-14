@@ -142,6 +142,8 @@ public class FloraFaunaGameTests {
         registerTest(event, defaultEnv, "frenchie_delivery_packed_cancel", FrenchieDeliveryGameTests::packAndCancel);
         registerTest(event, defaultEnv, "frenchie_delivery_recipient_full", FrenchieDeliveryGameTests::fullRecipient);
         registerTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect", FrenchieDeliveryGameTests::disconnectedRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_blocked_route",
+                DevPlot.FRENCHIE.structure(), 500, FrenchieDeliveryGameTests::blockedRoute);
         registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
         registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 

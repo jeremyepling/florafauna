@@ -9,7 +9,9 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -17,6 +19,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -155,6 +159,56 @@ final class FrenchieDeliveryGameTests {
             }
             h.succeed();
         });
+    }
+
+    static void blockedRoute(GameTestHelper h) {
+        // Build an enclosed recipient and a clear approach inside the rectangular pen.
+        for (BlockPos pos : BlockPos.betweenClosed(0, 0, 0, 6, 3, 9)) {
+            h.setBlock(pos, pos.getY() == 0 ? Blocks.STONE : Blocks.AIR);
+        }
+        var cell = new BlockPos(3, 1, 7);
+        for (BlockPos pos : BlockPos.betweenClosed(cell.offset(-1, 0, -1), cell.offset(1, 2, 1))) {
+            if (pos.getY() == 3 || pos.getX() != cell.getX() || pos.getZ() != cell.getZ()) {
+                h.setBlock(pos, Blocks.STONE);
+            }
+        }
+
+        var owner = h.makeMockServerPlayerInLevel();
+        var recipient = h.makeMockServerPlayerInLevel();
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 1);
+        var start = dog.position();
+        var expected = prepareDelivery(owner, recipient, dog).copy();
+        recipient.snapTo(h.absolutePos(cell), 0, 0);
+        confirm(owner, recipient, dog);
+
+        h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(start.distanceToSqr(dog.position()) >= 4 && dog.isDelivering(),
+                        "Dog never advanced toward the recipient"))
+                .thenExecuteAfter(350, () -> {
+                    try {
+                        var level = h.getLevel();
+                        var output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+                        dog.saveWithoutId(output);
+                        var tag = output.buildResult();
+                        h.assertTrue(dog.isDelivering() && tag.getBooleanOr("FrenchieReturning", false)
+                                        && recipient.getInventory().countItem(Items.BUNDLE) == 0,
+                                "A blocked route should time out and return with the parcel still on the dog");
+                        var restored = FloraFaunaRegistry.FRENCHIE.get().create(level, EntitySpawnReason.LOAD);
+                        h.assertTrue(restored != null, "Could not create restored courier");
+                        restored.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+                        dog.discard();
+                        h.assertTrue(level.addFreshEntity(restored) && restored.isDelivering(), "Reload lost the returning courier");
+                        owner.snapTo(restored.position().add(1, 0, 0), 0, 0);
+                        click(owner, restored);
+                        h.assertTrue(!restored.isDelivering() && restored.isOrderedToSit()
+                                        && ItemStack.matches(expected, owner.getMainHandItem())
+                                        && owner.getInventory().countItem(Items.BUNDLE) == 1,
+                                "Could not recover the original parcel once after the failed route and reload");
+                    } finally {
+                        disconnect(recipient);
+                        disconnect(owner);
+                    }
+                }).thenSucceed();
     }
 
     private static ItemStack prepareDelivery(ServerPlayer owner, ServerPlayer recipient, FrenchieEntity dog) {
