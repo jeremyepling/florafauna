@@ -1,4 +1,9 @@
 {
+  "frenchie.florafauna.tracking.start": "%s picked up your scent. Follow along!",
+  "frenchie.florafauna.tracking.no_scent": "%s cannot find a scent. You have no last death.",
+  "frenchie.florafauna.tracking.other_dimension": "%s lost the scent. Your last death is in another dimension.",
+  "frenchie.florafauna.tracking.blocked": "%s cannot find a safe route. Use the compass again from another spot.",
+  "frenchie.florafauna.tracking.arrived": "%s found the spot where you last died!",
   "block.florafauna.slime_grate": "Slime Grate",
   "block.florafauna.silk_line": "Spider Silk Line",
   "plot.florafauna.iron_garden.title": "Iron garden",
