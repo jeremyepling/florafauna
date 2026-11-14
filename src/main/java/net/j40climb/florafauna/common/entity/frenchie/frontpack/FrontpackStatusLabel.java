@@ -45,7 +45,7 @@ public final class FrontpackStatusLabel {
         var label = state.getRenderData(LABEL);
         if (label == null || state.distanceToCameraSq >= 4096) return;
         // Vanilla adds half a block above this attachment before billboarding the text.
-        var attachment = Vec3.directionFromRotation(0, state.bodyRot).scale(0.46).add(0, state.eyeHeight - 0.45, 0);
+        var attachment = Vec3.directionFromRotation(0, state.bodyRot).scale(0.46).add(0, state.eyeHeight - 0.65, 0);
         var camera = Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
         event.getSubmitNodeCollector().submitNameTag(event.getPoseStack(), attachment, 0, label, !state.isDiscrete,
                 state.lightCoords, state.distanceToCameraSq, camera);
