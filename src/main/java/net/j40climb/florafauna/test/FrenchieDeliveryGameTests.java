@@ -33,9 +33,16 @@ final class FrenchieDeliveryGameTests {
         var owner = h.makeMockServerPlayerInLevel();
         try {
             var dog = h.spawnWithNoFreeWill(FloraFaunaRegistry.FRENCHIE.get(), 1, 1, 1);
-            dog.tame(owner);
-            dog.sitDown();
             owner.snapTo(dog.position(), 0, 0);
+            owner.setGameMode(GameType.SURVIVAL);
+            owner.setItemInHand(HAND, new ItemStack(Items.BONE));
+            click(owner, dog);
+            h.assertTrue(dog.isOwnedBy(owner) && dog.isOrderedToSit() && owner.getMainHandItem().isEmpty(),
+                    "Using a bone should tame the dog and order it to sit");
+            owner.setItemInHand(HAND, new ItemStack(Items.GLOW_BERRIES));
+            click(owner, dog);
+            h.assertTrue(dog.isInLove() && owner.getMainHandItem().isEmpty() && dog.isOrderedToSit(),
+                    "Glow berries should feed the dog and preserve the sit order");
             var compass = new ItemStack(Items.COMPASS);
             owner.setItemInHand(HAND, compass);
             owner.setLastDeathLocation(Optional.empty());

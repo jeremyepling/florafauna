@@ -4,6 +4,19 @@ A Minecraft 26.1 mod for NeoForge 26.1.0.19-beta. Players can bond with a symbio
 
 Coding agents share the repository's worktree, implementation and testing instructions. Claude Code imports them through `CLAUDE.md`. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
+## Frenchie companions
+
+Tame a Frenchie with a bone, feed it glow berries, and right-click with an empty hand to switch between Sit and Follow. Shift + right-click picks up an adult dog. Shift + right-click the air to put it down. Packing pauses a job until release.
+
+| Behavior | Player controls |
+| --- | --- |
+| Death Tracking | Use an ordinary compass on your dog. Follow the compass icon to your last death in this dimension. Your dog waits when you fall behind and signals when you reach the spot. |
+| Delivery Dog | Use a bundle on your dog. Choose a player within 32 blocks or the dog's assigned home bed, review the destination, then select **Send bundle**. To set a home, open the same chooser within eight blocks of a bed and select **Assign bed**. |
+| Creeper Warning | An awake dog turns toward a visible creeper within 12 blocks and barks twice. The green face flashes with the barks, including above the hotbar when you carry the dog. The warning has an eight-second cooldown. |
+| Bedtime Buddy | Use a bed within ten blocks of your dog. A nearby sitting dog can join you too. Sleep marks appear when the dog settles by the pillow. Completing the night together grants two minutes of **Well Rested**, increasing block breaking speed by 10%. |
+
+A player delivery goes into an empty inventory slot. The dog waits if the recipient needs to make room. At a bed, use an empty hand on the waiting dog to collect. An empty-hand click during a trip cancels it, returns any bundle to that hand, and orders the dog to sit. If the recipient leaves or the route is blocked, the dog keeps the parcel for the owner.
+
 ## Development Setup
 
 ### Prerequisites
@@ -121,7 +134,9 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `hammer` | Change settings, interrupt a swing and check that all nine cracks clear. Mine a wall and floor, strip logs, flatten and till dirt, then walk three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
-| `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
+| `frenchie` | Observe natural sleep and waking. Order the dog to sit, use the bed, leave early, then complete the night together and check Well Rested. |
+| `companions` | Start a compass trail, observe named and unnamed status icons, interrupt the trail display with a creeper warning, and check the frontpack HUD. |
+| `delivery` | Assign an ordinary bed, confirm a filled bundle, restart the game, collect the parcel, then cancel a second trip. |
 | `frontpack` | Carry a Frenchie through death, respawn and restart, verify its coat on the player, then release the original dog once. |
 | `slime` | Play a note, watch the bonded slime split and rejoin at the grate, and check the hopper and bond after restarting. |
 | `spider` | Bond a spider, see it hanging upside down, shear its line, and collect one string. |
