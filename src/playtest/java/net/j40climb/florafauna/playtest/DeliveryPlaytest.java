@@ -195,6 +195,7 @@ final class DeliveryPlaytest {
                 mc.screen instanceof DeliveryScreen && mc.screen.getTitle().equals(Component.translatable("frenchie.florafauna.delivery.confirm_title"))
                         && ItemStack.matches(mc.player.getMainHandItem(), parcel())
                         && mc.screen.getNarrationMessage().getString().contains(Component.translatable("frenchie.florafauna.delivery.home").getString())
+                        && mc.screen.getNarrationMessage().getString().contains(Component.translatable("dimension.minecraft.overworld").getString())
                         && mc.screen.getNarrationMessage().getString().contains(eta(expectedSeconds))
                         && !mc.screen.getNarrationMessage().getString().contains(BED.toShortString()));
     }

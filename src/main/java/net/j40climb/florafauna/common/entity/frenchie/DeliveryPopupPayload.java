@@ -22,9 +22,10 @@ public record DeliveryPopupPayload(UUID dog, List<Choice> choices, Optional<Prev
                 ByteBufCodecs.stringUtf8(36), Choice::address, ComponentSerialization.STREAM_CODEC, Choice::label, Choice::new);
     }
 
-    public record Preview(Choice destination, int seconds) {
+    public record Preview(Choice destination, Identifier dimension, int seconds) {
         private static final StreamCodec<RegistryFriendlyByteBuf, Preview> CODEC = StreamCodec.composite(
-                Choice.CODEC, Preview::destination, ByteBufCodecs.VAR_INT, Preview::seconds, Preview::new);
+                Choice.CODEC, Preview::destination, Identifier.STREAM_CODEC, Preview::dimension,
+                ByteBufCodecs.VAR_INT, Preview::seconds, Preview::new);
     }
 
     public static final Type<DeliveryPopupPayload> TYPE =

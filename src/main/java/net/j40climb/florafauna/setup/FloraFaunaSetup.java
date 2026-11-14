@@ -121,7 +121,7 @@ public class FloraFaunaSetup {
         // Server to client
         registrar.playToClient(ItemInputAnimationPayload.TYPE, ItemInputAnimationPayload.STREAM_CODEC, ItemInputAnimationPayload::onClientReceived);
         registrar.playToClient(OpenCocoonScreenPayload.TYPE, OpenCocoonScreenPayload.STREAM_CODEC);
-        registrar.playToClient(DeliveryPopupPayload.TYPE, DeliveryPopupPayload.STREAM_CODEC);
+        registrar.versioned("2").playToClient(DeliveryPopupPayload.TYPE, DeliveryPopupPayload.STREAM_CODEC);
         registrar.playToClient(AnchorFillStatePayload.TYPE, AnchorFillStatePayload.STREAM_CODEC, AnchorFillStatePayload::handleClient);
     }
 

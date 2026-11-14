@@ -121,7 +121,7 @@ public final class DeliveryDialog {
         if (action.equals("choose")) {
             selected = destination;
             var preview = new DeliveryPopupPayload.Preview(new DeliveryPopupPayload.Choice(destination, name),
-                    CourierTrips.arrivalSeconds(owner.level(), dog.position(), targetLevel, target));
+                    targetLevel.dimension().identifier(), CourierTrips.arrivalSeconds(owner.level(), dog.position(), targetLevel, target));
             PacketDistributor.sendToPlayer(owner, new DeliveryPopupPayload(dog.getUUID(), List.of(), Optional.of(preview)));
         } else {
             if (!destination.equals(selected)) return false;
