@@ -63,9 +63,9 @@ final class HammerMiningGameTests {
         player.setOnGround(true);
         for (Direction face : Direction.values()) {
             for (Direction heading : Direction.Plane.HORIZONTAL) {
-                // Only a vertical hit derives travel from the player. Run all four rotations on the floor.
-                if (face != Direction.UP && heading != Direction.NORTH) continue;
-                fill(player, center.offset(-6, -8, -6), center.offset(6, 9, 6), Blocks.STONE);
+                // Check both player axes on vertical hits. Side hits depend only on the face.
+                if (face.getAxis().isHorizontal() && heading != Direction.NORTH) continue;
+                fill(player, center.offset(-7, -8, -7), center.offset(7, 9, 7), Blocks.STONE);
                 Map<BlockPos, Block> expected = new HashMap<>();
                 Direction stairsFace = Direction.NORTH;
                 switch (mode) {
@@ -89,6 +89,39 @@ final class HammerMiningGameTests {
                             expected.put(ore, Blocks.AIR);
                         }
                     }
+                    case WALKABLE_TUNNEL, LARGE_TUNNEL, BORE -> {
+                        Direction endDirection = face.getOpposite();
+                        int length = mode == MiningShape.BORE ? 7 : 5;
+                        BlockPos end = center.relative(endDirection, length - 1);
+                        BlockPos first = center;
+                        BlockPos last = end;
+                        if (mode == MiningShape.LARGE_TUNNEL) {
+                            // One block of padding along each axis perpendicular to the depth.
+                            int x = face.getAxis() == Direction.Axis.X ? 0 : 1;
+                            int y = face.getAxis() == Direction.Axis.Y ? 0 : 1;
+                            int z = face.getAxis() == Direction.Axis.Z ? 0 : 1;
+                            first = center.offset(-x, -y, -z);
+                            last = end.offset(x, y, z);
+                        } else if (mode == MiningShape.WALKABLE_TUNNEL) {
+                            if (face.getAxis().isHorizontal()) {
+                                last = end.above(2);
+                            } else {
+                                first = center.relative(heading.getOpposite());
+                                last = end.relative(heading);
+                            }
+                        }
+                        for (BlockPos pos : BlockPos.betweenClosed(first, last)) expected.put(pos.immutable(), Blocks.AIR);
+                        h.assertTrue(expected.size() == switch (mode) {
+                            case WALKABLE_TUNNEL -> 15;
+                            case LARGE_TUNNEL -> 45;
+                            default -> 7;
+                        }, "Incorrect test footprint for " + mode);
+                        // Air and denied cells consume depth. Blocks beyond the gaps still break.
+                        set(player, center.relative(endDirection), Blocks.AIR);
+                        BlockPos protectedBlock = center.relative(endDirection, 2);
+                        set(player, protectedBlock, Blocks.BEDROCK);
+                        expected.put(protectedBlock, Blocks.BEDROCK);
+                    }
                     case TUNNEL_UP, TUNNEL_DOWN -> {
                         boolean up = mode == MiningShape.TUNNEL_UP;
                         if (face == Direction.DOWN || (up && face == Direction.UP)) {
@@ -106,7 +139,7 @@ final class HammerMiningGameTests {
                     }
                 }
                 swing(player, center, face, heading);
-                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-6, -8, -6), center.offset(6, 9, 6))) {
+                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-7, -8, -7), center.offset(7, 9, 7))) {
                     Block block = expected.getOrDefault(pos, Blocks.STONE);
                     check(h, pos, block, mode + " " + face + " " + heading);
                     if (block == Blocks.COBBLESTONE_STAIRS) stair(h, pos, stairsFace);

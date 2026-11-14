@@ -15,7 +15,11 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
+import javax.imageio.ImageIO;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Set;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +36,7 @@ final class HammerQuarryPlaytest {
                         && pos.getY() >= FIRST_FACE.getY() - 1;
                 level.setBlock(pos, (entrance ? Blocks.AIR : Blocks.STONE).defaultBlockState(), Block.UPDATE_CLIENTS);
             }
+            level.setBlockAndUpdate(FIRST_FACE.offset(0, -3, 1), Blocks.AIR.defaultBlockState());
             player.teleportTo(level, 8.5, 195, 9.5, Set.of(), 0f, 0f, true);
         });
         for (MiningShape shape : new MiningShape[]{MiningShape.FLAT_7X7,
@@ -57,6 +62,7 @@ final class HammerQuarryPlaytest {
         });
         cutThenWalk(t, 2);
         t.screenshot("hammer-quarry-after-restart");
+        walkStraightTunnel(t);
     }
 
     private static BlockPos face(int flight) {
@@ -72,6 +78,13 @@ final class HammerQuarryPlaytest {
                     && hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(face)
                     && hit.getDirection() == Direction.NORTH && mc.level.getBlockState(face).is(Blocks.STONE);
         });
+        if (flight == 0) {
+            t.awaitClient("Receive the empty tread position behind the quarry face", mc ->
+                    mc.level.isEmptyBlock(face.offset(0, -3, 1)));
+            t.screenshot("hammer-placement-outline");
+            t.awaitClient("See the colored placement outline through the unbroken quarry face", mc ->
+                    hasPlacementOutline(mc.gameDirectory.toPath().resolve("screenshots/hammer-placement-outline.png")));
+        }
         t.client("Strike the wall for " + label, mc ->
                 Playtest.require(mc.gameMode.startDestroyBlock(face, Direction.NORTH), "Refused to mine " + face));
         t.awaitServer("Receive the final stair of " + label, p ->
@@ -91,6 +104,62 @@ final class HammerQuarryPlaytest {
         t.awaitServer("Settle on the lower stairs for " + label, p ->
                 p.onGround() && p.getY() <= face.getY() - 3 && p.getY() >= face.getY() - 6
                         && p.getZ() >= face.getZ() + 3.5 && p.getZ() < face.getZ() + 5);
+    }
+
+    private static boolean hasPlacementOutline(Path screenshot) {
+        try {
+            var image = ImageIO.read(screenshot.toFile());
+            if (image == null) return false;
+            int pixels = 0;
+            // The camera faces bare stone. Exclude the hotbar and held tool from the sample.
+            for (int y = image.getHeight() / 2; y < image.getHeight() * 4 / 5; y++) {
+                for (int x = image.getWidth() * 2 / 5; x < image.getWidth() * 3 / 5; x++) {
+                    int rgb = image.getRGB(x, y);
+                    int r = rgb >> 16 & 255, g = rgb >> 8 & 255, b = rgb & 255;
+                    if (g > b + 15 && b > r + 50) pixels++;
+                }
+            }
+            Playtest.require(pixels >= 20, "Missing teal stair outline against the quarry wall, pixels=" + pixels);
+            return true;
+        } catch (IOException e) {
+            return false; // The screenshot writer may still be encoding the frame.
+        }
+    }
+
+    private static void walkStraightTunnel(Playtest t) {
+        BlockPos entry = new BlockPos(14, 190, 15);
+        t.server("Open a level approach to a stone wall across the chunk boundary", p -> {
+            for (BlockPos pos : BlockPos.betweenClosed(entry.north(4), entry.north().above(2))) {
+                p.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            }
+            p.teleportTo(p.level(), entry.getX() + 0.5, entry.getY(), entry.getZ() - 2.5, Set.of(), 0f, 0f, true);
+        });
+        t.client("Select Walkable Tunnel", mc -> KeyMapping.click(ClientSetup.CYCLE_MINING_MODE_KEY.get().getKey()));
+        t.awaitClient("Aim at the bottom block with Walkable Tunnel active", mc -> {
+            mc.player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(entry).add(0, 0, -0.5));
+            return mc.player.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.WALKABLE_TUNNEL
+                    && mc.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(entry) && hit.getDirection() == Direction.NORTH;
+        });
+        t.client("Start the walkable cut", mc -> Playtest.require(mc.gameMode.startDestroyBlock(entry, Direction.NORTH), "Client refused the cut"));
+        t.awaitServer("Verify five columns of three-block headroom and the original floor", p -> {
+            for (int i = 0; i < 5; i++) {
+                BlockPos foot = entry.south(i);
+                if (!p.level().isEmptyBlock(foot) || !p.level().isEmptyBlock(foot.above()) || !p.level().isEmptyBlock(foot.above(2))) return false;
+                Playtest.require(p.level().getBlockState(foot.below()).is(Blocks.STONE)
+                        && p.level().getBlockState(foot.above(3)).is(Blocks.STONE), "Walkable tunnel damaged its floor or ceiling");
+            }
+            return true;
+        });
+        t.client("Walk into the tunnel", mc -> {
+            mc.player.setXRot(0);
+            mc.player.setYRot(0);
+            mc.options.keyUp.setDown(true);
+        });
+        t.awaitClient("Walk to the far end on the original floor", mc -> {
+            if (mc.player.getZ() < entry.getZ() + 4) return false;
+            mc.options.keyUp.setDown(false);
+            return mc.player.onGround() && Math.abs(mc.player.getY() - entry.getY()) < 0.01;
+        });
     }
 
     private static void verifyFlight(ServerLevel level, BlockPos face) {

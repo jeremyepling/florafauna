@@ -1033,14 +1033,17 @@ public class FloraFaunaGameTests {
     private static void testMiningModeCycling(GameTestHelper helper) {
         MiningModeData data = MiningModeData.DEFAULT;
 
-        // Cycle through all shapes: SINGLE → FLAT_3X3 → FLAT_5X5 → FLAT_7X7 → SHAPELESS → TUNNEL_UP → TUNNEL_DOWN
+        // Existing shapes keep their order; new patterns follow the original staircase modes.
         MiningShape[] expectedOrder = {
             MiningShape.FLAT_3X3,
             MiningShape.FLAT_5X5,
             MiningShape.FLAT_7X7,
             MiningShape.SHAPELESS,
             MiningShape.TUNNEL_UP,
-            MiningShape.TUNNEL_DOWN
+            MiningShape.TUNNEL_DOWN,
+            MiningShape.WALKABLE_TUNNEL,
+            MiningShape.LARGE_TUNNEL,
+            MiningShape.BORE
         };
 
         for (MiningShape expected : expectedOrder) {
@@ -1054,22 +1057,22 @@ public class FloraFaunaGameTests {
     }
 
     private static void testMiningModeWrapAround(GameTestHelper helper) {
-        // Start from TUNNEL_DOWN (last shape)
-        MiningModeData data = new MiningModeData(MiningShape.TUNNEL_DOWN, 0, 64, true);
+        // Start from the last configured shape.
+        MiningModeData data = new MiningModeData(MiningShape.BORE, 0, 64, true);
 
         // Next mode should wrap to SINGLE
         data = data.getNextMode();
 
         if (data.shape() != MiningShape.SINGLE) {
-            throw helper.assertionException("After TUNNEL_DOWN should wrap to SINGLE, got: " + data.shape());
+            throw helper.assertionException("After BORE should wrap to SINGLE, got: " + data.shape());
         }
 
         helper.succeed();
     }
 
     private static void testMiningModeRadiusPerShape(GameTestHelper helper) {
-        // Expected radii: SINGLE=0, FLAT_3X3=1, FLAT_5X5=2, FLAT_7X7=3, SHAPELESS=1, TUNNEL_UP=0, TUNNEL_DOWN=0
-        int[] expectedRadii = {0, 1, 2, 3, 1, 0, 0};
+        // Only flat and shapeless mining use a configurable radius.
+        int[] expectedRadii = {0, 1, 2, 3, 1, 0, 0, 0, 0, 0};
         MiningShape[] shapes = MiningShape.values();
 
         for (int i = 0; i < shapes.length; i++) {

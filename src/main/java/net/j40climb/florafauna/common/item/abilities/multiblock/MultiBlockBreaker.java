@@ -7,8 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.StairBlock;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import net.neoforged.neoforge.event.EventHooks;
 
@@ -34,8 +32,7 @@ public final class MultiBlockBreaker {
             if (plan.blocks().contains(pos) && !mined.contains(pos)) continue;
             if (!MultiBlockPatterns.canInteract(level, player, pos) || !level.isEmptyBlock(pos)) continue;
             var snapshot = BlockSnapshot.create(level.dimension(), level, pos);
-            var state = Blocks.COBBLESTONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, plan.stairFacing());
-            if (level.setBlock(pos, state, Block.UPDATE_ALL) && EventHooks.onBlockPlace(player, snapshot, Direction.UP)) {
+            if (level.setBlock(pos, plan.stairState(), Block.UPDATE_ALL) && EventHooks.onBlockPlace(player, snapshot, Direction.UP)) {
                 snapshot.restore();
             }
         }
