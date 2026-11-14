@@ -129,6 +129,9 @@ public class FloraFaunaGameTests {
 
         // Register mob transport tests
         registerMobTransportTests(event, defaultEnv);
+        registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
+        registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
+        registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 
         // Register fear system tests
         registerFearSystemTests(event, defaultEnv);

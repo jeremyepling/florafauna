@@ -446,6 +446,7 @@ public class FloraFaunaRegistry {
                     AttachmentType.builder(() -> FrontpackData.DEFAULT)
                             .serialize(FrontpackData.CODEC.fieldOf("french_frontpack_data"))
                             .sync(FrontpackData.STREAM_CODEC)
+                            .copyOnDeath()
                             .build());
 
     public static final Supplier<AttachmentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS_ATTACHMENT =

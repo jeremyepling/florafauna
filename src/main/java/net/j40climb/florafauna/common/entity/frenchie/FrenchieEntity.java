@@ -139,11 +139,11 @@ public class FrenchieEntity extends TamableAnimal {
     }
 
     public FrenchieVariant getVariant() {
-        return FrenchieVariant.byId(this.getTypeVariant() & 255); // used to compress the size with the 255
+        return FrenchieVariant.byId(this.getTypeVariant());
     }
 
     private void setVariant(FrenchieVariant variant) {
-        this.entityData.set(VARIANT, variant.getId() & 255);
+        this.entityData.set(VARIANT, variant.getId());
     }
 
     /* Interact */
@@ -170,8 +170,10 @@ public class FrenchieEntity extends TamableAnimal {
                 return InteractionResult.SUCCESS;
             }
         }
-        if(isTame() && pHand == InteractionHand.MAIN_HAND && !isFood(itemstack)) {
-            toggleSitting();
+        if (isTame() && isOwnedBy(pPlayer) && pHand == InteractionHand.MAIN_HAND && !isFood(itemstack)) {
+            if (!level().isClientSide()) {
+                toggleSitting();
+            }
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(pPlayer, pHand);
@@ -222,10 +224,17 @@ public class FrenchieEntity extends TamableAnimal {
     @Override
     public void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        Integer variantID = input.getIntOr("Variant", 0);
-        this.entityData.set(VARIANT, variantID);
-        String poseName = input.getStringOr("Pose", Pose.STANDING.name());
-        this.setPose(Pose.valueOf(poseName));
+        this.setVariant(FrenchieVariant.byId(input.getIntOr("Variant", 0)));
+        // Existing worlds store the uppercase enum name. Preserve all recognized poses.
+        Pose savedPose = this.isOrderedToSit() ? Pose.SITTING : Pose.STANDING;
+        String poseName = input.getStringOr("Pose", savedPose.name());
+        for (Pose pose : Pose.values()) {
+            if (pose.name().equalsIgnoreCase(poseName)) {
+                savedPose = pose;
+                break;
+            }
+        }
+        this.setPose(savedPose);
         boolean sleeping = input.getBooleanOr("IsSleeping", false);
         this.setFrenchieSleeping(sleeping);
         long lastPoseChangeTick = input.getLongOr("LastPoseChangeTick", 0L);
