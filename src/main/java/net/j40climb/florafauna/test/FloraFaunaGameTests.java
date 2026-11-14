@@ -1120,6 +1120,9 @@ public class FloraFaunaGameTests {
     // ==================== Mob Barrier Tests ====================
 
     private static void registerMobBarrierTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
+        registerTest(event, env, "mob_barrier_saved_and_network_filters", MobBarrierGameTests::oldPreset);
+        registerTest(event, env, "mob_barrier_rejects_oversize_edits", MobBarrierGameTests::boundedEdits);
+        registerTest(event, env, "mob_barrier_validates_held_preset", MobBarrierGameTests::heldPreset);
         registerTest(event, env, "mob_barrier_config_default_empty", FloraFaunaGameTests::testMobBarrierConfigDefaultEmpty);
         registerTest(event, env, "mob_barrier_config_add_remove_entity_id", FloraFaunaGameTests::testMobBarrierConfigAddRemoveEntityId);
         registerTest(event, env, "mob_barrier_config_add_remove_tag", FloraFaunaGameTests::testMobBarrierConfigAddRemoveTag);
