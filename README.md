@@ -63,6 +63,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
+| `frontpack` | Carry a Frenchie through death, respawn and restart, verify its coat on the player, then release the original dog once. |
 
 The script prints the output directory under `.tmp/world-playtests`. Each run keeps separate worlds, per-phase logs and results, and screenshots from the recovery, hammer and Frenchie scenarios. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 

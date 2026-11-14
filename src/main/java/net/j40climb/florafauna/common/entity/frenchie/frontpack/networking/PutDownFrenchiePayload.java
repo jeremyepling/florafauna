@@ -2,19 +2,11 @@ package net.j40climb.florafauna.common.entity.frenchie.frontpack.networking;
 
 import io.netty.buffer.ByteBuf;
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
-import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackEvents;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -32,34 +24,9 @@ public enum PutDownFrenchiePayload implements CustomPacketPayload {
         StreamCodec.unit(INSTANCE);
 
     public static void onServerReceived(final PutDownFrenchiePayload data, final IPayloadContext context) {
-        Player player = context.player();
-
-        // Check if player is carrying a Frenchie
-        FrontpackData frontpackData = player.getData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
-        if (!frontpackData.hasCarriedFrenchie()) return;
-
-        // Spawn Frenchie in front of player
-        Vec3 spawnPos = player.position().add(player.getLookAngle().scale(2.0));
-
-        FrenchieEntity frenchie = FloraFaunaRegistry.FRENCHIE.get().create(player.level(), EntitySpawnReason.TRIGGERED);
-        if (frenchie == null) return;
-
-        // Restore data from NBT using ValueInput
-        ValueInput input = TagValueInput.create(
-            ProblemReporter.DISCARDING,
-            player.level().registryAccess(),
-            frontpackData.frenchieNBT()
-        );
-        frenchie.load(input);
-        frenchie.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, player.getYRot(), 0.0f);
-
-        player.level().addFreshEntity(frenchie);
-
-        // Clear attachment
-        player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, FrontpackData.DEFAULT);
-
-        // Play sound
-        player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0f, 1.0f);
+        if (context.player() instanceof ServerPlayer player && player.isAlive() && !player.isSpectator() && player.isShiftKeyDown()) {
+            FrontpackEvents.putDown(player);
+        }
     }
 
     @Override
