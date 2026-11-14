@@ -34,6 +34,7 @@ import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
+import net.j40climb.florafauna.common.mobsymbiote.irongarden.goals.DepositHarvestGoal;
 import net.j40climb.florafauna.common.util.AreaScanner;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
@@ -58,6 +59,7 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -2420,6 +2422,7 @@ public class FloraFaunaGameTests {
         registerTest(event, env, "iron_garden_data_increment_harvests", FloraFaunaGameTests::testIronGardenDataIncrementHarvests);
         registerTest(event, env, "iron_garden_data_garden_center", FloraFaunaGameTests::testIronGardenDataGardenCenter);
         registerTest(event, env, "iron_garden_data_carried_poppies", FloraFaunaGameTests::testIronGardenDataCarriedPoppies);
+        registerTest(event, env, "iron_garden_no_storage", FloraFaunaGameTests::testIronGardenNoStorage);
 
         // IronGardenHelper tests
         registerTest(event, env, "iron_garden_helper_eligibility", FloraFaunaGameTests::testIronGardenHelperEligibility);
@@ -2612,6 +2615,33 @@ public class FloraFaunaGameTests {
             throw helper.assertionException("Should NOT have garden center after clearing");
         }
 
+        helper.succeed();
+    }
+
+    private static void testIronGardenNoStorage(GameTestHelper helper) {
+        var golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, 1, 1, 1);
+        var data = IronGardenData.DEFAULT.withState(IronGardenState.CALM, 0L).withCarriedPoppies(3);
+        IronGardenHelper.setData(golem, data);
+        boolean oldDropSetting = Config.ironGardenDropIfNoStorage;
+        int oldRadius = Config.ironGardenStorageSearchRadius;
+        try {
+            Config.ironGardenStorageSearchRadius = 1;
+            var goal = new DepositHarvestGoal(golem);
+            Config.ironGardenDropIfNoStorage = false;
+            helper.assertFalse(goal.canUse(), "Disabled fallback must keep the poppies with the golem");
+            Config.ironGardenDropIfNoStorage = true;
+            helper.assertTrue(goal.canUse() && IronGardenHelper.getData(golem).carriedPoppies() == 3,
+                    "Selecting the fallback must preserve the carried stack until start");
+            goal.start();
+            var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, golem.getBoundingBox().inflate(2),
+                    entity -> entity.getItem().is(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get()));
+            helper.assertTrue(IronGardenHelper.getData(golem).carriedPoppies() == 0
+                    && drops.stream().mapToInt(e -> e.getItem().getCount()).sum() == 3,
+                    "The fallback must release the original three poppies");
+        } finally {
+            Config.ironGardenDropIfNoStorage = oldDropSetting;
+            Config.ironGardenStorageSearchRadius = oldRadius;
+        }
         helper.succeed();
     }
 

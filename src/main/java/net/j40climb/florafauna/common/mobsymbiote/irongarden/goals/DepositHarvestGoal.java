@@ -109,8 +109,9 @@ public class DepositHarvestGoal extends Goal {
     public void start() {
         if (storagePos == null) {
             IronGardenData data = IronGardenHelper.getData(golem);
-            dropPoppies(data.carriedPoppies());
-            IronGardenHelper.setData(golem, data.clearCarriedPoppies());
+            if (dropPoppies(data.carriedPoppies())) {
+                IronGardenHelper.setData(golem, data.clearCarriedPoppies());
+            }
             return;
         }
         depositingTicks = 0;
@@ -275,14 +276,12 @@ public class DepositHarvestGoal extends Goal {
             IronGardenHelper.setData(golem, data.withCarriedPoppies(remaining));
 
             // If we still have poppies and config allows, drop them
-            if (remaining > 0 && Config.ironGardenDropIfNoStorage) {
-                dropPoppies(remaining);
+            if (remaining > 0 && Config.ironGardenDropIfNoStorage && dropPoppies(remaining)) {
                 IronGardenHelper.setData(golem, data.clearCarriedPoppies());
             }
         } else {
             // No handler - drop if configured
-            if (Config.ironGardenDropIfNoStorage) {
-                dropPoppies(carried);
+            if (Config.ironGardenDropIfNoStorage && dropPoppies(carried)) {
                 IronGardenHelper.setData(golem, data.clearCarriedPoppies());
             }
         }
@@ -294,10 +293,10 @@ public class DepositHarvestGoal extends Goal {
     /**
      * Drops ferric poppies as item entities.
      */
-    private void dropPoppies(int count) {
+    private boolean dropPoppies(int count) {
         Level level = golem.level();
         ItemStack stack = new ItemStack(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get(), count);
         ItemEntity itemEntity = new ItemEntity(level, golem.getX(), golem.getY() + 0.5, golem.getZ(), stack);
-        level.addFreshEntity(itemEntity);
+        return level.addFreshEntity(itemEntity);
     }
 }
