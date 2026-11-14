@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
+import net.j40climb.florafauna.common.entity.frenchie.CourierTrips;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -74,6 +75,7 @@ public class FrontpackEvents {
         if (frenchie.hasCompanionJob()) player.sendOverlayMessage(Component.translatable("frenchie.florafauna.order.packed"));
 
         // Despawn the entity
+        CourierTrips.forget(frenchie);
         frenchie.discard();
 
         // Play pickup sound

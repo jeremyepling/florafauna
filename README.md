@@ -11,13 +11,17 @@ Tame a Frenchie with a bone, feed it glow berries, and right-click with an empty
 | Behavior | Player controls |
 | --- | --- |
 | Death Tracking | Use an ordinary compass on your dog. Follow the compass icon to your last death in this dimension. Your dog waits when you fall behind and signals when you reach the spot. |
-| Delivery Dog | Use a bundle on your dog to open the postal popup. Choose an online player or the dog's assigned home bed, review the destination and travel time, then select **Send bundle**. To assign a home, open the chooser within eight blocks of a bed. |
+| Delivery Dog | Use a bundle on your dog, choose **Your bed** or an online player, check the estimated arrival time and select **Send bundle**. |
 | Creeper Warning | An awake dog turns toward a visible creeper within 12 blocks and barks twice. The green face flashes with the barks, including above the hotbar when you carry the dog. The warning has an eight-second cooldown. |
 | Bedtime Buddy | Use a bed within ten blocks of your dog. A nearby sitting dog can join you too. Sleep marks appear when the dog settles by the pillow. Completing the night together grants two minutes of **Well Rested**, increasing block breaking speed by 10%. |
 
-The Frenchie walks off for up to 20 blocks or four seconds, then disappears for the trip. Each leg takes three seconds plus one second per 16 blocks, rounded up. For example, a 160-block trip takes 13 seconds after departure. The server saves the dog and its bundle while it travels, so the terrain along the route can stay unloaded.
+The estimate includes the short walk before departure. At normal server speed, a 160-block delivery takes about 17 seconds from confirmation. The dog travels any distance, including between dimensions, without loading terrain along the route.
 
-The dog appears at the recipient's current position and waits for an empty inventory slot. After handing over the bundle, it makes a timed return trip to its owner. If the recipient leaves or the dog cannot land safely, it brings the bundle back. At a home bed it waits with the parcel until the owner collects it. While the dog is present, an empty-hand right-click retrieves the bundle and orders the dog to sit.
+The Frenchie appears beside the recipient and barks. The recipient must right-click the dog with an inventory slot free to accept the bundle. The Frenchie then heads back to the sender. For a delivery to your bed, it waits there with the parcel. Use an empty hand on the dog to collect it.
+
+**Send home without a parcel.** Use `/frenchie home` within 12 blocks of your Frenchie. The nearest available dog goes to your bed and sits there. You can also crouch and right-click your bed with an empty hand to send a nearby dog there.
+
+**Recall.** Use `/frenchie recall` anywhere to call back your traveling or waiting Frenchies. Each brings back any unaccepted bundle. Right-click the returned courier with an empty hand to collect it.
 
 ## Development Setup
 
@@ -138,7 +142,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe natural sleep and waking. Order the dog to sit, use the bed, leave early, then complete the night together and check Well Rested. |
 | `companions` | Start a compass trail, observe named and unnamed status icons, interrupt the trail display with a creeper warning, and check the frontpack HUD. |
-| `delivery` | Send a filled bundle to an assigned bed 102 blocks away, restart in transit, and collect it. Cancel a second trip, then choose an online player and wait for the dog to deliver and return. |
+| `delivery` | Send a filled bundle to your bed, restart in transit, collect it, cancel a second delivery, recall a courier and send the dog home without a bundle. |
 | `frontpack` | Carry a Frenchie through death, respawn and restart, verify its coat on the player, then release the original dog once. |
 | `slime` | Play a note, watch the bonded slime split and rejoin at the grate, and check the hopper and bond after restarting. |
 | `spider` | Bond a spider, see it hanging upside down, shear its line, and collect one string. |

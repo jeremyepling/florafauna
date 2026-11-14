@@ -1,4 +1,8 @@
 {
+  "frenchie.florafauna.delivery.no_nearby_dog": "Bring an available Frenchie closer.",
+  "frenchie.florafauna.delivery.no_bed": "Your bed is unavailable.",
+  "frenchie.florafauna.delivery.recall_called": "Calling your Frenchies back.",
+  "frenchie.florafauna.delivery.recall_none": "No Frenchies away to recall.",
   "frenchie.florafauna.order.sit": "%s will sit here.",
   "frenchie.florafauna.order.follow": "%s will follow you.",
   "frenchie.florafauna.order.packed": "Job paused. Put your dog down to continue.",
