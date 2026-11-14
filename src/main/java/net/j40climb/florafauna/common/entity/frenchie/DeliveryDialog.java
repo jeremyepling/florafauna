@@ -6,11 +6,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.UuidArgument;
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -27,7 +28,7 @@ public final class DeliveryDialog {
     private final InteractionHand hand;
     private final ItemStack previewStack;
     private final long expires;
-    private final @Nullable BlockPos nearbyBed;
+    private final @Nullable GlobalPos offeredBed;
     private final Map<String, Component> destinations = new LinkedHashMap<>();
     private @Nullable String selected;
 
@@ -37,28 +38,27 @@ public final class DeliveryDialog {
         previewStack = owner.getItemInHand(hand).copy();
         expires = dog.level().getGameTime() + 20 * 120;
         var level = owner.level();
-        var origin = dog.blockPosition();
-        nearbyBed = BlockPos.findClosestMatch(origin, 8, 8, pos -> origin.distSqr(pos) <= 64
-                && DeliveryGoal.isBedHead(level, pos)).map(BlockPos::immutable).orElse(null);
-        List<DeliveryPopupPayload.Choice> choices = new ArrayList<>();
-        var home = dog.delivery().home();
-        if (home != null && level.getServer().getLevel(home.dimension()) != null) {
-            String address = home.pos().toShortString();
-            if (!home.dimension().equals(level.dimension())) address += " (" + home.dimension().identifier() + ")";
-            destinations.put("home", label("home", address));
-            choices.add(new DeliveryPopupPayload.Choice("home", label("send_home", address)));
-        }
-        if (nearbyBed != null && (home == null || !home.dimension().equals(level.dimension()) || !nearbyBed.equals(home.pos()))) {
-            choices.add(new DeliveryPopupPayload.Choice("bed", label("assign", nearbyBed.toShortString())));
-        }
+        offeredBed = ownerBed(owner);
+        if (offeredBed != null) destinations.put("home", label("home"));
         level.getServer().getPlayerList().getPlayers().stream().filter(p -> eligiblePlayer(owner, p))
                 .sorted(Comparator.comparing(p -> p.getName().getString(), String.CASE_INSENSITIVE_ORDER))
-                .forEach(p -> {
-                    String id = p.getUUID().toString();
-                    destinations.put(id, p.getName());
-                    choices.add(new DeliveryPopupPayload.Choice(id, label("send_player", p.getName())));
-                });
+                .forEach(p -> destinations.put(p.getStringUUID(), p.getName()));
+        var choices = destinations.entrySet().stream()
+                .map(entry -> new DeliveryPopupPayload.Choice(entry.getKey(), entry.getValue())).toList();
         PacketDistributor.sendToPlayer(owner, new DeliveryPopupPayload(dog.getUUID(), choices, Optional.empty()));
+    }
+
+    static @Nullable GlobalPos ownerBed(ServerPlayer owner) {
+        var respawn = owner.getRespawnConfig();
+        if (respawn == null || respawn.forced()) return null;
+        var address = respawn.respawnData().globalPos();
+        var level = owner.level().getServer().getLevel(address.dimension());
+        if (level == null) return null;
+        // Vanilla saves the position for beds and anchors alike. The HOME POI indexes bed heads
+        // even in unloaded chunks, so opening a delivery card needn't load a remote bed's terrain.
+        boolean bed = level.hasChunkAt(address.pos()) ? DeliveryGoal.isBedHead(level, address.pos())
+                : level.getPoiManager().existsAtPosition(PoiTypes.HOME, address.pos());
+        return bed ? address : null;
     }
 
     private static boolean eligiblePlayer(ServerPlayer owner, ServerPlayer candidate) {
@@ -67,7 +67,6 @@ public final class DeliveryDialog {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         var dogId = Commands.argument("dog", UuidArgument.uuid())
-                .then(Commands.literal("bed").executes(ctx -> reply(ctx, "bed", "")))
                 .then(Commands.literal("dismiss").executes(ctx -> reply(ctx, "dismiss", "")));
         for (String action : List.of("choose", "send")) {
             dogId.then(Commands.literal(action)
@@ -97,27 +96,19 @@ public final class DeliveryDialog {
             dog.deliveryDialog = null;
             return true;
         }
-        if (action.equals("bed")) {
-            if (nearbyBed == null || dog.blockPosition().distSqr(nearbyBed) > 64
-                    || !DeliveryGoal.isBedHead(owner.level(), nearbyBed)) return false;
-            dog.delivery().assignBed(nearbyBed);
-            dog.deliveryDialog = null;
-            tell(owner, "assigned", nearbyBed.toShortString());
-            return true;
-        }
         Component name = destinations.get(destination);
         if (name == null) return false;
         ServerPlayer recipient = null;
         ServerLevel targetLevel;
         Vec3 target;
         if (destination.equals("home")) {
-            var home = dog.delivery().home();
-            targetLevel = home == null ? null : owner.level().getServer().getLevel(home.dimension());
-            if (targetLevel == null || (targetLevel.hasChunkAt(home.pos()) && !DeliveryGoal.isBedHead(targetLevel, home.pos()))) {
-                tell(owner, "reassign");
+            targetLevel = offeredBed == null ? null : owner.level().getServer().getLevel(offeredBed.dimension());
+            if (targetLevel == null || !offeredBed.equals(ownerBed(owner))) {
+                dog.deliveryDialog = null;
+                tell(owner, "home_changed");
                 return true;
             }
-            target = home.pos().getBottomCenter();
+            target = offeredBed.pos().getBottomCenter();
         } else {
             recipient = owner.level().getServer().getPlayerList().getPlayer(UUID.fromString(destination));
             if (recipient == null || !eligiblePlayer(owner, recipient)) {
@@ -130,12 +121,12 @@ public final class DeliveryDialog {
         if (action.equals("choose")) {
             selected = destination;
             var preview = new DeliveryPopupPayload.Preview(new DeliveryPopupPayload.Choice(destination, name),
-                    DeliveryGoal.travelSeconds(owner.level(), dog.position(), targetLevel, target));
+                    CourierTrips.arrivalSeconds(owner.level(), dog.position(), targetLevel, target));
             PacketDistributor.sendToPlayer(owner, new DeliveryPopupPayload(dog.getUUID(), List.of(), Optional.of(preview)));
         } else {
             if (!destination.equals(selected)) return false;
             dog.deliveryDialog = null;
-            dog.delivery().start(owner, hand, recipient);
+            dog.delivery().start(owner, hand, recipient, recipient == null ? offeredBed : null);
             dog.syncCompanionJob();
         }
         return true;
