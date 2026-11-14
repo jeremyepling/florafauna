@@ -2,17 +2,21 @@ package net.j40climb.florafauna.common.item.abilities.multiblock;
 
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
+import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.Tags;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -20,6 +24,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public final class MultiBlockPatterns {
     private static final int STAIR_STEPS = 5;
@@ -71,7 +76,8 @@ public final class MultiBlockPatterns {
 
     private static List<BlockPos> vein(Player player, ItemStack tool, MiningModeData mode, BlockPos center) {
         Level level = player.level();
-        var ore = level.getBlockState(center).getBlock();
+        boolean exact = tool.getOrDefault(FloraFaunaRegistry.TOOL_CONFIG, ToolConfig.DEFAULT).exactVein();
+        Predicate<BlockState> matches = veinMatcher(level.getBlockState(center), exact);
         var queue = new ArrayDeque<BlockPos>();
         Set<BlockPos> visited = new HashSet<>();
         Set<BlockPos> selected = new LinkedHashSet<>();
@@ -85,7 +91,7 @@ public final class MultiBlockPatterns {
             for (BlockPos neighbor : BlockPos.betweenClosed(current.offset(-radius, -radius, -radius),
                     current.offset(radius, radius, radius))) {
                 BlockPos pos = neighbor.immutable();
-                if (visited.add(pos) && level.hasChunkAt(pos) && level.getBlockState(pos).is(ore)
+                if (visited.add(pos) && level.hasChunkAt(pos) && matches.test(level.getBlockState(pos))
                         && isMineable(level, player, tool, mode, pos)) {
                     selected.add(pos);
                     if (selected.size() == mode.maxBlocksToBreak()) break;
@@ -121,6 +127,20 @@ public final class MultiBlockPatterns {
             }
         }
         return new Plan(List.copyOf(blocks), List.of(), face);
+    }
+
+    private static Predicate<BlockState> veinMatcher(BlockState origin, boolean exact) {
+        Block block = origin.getBlock();
+        if (exact || !isStoneOrDeepslateOre(origin)) return state -> state.is(block);
+
+        List<TagKey<Block>> materials = origin.typeHolder().tags()
+                .filter(tag -> tag.location().getNamespace().equals("c") && tag.location().getPath().startsWith("ores/"))
+                .toList();
+        return state -> state.is(block) || isStoneOrDeepslateOre(state) && materials.stream().anyMatch(state::is);
+    }
+
+    private static boolean isStoneOrDeepslateOre(BlockState state) {
+        return state.is(Tags.Blocks.ORES_IN_GROUND_STONE) || state.is(Tags.Blocks.ORES_IN_GROUND_DEEPSLATE);
     }
 
     private static Plan tunnel(Player player, ItemStack tool, MiningModeData mode, BlockPos center, Direction face) {
