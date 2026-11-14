@@ -13,7 +13,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Configuration data for MobBarrierBlock.
@@ -22,17 +25,53 @@ import java.util.List;
  * Entity IDs: e.g., "minecraft:zombie", "florafauna:gecko"
  * Entity Tags: e.g., "#minecraft:undead", "#minecraft:raiders"
  */
-public record MobBarrierConfig(
-        List<String> entityIds,
-        List<String> entityTags,
-        boolean blockVision
-) {
-
+public final class MobBarrierConfig {
     public static final MobBarrierConfig DEFAULT = new MobBarrierConfig(List.of(), List.of(), false);
 
-    public MobBarrierConfig {
-        entityIds = List.copyOf(entityIds);
-        entityTags = List.copyOf(entityTags);
+    // Keep the original spelling and order for saved presets and the editor.
+    private final List<String> entityIds;
+    private final List<String> entityTags;
+    private final boolean blockVision;
+    private final Set<Identifier> blockedIds;
+    private final Set<TagKey<EntityType<?>>> blockedTags;
+
+    public MobBarrierConfig(List<String> entityIds, List<String> entityTags, boolean blockVision) {
+        this.entityIds = List.copyOf(entityIds);
+        this.entityTags = List.copyOf(entityTags);
+        this.blockVision = blockVision;
+        this.blockedIds = new HashSet<>();
+        this.blockedTags = new HashSet<>();
+        for (String entry : this.entityIds) {
+            Identifier id = Identifier.tryParse(entry);
+            if (id != null) blockedIds.add(id);
+        }
+        for (String entry : this.entityTags) {
+            Identifier id = parseTag(entry);
+            if (id != null) blockedTags.add(TagKey.create(Registries.ENTITY_TYPE, id));
+        }
+    }
+
+    public List<String> entityIds() {
+        return entityIds;
+    }
+
+    public List<String> entityTags() {
+        return entityTags;
+    }
+
+    public boolean blockVision() {
+        return blockVision;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof MobBarrierConfig config && blockVision == config.blockVision
+                && entityIds.equals(config.entityIds) && entityTags.equals(config.entityTags);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityIds, entityTags, blockVision);
     }
 
     public static final Codec<MobBarrierConfig> CODEC = RecordCodecBuilder.create(instance ->
@@ -60,28 +99,11 @@ public record MobBarrierConfig(
     public boolean shouldBlockEntity(Entity entity) {
         if (entity == null) return false;
 
-        EntityType<?> entityType = entity.getType();
-        Identifier entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entityType);
-
-        // Check direct entity ID matches
-        for (String id : entityIds) {
-            if (entityId.equals(Identifier.tryParse(id))) {
-                return true;
-            }
+        if (blockedIds.contains(BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()))) return true;
+        // Resolve membership against the live holder so datapack reloads are visible.
+        for (TagKey<EntityType<?>> tag : blockedTags) {
+            if (entity.is(tag)) return true;
         }
-
-        // Check entity tag matches
-        for (String tagString : entityTags) {
-            String tagPath = tagString.startsWith("#") ? tagString.substring(1) : tagString;
-            Identifier tagId = Identifier.tryParse(tagPath);
-            if (tagId != null) {
-                TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, tagId);
-                if (entity.is(tagKey)) {
-                    return true;
-                }
-            }
-        }
-
         return false;
     }
 
@@ -162,9 +184,12 @@ public record MobBarrierConfig(
      * @return true if the tag has valid format (namespace:path)
      */
     public static boolean isValidTagFormat(String tagString) {
-        String tagPath = tagString.startsWith("#") ? tagString.substring(1) : tagString;
-        Identifier tagId = Identifier.tryParse(tagPath);
-        return tagId != null && !tagId.getPath().isEmpty();
+        return parseTag(tagString) != null;
+    }
+
+    private static Identifier parseTag(String entry) {
+        Identifier id = Identifier.tryParse(entry.startsWith("#") ? entry.substring(1) : entry);
+        return id != null && !id.getPath().isEmpty() ? id : null;
     }
 
     /**
