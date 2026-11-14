@@ -3,31 +3,37 @@
 [CmdletBinding(DefaultParameterSetName = 'Selected')]
 param(
     [Parameter(ParameterSetName = 'Selected', Position = 0)]
-    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots')]
+    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots', 'barrier')]
     [string[]]$Scenario,
     [Parameter(ParameterSetName = 'Full')]
     [switch]$All,
     [string]$SourceWorld,
-    [switch]$Offline
+    [switch]$Offline,
+    [ValidateSet('26.1', '26.3')][string]$Target = '26.1'
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 if ($All) {
-    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots')
+    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'slime', 'spider', 'plots', 'barrier')
 } elseif (!$Scenario) {
     throw 'Choose a client scenario, e.g. -Scenario hammer, or use -All for the full gameplay suite.'
 }
 $checkout = Split-Path $PSScriptRoot -Parent
+$project = "$Target-neoforge"
+$targetDir = Join-Path $checkout "versions/$project"
+$optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
+if ($Target -eq '26.3') { $optionsTemplate = Join-Path $targetDir 'dev/options-template.txt' }
 if (!$SourceWorld) {
-    $SourceWorld = Join-Path $checkout "run/client-$(Split-Path $checkout -Leaf)/saves/dev"
+    $saveRoot = if ($Target -eq '26.1') { $checkout } else { $targetDir }
+    $SourceWorld = Join-Path $saveRoot "run/client-$(Split-Path $checkout -Leaf)/saves/dev"
 }
 $world = (Resolve-Path -LiteralPath $SourceWorld).Path
 $level = Join-Path $world 'level.dat'
 if (!(Test-Path -LiteralPath $level -PathType Leaf)) { throw "Missing level.dat in $world" }
 if (@($Scenario | Sort-Object -Unique).Count -ne $Scenario.Count) { throw 'Select each scenario only once.' }
 $runId = [guid]::NewGuid().ToString('N')
-$runRoot = Join-Path $checkout ".tmp/world-playtests/$runId"
+$runRoot = Join-Path $targetDir ".tmp/world-playtests/$runId"
 if ($runRoot.StartsWith($world + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'The test output cannot be inside the source save.'
 }
@@ -60,21 +66,21 @@ try {
                 throw 'Source save changed during the copy.'
             }
             Set-Content -LiteralPath (Join-Path $gameDir '.florafauna-playtest') -Value $name
-            $gameOptions = (Get-Content -LiteralPath 'dev/options-template.txt') -replace '^pauseOnLostFocus:.*','pauseOnLostFocus:false'
+            $gameOptions = (Get-Content -LiteralPath $optionsTemplate) -replace '^pauseOnLostFocus:.*','pauseOnLostFocus:false'
             $gameOptions | Set-Content -LiteralPath (Join-Path $gameDir 'options.txt')
         }
     } finally { if ($lock) { $lock.Dispose() } }
 
-    & .\gradlew.bat @options runData *> (Join-Path $runRoot 'datagen.log')
+    & .\gradlew.bat @options ":${project}:runData" *> (Join-Path $runRoot 'datagen.log')
     if ($LASTEXITCODE -ne 0) { throw "Data generation failed. See $runRoot/datagen.log" }
     $failed = @()
     foreach ($name in $Scenario) {
         $gameDir = Join-Path $runRoot $name
-        $phases = if ($name -in 'frenchie', 'spider') { @(1) } else { @(1, 2) }
+        $phases = if ($name -in 'frenchie', 'spider', 'barrier') { @(1) } else { @(1, 2) }
         foreach ($phase in $phases) {
             Write-Host "Launching $name phase $phase ..."
             $log = Join-Path $gameDir "phase-$phase.log"
-            & .\gradlew.bat @options "-PplaytestId=$runId" "-PplaytestScenario=$name" "-PplaytestPhase=$phase" runWorldPlaytest *> $log
+            & .\gradlew.bat @options "-PplaytestId=$runId" "-PplaytestScenario=$name" "-PplaytestPhase=$phase" ":${project}:runWorldPlaytest" *> $log
             $exitCode = $LASTEXITCODE
             $resultPath = Join-Path $gameDir "phase-$phase.result"
             $result = if (Test-Path -LiteralPath $resultPath) { (Get-Content -Raw -LiteralPath $resultPath).Trim() } else { 'Missing client result' }

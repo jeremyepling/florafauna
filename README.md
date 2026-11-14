@@ -1,6 +1,6 @@
 # FloraFauna
 
-A Minecraft 26.1 mod for NeoForge 26.1.0.19-beta. Players can bond with a symbiote, recover gear from a husk, mine with configurable tools and use living storage and mob transport systems.
+A NeoForge mod for Minecraft 26.1 and 26.3. Players can bond with a symbiote, recover gear from a husk, mine with configurable tools and use living storage and mob transport systems.
 
 Coding agents share the repository's worktree, implementation and testing instructions. Claude Code imports them through `CLAUDE.md`. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
@@ -14,23 +14,44 @@ Coding agents share the repository's worktree, implementation and testing instru
 
 ### Build & Run
 
-From the checkout you want to test, generate resources before packaging. The build writes the mod jar to `build/libs/`.
+Feature PRs target `main`. Stonecutter defaults to editing Minecraft 26.1. Both targets use ModDevGradle and Java 25. Their exact Minecraft and NeoForge versions and supported ranges live in [26.1 properties](versions/26.1-neoforge/gradle.properties) and [26.3 properties](versions/26.3-neoforge/gradle.properties).
+
+To build one JAR, generate that target's data first, then package it in a second invocation.
 
 ```powershell
-.\gradlew.bat --max-workers=4 runData
-.\gradlew.bat --max-workers=4 build runGameTestServer
-.\gradlew.bat runClient
+.\gradlew.bat :26.1-neoforge:runData
+.\gradlew.bat :26.1-neoforge:build
 ```
 
-During iteration, use `.\gradlew.bat test --tests '*HammerConfigTest'` for Hammer configuration or `.\gradlew.bat '-PgameTestFilter=florafauna:hammer_tunnel_gaps' runGameTestServer` for stair placement. The selector also accepts wildcard patterns such as `florafauna:hammer_*`. The shared guide covers when to expand verification. [Test scope](AGENTS.md#verify-from-the-assigned-checkout)
+The result is `versions/26.1-neoforge/build/libs/florafauna-26.1-neoforge-<mod version>.jar`. Substitute `26.3-neoforge` for the other JAR. Each subproject owns its generated data under `build/generated/resources/datagen`, compiled classes, launch files and JARs. To run the full headless checks for both targets from a clean checkout, use PowerShell 7.
 
-### IDE Setup
+```powershell
+foreach ($target in '26.1-neoforge', '26.3-neoforge') {
+    .\gradlew.bat ":${target}:runData"
+    if ($LASTEXITCODE) { throw "Datagen failed for $target" }
+    .\gradlew.bat ":${target}:build" ":${target}:runGameTestServer"
+    if ($LASTEXITCODE) { throw "Verification failed for $target" }
+}
+```
 
-Open the checkout you want to test as an IntelliJ Gradle project using JDK 25. To open a worker from the main checkout, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1` and choose a new window if prompted. Let Gradle sync so NeoForge can generate that checkout's run configurations. Use **Client** for playing or debugging the mod and **GameTestServer** for headless gameplay tests. Run the Gradle `runData` task before testing a fresh checkout or changes to generated content.
+For a shorter iteration, `:26.1-neoforge:check` runs JUnit and compiles the client playtests. Use `.\gradlew.bat :26.1-neoforge:test --tests '*HammerConfigTest'` for one JUnit class or `.\gradlew.bat '-PgameTestFilter=florafauna:hammer_tunnel_gaps' :26.1-neoforge:runGameTestServer` for a specific GameTest. Ready PRs and release builds run the full headless checks and upload one JAR per version. Draft PRs run `check` on both.
+
+### IntelliJ editing target
+
+Open the checkout as a Gradle project using JDK 25. To open a worker in a separate window, run `.\scripts\open_idea.ps1 -Path ..\florafauna-1`. In IntelliJ's Gradle tool window, run the root task **Set active project to 26.3-neoforge**, then reload the Gradle project. The shared `src` tree now exposes the 26.3 branches of Stonecutter conditionals. Use the selected subproject's `runClient` or `runGameTestServer` task. Run its `runData` before the first launch.
+
+Before committing, run the root task **Reset active project**, reload Gradle, and verify `stonecutter.gradle` selects `26.1-neoforge`. The same switch and reset tasks are available from the wrapper.
+
+```powershell
+.\gradlew.bat 'Set active project to 26.3-neoforge'
+.\gradlew.bat 'Reset active project'
+```
+
+Qualified build and test commands work from either editing target. Shared gameplay, tests and assets live under `src/`. Target-specific data providers, renderer hooks, mixins, access transformers and structure variants live under `versions/<target>/target/`.
 
 ### Dev World
 
-The client opens the save named `dev` in its worktree-specific run directory. The shared template lives in `dev/world-template/dev/` in the main checkout and is gitignored. The worktree creation helper seeds new slots from that template when present. On first launch, Gradle can also seed a missing save from a template present in the same checkout.
+The client opens the save named `dev` under `run/client-<checkout>/saves/` for 26.1 and `versions/26.3-neoforge/run/client-<checkout>/saves/` for 26.3. The shared template lives in `dev/world-template/dev/` in the main checkout and is gitignored. The worktree creation helper seeds new slots from that template when present. On first launch, Gradle can also seed a missing save from a template present in the same checkout.
 
 Joining the dev world applies these settings automatically.
 
@@ -77,7 +98,7 @@ Each plot has a named sign and a lectern with instructions, supplies to collect 
 | `tool_actions` | Compare fresh hammer use targets with the original strip of leaves, stripped logs, farmland and path. |
 | `iron_garden` | Bond an iron golem and watch it plant, convert and harvest poppies. Interrupt it and time its return to gardening. |
 
-For **one plot in its own world**, create a Creative superflat save with commands enabled, run `/ffplot build hammer` and then `/ffplot visit hammer`. Reopen that save directly with `.\gradlew.bat "-PdevSave=hammer-lab" runClient`, using its actual folder name under `run/client-<checkout>/saves/`. You can also place the same structure at a chosen position with vanilla `/place template florafauna:plots/hammer ~ ~ ~` in a clear area. Use `/ffplot build` for plots you want to visit by name.
+For **one plot in its own world**, create a Creative superflat save with commands enabled, run `/ffplot build hammer` and then `/ffplot visit hammer`. Reopen that save directly with `.\gradlew.bat "-PdevSave=hammer-lab" :26.1-neoforge:runClient`, using its actual folder name under `run/client-<checkout>/saves/`. You can also place the same structure at a chosen position with vanilla `/place template florafauna:plots/hammer ~ ~ ~` in a clear area. Use `/ffplot build` for plots you want to visit by name.
 
 Run `/ffplot build all` again to add newly registered plots. Existing installations keep your changes. In an older save, `/ffplot reset recovery` and `/ffplot reset frenchie` install their expanded books and restock their kits. Resetting a plot replaces its blocks and storage. Mobs, player inventories, bonds, time and gamerules belong to the world or player. Use an isolated save for tests that need fresh player state or change the time of day.
 
@@ -104,21 +125,24 @@ The recovery scenario already opens the cocoon screen and uses its spawn and bin
 
 ### Automated client playtests
 
-Close the source world, then run this from the checkout in PowerShell 7 with Java 25. The default source is that checkout's singleplayer `dev` save.
+Close the source world, then run this from the checkout in PowerShell 7 with Java 25. The default source is the selected target's singleplayer `dev` save.
 
 ```powershell
 .\scripts\test_dev_world.ps1 -Scenario hammer
 .\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
-.\scripts\test_dev_world.ps1 -All  # Full gameplay pass
+.\scripts\test_dev_world.ps1 -All  # Defaults to 26.1
+.\scripts\test_dev_world.ps1 -Target 26.3 -All
+.\scripts\test_husk_multiplayer.ps1 -Target 26.3
 ```
 
-Each scenario launches a real Minecraft client in a fresh copy of the save. Let the test control the client until it exits.
+Each scenario launches a real Minecraft client in a fresh copy of the save. When 26.3 opens a 26.1 source world, the runner selects Minecraft’s **Create Backup and Load** option for the copy and continues through the 26.3 file upgrade. Let the test control the client until it exits.
 
 | Scenario | What the client and integrated server check |
 | --- | --- |
 | `plots` | Build one fixture and the combined layout, visit all guides, preserve an edit across rebuild and restart, reset one plot and open its book. |
 | `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
 | `hammer` | Change settings, interrupt a swing and check that all nine cracks clear. Mine a wall and floor, strip logs, flatten and till dirt, then walk three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
+| `barrier` | Place a configured mob barrier, verify its settings on both sides, and compare screenshots with the barrier item held and with an empty hand. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
@@ -126,7 +150,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | `slime` | Play a note, watch the bonded slime split and rejoin at the grate, and check the hopper and bond after restarting. |
 | `spider` | Bond a spider, see it hanging upside down, shear its line, and collect one string. |
 
-The script prints the output directory under `.tmp/world-playtests`. Each scenario has its own world and per-phase results. The `frontpack/screenshots` folder contains matched third-person views before and after putdown. The plots, recovery, hammer and sleep scenarios also save screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
+The script prints the output directory under `versions/<target>/.tmp/world-playtests`. Each scenario has its own world and per-phase results. The `frontpack/screenshots` folder contains matched third-person views before and after putdown. The plots, recovery, hammer, barrier and sleep scenarios also save screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
 ### Worktree Workflow
 
