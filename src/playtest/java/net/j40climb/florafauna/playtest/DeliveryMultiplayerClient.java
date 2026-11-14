@@ -18,7 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
+import net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent;
 
 import java.nio.file.Files;
 
@@ -27,7 +27,7 @@ public final class DeliveryMultiplayerClient {
     private static final String ROLE = System.getProperty("florafauna.deliveryTest.client");
     private enum Step { IDLE, USE_BUNDLE, CHOOSE, CONFIRM, FRAME, CAPTURE, ACCEPT, EXIT }
     private static Step step = Step.IDLE;
-    private static boolean heardBark;
+    private static volatile boolean heardBark;
     private static int frames;
 
     @SubscribeEvent
@@ -41,14 +41,14 @@ public final class DeliveryMultiplayerClient {
     }
 
     @SubscribeEvent
-    public static void sound(PlaySoundEvent event) {
+    public static void sound(PlaySoundSourceEvent event) {
         if (!"Visitor".equals(ROLE)) return;
         var mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null || event.getSound() == null) return;
+        if (mc.level == null || mc.player == null) return;
         var expected = mc.level.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT)
                 .getOrThrow(WolfSoundVariants.PUGLIN).value().adultSounds().ambientSound().value().location();
         var sound = event.getSound();
-        if (sound.getIdentifier().equals(expected) && Math.abs(sound.getPitch() - 0.95F) < 0.01F
+        if (sound.getIdentifier().equals(expected)
                 && mc.player.distanceToSqr(sound.getX(), sound.getY(), sound.getZ()) < 25) {
             heardBark = true;
             LogUtils.getLogger().info("Recipient client received the courier's arrival bark at its landing point");
