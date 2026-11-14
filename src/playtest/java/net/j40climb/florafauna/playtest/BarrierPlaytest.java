@@ -79,6 +79,12 @@ final class BarrierPlaytest {
                 mc.level.getBlockEntity(BARRIER) instanceof MobBarrierBlockEntity barrier && CONFIG.equals(barrier.getConfig()));
         t.client("Center the stationary camera on the nearby barrier", mc -> mc.player.lookAt(Anchor.EYES, Vec3.atCenterOf(BARRIER)));
         t.screenshot("barrier-held");
+        // Rebuilding the platform can drop items from an earlier scenario into the hotbar.
+        t.server("Prepare an empty comparison slot", p -> {
+            p.getInventory().setItem(1, ItemStack.EMPTY);
+            p.inventoryMenu.broadcastChanges();
+        });
+        t.awaitClient("Receive the empty comparison slot", mc -> mc.player.getInventory().getItem(1).isEmpty());
         t.client("Switch to the empty hotbar slot", mc -> {
             mc.player.getInventory().setSelectedSlot(1);
             mc.player.connection.send(new ServerboundSetCarriedItemPacket(1));
