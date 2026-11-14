@@ -36,5 +36,6 @@ public final class MultiBlockBreaker {
                 snapshot.restore();
             }
         }
+        if (plan.passage() != null) TunnelLighting.afterMining(player, tool, plan.passage(), mined);
     }
 }

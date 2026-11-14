@@ -96,6 +96,8 @@ public final class HammerPlaytest {
 
         setVeinPreference(t, true);
         setVeinPreference(t, false);
+        setLighting(t, true);
+        setLighting(t, false);
         interruptSwing(t);
         HammerPrecisionPlaytest.steps(t, WALL);
         minePlane(t, WALL, Direction.NORTH, "wall");
@@ -149,6 +151,22 @@ public final class HammerPlaytest {
                 p.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).exactVein() == exact);
         t.awaitClient("Synchronize vein matching " + next + " to the client", mc ->
                 mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).exactVein() == exact);
+    }
+
+    private static void setLighting(Playtest t, boolean enable) {
+        String current = enable ? "lighting.off" : "lighting.on";
+        String next = enable ? "lighting.on" : "lighting.off";
+        t.client("Press the tool menu key to change auto torches", mc -> KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey()));
+        t.awaitClient("Open the tunnel lighting control", mc -> mc.gui.screen() instanceof ToolConfigScreen);
+        t.client("Click the auto torches control to select " + next, mc -> {
+            clickConfigButton(mc, current);
+            configButton(mc, next);
+            mc.gui.screen().onClose();
+        });
+        t.awaitServer("Save auto torches " + next + " on the held Hammer", p ->
+                p.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).tunnelLighting() == enable);
+        t.awaitClient("Sync auto torches " + next + " to the client", mc ->
+                mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).tunnelLighting() == enable);
     }
 
     private static void interruptSwing(Playtest t) {
