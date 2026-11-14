@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.setup;
 
 import net.j40climb.florafauna.common.entity.frenchie.DeliveryDialog;
+import net.j40climb.florafauna.common.entity.frenchie.FrenchieCommands;
 import net.j40climb.florafauna.common.entity.frenchie.DeliveryPopupPayload;
 
 import net.j40climb.florafauna.FloraFauna;
@@ -131,6 +132,7 @@ public class FloraFaunaSetup {
      */
     public static void registerCommands(RegisterCommandsEvent event) {
         DeliveryDialog.register(event.getDispatcher());
+        FrenchieCommands.register(event.getDispatcher());
         FloraFaunaCommands.register(event.getDispatcher());
         DevPlotCommands.register(event.getDispatcher());
     }
