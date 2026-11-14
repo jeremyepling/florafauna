@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:red_mushroom",
+    "minecraft:brown_mushroom",
+    "minecraft:wheat_seeds"
+  ],
+  "result": {
+    "id": "florafauna:mob_symbiote",
+    "count": 1
+  }
+}

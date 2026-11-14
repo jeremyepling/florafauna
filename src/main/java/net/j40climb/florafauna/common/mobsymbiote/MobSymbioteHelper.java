@@ -6,6 +6,7 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.setup.FloraFaunaTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import org.jetbrains.annotations.Nullable;
@@ -60,6 +61,9 @@ public final class MobSymbioteHelper {
         MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
                 current.withMobSymbioteLevel(MobSymbioteData.LEVEL_TRANSPORT, currentTick));
+        if (mob.getType() == EntityType.SLIME) {
+            mob.setPersistenceRequired();
+        }
     }
 
     /**

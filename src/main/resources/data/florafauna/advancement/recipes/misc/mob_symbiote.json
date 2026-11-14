@@ -1,0 +1,25 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mushroom": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:red_mushroom"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_mushroom"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "florafauna:mob_symbiote"
+    ]
+  }
+}

@@ -62,7 +62,9 @@ public final class Playtest {
             case "hammer" -> HammerPlaytest.steps(this, phase);
             case "pods" -> PodPlaytest.steps(this, phase);
             case "frontpack" -> FrontpackPlaytest.steps(this, phase);
+            case "slime" -> SlimeGratePlaytest.steps(this, phase);
             case "frenchie" -> FrenchiePlaytest.steps(this, phase);
+            case "spider" -> SpiderSilkPlaytest.steps(this, phase);
             case "transport" -> MobTransportPlaytest.steps(this, phase);
             default -> throw new IllegalArgumentException("Unknown playtest " + scenario);
         }

@@ -1,0 +1,168 @@
+{
+  "textures": {
+    "silk": "minecraft:block/white_wool",
+    "particle": "minecraft:block/white_wool"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        11,
+        6
+      ],
+      "to": [
+        16,
+        12,
+        7
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        11,
+        9
+      ],
+      "to": [
+        16,
+        12,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        10,
+        6
+      ],
+      "to": [
+        2,
+        11,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    },
+    {
+      "from": [
+        8,
+        10,
+        6
+      ],
+      "to": [
+        9,
+        11,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        10,
+        6
+      ],
+      "to": [
+        14,
+        11,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#silk"
+        },
+        "up": {
+          "texture": "#silk"
+        },
+        "east": {
+          "texture": "#silk"
+        },
+        "west": {
+          "texture": "#silk"
+        },
+        "north": {
+          "texture": "#silk"
+        },
+        "south": {
+          "texture": "#silk"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=z": {
+      "model": "florafauna:block/slime_grate"
+    },
+    "axis=x": {
+      "model": "florafauna:block/slime_grate",
+      "y": 90
+    }
+  }
+}

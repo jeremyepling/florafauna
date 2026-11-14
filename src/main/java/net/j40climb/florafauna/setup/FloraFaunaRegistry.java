@@ -1,7 +1,12 @@
 package net.j40climb.florafauna.setup;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.j40climb.florafauna.common.mobsymbiote.silk.SilkLineBlock;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.level.material.PushReaction;
 import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlock;
+import net.j40climb.florafauna.common.block.slimegrate.SlimeGrateBlock;
+import net.j40climb.florafauna.common.block.slimegrate.SlimeGrateFarm;
 import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
 import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockItem;
 import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
@@ -63,6 +68,9 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.core.BlockPos;
+import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
@@ -140,6 +148,17 @@ public class FloraFaunaRegistry {
                     .strength(-1.0F, 3600000.0F)
                     .sound(SoundType.STONE)
             ));
+
+    public static final DeferredBlock<SlimeGrateBlock> SLIME_GRATE = registerBlock("slime_grate",
+            props -> new SlimeGrateBlock(props.noOcclusion().strength(2.0F).sound(SoundType.METAL)));
+
+    public static final Supplier<AttachmentType<Long>> SLIME_LAST_SHED = ATTACHMENT_TYPES.register("slime_last_shed",
+            () -> AttachmentType.builder(() -> -1L)
+                    .serialize(Codec.LONG.fieldOf("tick"))
+                    .sync(ByteBufCodecs.VAR_LONG).build());
+
+    public static final Supplier<AttachmentType<SlimeGrateFarm.Lure>> SLIME_NOTE = ATTACHMENT_TYPES.register("slime_note",
+            () -> AttachmentType.builder(() -> new SlimeGrateFarm.Lure(BlockPos.ZERO, -1)).build());
 
     // Register custom MobBarrierBlockItem (carries config component)
     static {
@@ -231,7 +250,11 @@ public class FloraFaunaRegistry {
                     .noOcclusion()
             ));
 
-    // Ferric Poppy block (Iron Garden system)
+    // Spun by bonded spiders; harvested with shears.
+    public static final DeferredBlock<SilkLineBlock> SILK_LINE = registerBlockNoItem("silk_line",
+            props -> new SilkLineBlock(props.noCollision().noOcclusion().noLootTable().instabreak().sound(SoundType.WOOL)
+                    .pushReaction(PushReaction.DESTROY)));
+
     public static final DeferredBlock<FerricPoppyBlock> FERRIC_POPPY = registerBlock("ferric_poppy",
             props -> new FerricPoppyBlock(props
                     .noCollision()
@@ -488,6 +511,10 @@ public class FloraFaunaRegistry {
                             .serialize(MobSymbioteData.CODEC.fieldOf("mob_symbiote_data"))
                             .sync(MobSymbioteData.STREAM_CODEC)
                             .build());
+
+    // Only live spiders hanging from silk need this client pose. It resets on world load.
+    public static final Supplier<AttachmentType<Boolean>> SILK_HANGING = ATTACHMENT_TYPES.register("silk_hanging",
+            () -> AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
 
     // Fear system attachment (for fear/stress state tracking)
     public static final Supplier<AttachmentType<FearData>> FEAR_DATA =

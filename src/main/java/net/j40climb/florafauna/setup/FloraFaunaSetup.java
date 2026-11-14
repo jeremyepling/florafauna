@@ -59,6 +59,7 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER);
                         output.accept(FloraFaunaRegistry.COCOON_CHAMBER);
                         output.accept(FloraFaunaRegistry.MOB_BARRIER);
+                        output.accept(FloraFaunaRegistry.SLIME_GRATE);
                         output.accept(FloraFaunaRegistry.HUSK);
 
                         // Item Input System blocks
