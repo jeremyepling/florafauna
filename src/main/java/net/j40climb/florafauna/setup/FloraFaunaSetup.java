@@ -109,6 +109,7 @@ public class FloraFaunaSetup {
         registrar.playToServer(DashPayload.TYPE, DashPayload.STREAM_CODEC, DashPayload::onServerReceived);
         registrar.playToServer(PutDownFrenchiePayload.TYPE, PutDownFrenchiePayload.STREAM_CODEC, PutDownFrenchiePayload::onServerReceived);
         registrar.playToServer(CocoonActionPayload.TYPE, CocoonActionPayload.STREAM_CODEC, CocoonActionPayload::onServerReceived);
+        registrar.playToServer(ChargedThrowPayload.TYPE, ChargedThrowPayload.STREAM_CODEC, ChargedThrowPayload::handle);
         registrar.playToServer(ThrowItemPayload.TYPE, ThrowItemPayload.STREAM_CODEC, ThrowItemPayload::onServerReceived);
         registrar.playToServer(CycleMiningModePayload.TYPE, CycleMiningModePayload.STREAM_CODEC, CycleMiningModePayload::onServerReceived);
         registrar.playToServer(PrecisionMiningPayload.TYPE, PrecisionMiningPayload.STREAM_CODEC, PrecisionMiningPayload::onServerReceived);

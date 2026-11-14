@@ -12,6 +12,7 @@ import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockVisual
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
+import net.j40climb.florafauna.common.item.abilities.networking.ChargedThrowPayload;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.ClientSetup;
@@ -33,6 +34,41 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class KeyInputEvents {
+
+    private static int throwKeyPlayerId = Integer.MIN_VALUE;
+    private static boolean holdingThrow;
+    private static int throwSlot;
+
+    private static void updateThrowKey(Minecraft mc, ItemStack held) {
+        Player player = mc.player;
+        if (throwKeyPlayerId != player.getId()) {
+            throwKeyPlayerId = player.getId();
+            holdingThrow = false;
+        }
+        var key = ClientSetup.THROW_ITEM_KEY.get();
+        if (holdingThrow && (mc.screen != null || player.getInventory().getSelectedSlot() != throwSlot
+                || !held.is(FloraFaunaRegistry.HAMMER.get()))) {
+            ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.CANCEL));
+            holdingThrow = false;
+        }
+        while (key.consumeClick()) {
+            if (held.is(FloraFaunaRegistry.HAMMER.get())) {
+                if (mc.screen == null && !holdingThrow && held.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
+                    holdingThrow = true;
+                    throwSlot = player.getInventory().getSelectedSlot();
+                    ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.PRESS));
+                }
+            } else if (held.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
+                player.swing(InteractionHand.MAIN_HAND);
+                ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
+            }
+        }
+        if (holdingThrow && !key.isDown()) {
+            holdingThrow = false;
+            player.swing(InteractionHand.MAIN_HAND);
+            ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.RELEASE));
+        }
+    }
 
     @SubscribeEvent
     public static void beforeClientTick(ClientTickEvent.Pre event) {
@@ -91,14 +127,7 @@ public class KeyInputEvents {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
             }
         }
-        while (ClientSetup.THROW_ITEM_KEY.get().consumeClick()) {
-            // Component-based check - works with any item that has THROWABLE_ABILITY
-            if (itemStack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
-                // Play throw animation (arm swing)
-                player.swing(InteractionHand.MAIN_HAND);
-                ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
-            }
-        }
+        updateThrowKey(mc, itemStack);
         while (ClientSetup.CYCLE_MINING_MODE_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has MULTI_BLOCK_MINING
             if (itemStack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {

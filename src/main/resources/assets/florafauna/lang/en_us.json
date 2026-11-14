@@ -109,6 +109,9 @@
   "command.florafauna.noclip.disabled": "No-clip disabled",
   "command.florafauna.noclip.creative_only": "No-clip requires creative mode",
 
+  "ability.florafauna.ore_strike.ready": "Ore strike ready",
+  "tooltip.florafauna.hammer.charge": "Ore charge: %s/%s",
+  "tooltip.florafauna.hammer.ore_strike": "Hold %s, then release to strike a vein",
   "tooltip.florafauna.hammer.mode": "Mining Mode: %s",
   "tooltip.florafauna.hammer.speed": "Mining Speed: %s",
   "mining_shape.florafauna.single": "Single Block",
