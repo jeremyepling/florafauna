@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.common.entity.frenchie;
 
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.UUIDUtil;
@@ -9,29 +10,30 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.UUID;
 
-/** The nonempty parcel is the job. Its single stack stays here until a handoff succeeds. */
+/** Handles the visible farewell and the handoff. CourierTrips owns dogs between those two events. */
 final class DeliveryGoal extends Goal {
+    private static final int WALK_OFF = 20;
+    private static final int MAX_DEPARTURE_TICKS = 80;
     private final FrenchieEntity dog;
     private @Nullable GlobalPos home;
     private @Nullable UUID recipient;
     private ItemStack parcel = ItemStack.EMPTY;
     private boolean returning;
-    private boolean waiting;
-    private int nextAttempt;
-    private int stalledTicks;
-    private double closestDistance;
+    private boolean atDestination;
+    private boolean announced;
+    private @Nullable BlockPos departure;
+    private int departureTicks;
 
     DeliveryGoal(FrenchieEntity dog) {
         this.dog = dog;
@@ -52,38 +54,44 @@ final class DeliveryGoal extends Goal {
         return state.getBlock() instanceof BedBlock && state.getValue(BedBlock.PART) == BedPart.HEAD;
     }
 
+    static int travelSeconds(ServerLevel from, Vec3 start, ServerLevel to, Vec3 end) {
+        double scale = DimensionType.getTeleportationScale(to.dimensionType(), from.dimensionType());
+        double distance = start.distanceTo(new Vec3(end.x * scale, end.y, end.z * scale));
+        return 3 + (int) Math.ceil(distance / 16);
+    }
+
     void start(ServerPlayer owner, InteractionHand hand, @Nullable ServerPlayer target) {
         parcel = owner.getItemInHand(hand).split(1);
         recipient = target == null ? null : target.getUUID();
         returning = false;
-        resetRoute();
+        atDestination = false;
+        announced = false;
+        beginDeparture(owner.level());
         dog.standUp();
         dog.setFrenchieSleeping(false);
         dog.getNavigation().stop();
         tell(owner, "started", target == null ? label("home", home.pos().toShortString()) : target.getName());
     }
 
+    private void beginDeparture(ServerLevel level) {
+        departure = dog.blockPosition();
+        departureTicks = 0;
+        // Only the brief send-off needs the dog to tick if the sender immediately leaves.
+        level.getChunkSource().addTicketWithRadius(FloraFaunaRegistry.COURIER_STOP.get(), dog.chunkPosition(), 2);
+    }
+
     void collect(ServerPlayer owner, InteractionHand emptyHand) {
-        boolean delivered = !returning && recipient == null && waiting && home != null
-                && home.dimension().equals(dog.level().dimension())
-                && dog.position().distanceToSqr(Vec3.atBottomCenterOf(home.pos())) <= 6.25;
-        owner.setItemInHand(emptyHand, takeParcel());
+        boolean delivered = !returning && recipient == null && atDestination;
+        owner.setItemInHand(emptyHand, parcel);
+        parcel = ItemStack.EMPTY;
+        dog.getNavigation().stop();
         dog.sitDown();
         tell(owner, delivered ? "collected" : "returned");
     }
 
-    private ItemStack takeParcel() {
-        var item = parcel;
-        parcel = ItemStack.EMPTY;
-        recipient = null;
-        returning = false;
-        resetRoute();
-        dog.getNavigation().stop();
-        return item;
-    }
-
     void dropOnDeath(ServerLevel level) {
-        if (canUse()) dog.spawnAtLocation(level, takeParcel());
+        if (canUse()) dog.spawnAtLocation(level, parcel);
+        parcel = ItemStack.EMPTY;
     }
 
     @Override
@@ -98,95 +106,99 @@ final class DeliveryGoal extends Goal {
 
     @Override
     public void tick() {
-        if (!canUse() || --nextAttempt > 0) return;
-        nextAttempt = 20;
+        if (!canUse()) return;
         ServerLevel level = (ServerLevel) dog.level();
-        ServerPlayer owner = dog.getOwner() instanceof ServerPlayer p ? p : null;
-        ServerPlayer player = recipient == null ? null : level.getServer().getPlayerList().getPlayer(recipient);
-        Vec3 destination;
+        var server = level.getServer();
+        var ownerId = dog.getOwnerReference();
+        if (ownerId == null) return;
+        var owner = server.getPlayerList().getPlayer(ownerId.getUUID());
+        var player = recipient == null ? null : server.getPlayerList().getPlayer(recipient);
+        if (returning && !atDestination) {
+            sendBack(owner, null);
+            return;
+        }
+        if (!returning && recipient != null && !available(player)) {
+            sendBack(owner, "unavailable");
+            return;
+        }
+        if (atDestination) {
+            if (dog.tickCount % 10 == 0) handOff(level, owner, player);
+            return;
+        }
+        ServerLevel destinationLevel = player != null ? player.level() : home == null ? null : server.getLevel(home.dimension());
+        if (destinationLevel == null) {
+            sendBack(owner, "bed_missing");
+            return;
+        }
+        if (departure == null || dog.position().distanceToSqr(departure.getBottomCenter()) > 24 * 24) {
+            beginDeparture(level); // Legacy order or the courier was carried elsewhere.
+        }
+        Vec3 end = player != null ? player.position() : home.pos().getBottomCenter();
+        Vec3 start = departure.getBottomCenter();
+        double scale = DimensionType.getTeleportationScale(destinationLevel.dimensionType(), level.dimensionType());
+        Vec3 direction = new Vec3(end.x * scale - start.x, 0, end.z * scale - start.z);
+        if (direction.lengthSqr() < 1) direction = dog.getForward().multiply(1, 0, 1);
+        double walk = Math.min(WALK_OFF, Math.max(2, direction.length()));
+        if (++departureTicks >= MAX_DEPARTURE_TICKS || (departureTicks >= 10 && dog.position().distanceTo(start) >= walk - 0.5)) {
+            int seconds = travelSeconds(level, start, destinationLevel, end);
+            CourierTrips.depart(dog, recipient, home, false, seconds);
+            return;
+        }
+        if (departureTicks == 1 || departureTicks % 20 == 0) {
+            Vec3 waypoint = start.add(direction.normalize().scale(walk));
+            dog.getNavigation().moveTo(dog.getNavigation().createPath(BlockPos.containing(waypoint), 1), 1.2);
+        }
+    }
+
+    static boolean available(@Nullable ServerPlayer p) {
+        return p != null && p.isAlive() && !p.isSpectator();
+    }
+
+    void arrived(boolean back) {
+        returning = back;
+        atDestination = true;
+        announced = false;
+        departure = null;
+    }
+
+    private void handOff(ServerLevel level, @Nullable ServerPlayer owner, @Nullable ServerPlayer player) {
         if (returning) {
-            if (owner == null || !owner.isAlive()) {
-                dog.getNavigation().stop();
+            if (!announced) tell(owner, "recover");
+        } else if (recipient == null) {
+            if (home == null || home.dimension() != level.dimension() || !isBedHead(level, home.pos())) {
+                sendBack(owner, "bed_missing");
                 return;
             }
-            destination = owner.position();
-        } else if (recipient != null) {
-            if (player == null || player.level() != level || !player.isAlive() || player.isSpectator()) {
-                returnToOwner(owner, "unavailable");
+            if (!announced) tell(owner, "at_bed", home.pos().toShortString());
+        } else if (player != null) {
+            if (player.level() != level || dog.distanceToSqr(player) > 36 || !dog.hasLineOfSight(player)) {
+                // They moved while making room. Use another timed hop to their current location.
+                CourierTrips.depart(dog, recipient, home, false,
+                        travelSeconds(level, dog.position(), player.level(), player.position()));
                 return;
             }
-            destination = player.position();
-        } else {
-            if (home == null || !home.dimension().equals(level.dimension())
-                    || level.hasChunkAt(home.pos()) && !isBedHead(level, home.pos())) {
-                returnToOwner(owner, "bed_missing");
+            int slot = player.getInventory().getFreeSlot();
+            if (slot >= 0) {
+                player.getInventory().setItem(slot, parcel);
+                parcel = ItemStack.EMPTY;
+                tell(player, "received", dog.getName());
+                tell(owner, "complete", player.getName());
+                sendBack(owner, null);
                 return;
             }
-            destination = Vec3.atBottomCenterOf(home.pos());
-        }
-
-        Vec3 delta = destination.subtract(dog.position());
-        double distance = delta.length();
-        if (distance <= 2.5 && canHandOff(level, player, destination)) {
-            dog.getNavigation().stop();
-            if (returning) {
-                if (!waiting) tell(owner, "recover");
-            } else if (player != null) {
-                int slot = player.getInventory().getFreeSlot();
-                if (slot >= 0) {
-                    player.getInventory().setItem(slot, takeParcel());
-                    tell(player, "received", dog.getName());
-                    tell(owner, "complete", player.getName());
-                    return;
-                }
-                if (!waiting) {
-                    tell(player, "need_slot", dog.getName());
-                    tell(owner, "full", player.getName());
-                }
-            } else if (!waiting) {
-                tell(owner, "at_bed", home.pos().toShortString());
+            if (!announced) {
+                tell(player, "need_slot", dog.getName());
+                tell(owner, "full", player.getName());
             }
-            resetRoute();
-            waiting = true;
-            return;
         }
-
-        waiting = false;
-        if (distance < closestDistance - 0.5) {
-            closestDistance = distance;
-            stalledTicks = 0;
-        } else if (!returning && (stalledTicks += 20) >= 300) {
-            returnToOwner(owner, "blocked");
-            return;
-        }
-        Vec3 waypoint = distance <= 14 ? destination : dog.position().add(delta.scale(14 / distance));
-        BlockPos next = BlockPos.containing(waypoint);
-        if (!returning && !level.isPositionEntityTicking(next)) {
-            returnToOwner(owner, "blocked");
-            return;
-        }
-        dog.getNavigation().moveTo(dog.getNavigation().createPath(next, 1), 1.2);
+        announced = true;
     }
 
-    private boolean canHandOff(ServerLevel level, @Nullable ServerPlayer player, Vec3 destination) {
-        if (returning) return true;
-        if (player != null) return dog.hasLineOfSight(player);
-        var hit = level.clip(new ClipContext(dog.getEyePosition(), destination.add(0, 0.6, 0),
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, dog));
-        return hit.getType() == HitResult.Type.MISS || hit.getBlockPos().equals(home.pos());
-    }
-
-    private void returnToOwner(@Nullable ServerPlayer owner, String reason) {
-        returning = true;
-        resetRoute();
-        dog.getNavigation().stop();
-        tell(owner, reason);
-    }
-
-    private void resetRoute() {
-        waiting = false;
-        stalledTicks = 0;
-        closestDistance = Double.POSITIVE_INFINITY;
+    private void sendBack(@Nullable ServerPlayer owner, @Nullable String message) {
+        if (message != null) tell(owner, message);
+        var level = (ServerLevel) dog.level();
+        int seconds = owner == null ? 3 : travelSeconds(level, dog.position(), owner.level(), owner.position());
+        CourierTrips.depart(dog, null, null, true, seconds);
     }
 
     void save(ValueOutput output) {
@@ -195,7 +207,9 @@ final class DeliveryGoal extends Goal {
         output.store("FrenchieParcel", ItemStack.CODEC, parcel);
         if (recipient != null) output.store("FrenchieRecipient", UUIDUtil.CODEC, recipient);
         output.putBoolean("FrenchieReturning", returning);
-        output.putBoolean("FrenchieAtHandoff", waiting);
+        output.putBoolean("FrenchieAtHandoff", atDestination);
+        if (departure != null) output.store("FrenchieDeparture", BlockPos.CODEC, departure);
+        output.putInt("FrenchieDepartureTicks", departureTicks);
     }
 
     void load(ValueInput input) {
@@ -203,9 +217,9 @@ final class DeliveryGoal extends Goal {
         parcel = input.read("FrenchieParcel", ItemStack.CODEC).orElse(ItemStack.EMPTY);
         recipient = input.read("FrenchieRecipient", UUIDUtil.CODEC).orElse(null);
         returning = input.getBooleanOr("FrenchieReturning", false);
-        resetRoute();
-        waiting = input.getBooleanOr("FrenchieAtHandoff", false);
-        nextAttempt = 0;
+        atDestination = input.getBooleanOr("FrenchieAtHandoff", false);
+        departure = input.read("FrenchieDeparture", BlockPos.CODEC).orElse(null);
+        departureTicks = input.getIntOr("FrenchieDepartureTicks", 0);
     }
 
     static Component label(String key, Object... args) {

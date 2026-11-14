@@ -11,11 +11,13 @@ Tame a Frenchie with a bone, feed it glow berries, and right-click with an empty
 | Behavior | Player controls |
 | --- | --- |
 | Death Tracking | Use an ordinary compass on your dog. Follow the compass icon to your last death in this dimension. Your dog waits when you fall behind and signals when you reach the spot. |
-| Delivery Dog | Use a bundle on your dog. Choose a player within 32 blocks or the dog's assigned home bed, review the destination, then select **Send bundle**. To set a home, open the same chooser within eight blocks of a bed and select **Assign bed**. |
+| Delivery Dog | Use a bundle on your dog to open the postal popup. Choose an online player or the dog's assigned home bed, review the destination and travel time, then select **Send bundle**. To assign a home, open the chooser within eight blocks of a bed. |
 | Creeper Warning | An awake dog turns toward a visible creeper within 12 blocks and barks twice. The green face flashes with the barks, including above the hotbar when you carry the dog. The warning has an eight-second cooldown. |
 | Bedtime Buddy | Use a bed within ten blocks of your dog. A nearby sitting dog can join you too. Sleep marks appear when the dog settles by the pillow. Completing the night together grants two minutes of **Well Rested**, increasing block breaking speed by 10%. |
 
-A player delivery goes into an empty inventory slot. The dog waits if the recipient needs to make room. At a bed, use an empty hand on the waiting dog to collect. An empty-hand click during a trip cancels it, returns any bundle to that hand, and orders the dog to sit. If the recipient leaves or the route is blocked, the dog keeps the parcel for the owner.
+The Frenchie walks off for up to 20 blocks or four seconds, then disappears for the trip. Each leg takes three seconds plus one second per 16 blocks, rounded up. For example, a 160-block trip takes 13 seconds after departure. The server saves the dog and its bundle while it travels, so the terrain along the route can stay unloaded.
+
+The dog appears at the recipient's current position and waits for an empty inventory slot. After handing over the bundle, it makes a timed return trip to its owner. If the recipient leaves or the dog cannot land safely, it brings the bundle back. At a home bed it waits with the parcel until the owner collects it. While the dog is present, an empty-hand right-click retrieves the bundle and orders the dog to sit.
 
 ## Development Setup
 

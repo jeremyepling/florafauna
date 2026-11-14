@@ -69,6 +69,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.core.BlockPos;
@@ -118,6 +119,10 @@ public class FloraFaunaRegistry {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, FloraFauna.MOD_ID);
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, FloraFauna.MOD_ID);
+    public static final DeferredRegister<TicketType> TICKET_TYPES =
+            DeferredRegister.create(Registries.TICKET_TYPE, FloraFauna.MOD_ID);
+    public static final Supplier<TicketType> COURIER_STOP = TICKET_TYPES.register("courier_stop",
+            () -> new TicketType(120, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_PERSIST));
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, FloraFauna.MOD_ID);
 
@@ -581,6 +586,7 @@ public class FloraFaunaRegistry {
         BLOCK_ENTITIES.register(modEventBus);
         MENUS.register(modEventBus);
         MOB_EFFECTS.register(modEventBus);
+        TICKET_TYPES.register(modEventBus);
         ATTACHMENT_TYPES.register(modEventBus);
     }
 }
