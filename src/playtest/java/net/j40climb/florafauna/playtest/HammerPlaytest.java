@@ -130,6 +130,7 @@ public final class HammerPlaytest {
                 MultiToolAbilityData.DEFAULT, Blocks.DIRT_PATH.defaultBlockState());
         checkTransform(t, "Till dirt when flattening is disabled", Blocks.DIRT.defaultBlockState(),
                 MultiToolAbilityData.DEFAULT.withFlatten(false), Blocks.FARMLAND.defaultBlockState());
+        HammerActionWheelPlaytest.steps(t, WALL);
         HammerQuarryPlaytest.start(t);
     }
 

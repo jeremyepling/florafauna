@@ -6,6 +6,7 @@ import net.j40climb.florafauna.noclip.ClippingEntity;
 import net.j40climb.florafauna.noclip.NoClipClientState;
 import net.j40climb.florafauna.noclip.NoClipPayload;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
+import net.j40climb.florafauna.common.item.abilities.menu.HammerActionWheel;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.PrecisionMiningPayload;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockVisualFeedback;
@@ -130,6 +131,11 @@ public class KeyInputEvents {
                 player.sendOverlayMessage(
                         Component.translatable("command.florafauna.noclip.creative_only")
                 );
+            }
+        }
+        while (ClientSetup.HAMMER_ACTION_WHEEL_KEY.get().consumeClick()) {
+            if (mc.gui.screen() == null && itemStack.has(FloraFaunaRegistry.HAMMER_ACTION)) {
+                mc.gui.setScreen(new HammerActionWheel(player.getInventory().getSelectedSlot(), itemStack));
             }
         }
     }
