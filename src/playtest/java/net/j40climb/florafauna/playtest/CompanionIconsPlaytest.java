@@ -107,7 +107,7 @@ final class CompanionIconsPlaytest {
         });
         clickDog(t, dogId, false);
         t.awaitClient("Check the sitting unnamed dog has no nameplate", mc ->
-                mc.level.getEntity(dogId[0]) instanceof FrenchieEntity dog && dog.isOrderedToSit()
+                mc.level.getEntity(dogId[0]) instanceof FrenchieEntity dog && dog.isSitting()
                         && mc.getEntityRenderDispatcher().getRenderer(dog).createRenderState(dog, 1).nameTag == null);
         t.server("Give Pip the compass for a second trip", p -> {
             var dog = (FrenchieEntity)p.level().getEntity(dogId[0]);
