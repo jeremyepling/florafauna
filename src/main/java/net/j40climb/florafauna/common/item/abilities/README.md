@@ -29,6 +29,9 @@ The abilities system provides reusable tool functionality through data component
 | SHAPELESS | Vein mining | 1 |
 | TUNNEL_UP | Staircase up | 0 |
 | TUNNEL_DOWN | Staircase down | 0 |
+| WALKABLE_TUNNEL | 1 wide × 3 high × 5 deep | 0 |
+| LARGE_TUNNEL | 3 wide × 3 high × 5 deep | 0 |
+| BORE | 1 wide × 1 high × 7 deep | 0 |
 
 ## Mining Speed
 
@@ -40,12 +43,13 @@ The abilities system provides reusable tool functionality through data component
 
 ## Tool Config
 
-Stores enchantment and speed settings:
+Each Hammer remembers its settings.
 
 | Setting | Options | Default |
 |---------|---------|---------|
 | Enchantment | Fortune III / Silk Touch | Fortune III |
 | Mining Speed | Standard / Efficiency / Instabreak | Efficiency |
+| Vein matching | Same ore / Exact block | Same ore |
 
 **Note**: Fortune and Silk Touch are mutually exclusive - exactly one is always active.
 
@@ -75,7 +79,11 @@ Flat planes follow the original hit face. Shapeless mining follows matching bloc
 
 Instabreak sets mining speed to 100. Block hardness still determines how long a strike takes.
 
-Tunnel modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center.
+Straight cuts advance into the face you strike. On a wall, strike the bottom of the passage for Walkable Tunnel, the center for Large Tunnel, or the entry point for Bore. On a floor or ceiling, the cut advances vertically. Walkable Tunnel centers its three-block slot along your horizontal heading. Air gaps count toward depth. All three shapes leave the floor as mined.
+
+Stair modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center. Teal stair outlines show planned placements through rock and across air gaps before you strike.
+
+Shapeless mode groups matching stone and deepslate ore variants. An iron vein can cross the stone–deepslate boundary. Copper touching that vein stays in place. Select **Exact block** in the Hammer settings to stop at the variant boundary.
 
 After a successful center hit, flat and tunnel swings skip air and continue through their usual footprint. Both stair directions place a cobblestone tread across an existing air gap at the planned floor height. The flight still ends at the fifth column. Vein mining follows matching neighbors within its configured radius.
 
@@ -131,4 +139,4 @@ Mining uses a server game-mode mixin for the completed center break. Other abili
 
 ## Verification
 
-From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario hammer` using a closed dev save. The client changes tool settings, captures the wall and floor previews, verifies the exact blocks mined, and strips a log.
+From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario hammer` using a closed dev save. The client changes tool settings, checks single-block input, captures the mining and placement outlines, and walks the stairs and straight tunnel in a generated quarry.
