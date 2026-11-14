@@ -90,17 +90,17 @@ public class RightClickActionHandler {
      * @return true if an action was executed and the event should be canceled
      */
     private static boolean handleRightClick(Player player, InteractionHand hand, @Nullable BlockPos clickedPos, @Nullable BlockHitResult hitResult) {
-        // Server-side only
+        ItemStack stack = player.getItemInHand(hand);
+        HammerAction selected = stack.getOrDefault(FloraFaunaRegistry.HAMMER_ACTION, HammerAction.AUTO);
         if (player.level().isClientSide()) {
-            return false;
+            // Consume an explicit throw locally too, so block use cannot also open a GUI or try an air click.
+            return selected == HammerAction.THROW && stack.has(FloraFaunaRegistry.THROWABLE_ABILITY);
         }
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return false;
         }
 
         long currentTick = player.level().getGameTime();
-        ItemStack stack = player.getItemInHand(hand);
-        HammerAction selected = stack.getOrDefault(FloraFaunaRegistry.HAMMER_ACTION, HammerAction.AUTO);
         if (selected == HammerAction.THROW) {
             if (!stack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) return false;
             ThrowItemPayload.throwItem(serverPlayer, hand);
