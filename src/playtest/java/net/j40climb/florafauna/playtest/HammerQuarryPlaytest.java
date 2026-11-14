@@ -128,10 +128,12 @@ final class HammerQuarryPlaytest {
 
     private static void walkStraightTunnel(Playtest t) {
         BlockPos entry = new BlockPos(14, 190, 15);
+        BlockPos lava = entry.south(3).east().above();
         t.server("Open a level approach to a stone wall across the chunk boundary", p -> {
             for (BlockPos pos : BlockPos.betweenClosed(entry.north(4), entry.north().above(2))) {
                 p.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
             }
+            p.level().setBlockAndUpdate(lava, Blocks.LAVA.defaultBlockState());
             p.teleportTo(p.level(), entry.getX() + 0.5, entry.getY(), entry.getZ() - 2.5, Set.of(), 0f, 0f, true);
         });
         t.client("Select Walkable Tunnel", mc -> KeyMapping.click(ClientSetup.CYCLE_MINING_MODE_KEY.get().getKey()));
@@ -139,6 +141,22 @@ final class HammerQuarryPlaytest {
             mc.player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(entry).add(0, 0, -0.5));
             return mc.player.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.WALKABLE_TUNNEL
                     && mc.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(entry) && hit.getDirection() == Direction.NORTH;
+        });
+        t.awaitClient("Receive the buried lava pocket", mc -> mc.level.getBlockState(lava).is(Blocks.LAVA));
+        t.screenshot("hammer-lava-warning");
+        t.server("Replace the hidden lava pocket with stone", p -> p.level().setBlockAndUpdate(lava, Blocks.STONE.defaultBlockState()));
+        t.awaitClient("Receive the solid tunnel wall", mc -> mc.level.getBlockState(lava).is(Blocks.STONE));
+        t.screenshot("hammer-lava-cleared");
+        t.awaitClient("See the orange warning disappear when the lava is removed", mc -> {
+            Path dir = mc.gameDirectory.toPath().resolve("screenshots");
+            try {
+                int visible = orangePixels(dir.resolve("hammer-lava-warning.png"));
+                int cleared = orangePixels(dir.resolve("hammer-lava-cleared.png"));
+                Playtest.require(visible >= cleared + 20, "Orange face did not track lava: " + visible + " vs " + cleared);
+                return true;
+            } catch (IOException e) {
+                return false; // Wait for the screenshot writer.
+            }
         });
         t.client("Start the walkable cut", mc -> Playtest.require(mc.gameMode.startDestroyBlock(entry, Direction.NORTH), "Client refused the cut"));
         t.awaitServer("Verify five columns of three-block headroom and the original floor", p -> {
@@ -160,6 +178,19 @@ final class HammerQuarryPlaytest {
             mc.options.keyUp.setDown(false);
             return mc.player.onGround() && Math.abs(mc.player.getY() - entry.getY()) < 0.01;
         });
+    }
+
+    private static int orangePixels(Path screenshot) throws IOException {
+        var image = ImageIO.read(screenshot.toFile());
+        int count = 0;
+        for (int y = image.getHeight() / 6; y < image.getHeight() * 3 / 4; y++) {
+            for (int x = image.getWidth() / 3; x < image.getWidth() * 2 / 3; x++) {
+                int rgb = image.getRGB(x, y);
+                int r = rgb >> 16 & 255, g = rgb >> 8 & 255, b = rgb & 255;
+                if (r > 175 && g > 55 && g < 180 && b < 70 && r > g + 55) count++;
+            }
+        }
+        return count;
     }
 
     private static void verifyFlight(ServerLevel level, BlockPos face) {
