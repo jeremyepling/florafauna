@@ -25,27 +25,35 @@ import java.util.UUID;
 final class DeliveryGoal extends Goal {
     private static final int WALK_OFF = 20;
     private static final int MAX_DEPARTURE_TICKS = 80;
+    private static final int REMINDER_TICKS = 20 * 30;
     private final FrenchieEntity dog;
     private @Nullable GlobalPos home;
     private @Nullable UUID recipient;
     private ItemStack parcel = ItemStack.EMPTY;
+    private boolean goingHome;
     private boolean returning;
     private boolean atDestination;
     private boolean announced;
+    private long nextReminder;
     private @Nullable BlockPos departure;
     private int departureTicks;
+    private int plannedSeconds;
 
     DeliveryGoal(FrenchieEntity dog) {
         this.dog = dog;
         setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
-    @Nullable GlobalPos home() {
-        return home;
+    boolean goingHome() {
+        return goingHome;
     }
 
-    void assignBed(BlockPos head) {
-        home = GlobalPos.of(dog.level().dimension(), head.immutable());
+    boolean hasParcel() {
+        return !parcel.isEmpty();
+    }
+
+    @Nullable UUID waitingRecipient() {
+        return atDestination && !returning && hasParcel() ? recipient : null;
     }
 
     static boolean isBedHead(ServerLevel level, BlockPos pos) {
@@ -64,17 +72,39 @@ final class DeliveryGoal extends Goal {
         return (int) (3 + Math.ceil(start.distanceTo(end) / 16));
     }
 
-    void start(ServerPlayer owner, InteractionHand hand, @Nullable ServerPlayer target) {
-        parcel = owner.getItemInHand(hand).split(1);
+    void start(ServerPlayer owner, InteractionHand hand, @Nullable ServerPlayer target, @Nullable GlobalPos bed) {
+        beginOrder(owner, owner.getItemInHand(hand).split(1), target, bed);
+    }
+
+    boolean startHome(ServerPlayer owner, GlobalPos bed) {
+        if (!dog.isAlive() || !dog.isOwnedBy(owner) || dog.hasCompanionJob()) return false;
+        var level = owner.level().getServer().getLevel(bed.dimension());
+        if (level == null || (level.hasChunkAt(bed.pos()) && !isBedHead(level, bed.pos()))) return false;
+        beginOrder(owner, ItemStack.EMPTY, null, bed);
+        return true;
+    }
+
+    private void beginOrder(ServerPlayer owner, ItemStack bundle, @Nullable ServerPlayer target, @Nullable GlobalPos bed) {
+        parcel = bundle;
+        goingHome = bundle.isEmpty();
+        home = bed;
         recipient = target == null ? null : target.getUUID();
         returning = false;
         atDestination = false;
         announced = false;
-        beginDeparture(owner.level());
+        nextReminder = 0;
+        var level = (ServerLevel) dog.level();
+        var destination = target != null ? target.level() : level.getServer().getLevel(bed.dimension());
+        var end = target != null ? target.position() : bed.pos().getBottomCenter();
+        plannedSeconds = CourierTrips.plannedSeconds(level, dog.position(), destination, end);
+        beginDeparture(level);
         dog.standUp();
         dog.setFrenchieSleeping(false);
         dog.getNavigation().stop();
-        tell(owner, "started", target == null ? label("home", home.pos().toShortString()) : target.getName());
+        dog.syncCompanionJob();
+        CourierTrips.track(dog);
+        if (goingHome) tell(owner, "home_started", dog.getName());
+        else tell(owner, "started", target == null ? label("home") : target.getName());
     }
 
     private void beginDeparture(ServerLevel level) {
@@ -86,21 +116,35 @@ final class DeliveryGoal extends Goal {
 
     void collect(ServerPlayer owner, InteractionHand emptyHand) {
         boolean delivered = !returning && recipient == null && atDestination;
-        owner.setItemInHand(emptyHand, parcel);
+        boolean homeOrder = goingHome;
+        CourierTrips.forget(dog);
+        if (hasParcel()) owner.setItemInHand(emptyHand, parcel);
         parcel = ItemStack.EMPTY;
+        goingHome = false;
         dog.getNavigation().stop();
         dog.sitDown();
-        tell(owner, delivered ? "collected" : "returned");
+        tell(owner, homeOrder ? "home_stopped" : delivered ? "collected" : "returned");
+    }
+
+    boolean recall(ServerPlayer owner) {
+        if (!canUse() || !dog.isAlive() || !dog.isOwnedBy(owner)) return false;
+        if (returning && atDestination && dog.level() == owner.level() && owner.isWithinEntityInteractionRange(dog, 0)) {
+            tell(owner, "recover");
+            return true;
+        }
+        CourierTrips.depart(dog, null, null, true, 0);
+        return true;
     }
 
     void dropOnDeath(ServerLevel level) {
-        if (canUse()) dog.spawnAtLocation(level, parcel);
+        if (canUse()) CourierTrips.forget(dog);
+        if (hasParcel()) dog.spawnAtLocation(level, parcel);
         parcel = ItemStack.EMPTY;
     }
 
     @Override
     public boolean canUse() {
-        return !parcel.isEmpty();
+        return hasParcel() || goingHome;
     }
 
     @Override
@@ -111,6 +155,7 @@ final class DeliveryGoal extends Goal {
     @Override
     public void tick() {
         if (!canUse()) return;
+        CourierTrips.track(dog);
         ServerLevel level = (ServerLevel) dog.level();
         var server = level.getServer();
         var ownerId = dog.getOwnerReference();
@@ -126,12 +171,12 @@ final class DeliveryGoal extends Goal {
             return;
         }
         if (atDestination) {
-            if (dog.tickCount % 10 == 0) handOff(level, owner, player);
+            if (!announced || dog.tickCount % 10 == 0) handOff(level, owner, player);
             return;
         }
         ServerLevel destinationLevel = player != null ? player.level() : home == null ? null : server.getLevel(home.dimension());
         if (destinationLevel == null) {
-            sendBack(owner, "bed_missing");
+            sendBack(owner, goingHome ? "home_missing" : "bed_missing");
             return;
         }
         if (departure == null || dog.position().distanceToSqr(departure.getBottomCenter()) > 24 * 24) {
@@ -144,8 +189,9 @@ final class DeliveryGoal extends Goal {
         if (direction.lengthSqr() < 1) direction = dog.getForward().multiply(1, 0, 1);
         double walk = Math.min(WALK_OFF, Math.max(2, direction.length()));
         if (++departureTicks >= MAX_DEPARTURE_TICKS || (departureTicks >= 10 && dog.position().distanceTo(start) >= walk - 0.5)) {
-            int seconds = travelSeconds(level, start, destinationLevel, end);
-            CourierTrips.depart(dog, recipient, home, false, seconds);
+            long remainingTicks = plannedSeconds > 0 ? Math.max(0, 20L * plannedSeconds - departureTicks)
+                    : 20L * travelSeconds(level, start, destinationLevel, end);
+            CourierTrips.departAfterTicks(dog, recipient, home, false, remainingTicks);
             return;
         }
         if (departureTicks == 1 || departureTicks % 20 == 0) {
@@ -163,6 +209,15 @@ final class DeliveryGoal extends Goal {
         atDestination = true;
         announced = false;
         departure = null;
+        if (goingHome) {
+            if (back) {
+                goingHome = false;
+                dog.standUp();
+            } else {
+                dog.sitDown();
+            }
+        }
+        dog.syncCompanionJob();
     }
 
     private void handOff(ServerLevel level, @Nullable ServerPlayer owner, @Nullable ServerPlayer player) {
@@ -171,7 +226,7 @@ final class DeliveryGoal extends Goal {
         } else if (recipient == null) {
             var bedLevel = home == null ? null : level.getServer().getLevel(home.dimension());
             if (bedLevel == null) {
-                sendBack(owner, "bed_missing");
+                sendBack(owner, goingHome ? "home_missing" : "bed_missing");
                 return;
             }
             if (bedLevel != level || dog.position().distanceToSqr(home.pos().getBottomCenter()) > 16) {
@@ -180,10 +235,10 @@ final class DeliveryGoal extends Goal {
                 return;
             }
             if (!isBedHead(level, home.pos())) {
-                sendBack(owner, "bed_missing");
+                sendBack(owner, goingHome ? "home_missing" : "bed_missing");
                 return;
             }
-            if (!announced) tell(owner, "at_bed", home.pos().toShortString());
+            if (!announced) tell(owner, goingHome ? "home_waiting" : "at_bed");
         } else if (player != null) {
             if (player.level() != level || dog.distanceToSqr(player) > 36 || !dog.hasLineOfSight(player)) {
                 // They moved while making room. Use another timed hop to their current location.
@@ -191,23 +246,35 @@ final class DeliveryGoal extends Goal {
                         travelSeconds(level, dog.position(), player.level(), player.position()));
                 return;
             }
-            int slot = player.getInventory().getFreeSlot();
-            if (slot >= 0) {
-                player.getInventory().setItem(slot, parcel);
-                parcel = ItemStack.EMPTY;
-                tell(player, "received", dog.getName());
-                tell(owner, "complete", player.getName());
-                sendBack(owner, null);
-                return;
-            }
-            if (!announced) {
-                tell(player, "need_slot", dog.getName());
-                tell(owner, "full", player.getName());
-            }
+            dog.getLookControl().setLookAt(player, 30, 30);
+            if (level.getGameTime() >= nextReminder) announce(player);
             // A disconnect or teleport must still wake the courier on its next handoff check.
             level.getChunkSource().addTicketWithRadius(FloraFaunaRegistry.COURIER_STOP.get(), dog.chunkPosition(), 2);
         }
         announced = true;
+    }
+
+    private void announce(ServerPlayer recipient) {
+        FrenchieAwareness.bark(dog, 0.95F);
+        tell(recipient, "accept", dog.getName());
+        nextReminder = dog.level().getGameTime() + REMINDER_TICKS;
+    }
+
+    void accept(ServerPlayer player) {
+        if (!player.getUUID().equals(waitingRecipient()) || !available(player)
+                || dog.level() != player.level() || !player.isWithinEntityInteractionRange(dog, 0)) return;
+        if (dog.level().getGameTime() >= nextReminder) announce(player);
+        int slot = player.getInventory().getFreeSlot();
+        if (slot < 0) {
+            tell(player, "need_slot", dog.getName());
+            return;
+        }
+        player.getInventory().setItem(slot, parcel);
+        parcel = ItemStack.EMPTY;
+        tell(player, "received", dog.getName());
+        var owner = player.level().getServer().getPlayerList().getPlayer(dog.getOwnerReference().getUUID());
+        tell(owner, "complete", player.getName());
+        sendBack(owner, null);
     }
 
     private void sendBack(@Nullable ServerPlayer owner, @Nullable String message) {
@@ -218,24 +285,30 @@ final class DeliveryGoal extends Goal {
     }
 
     void save(ValueOutput output) {
-        if (home != null) output.store("FrenchieHomeBed", GlobalPos.CODEC, home);
         if (!canUse()) return;
-        output.store("FrenchieParcel", ItemStack.CODEC, parcel);
+        if (home != null) output.store("FrenchieHomeBed", GlobalPos.CODEC, home);
+        if (hasParcel()) output.store("FrenchieParcel", ItemStack.CODEC, parcel);
+        if (goingHome) output.putBoolean("FrenchieGoingHome", true);
         if (recipient != null) output.store("FrenchieRecipient", UUIDUtil.CODEC, recipient);
         output.putBoolean("FrenchieReturning", returning);
         output.putBoolean("FrenchieAtHandoff", atDestination);
         if (departure != null) output.store("FrenchieDeparture", BlockPos.CODEC, departure);
         output.putInt("FrenchieDepartureTicks", departureTicks);
+        output.putInt("FrenchiePlannedSeconds", plannedSeconds);
+        output.putLong("FrenchieNextParcelReminder", nextReminder);
     }
 
     void load(ValueInput input) {
         home = input.read("FrenchieHomeBed", GlobalPos.CODEC).orElse(null);
         parcel = input.read("FrenchieParcel", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        goingHome = parcel.isEmpty() && input.getBooleanOr("FrenchieGoingHome", false);
         recipient = input.read("FrenchieRecipient", UUIDUtil.CODEC).orElse(null);
         returning = input.getBooleanOr("FrenchieReturning", false);
         atDestination = input.getBooleanOr("FrenchieAtHandoff", false);
         departure = input.read("FrenchieDeparture", BlockPos.CODEC).orElse(null);
         departureTicks = input.getIntOr("FrenchieDepartureTicks", 0);
+        plannedSeconds = input.getIntOr("FrenchiePlannedSeconds", 0);
+        nextReminder = input.getLongOr("FrenchieNextParcelReminder", 0);
     }
 
     static Component label(String key, Object... args) {
