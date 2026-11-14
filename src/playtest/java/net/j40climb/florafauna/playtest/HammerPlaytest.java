@@ -97,6 +97,7 @@ public final class HammerPlaytest {
                 p.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.FLAT_3X3);
 
         interruptSwing(t);
+        HammerPrecisionPlaytest.steps(t, WALL);
         minePlane(t, WALL, Direction.NORTH, "wall");
         minePlane(t, FLOOR, Direction.UP, "floor");
 
@@ -146,9 +147,15 @@ public final class HammerPlaytest {
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) expected.add(WALL.offset(x, y, 0));
         }
-        t.awaitClient("Render cracks at exactly the nine target positions, then release attack", mc -> {
+        t.awaitClient("Render cracks at all nine target positions, then hold precision", mc -> {
             if (!cracks.equals(expected)) return false;
+            ClientSetup.PRECISION_MINING_KEY.get().setDown(true);
+            return true;
+        });
+        t.awaitClient("Hold precision mid-swing and show the center crack alone", mc -> {
+            if (!cracks.equals(Set.of(WALL))) return false;
             mc.options.keyAttack.setDown(false);
+            ClientSetup.PRECISION_MINING_KEY.get().setDown(false);
             return true;
         });
         t.awaitClient("Clear all cracks when the swing is interrupted", mc -> !mc.gameMode.isDestroying() && cracks.isEmpty());

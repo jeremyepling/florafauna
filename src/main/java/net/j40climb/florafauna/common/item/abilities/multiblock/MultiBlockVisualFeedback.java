@@ -21,6 +21,7 @@ public final class MultiBlockVisualFeedback {
     private static Direction hitFace = Direction.UP;
     private static int ticksMining;
     private static List<BlockPos> cracks = List.of();
+    private static boolean refreshCracks;
 
     private MultiBlockVisualFeedback() {}
 
@@ -41,7 +42,8 @@ public final class MultiBlockVisualFeedback {
                     clear(player);
                     return;
                 }
-                if (ticksMining == 0) {
+                if (ticksMining == 0 || refreshCracks) {
+                    refreshCracks = false;
                     cracks = MultiBlockPatterns.plan(player, event.getItemStack(), target, hitFace).blocks().stream()
                             .filter(pos -> !pos.equals(target)).toList();
                 }
@@ -68,6 +70,12 @@ public final class MultiBlockVisualFeedback {
         draw(player, -1);
         cracks = List.of();
         ticksMining = 0;
+    }
+
+    public static void invalidatePattern(Player player) {
+        draw(player, -1);
+        cracks = List.of();
+        refreshCracks = true;
     }
 
     private static void draw(Player player, int stage) {
