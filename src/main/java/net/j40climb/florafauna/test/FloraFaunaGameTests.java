@@ -141,6 +141,9 @@ public class FloraFaunaGameTests {
         registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
         registerTest(event, defaultEnv, "frenchie_death_trail", FrenchieTrackingGameTests::trackDeath);
         registerTest(event, defaultEnv, "frenchie_compass_orders", FrenchieDeliveryGameTests::compassOrders);
+        registerStructureTest(event, defaultEnv, "frenchie_home_recall",
+                DevPlot.FRENCHIE.structure(), 3000, FrenchieRecallGameTests::recallParkedDog);
+        registerTest(event, defaultEnv, "frenchie_home_bed_interaction", FrenchieRecallGameTests::sendUsingBed);
         registerTest(event, defaultEnv, "frenchie_delivery_packed_cancel", FrenchieDeliveryGameTests::packAndCancel);
         registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_full",
                 DevPlot.FRENCHIE.structure(), 900, FrenchieDeliveryGameTests::fullRecipient);
