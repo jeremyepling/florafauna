@@ -10,6 +10,10 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+
 /** A small airmail card that leaves the dog and its surroundings visible. */
 public final class DeliveryScreen extends Screen {
     private static final Identifier PARCEL = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie/parcel");
@@ -31,9 +35,12 @@ public final class DeliveryScreen extends Screen {
         this.data = data;
         description = data.preview().map(preview -> {
             var destination = preview.destination();
+            var clock = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(minecraft.getLanguageManager().getJavaLocale());
+            String arrival = clock.format(ZonedDateTime.now().plusSeconds(preview.seconds()));
             return Component.empty().append(label("address", destination.label())).append("\n")
-                    .append(label("eta", duration(preview.seconds()))).append("\n\n")
-                    .append(label(destination.address().equals("home") ? "preview_bed" : "preview_player"));
+                    .append(label("eta", duration(preview.seconds()), arrival)).append("\n\n")
+                    .append(label(destination.address().equals("home") ? "preview_bed" : "preview_player"))
+                    .append("\n").append(label("recall_hint"));
         }).orElseGet(() -> Component.empty().append(label(data.choices().isEmpty() ? "no_destinations" : "instructions")));
     }
 
@@ -43,9 +50,9 @@ public final class DeliveryScreen extends Screen {
 
     private static Component duration(int seconds) {
         if (seconds < 60) return label("seconds", seconds);
-        long minutes = (seconds + 59L) / 60;
-        if (minutes < 60) return label("minutes", minutes);
-        return label("hours", minutes / 60, minutes % 60);
+        int minutes = seconds / 60;
+        if (minutes < 60) return label("minutes", minutes, seconds % 60);
+        return label("hours", minutes / 60, minutes % 60, seconds % 60);
     }
 
     @Override
@@ -66,8 +73,7 @@ public final class DeliveryScreen extends Screen {
         int y = top + bodyEnd;
         for (int i = first; i < last; i++) {
             var choice = data.choices().get(i);
-            button(x, y, inside, choice.label(), false,
-                    () -> respond(choice.address().equals("bed") ? "bed" : "choose " + choice.address()));
+            button(x, y, inside, choice.label(), false, () -> respond("choose " + choice.address()));
             y += ROW;
         }
         footer = top + cardHeight - 24;
