@@ -243,7 +243,7 @@ final class FrenchieDeliveryGameTests {
         var id = dog.getUUID();
         BlockPos start = dog.blockPosition();
         // Keep both the bed and its landing floor in a previously untouched chunk.
-        BlockPos bed = new ChunkPos(start.east(640)).getMiddleBlockPosition(start.getY() + 12);
+        BlockPos bed = ChunkPos.containing(start.east(640)).getMiddleBlockPosition(start.getY() + 12);
         platform(h, bed);
         var bedState = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
         level.setBlock(bed.west(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
@@ -272,7 +272,7 @@ final class FrenchieDeliveryGameTests {
                         "The dog or destination chunk was simulated during long-distance transit"))
                 .thenExecuteAfter(800, () -> {
                     // The owner visits after arrival, when the bed and waiting courier may have unloaded again.
-                    level.getChunkSource().addTicketWithRadius(TicketType.PLAYER_SPAWN, new ChunkPos(bed), 2);
+                    level.getChunkSource().addTicketWithRadius(TicketType.PLAYER_SPAWN, ChunkPos.containing(bed), 2);
                     level.getChunkAt(bed);
                     owner.snapTo(bed.north(2), 0, 0);
                 })
@@ -287,7 +287,7 @@ final class FrenchieDeliveryGameTests {
                                     && ItemStack.matches(parcel(), owner.getMainHandItem())
                                     && owner.getInventory().countItem(Items.BUNDLE) == 1,
                             "The distant-bed delivery should return the original parcel once");
-                    level.getChunkSource().removeTicketWithRadius(TicketType.PLAYER_SPAWN, new ChunkPos(bed), 2);
+                    level.getChunkSource().removeTicketWithRadius(TicketType.PLAYER_SPAWN, ChunkPos.containing(bed), 2);
                     disconnect(owner);
                 }).thenSucceed();
     }
