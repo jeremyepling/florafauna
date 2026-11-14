@@ -8,13 +8,16 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Configuration data for tools with configurable enchantments and mining speed.
- * Stores settings for fortune, silk touch, and mining speed.
+ * Per-tool enchantment, mining speed and vein matching settings.
  * Note: fortune and silkTouch are mutually exclusive - exactly one must be true at all times.
  */
-public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed) {
+public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed, boolean exactVein) {
 
     public static final ToolConfig DEFAULT = new ToolConfig(true, false, MiningSpeed.EFFICIENCY);
+
+    public ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed) {
+        this(fortune, silkTouch, miningSpeed, false);
+    }
 
     /**
      * Ensures exactly one of fortune or silkTouch is enabled.
@@ -29,7 +32,8 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
             instance.group(
                     Codec.BOOL.fieldOf("fortune").forGetter(ToolConfig::fortune),
                     Codec.BOOL.fieldOf("silkTouch").forGetter(ToolConfig::silkTouch),
-                    MiningSpeed.CODEC.fieldOf("miningSpeed").forGetter(ToolConfig::miningSpeed)
+                    MiningSpeed.CODEC.fieldOf("miningSpeed").forGetter(ToolConfig::miningSpeed),
+                    Codec.BOOL.optionalFieldOf("exactVein", false).forGetter(ToolConfig::exactVein)
             ).apply(instance, ToolConfig::new)
     );
 
@@ -40,6 +44,8 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
             ToolConfig::silkTouch,
             MiningSpeed.STREAM_CODEC,
             ToolConfig::miningSpeed,
+            ByteBufCodecs.BOOL,
+            ToolConfig::exactVein,
             ToolConfig::new
     );
 
@@ -47,11 +53,11 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
      * Toggles between Fortune 3 and Silk Touch
      */
     public ToolConfig withToggledEnchantment() {
-        if (fortune) {
-            return new ToolConfig(false, true, miningSpeed);
-        } else {
-            return new ToolConfig(true, false, miningSpeed);
-        }
+        return new ToolConfig(!fortune, !silkTouch, miningSpeed, exactVein);
+    }
+
+    public ToolConfig withToggledVeinMatching() {
+        return new ToolConfig(fortune, silkTouch, miningSpeed, !exactVein);
     }
 
     /**
@@ -67,7 +73,7 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
      * Creates a new config with the specified mining speed.
      */
     public ToolConfig withMiningSpeed(MiningSpeed speed) {
-        return new ToolConfig(fortune, silkTouch, speed);
+        return new ToolConfig(fortune, silkTouch, speed, exactVein);
     }
 
     /**
@@ -79,7 +85,7 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
             case EFFICIENCY -> MiningSpeed.INSTABREAK;
             case INSTABREAK -> MiningSpeed.STANDARD;
         };
-        return new ToolConfig(fortune, silkTouch, next);
+        return withMiningSpeed(next);
     }
 
     /**
@@ -91,7 +97,7 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
             case EFFICIENCY -> MiningSpeed.STANDARD;
             case INSTABREAK -> MiningSpeed.EFFICIENCY;
         };
-        return new ToolConfig(fortune, silkTouch, prev);
+        return withMiningSpeed(prev);
     }
 
     public Component speedDescription() {
