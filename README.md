@@ -118,7 +118,7 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. Let 
 | --- | --- |
 | `plots` | Build one fixture and the combined layout, visit all guides, preserve an edit across rebuild and restart, reset one plot and open its book. |
 | `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
-| `hammer` | Change settings, interrupt a swing and check that all nine cracks clear. Mine a wall and floor, strip logs, flatten and till dirt, then walk three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
+| `hammer` | Change settings, interrupt a swing and check that all nine cracks clear. Mine a wall and floor, strip logs, flatten and till dirt, then walk three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. The client also compares the lava warning on the same quarry wall before and after removing a buried lava pocket. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
 | `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |

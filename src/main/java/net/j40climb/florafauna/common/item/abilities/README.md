@@ -86,6 +86,8 @@ Straight cuts advance into the face you strike. On a wall, strike the bottom of 
 
 Stair modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center. Teal stair outlines show planned placements through rock and across air gaps before you strike.
 
+Orange outlines mark the faces of planned mining blocks that touch source or flowing lava. Check the marked side, ceiling, floor or end wall before striking. Holding the single-block key narrows this warning to the targeted block. The warning leaves the final decision to the player.
+
 Shapeless mode groups matching stone and deepslate ore variants. An iron vein can cross the stone–deepslate boundary. Copper touching that vein stays in place. Select **Exact block** in the Hammer settings to stop at the variant boundary.
 
 After a successful center hit, flat and tunnel swings skip air and continue through their usual footprint. Both stair directions place a cobblestone tread across an existing air gap at the planned floor height. The flight still ends at the fifth column. Vein mining follows matching neighbors within its configured radius.
@@ -142,4 +144,4 @@ Mining uses a server game-mode mixin for the completed center break. Other abili
 
 ## Verification
 
-From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario hammer` using a closed dev save. The client changes tool settings, checks single-block input, captures the mining and placement outlines, and walks the stairs and straight tunnel in a generated quarry.
+From the checkout root, run `.\scripts\test_dev_world.ps1 -Scenario hammer` using a closed dev save. The client changes tool settings, checks single-block input, captures the mining and placement outlines, compares the same tunnel face with and without a hidden lava pocket, and walks the stairs and straight tunnel in a generated quarry.
