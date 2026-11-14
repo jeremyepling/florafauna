@@ -37,7 +37,7 @@ final class HammerQuarryPlaytest {
                 level.setBlock(pos, (entrance ? Blocks.AIR : Blocks.STONE).defaultBlockState(), Block.UPDATE_CLIENTS);
             }
             level.setBlockAndUpdate(FIRST_FACE.offset(0, -3, 1), Blocks.AIR.defaultBlockState());
-            player.teleportTo(level, 8.5, 195, 9.5, Set.of(), 0f, 0f, true);
+            player.teleportTo(level, 8.5, 195, 8.0, Set.of(), 0f, 0f, true);
         });
         for (MiningShape shape : new MiningShape[]{MiningShape.FLAT_7X7,
                 MiningShape.SHAPELESS, MiningShape.TUNNEL_UP, MiningShape.TUNNEL_DOWN}) {
