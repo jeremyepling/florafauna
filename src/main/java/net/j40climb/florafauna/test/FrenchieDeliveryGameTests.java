@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +15,7 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariants;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -28,12 +30,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.PlayLevelSoundEvent;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 final class FrenchieDeliveryGameTests {
     private static final InteractionHand HAND = InteractionHand.MAIN_HAND;
@@ -130,6 +138,7 @@ final class FrenchieDeliveryGameTests {
     static void fullRecipient(GameTestHelper h) {
         var owner = networkedPlayer(h);
         var recipient = networkedPlayer(h);
+        var stranger = networkedPlayer(h);
         var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 16, 2);
         var expected = prepareDelivery(owner, recipient, dog).copy();
         var id = dog.getUUID();
@@ -145,6 +154,14 @@ final class FrenchieDeliveryGameTests {
         BlockPos moved = address.south(12);
         platform(h, address);
         platform(h, moved);
+        var bark = level.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT)
+                .getOrThrow(WolfSoundVariants.PUGLIN).value().adultSounds().ambientSound();
+        var barks = new AtomicInteger();
+        Consumer<PlayLevelSoundEvent.AtPosition> onBark = sound -> {
+            if (sound.getLevel() == level && bark.equals(sound.getSound())
+                    && sound.getPosition().distanceToSqr(moved.getBottomCenter()) < 36) barks.incrementAndGet();
+        };
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, PlayLevelSoundEvent.AtPosition.class, onBark);
         recipient.snapTo(address, 0, 0);
         for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
             recipient.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
@@ -165,10 +182,26 @@ final class FrenchieDeliveryGameTests {
                                 && arrived.isDelivering() && arrived.distanceToSqr(recipient) < 36,
                         "Original Frenchie did not arrive at the recipient's new position"))
                 .thenExecuteAfter(25, () -> {
-                    h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 0
-                                    && level.getEntity(id) instanceof FrenchieEntity arrived && arrived.isDelivering(),
-                            "A full inventory should leave the named parcel on the waiting dog");
+                    var arrived = (FrenchieEntity) level.getEntity(id);
+                    NeoForge.EVENT_BUS.unregister(onBark);
+                    h.assertTrue(barks.get() == 1, "The arriving courier should greet the recipient with a single bark");
+                    click(recipient, arrived);
+                    h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 0 && arrived.isDelivering(),
+                            "A full inventory must leave the original parcel on the dog");
+                    stranger.snapTo(arrived.position(), 0, 0);
+                    click(stranger, arrived);
+                    h.assertTrue(stranger.getInventory().countItem(Items.BUNDLE) == 0 && arrived.isDelivering(),
+                            "A visitor should not be able to collect or recall someone else's delivery");
                     recipient.getInventory().setItem(7, ItemStack.EMPTY);
+                })
+                .thenExecuteAfter(25, () -> {
+                    var arrived = (FrenchieEntity) level.getEntity(id);
+                    h.assertTrue(arrived != null && arrived.isDelivering() && recipient.getInventory().getItem(7).isEmpty(),
+                            "Making room must not accept the parcel automatically");
+                    var held = recipient.getMainHandItem().copy();
+                    click(recipient, arrived);
+                    click(recipient, arrived);
+                    h.assertTrue(ItemStack.matches(recipient.getMainHandItem(), held), "Acceptance consumed the held item");
                 })
                 .thenWaitUntil(() -> h.assertTrue(ItemStack.matches(recipient.getInventory().getItem(7), expected)
                                 && recipient.getInventory().countItem(Items.BUNDLE) == 1,
@@ -183,6 +216,7 @@ final class FrenchieDeliveryGameTests {
                                     && owner.getInventory().countItem(Items.BUNDLE) == 0,
                             "Returning the dog must not transfer the delivered bundle again");
                     disconnect(recipient);
+                    disconnect(stranger);
                     disconnect(owner);
                 }).thenSucceed();
     }
@@ -245,7 +279,13 @@ final class FrenchieDeliveryGameTests {
                                 && nether.getEntity(id) instanceof FrenchieEntity arrived
                                 && arrived.isDelivering() && arrived.distanceToSqr(recipient) < 36,
                         "The courier never appeared beside its Nether recipient"))
-                .thenExecute(() -> recipient.getInventory().setItem(7, ItemStack.EMPTY))
+                .thenExecute(() -> {
+                    recipient.getInventory().setItem(7, ItemStack.EMPTY);
+                    var held = new ItemStack(Items.GLOW_BERRIES, 3);
+                    recipient.setItemInHand(InteractionHand.OFF_HAND, held);
+                    recipient.interactOn(nether.getEntity(id), InteractionHand.OFF_HAND, Vec3.ZERO);
+                    h.assertTrue(held.getCount() == 3, "Off-hand acceptance fed the held berries to the dog");
+                })
                 .thenWaitUntil(() -> h.assertTrue(ItemStack.matches(recipient.getInventory().getItem(7), expected),
                         "Cross-dimension delivery lost the filled bundle"))
                 .thenWaitUntil(() -> h.assertTrue(nether.getEntity(id) == null
@@ -280,6 +320,11 @@ final class FrenchieDeliveryGameTests {
         h.runAfterDelay(100, () -> h.assertTrue(h.getLevel().getEntity(id) == null,
                 "An enclosed dog must be able to leave without finding a route"));
         h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(h.getLevel().getEntity(id) instanceof FrenchieEntity waiting
+                                && waiting.distanceToSqr(recipient) < 16 && waiting.isDelivering()
+                                && recipient.getInventory().countItem(Items.BUNDLE) == 0,
+                        "The original dog must appear in front of the recipient before the bundle moves"))
+                .thenExecute(() -> click(recipient, (FrenchieEntity) h.getLevel().getEntity(id)))
                 .thenWaitUntil(() -> h.assertTrue(ItemStack.matches(recipient.getMainHandItem(), expected),
                         "Courier never arrived across the blocked departure route"))
                 .thenWaitUntil(() -> h.assertTrue(h.getLevel().getEntity(id) instanceof FrenchieEntity returned
@@ -313,11 +358,8 @@ final class FrenchieDeliveryGameTests {
         owner.setGameMode(GameType.SURVIVAL);
         dog.tame(owner);
         dog.sitDown();
-        // The dog already has a home in this chunk from an earlier visit.
-        var assigned = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
-        dog.saveWithoutId(assigned);
-        assigned.store("FrenchieHomeBed", GlobalPos.CODEC, GlobalPos.of(level.dimension(), bed));
-        dog.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), assigned.buildResult()));
+        var respawn = LevelData.RespawnData.of(level.dimension(), bed, 0, 0);
+        owner.setRespawnPosition(new ServerPlayer.RespawnConfig(respawn, false), false);
         owner.snapTo(dog.position().add(0, 0, -1), 0, 0);
         h.startSequence()
                 .thenWaitUntil(() -> h.assertTrue(!level.hasChunkAt(bed), "Bed chunk never unloaded"))
@@ -328,6 +370,7 @@ final class FrenchieDeliveryGameTests {
                     order(owner, dog, "send home");
                     h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
                             "The owner could not confirm an unloaded bed");
+                    owner.setRespawnPosition(null, false);
                 })
                 .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null, "Bed delivery never departed"))
                 .thenExecuteAfter(200, () -> h.assertTrue(!level.hasChunkAt(bed) && level.getEntity(id) == null,
