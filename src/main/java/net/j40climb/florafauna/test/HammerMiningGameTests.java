@@ -17,6 +17,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -58,6 +59,8 @@ final class HammerMiningGameTests {
     private static void allFaces(GameTestHelper h, MiningShape mode) {
         BlockPos center = h.absolutePos(new BlockPos(11, 14, 11));
         ServerPlayer player = player(h, mode);
+        player.setGameMode(GameType.SURVIVAL);
+        player.setOnGround(true);
         for (Direction face : Direction.values()) {
             for (Direction heading : Direction.Plane.HORIZONTAL) {
                 // Only a vertical hit derives travel from the player. Run all four rotations on the floor.
@@ -125,7 +128,8 @@ final class HammerMiningGameTests {
             swing(player, center, Direction.UP, Direction.SOUTH);
             check(h, center, Blocks.AIR, "ore center");
             check(h, center.east(), Blocks.AIR, "ore neighbor");
-            var drops = h.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(center.getCenter(), center.east().getCenter()).inflate(2));
+            var bounds = new AABB(center.getCenter(), center.east().getCenter()).inflate(2);
+            var drops = h.getLevel().getEntitiesOfClass(ItemEntity.class, bounds);
             int count = 0;
             for (var drop : drops) {
                 var stack = drop.getItem();
@@ -133,6 +137,8 @@ final class HammerMiningGameTests {
                 count += stack.getCount();
             }
             h.assertTrue(silk ? count == 2 : count >= 2 && count <= 8, "Wrong total ore loot: " + count);
+            boolean hasExperience = !h.getLevel().getEntitiesOfClass(ExperienceOrb.class, bounds).isEmpty();
+            h.assertTrue(hasExperience == !silk, "Wrong experience outcome for " + (silk ? "Silk Touch" : "Fortune"));
         }
         h.succeed();
     }

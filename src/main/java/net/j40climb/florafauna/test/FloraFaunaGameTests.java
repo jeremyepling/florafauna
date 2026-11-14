@@ -2280,12 +2280,20 @@ public class FloraFaunaGameTests {
     }
 
     private static void testFearSourceCreeperSources(GameTestHelper helper) {
-        var cat = helper.spawn(EntityType.CAT, new BlockPos(1, 1, 1));
-        var ocelot = helper.spawn(EntityType.OCELOT, new BlockPos(2, 1, 1));
-        var cow = helper.spawn(EntityType.COW, new BlockPos(3, 1, 1));
-        helper.assertTrue(FearSourceDetector.isCreeperFearSource(cat), "Cats frighten creepers");
-        helper.assertTrue(FearSourceDetector.isCreeperFearSource(ocelot), "Ocelots frighten creepers");
-        helper.assertFalse(FearSourceDetector.isCreeperFearSource(cow), "Cows do not frighten creepers");
+        var creeper = helper.spawnWithNoFreeWill(EntityType.CREEPER, 0, 1, 1);
+        MobSymbioteHelper.applyMobSymbioteLevel1(creeper, 0L);
+        var cat = helper.spawnWithNoFreeWill(EntityType.CAT, 2, 1, 1);
+        var ocelot = helper.spawnWithNoFreeWill(EntityType.OCELOT, 3, 1, 1);
+        helper.spawnWithNoFreeWill(EntityType.COW, 0, 1, 2);
+        helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).map(source -> source.entity() == cat).orElse(false),
+                "The nearer visible cat should frighten the creeper");
+        cat.discard();
+        helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).map(source -> source.entity() == ocelot).orElse(false),
+                "The visible ocelot should frighten the creeper");
+        helper.setBlock(new BlockPos(1, 1, 1), net.minecraft.world.level.block.Blocks.STONE);
+        helper.setBlock(new BlockPos(1, 2, 1), net.minecraft.world.level.block.Blocks.STONE);
+        helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).isEmpty(),
+                "The wall blocks sight of the ocelot and the nearby cow is harmless");
         helper.succeed();
     }
 

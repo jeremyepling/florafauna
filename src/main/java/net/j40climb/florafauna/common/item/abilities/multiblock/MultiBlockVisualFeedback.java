@@ -71,8 +71,9 @@ public final class MultiBlockVisualFeedback {
     }
 
     private static void draw(Player player, int stage) {
-        for (BlockPos pos : cracks) {
-            player.level().destroyBlockProgress(player.getId() + pos.hashCode(), pos, stage);
+        // Local overlays use negative IDs. Distinct vein positions can share BlockPos.hashCode().
+        for (int i = 0; i < cracks.size(); i++) {
+            player.level().destroyBlockProgress(-1 - i, cracks.get(i), stage);
         }
     }
 }
