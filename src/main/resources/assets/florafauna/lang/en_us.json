@@ -102,6 +102,7 @@
   "key.florafauna.dash": "Dash",
   "key.florafauna.hammer_config": "Hammer Config",
   "key.florafauna.cycle_mining_mode": "Cycle Mining Mode",
+  "key.florafauna.precision_mining": "Hold for Single-Block Mining",
   "key.florafauna.noclip": "Toggle No-Clip",
 
   "command.florafauna.noclip.enabled": "No-clip enabled",

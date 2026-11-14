@@ -53,7 +53,27 @@ final class HammerMiningGameTests {
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_limit_and_connectivity", MINE, 100, HammerMiningGameTests::vein);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_tunnel_gaps", MINE, 100, HammerMiningGameTests::gaps);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_dimension_floor", MINE, 100, HammerMiningGameTests::buildFloor);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_precision_is_per_player", MINE, 100, HammerMiningGameTests::precision);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_permission_and_tool_rules", MINE, 100, HammerMiningGameTests::eligibility);
+    }
+
+    private static void precision(GameTestHelper h) {
+        var precise = player(h, MiningShape.TUNNEL_DOWN);
+        var other = player(h, MiningShape.TUNNEL_DOWN);
+        var center = h.absolutePos(new BlockPos(11, 14, 11));
+        var originalMode = precise.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
+        precise.setData(FloraFaunaRegistry.PRECISION_MINING, true);
+        fill(precise, center.offset(0, -6, -4), center.above(2), Blocks.STONE);
+        swing(precise, center, Direction.SOUTH, Direction.NORTH);
+        check(h, center, Blocks.AIR, "Precision break");
+        check(h, center.below(2), Blocks.STONE, "Precision placed an unwanted stair");
+        check(h, center.north(), Blocks.STONE, "Precision mined a neighbor");
+        set(precise, center, Blocks.STONE);
+        swing(other, center, Direction.SOUTH, Direction.NORTH);
+        stair(h, center.below(2), Direction.SOUTH);
+        h.assertTrue(originalMode.equals(precise.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING)),
+                "Temporary precision rewrote the held tool");
+        h.succeed();
     }
 
     private static void allFaces(GameTestHelper h, MiningShape mode) {

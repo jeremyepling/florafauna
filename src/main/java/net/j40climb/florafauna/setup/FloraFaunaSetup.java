@@ -111,6 +111,7 @@ public class FloraFaunaSetup {
         registrar.playToServer(CocoonActionPayload.TYPE, CocoonActionPayload.STREAM_CODEC, CocoonActionPayload::onServerReceived);
         registrar.playToServer(ThrowItemPayload.TYPE, ThrowItemPayload.STREAM_CODEC, ThrowItemPayload::onServerReceived);
         registrar.playToServer(CycleMiningModePayload.TYPE, CycleMiningModePayload.STREAM_CODEC, CycleMiningModePayload::onServerReceived);
+        registrar.playToServer(PrecisionMiningPayload.TYPE, PrecisionMiningPayload.STREAM_CODEC, PrecisionMiningPayload::onServerReceived);
         registrar.playToServer(UpdateMobBarrierConfigPayload.TYPE, UpdateMobBarrierConfigPayload.STREAM_CODEC, UpdateMobBarrierConfigPayload::onServerReceived);
         registrar.playToServer(net.j40climb.florafauna.noclip.NoClipPayload.TYPE, net.j40climb.florafauna.noclip.NoClipPayload.STREAM_CODEC, net.j40climb.florafauna.noclip.NoClipPayload::onServerReceived);
 

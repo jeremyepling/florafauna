@@ -93,6 +93,14 @@ public class ClientSetup {
             KEY_CATEGORY
     ));
 
+    public static final Lazy<KeyMapping> PRECISION_MINING_KEY = Lazy.of(() -> new KeyMapping(
+            "key.florafauna.precision_mining",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_J,
+            KEY_CATEGORY
+    ));
+
     public static final Lazy<KeyMapping> MOB_BARRIER_CONFIG_KEY = Lazy.of(() -> new KeyMapping(
             "key.florafauna.mob_barrier_config",
             KeyConflictContext.IN_GAME,
@@ -180,6 +188,7 @@ public class ClientSetup {
         event.register(HAMMER_CONFIG_KEY.get());
         event.register(THROW_ITEM_KEY.get());
         event.register(CYCLE_MINING_MODE_KEY.get());
+        event.register(PRECISION_MINING_KEY.get());
         event.register(MOB_BARRIER_CONFIG_KEY.get());
         event.register(NOCLIP_KEY.get());
     }
