@@ -55,9 +55,13 @@ final class DeliveryGoal extends Goal {
     }
 
     static int travelSeconds(ServerLevel from, Vec3 start, ServerLevel to, Vec3 end) {
-        double scale = DimensionType.getTeleportationScale(to.dimensionType(), from.dimensionType());
-        double distance = start.distanceTo(new Vec3(end.x * scale, end.y, end.z * scale));
-        return 3 + (int) Math.ceil(distance / 16);
+        if (from != to) {
+            double fromScale = from.dimensionType().coordinateScale();
+            double toScale = to.dimensionType().coordinateScale();
+            start = start.multiply(fromScale, 1, fromScale);
+            end = end.multiply(toScale, 1, toScale);
+        }
+        return (int) (3 + Math.ceil(start.distanceTo(end) / 16));
     }
 
     void start(ServerPlayer owner, InteractionHand hand, @Nullable ServerPlayer target) {
@@ -165,7 +169,17 @@ final class DeliveryGoal extends Goal {
         if (returning) {
             if (!announced) tell(owner, "recover");
         } else if (recipient == null) {
-            if (home == null || home.dimension() != level.dimension() || !isBedHead(level, home.pos())) {
+            var bedLevel = home == null ? null : level.getServer().getLevel(home.dimension());
+            if (bedLevel == null) {
+                sendBack(owner, "bed_missing");
+                return;
+            }
+            if (bedLevel != level || dog.position().distanceToSqr(home.pos().getBottomCenter()) > 16) {
+                // A waiting courier can be picked up and released somewhere else.
+                CourierTrips.depart(dog, null, home, false, travelSeconds(level, dog.position(), bedLevel, home.pos().getBottomCenter()));
+                return;
+            }
+            if (!isBedHead(level, home.pos())) {
                 sendBack(owner, "bed_missing");
                 return;
             }
@@ -190,6 +204,8 @@ final class DeliveryGoal extends Goal {
                 tell(player, "need_slot", dog.getName());
                 tell(owner, "full", player.getName());
             }
+            // A disconnect or teleport must still wake the courier on its next handoff check.
+            level.getChunkSource().addTicketWithRadius(FloraFaunaRegistry.COURIER_STOP.get(), dog.chunkPosition(), 2);
         }
         announced = true;
     }
