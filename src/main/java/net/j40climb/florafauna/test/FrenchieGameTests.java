@@ -20,8 +20,8 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueInput;
 //? if >=26.3 {
-/*import net.minecraft.world.phys.Vec3;*/
-//?}
+/*import net.minecraft.world.phys.Vec3;
+*///?}
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.UUID;
@@ -59,8 +59,8 @@ final class FrenchieGameTests {
         //? if <26.3 {
         FrontpackEvents.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner, InteractionHand.MAIN_HAND, dog));
         //?} else {
-        /*FrontpackEvents.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner, InteractionHand.MAIN_HAND, dog, Vec3.ZERO));*/
-        //?}
+        /*FrontpackEvents.onEntityInteract(new PlayerInteractEvent.EntityInteract(owner, InteractionHand.MAIN_HAND, dog, Vec3.ZERO));
+        *///?}
         helper.assertTrue(dog.isRemoved(), "Pickup left the original dog in the level");
 
         var respawned = helper.makeMockPlayer(GameType.SURVIVAL);

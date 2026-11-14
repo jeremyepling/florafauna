@@ -23,8 +23,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 //? if <26.3 {
 import net.neoforged.neoforge.event.level.BlockEvent;
 //?} else {
-/*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;*/
-//?}
+/*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 /**

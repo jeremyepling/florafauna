@@ -42,8 +42,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 //? if >=26.3 {
-/*import net.minecraft.util.Prediction;*/
-//?}
+/*import net.minecraft.util.Prediction;
+*///?}
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -275,8 +275,8 @@ public class FloraFaunaCommands {
             //? if <26.3 {
             player.drop(result.symbioteItem(), false);
             //?} else {
-            /*player.drop(result.symbioteItem(), false, Prediction.SERVER_ONLY);*/
-            //?}
+            /*player.drop(result.symbioteItem(), false, Prediction.SERVER_ONLY);
+            *///?}
         }
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.unbonded_success")

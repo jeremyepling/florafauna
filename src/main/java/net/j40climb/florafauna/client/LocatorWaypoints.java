@@ -47,7 +47,7 @@ public final class LocatorWaypoints {
     private LocatorWaypoints() {}
 
     /**
-     * Draw the player’s active husk on the locator bar.
+     * Draw the player's active husk on the locator bar.
      */
     public static void renderHuskWaypoint(LocalPlayer player, GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, int barTop) {
         if (player == null) {
@@ -142,7 +142,7 @@ public final class LocatorWaypoints {
     }
 
     /**
-     * Draw the player’s active mining anchor on the locator bar.
+     * Draw the player's active mining anchor on the locator bar.
      */
     public static void renderAnchorWaypoint(LocalPlayer player, GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, int barTop) {
         if (player == null) {

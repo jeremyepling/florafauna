@@ -17,8 +17,8 @@ import net.minecraft.util.context.ContextKey;
 //? if <26.3 {
 import net.minecraft.world.entity.EntityType;
 //?} else {
-/*import net.minecraft.world.entity.EntityTypes;*/
-//?}
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.monster.Slime;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
@@ -68,8 +68,8 @@ public final class SlimeSplitLayer extends RenderLayer<SlimeRenderState, SlimeMo
                 //? if <26.3 {
                 light, LivingEntityRenderer.getOverlayCoords(state, 0), state.outlineColor, null);
                 //?} else {
-                /*light, LivingEntityRenderer.getOverlayCoords(state, 0), state.outlineColor);*/
-                //?}
+                /*light, LivingEntityRenderer.getOverlayCoords(state, 0), state.outlineColor);
+                *///?}
         skin.submit(pose, collector, light, state, yRot, xRot);
         pose.popPose();
     }

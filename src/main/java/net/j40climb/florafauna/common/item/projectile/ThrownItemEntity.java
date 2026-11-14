@@ -11,8 +11,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundEvent;
 //? if >=26.3 {
-/*import net.minecraft.util.Prediction;*/
-//?}
+/*import net.minecraft.util.Prediction;
+*///?}
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -129,8 +129,8 @@ public class ThrownItemEntity extends AbstractArrow {
                         //? if <26.3 {
                         player.getInventory().placeItemBackInInventory(getThrownItem().copy());
                         //?} else {
-                        /*player.getInventory().placeItemBackInInventory(getThrownItem().copy(), Prediction.SERVER_ONLY);*/
-                        //?}
+                        /*player.getInventory().placeItemBackInInventory(getThrownItem().copy(), Prediction.SERVER_ONLY);
+                        *///?}
                     } else {
                         spawnAtLocation(serverLevel, getThrownItem());
                     }

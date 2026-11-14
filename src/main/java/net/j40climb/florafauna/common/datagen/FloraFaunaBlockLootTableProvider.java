@@ -7,8 +7,8 @@ import net.minecraft.core.Holder;
 //? if <26.3 {
 import net.minecraft.core.HolderLookup;
 //?} else {
-/*import net.minecraft.data.loot.LootTableSubProvider;*/
-//?}
+/*import net.minecraft.data.loot.LootTableSubProvider;
+*///?}
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
@@ -21,8 +21,8 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         super(Set.of(), FeatureFlags.REGISTRY.allFlags(), provider);
     //?} else {
     /*protected FloraFaunaBlockLootTableProvider(LootTableSubProvider.Context context) {
-        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), context);*/
-    //?}
+        super(Set.of(), FeatureFlags.REGISTRY.allFlags(), context);
+    *///?}
     }
 
     @Override

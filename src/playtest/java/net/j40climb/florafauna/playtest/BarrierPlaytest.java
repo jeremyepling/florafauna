@@ -10,8 +10,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.world.InteractionHand;
 //? if >=26.3 {
-/*import net.minecraft.world.item.DyeColor;*/
-//?}
+/*import net.minecraft.world.item.DyeColor;
+*///?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -33,8 +33,8 @@ final class BarrierPlaytest {
     private static final Block BACKDROP = Blocks.BLACK_CONCRETE;
     //?} else {
     /*private static final Block SUPPORT = Blocks.CONCRETE.pick(DyeColor.GRAY);
-    private static final Block BACKDROP = Blocks.CONCRETE.pick(DyeColor.BLACK);*/
-    //?}
+    private static final Block BACKDROP = Blocks.CONCRETE.pick(DyeColor.BLACK);
+    *///?}
     private static final MobBarrierConfig CONFIG = new MobBarrierConfig(List.of("minecraft:zombie"), List.of("#minecraft:undead"), true);
 
     static void steps(Playtest t, int phase) {

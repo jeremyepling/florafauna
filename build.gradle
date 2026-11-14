@@ -54,7 +54,11 @@ stonecutter {
             replace('monster.Slime;', 'monster.cubemob.Slime;')
             replace('PushReaction.DESTROY', 'PushReaction.POPPED')
             replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
-            replace('BlockEvent.BreakEvent', 'BreakBlockEvent')
+        }
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/(?<![\w.])BlockEvent\.BreakEvent\b/, 'BreakBlockEvent',
+                    /(?<![\w.])BreakBlockEvent\b/, 'BlockEvent.BreakEvent')
         }
         // Match vanilla constants, leaving EntityType.Builder and FloraFaunaTags.EntityTypes alone.
         regex {

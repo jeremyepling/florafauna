@@ -6,8 +6,8 @@ import net.minecraft.server.level.ServerLevel;
 //? if <26.3 {
 import net.minecraft.world.entity.EntityType;
 //?} else {
-/*import net.minecraft.world.entity.EntityTypes;*/
-//?}
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;

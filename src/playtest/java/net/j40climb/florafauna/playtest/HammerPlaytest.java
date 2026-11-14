@@ -74,8 +74,8 @@ public final class HammerPlaytest {
             //? if <26.3 {
             mc.options.hideGui = false;
             //?} else {
-            /*if (mc.gui.hud.isHidden()) mc.gui.hud.toggle();*/
-            //?}
+            /*if (mc.gui.hud.isHidden()) mc.gui.hud.toggle();
+            *///?}
             KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey());
         });
         t.awaitClient("Open the tool configuration screen", mc -> mc.screen instanceof ToolConfigScreen);

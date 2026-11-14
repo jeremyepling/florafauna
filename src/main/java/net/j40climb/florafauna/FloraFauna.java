@@ -31,8 +31,8 @@ public class FloraFauna {
         //? if <26.3 {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC, "florafauna-common.toml");
         //?} else {
-        /*modContainer.registerConfig(ModConfig.Type.LOCAL, Config.SPEC, "florafauna-common.toml");*/
-        //?}
+        /*modContainer.registerConfig(ModConfig.Type.LOCAL, Config.SPEC, "florafauna-common.toml");
+        *///?}
         modEventBus.addListener(this::onConfigLoad);
 
         // Initialize all registrations
@@ -47,8 +47,8 @@ public class FloraFauna {
         }
         // Register datagen events on the mod bus
         //? if >=26.3 {
-        /*modEventBus.addListener(FloraFaunaDataGenerators::gatherRegistries);*/
-        //?}
+        /*modEventBus.addListener(FloraFaunaDataGenerators::gatherRegistries);
+        *///?}
         modEventBus.addListener(FloraFaunaDataGenerators::gatherClientData);
         modEventBus.addListener(FloraFaunaDataGenerators::gatherServerData);
 

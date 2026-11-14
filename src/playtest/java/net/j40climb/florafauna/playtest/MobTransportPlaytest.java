@@ -21,8 +21,8 @@ import net.minecraft.world.entity.EntitySpawnReason;
 //? if <26.3 {
 import net.minecraft.world.entity.EntityType;
 //?} else {
-/*import net.minecraft.world.entity.EntityTypes;*/
-//?}
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.item.ItemStack;

@@ -72,8 +72,8 @@ public class KeyInputEvents {
                 //? if <26.3 {
                 player.swing(InteractionHand.MAIN_HAND);
                 //?} else {
-                /*player.swing(InteractionHand.MAIN_HAND, itemStack.getAttackAnimation(), false);*/
-                //?}
+                /*player.swing(InteractionHand.MAIN_HAND, itemStack.getAttackAnimation(), false);
+                *///?}
                 ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
             }
         }

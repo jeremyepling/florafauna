@@ -7,8 +7,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 //? if >=26.3 {
-/*import net.minecraft.world.item.context.BlockPlaceContext;*/
-//?}
+/*import net.minecraft.world.item.context.BlockPlaceContext;
+*///?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,8 +37,8 @@ public class MobBarrierBlockItem extends BlockItem {
     /*@Override
     public void onBlockPlacedBy(BlockPlaceContext context, Level level, BlockPos pos, BlockState state, @Nullable Player placer, ItemStack stack) {
         copyConfig(level, pos, stack);
-    }*/
-    //?}
+    }
+    *///?}
 
     private static void copyConfig(Level level, BlockPos pos, ItemStack stack) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MobBarrierBlockEntity barrier) {

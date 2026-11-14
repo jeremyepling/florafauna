@@ -13,8 +13,8 @@ import net.minecraft.world.entity.EntitySpawnReason;
 //? if <26.3 {
 import net.minecraft.world.entity.EntityType;
 //?} else {
-/*import net.minecraft.world.entity.EntityTypes;*/
-//?}
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;

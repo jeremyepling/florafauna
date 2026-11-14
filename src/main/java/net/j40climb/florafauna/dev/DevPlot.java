@@ -51,8 +51,8 @@ public enum DevPlot {
         //? if <26.3 {
         StructureTemplate template = level.getStructureManager().get(structure)
         //?} else {
-        /*StructureTemplate template = level.getStructureTemplateManager().get(structure)*/
-        //?}
+        /*StructureTemplate template = level.getStructureTemplateManager().get(structure)
+        *///?}
                 .orElseThrow(() -> new IllegalStateException("Missing plot structure " + structure));
         Vec3i size = template.getSize();
         if (size.getX() < 3 || size.getY() < 3 || size.getZ() < 2 ||

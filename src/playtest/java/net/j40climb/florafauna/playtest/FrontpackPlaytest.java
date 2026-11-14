@@ -132,8 +132,8 @@ final class FrontpackPlaytest {
             //? if <26.3 {
             mc.options.hideGui = true;
             //?} else {
-            /*if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();*/
-            //?}
+            /*if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();
+            *///?}
             mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
             mc.player.setXRot(0);
             mc.player.setYRot(180);

@@ -18,8 +18,8 @@ import net.minecraft.world.entity.EntitySpawnReason;
 //? if <26.3 {
 import net.minecraft.world.entity.EntityType;
 //?} else {
-/*import net.minecraft.world.entity.EntityTypes;*/
-//?}
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -97,8 +97,8 @@ final class SlimeGratePlaytest {
             //? if <26.3 {
             mc.options.hideGui = true;
             //?} else {
-            /*if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();*/
-            //?}
+            /*if (!mc.gui.hud.isHidden()) mc.gui.hud.toggle();
+            *///?}
             mc.player.lookAt(Anchor.EYES, Vec3.atCenterOf(GRATE));
             return true;
         });

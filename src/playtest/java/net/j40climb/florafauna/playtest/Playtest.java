@@ -40,8 +40,8 @@ public final class Playtest {
     private CompletableFuture<Boolean> pending;
     private boolean finished;
     //? if >=26.3 {
-    /*private Screen lastUpgradePrompt;*/
-    //?}
+    /*private Screen lastUpgradePrompt;
+    *///?}
 
     private record Step(String name, Function<Minecraft, CompletableFuture<Boolean>> run) {}
 
@@ -51,8 +51,8 @@ public final class Playtest {
         this.phase = phase;
         awaitClient("Join the copied world", mc -> {
             //? if >=26.3 {
-            /*lastUpgradePrompt = CopyUpgradePrompt.handle(mc, lastUpgradePrompt, () -> verifyCopyDirectory(mc));*/
-            //?}
+            /*lastUpgradePrompt = CopyUpgradePrompt.handle(mc, lastUpgradePrompt, () -> verifyCopyDirectory(mc));
+            *///?}
             if (mc.player == null || mc.level == null || mc.getSingleplayerServer() == null || mc.screen != null) return false;
             try {
                 Path expected = directory.resolve("saves/playtest").toRealPath();
@@ -104,8 +104,8 @@ public final class Playtest {
                 //? if <26.3 {
                 Screenshot.grab(mc.gameDirectory, filename, mc.getMainRenderTarget(), 1, ignored -> {}));
                 //?} else {
-                /*Screenshot.grab(mc.gameDirectory, filename, mc.gameRenderer.mainRenderTarget(), 1, ignored -> {}));*/
-                //?}
+                /*Screenshot.grab(mc.gameDirectory, filename, mc.gameRenderer.mainRenderTarget(), 1, ignored -> {}));
+                *///?}
         awaitClient("Write " + filename, mc ->
                 Files.isRegularFile(directory.resolve("screenshots").resolve(filename)));
     }
