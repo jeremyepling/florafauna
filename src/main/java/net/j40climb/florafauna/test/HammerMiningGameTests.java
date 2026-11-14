@@ -58,6 +58,7 @@ final class HammerMiningGameTests {
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_limit_and_connectivity", MINE, 100, HammerMiningGameTests::vein);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_material_pairs", MINE, 100, HammerMiningGameTests::veinMaterialPairs);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_exact_and_boundaries", MINE, 100, HammerMiningGameTests::veinBoundaries);
+        HammerLightingGameTests.register(event, env, MINE);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_tunnel_gaps", MINE, 100, HammerMiningGameTests::gaps);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_lava_exposure", MINE, 100, HammerMiningGameTests::lavaExposure);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_dimension_floor", MINE, 100, HammerMiningGameTests::buildFloor);
@@ -488,7 +489,7 @@ final class HammerMiningGameTests {
         h.succeed();
     }
 
-    private static ServerPlayer player(GameTestHelper h, MiningShape mode) {
+    static ServerPlayer player(GameTestHelper h, MiningShape mode) {
         var player = new FakePlayer(h.getLevel(), new GameProfile(UUID.randomUUID(), "mining-test"));
         player.setGameMode(GameType.CREATIVE);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(FloraFaunaRegistry.HAMMER.get()));
@@ -496,11 +497,11 @@ final class HammerMiningGameTests {
         return player;
     }
 
-    private static void configure(ServerPlayer player, MiningShape mode) {
+    static void configure(ServerPlayer player, MiningShape mode) {
         player.getMainHandItem().set(FloraFaunaRegistry.MULTI_BLOCK_MINING, new MiningModeData(mode, mode.getRadius(), 64, true));
     }
 
-    private static void swing(ServerPlayer player, BlockPos target, Direction face, Direction heading) {
+    static void swing(ServerPlayer player, BlockPos target, Direction face, Direction heading) {
         Vec3 stand = Vec3.atCenterOf(target.relative(face, 2));
         player.setPos(stand.x, stand.y - player.getEyeHeight(), stand.z);
         player.setYRot(heading.toYRot());
@@ -513,15 +514,15 @@ final class HammerMiningGameTests {
         }
     }
 
-    private static void set(ServerPlayer player, BlockPos pos, Block block) {
+    static void set(ServerPlayer player, BlockPos pos, Block block) {
         player.level().setBlock(pos, block.defaultBlockState(), Block.UPDATE_CLIENTS);
     }
 
-    private static void fill(ServerPlayer player, BlockPos min, BlockPos max, Block block) {
+    static void fill(ServerPlayer player, BlockPos min, BlockPos max, Block block) {
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) set(player, pos, block);
     }
 
-    private static void check(GameTestHelper h, BlockPos pos, Block expected, String detail) {
+    static void check(GameTestHelper h, BlockPos pos, Block expected, String detail) {
         var state = h.getLevel().getBlockState(pos);
         if (!state.is(expected)) throw h.assertionException(detail + " at " + pos + ": expected " + expected + ", got " + state);
     }

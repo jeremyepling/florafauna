@@ -8,15 +8,19 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Per-tool enchantment, mining speed and vein matching settings.
+ * Per-tool enchantment, mining speed, vein matching and tunnel lighting settings.
  * Note: fortune and silkTouch are mutually exclusive - exactly one must be true at all times.
  */
-public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed, boolean exactVein) {
+public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed, boolean exactVein, boolean tunnelLighting) {
 
     public static final ToolConfig DEFAULT = new ToolConfig(true, false, MiningSpeed.EFFICIENCY);
 
     public ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed) {
-        this(fortune, silkTouch, miningSpeed, false);
+        this(fortune, silkTouch, miningSpeed, false, false);
+    }
+
+    public ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningSpeed, boolean exactVein) {
+        this(fortune, silkTouch, miningSpeed, exactVein, false);
     }
 
     /**
@@ -33,7 +37,8 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
                     Codec.BOOL.fieldOf("fortune").forGetter(ToolConfig::fortune),
                     Codec.BOOL.fieldOf("silkTouch").forGetter(ToolConfig::silkTouch),
                     MiningSpeed.CODEC.fieldOf("miningSpeed").forGetter(ToolConfig::miningSpeed),
-                    Codec.BOOL.optionalFieldOf("exactVein", false).forGetter(ToolConfig::exactVein)
+                    Codec.BOOL.optionalFieldOf("exactVein", false).forGetter(ToolConfig::exactVein),
+                    Codec.BOOL.optionalFieldOf("tunnelLighting", false).forGetter(ToolConfig::tunnelLighting)
             ).apply(instance, ToolConfig::new)
     );
 
@@ -46,6 +51,8 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
             ToolConfig::miningSpeed,
             ByteBufCodecs.BOOL,
             ToolConfig::exactVein,
+            ByteBufCodecs.BOOL,
+            ToolConfig::tunnelLighting,
             ToolConfig::new
     );
 
@@ -53,11 +60,15 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
      * Toggles between Fortune 3 and Silk Touch
      */
     public ToolConfig withToggledEnchantment() {
-        return new ToolConfig(!fortune, !silkTouch, miningSpeed, exactVein);
+        return new ToolConfig(!fortune, !silkTouch, miningSpeed, exactVein, tunnelLighting);
     }
 
     public ToolConfig withToggledVeinMatching() {
-        return new ToolConfig(fortune, silkTouch, miningSpeed, !exactVein);
+        return new ToolConfig(fortune, silkTouch, miningSpeed, !exactVein, tunnelLighting);
+    }
+
+    public ToolConfig withToggledTunnelLighting() {
+        return new ToolConfig(fortune, silkTouch, miningSpeed, exactVein, !tunnelLighting);
     }
 
     /**
@@ -73,7 +84,7 @@ public record ToolConfig(boolean fortune, boolean silkTouch, MiningSpeed miningS
      * Creates a new config with the specified mining speed.
      */
     public ToolConfig withMiningSpeed(MiningSpeed speed) {
-        return new ToolConfig(fortune, silkTouch, speed, exactVein);
+        return new ToolConfig(fortune, silkTouch, speed, exactVein, tunnelLighting);
     }
 
     /**
