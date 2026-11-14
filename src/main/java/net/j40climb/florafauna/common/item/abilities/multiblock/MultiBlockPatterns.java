@@ -56,6 +56,7 @@ public final class MultiBlockPatterns {
             }
             case SHAPELESS -> new Plan(vein(player, tool, mode, center), List.of(), face);
             case TUNNEL_UP, TUNNEL_DOWN -> tunnel(player, tool, mode, center, face);
+            case WALKABLE_TUNNEL, LARGE_TUNNEL, BORE -> straightTunnel(player, tool, mode, center, face);
         };
     }
 
@@ -84,6 +85,33 @@ public final class MultiBlockPatterns {
             }
         }
         return List.copyOf(selected);
+    }
+
+    private static Plan straightTunnel(Player player, ItemStack tool, MiningModeData mode, BlockPos center, Direction face) {
+        Direction travel = face.getOpposite();
+        boolean vertical = travel.getAxis().isVertical();
+        Direction heading = vertical ? player.getDirection() : travel;
+        Direction across = heading.getClockWise();
+        Direction up = vertical ? heading : Direction.UP;
+        boolean large = mode.shape() == MiningShape.LARGE_TUNNEL;
+        boolean bore = mode.shape() == MiningShape.BORE;
+        int widthRadius = large ? 1 : 0;
+        int height = bore ? 1 : 3;
+        int depth = bore ? 7 : 5;
+        // A wall hit anchors a walkable tunnel at foot level. Other cross sections center on the hit.
+        int base = large || (vertical && !bore) ? -1 : 0;
+
+        List<BlockPos> blocks = new ArrayList<>();
+        for (int step = 0; step < depth; step++) {
+            BlockPos slice = center.relative(travel, step);
+            for (int x = -widthRadius; x <= widthRadius; x++) {
+                for (int y = base; y < base + height; y++) {
+                    BlockPos pos = slice.relative(across, x).relative(up, y);
+                    if (isMineable(player.level(), player, tool, mode, pos)) blocks.add(pos);
+                }
+            }
+        }
+        return new Plan(List.copyOf(blocks), List.of(), face);
     }
 
     private static Plan tunnel(Player player, ItemStack tool, MiningModeData mode, BlockPos center, Direction face) {
