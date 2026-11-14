@@ -60,6 +60,7 @@ public final class HammerPlaytest {
     static void steps(Playtest t, int phase) {
         if (phase == 2) {
             HammerQuarryPlaytest.resume(t);
+            ChargedHammerPlaytest.steps(t);
             return;
         }
         if (phase != 1) {

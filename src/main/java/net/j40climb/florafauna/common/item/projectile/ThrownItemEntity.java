@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.item.projectile;
 
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
+import net.j40climb.florafauna.common.item.abilities.multiblock.RemoteOreStrike;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -50,6 +51,7 @@ public class ThrownItemEntity extends AbstractArrow {
             SynchedEntityData.defineId(ThrownItemEntity.class, EntityDataSerializers.FLOAT);
 
     // State tracking
+    private boolean oreStrike;
     private boolean returning = false;
     private boolean dealtDamage = false;
     private Vec3 startPos;
@@ -86,6 +88,13 @@ public class ThrownItemEntity extends AbstractArrow {
         builder.define(DATA_BREAK_BLOCKS, false);
         builder.define(DATA_AUTO_RETURN, true);
         builder.define(DATA_RETURN_SPEED, 1.0f);
+    }
+
+    /** Charged throws transfer the actual Hammer, even in Creative, so only one stack carries its charge. */
+    public void armOreStrike() {
+        oreStrike = true;
+        pickup = Pickup.ALLOWED;
+        entityData.set(DATA_AUTO_RETURN, true);
     }
 
     @Override
@@ -182,6 +191,18 @@ public class ThrownItemEntity extends AbstractArrow {
         boolean breakBlocks = getBreakBlocks();
         boolean autoReturn = getAutoReturn();
 
+        if (oreStrike && level() instanceof ServerLevel) {
+            oreStrike = false;
+            if (!returning && !dealtDamage && getOwner() instanceof ServerPlayer owner && owner.level() == level()) {
+                ItemStack tool = getPickupItem();
+                RemoteOreStrike.hit(owner, tool, result.getBlockPos());
+                setPickupItemStack(tool);
+            }
+            returning = true;
+            dealtDamage = true;
+            setNoPhysics(true);
+            return;
+        }
         if (breakBlocks && level() instanceof ServerLevel level && getOwner() instanceof ServerPlayer owner
                 && breakImpactBlock(level, owner, result.getBlockPos())) {
             return;
@@ -253,6 +274,7 @@ public class ThrownItemEntity extends AbstractArrow {
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
+        oreStrike = input.getBooleanOr("OreStrike", false);
         this.dealtDamage = input.getBooleanOr("DealtDamage", false);
         this.returning = input.getBooleanOr("Returning", false);
 
@@ -273,6 +295,7 @@ public class ThrownItemEntity extends AbstractArrow {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
+        output.putBoolean("OreStrike", oreStrike);
         output.putBoolean("DealtDamage", this.dealtDamage);
         output.putBoolean("Returning", this.returning);
 

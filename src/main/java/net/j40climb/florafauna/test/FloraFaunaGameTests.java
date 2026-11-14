@@ -114,6 +114,7 @@ public class FloraFaunaGameTests {
         // Register mining mode tests
         registerMiningModeTests(event, defaultEnv);
         HammerAbilityGameTests.register(event, defaultEnv);
+        ChargedHammerGameTests.register(event, defaultEnv);
         HammerMiningGameTests.register(event, defaultEnv);
 
         // Register containment chamber tests

@@ -84,6 +84,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.Consumable;
@@ -99,6 +100,8 @@ import net.neoforged.neoforge.registries.*;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import net.j40climb.florafauna.common.item.abilities.networking.ChargedThrowPayload;
 
 import static net.j40climb.florafauna.common.item.hammer.HammerItem.HAMMER_MATERIAL;
 
@@ -431,6 +434,12 @@ public class FloraFaunaRegistry {
                     builder -> builder.persistent(ProgressSignalTracker.CODEC).networkSynchronized(ProgressSignalTracker.STREAM_CODEC));
 
     // Throwable ability data component
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HAMMER_CHARGE =
+            DATA_COMPONENTS.registerComponentType("hammer_charge", b -> b.persistent(Codec.intRange(0, HammerItem.MAX_CHARGE))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final Supplier<AttachmentType<ChargedThrowPayload.Hold>> THROW_HOLD = ATTACHMENT_TYPES.register("throw_hold",
+            () -> AttachmentType.builder(() -> new ChargedThrowPayload.Hold(ItemStack.EMPTY, net.minecraft.world.level.Level.OVERWORLD, 0)).build());
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ThrowableAbilityData>> THROWABLE_ABILITY =
             DATA_COMPONENTS.registerComponentType("throwable_ability",
                     builder -> builder.persistent(ThrowableAbilityData.CODEC).networkSynchronized(ThrowableAbilityData.STREAM_CODEC));

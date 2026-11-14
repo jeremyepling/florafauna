@@ -45,6 +45,10 @@ public record ThrowItemPayload(boolean mainHand) implements CustomPacketPayload 
      * Can be called directly from items or via network payload.
      */
     public static void throwItem(ServerPlayer player, InteractionHand hand) {
+        throwItem(player, hand, false);
+    }
+
+    static void throwItem(ServerPlayer player, InteractionHand hand, boolean charged) {
         ItemStack stack = player.getItemInHand(hand);
 
         // Check if item has throwable ability
@@ -72,6 +76,8 @@ public record ThrowItemPayload(boolean mainHand) implements CustomPacketPayload 
         // Create the thrown entity
         ThrownItemEntity entity = new ThrownItemEntity(level, player, stack, abilityData);
 
+        if (charged) entity.armOreStrike();
+
         // Launch in direction player is looking
         entity.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0f, 2.5f, 1.0f);
 
@@ -84,7 +90,7 @@ public record ThrowItemPayload(boolean mainHand) implements CustomPacketPayload 
                 SoundEvents.TRIDENT_THROW, SoundSource.PLAYERS, 1.0f, 1.0f);
 
         // Remove item from hand (will return via entity or pickup)
-        if (!player.getAbilities().instabuild) {
+        if (charged || !player.getAbilities().instabuild) {
             stack.shrink(1);
         }
     }
