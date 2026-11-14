@@ -15,6 +15,8 @@ The abilities system provides reusable tool functionality through data component
 | `LIGHTNING_ABILITY` | Spawn lightning at target |
 | `TELEPORT_SURFACE_ABILITY` | Teleport to surface |
 | `THROWABLE_ABILITY` | Throw item as projectile |
+| `HAMMER_ACTION` | Selected right-click action |
+| `HAMMER_CHARGE` | Available blocks for charged ore strikes |
 | `RIGHT_CLICK_ACTION` | Configures which ability triggers on right-click |
 | `MULTI_TOOL_ABILITY` | Enables axe/shovel/hoe actions (strip, path, till) |
 
@@ -63,7 +65,7 @@ Each Hammer remembers its settings.
 | **P** | Open tool config screen | `TOOL_CONFIG` |
 | **R** | Spawn lightning | `LIGHTNING_ABILITY` |
 | **M** | Teleport to surface | `TELEPORT_SURFACE_ABILITY` |
-| **T** | Throw item | `THROWABLE_ABILITY` |
+| **T** | Tap to throw. Hold for one second and release for a charged Hammer throw. | `THROWABLE_ABILITY` |
 
 These are the registered defaults. The dev options template binds throw to **comma**. Check the current binding in Minecraft's Controls menu.
 
@@ -91,6 +93,12 @@ Orange outlines mark the faces of planned mining blocks that touch source or flo
 Shapeless mode groups matching stone and deepslate ore variants. An iron vein can cross the stone–deepslate boundary. Copper touching that vein stays in place. Select **Exact block** in the Hammer settings to stop at the variant boundary.
 
 After a successful center hit, flat and tunnel swings skip air and continue through their usual footprint. Both stair directions place a cobblestone tread across an existing air gap at the planned floor height. The flight still ends at the fifth column. Vein mining follows matching neighbors within its configured radius.
+
+## Charged Hammer Throw
+
+Aim at an exposed ore block and hold the throw key until the ready message appears (20 server ticks), then release. On impact the Hammer mines connected ore using its own Fortune or Silk Touch, vein matching and block limit, then returns. Stone or a denied center hit spends no charge. Other ore types touching the vein stay in place. Each ore block actually removed costs one charge. Ordinary swings and quick throws are free.
+
+A full Hammer stores 64 charge and recovers one charge per second while held in either hand. The inventory bar and tooltip show the remaining charge.
 
 ## Right-Click Action
 
