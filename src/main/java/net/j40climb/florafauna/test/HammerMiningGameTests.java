@@ -237,26 +237,32 @@ final class HammerMiningGameTests {
     }
 
     private static void gaps(GameTestHelper h) {
-        var player = player(h, MiningShape.FLAT_3X3);
-        var center = h.absolutePos(new BlockPos(5, 17, 5));
-        var gap = center.east(2).above();
-        fill(player, center.offset(-1, -6, -1), center.offset(5, 8, 1), Blocks.STONE);
-        // First create an air gap by mining a flat plane through this future stair position.
-        swing(player, gap.north(), Direction.UP, Direction.NORTH);
-        check(h, gap, Blocks.AIR, "old mining operation");
-        configure(player, MiningShape.TUNNEL_UP);
-        swing(player, center, Direction.WEST, Direction.EAST);
-        check(h, gap, Blocks.AIR, "ascending cave gap preserved");
-        stair(h, center.east(3).above(2), Direction.EAST);
-
-        configure(player, MiningShape.TUNNEL_DOWN);
-        var down = center.south(7);
-        fill(player, down.offset(-1, -6, -1), down.offset(5, 5, 1), Blocks.STONE);
-        set(player, down.east(2).below(2), Blocks.AIR);
-        set(player, down.east(3).below(3), Blocks.BEDROCK);
-        swing(player, down, Direction.UP, Direction.EAST);
-        stair(h, down.east(2).below(2), Direction.WEST);
-        check(h, down.east(3).below(3), Blocks.BEDROCK, "bedrock floor");
+        var player = player(h, MiningShape.TUNNEL_UP);
+        player.setGameMode(GameType.SURVIVAL);
+        player.setOnGround(true);
+        for (var mode : new MiningShape[]{MiningShape.TUNNEL_UP, MiningShape.TUNNEL_DOWN}) {
+            configure(player, mode);
+            boolean up = mode == MiningShape.TUNNEL_UP;
+            var center = h.absolutePos(new BlockPos(5, 17, up ? 5 : 12));
+            fill(player, center.offset(-1, -7, -1), center.offset(5, 8, 1), Blocks.STONE);
+            // A two-column cave with air beneath the future stairs and solid rock on the far side.
+            fill(player, center.offset(1, -7, -1), center.offset(2, 8, 1), Blocks.AIR);
+            var firstTread = center.below(up ? 1 : 2);
+            var bedrock = firstTread.east(3).above(up ? 3 : -3);
+            set(player, bedrock, Blocks.BEDROCK);
+            swing(player, center, Direction.WEST, Direction.EAST);
+            for (int step = 0; step < 5; step++) {
+                var tread = firstTread.east(step).above(up ? step : -step);
+                if (step == 3) check(h, tread, Blocks.BEDROCK, "unbreakable tread");
+                else stair(h, tread, up ? Direction.EAST : Direction.WEST);
+                for (int y = 1; y <= 4; y++) check(h, tread.above(y), Blocks.AIR, "headroom");
+                if (step == 1 || step == 2) {
+                    check(h, tread.below(), Blocks.AIR, "empty space under the bridge");
+                    check(h, tread.north(), Blocks.AIR, "empty space beside the bridge");
+                }
+            }
+            check(h, center.east(5), Blocks.STONE, "swing ends at its normal reach");
+        }
         h.succeed();
     }
 

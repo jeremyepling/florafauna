@@ -104,8 +104,8 @@ public final class MultiBlockPatterns {
                 if (isMineable(level, player, tool, mode, pos)) {
                     blocks.add(pos);
                     if (height == 0) stairs.add(pos);
-                } else if (height == 0 && !ascending && canInteract(level, player, pos) && level.isEmptyBlock(pos)) {
-                    // Descending tunnels bridge existing air. Ascending tunnels keep cave openings.
+                } else if (height == 0 && canInteract(level, player, pos) && level.isEmptyBlock(pos)) {
+                    // An empty tread needs a stair but has no block to break.
                     stairs.add(pos);
                 }
             }

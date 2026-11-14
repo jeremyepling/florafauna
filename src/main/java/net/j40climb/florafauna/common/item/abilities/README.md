@@ -74,7 +74,9 @@ Flat planes follow the original hit face. Shapeless mining follows matching bloc
 
 Instabreak sets mining speed to 100. Block hardness still determines how long a strike takes.
 
-Tunnel modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center. Descending stairs can bridge air. Ascending stairs are placed only where this swing removed a floor block.
+Tunnel modes cut five columns with five blocks of clearance per column before placing the tread. A side hit builds ascending stairs from one block below the center, or descending stairs from two below. A floor hit in descending mode follows the player's horizontal heading. Ceiling hits and ascending floor hits mine just the center.
+
+After a successful center hit, flat and tunnel swings skip air and continue through their usual footprint. Both stair directions place a cobblestone tread across an existing air gap at the planned floor height. The flight still ends at the fifth column. Vein mining follows matching neighbors within its configured radius.
 
 ## Right-Click Action
 
