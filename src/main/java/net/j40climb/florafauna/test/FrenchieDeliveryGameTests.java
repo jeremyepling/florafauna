@@ -21,6 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -28,15 +29,17 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 final class FrenchieDeliveryGameTests {
     private static final InteractionHand HAND = InteractionHand.MAIN_HAND;
 
     static void compassOrders(GameTestHelper h) {
-        var owner = h.makeMockServerPlayerInLevel();
+        var owner = networkedPlayer(h);
         try {
             var dog = h.spawnWithNoFreeWill(FloraFaunaRegistry.FRENCHIE.get(), 1, 1, 1);
             owner.snapTo(dog.position(), 0, 0);
@@ -73,8 +76,8 @@ final class FrenchieDeliveryGameTests {
     }
 
     static void packAndCancel(GameTestHelper h) {
-        var owner = h.makeMockServerPlayerInLevel();
-        var recipient = h.makeMockServerPlayerInLevel();
+        var owner = networkedPlayer(h);
+        var recipient = networkedPlayer(h);
         try {
             var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 1, 1, 1);
             var expected = prepareDelivery(owner, recipient, dog);
@@ -125,14 +128,18 @@ final class FrenchieDeliveryGameTests {
     }
 
     static void fullRecipient(GameTestHelper h) {
-        var owner = h.makeMockServerPlayerInLevel();
-        var recipient = h.makeMockServerPlayerInLevel();
-        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 2);
+        var owner = networkedPlayer(h);
+        var recipient = networkedPlayer(h);
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 16, 2);
         var expected = prepareDelivery(owner, recipient, dog).copy();
         var id = dog.getUUID();
         var level = h.getLevel();
         var start = dog.position();
-        platform(h, dog.blockPosition());
+        // An open lane above the pen gives the departure walk enough room to pathfind.
+        var feet = dog.blockPosition();
+        for (var pos : BlockPos.betweenClosed(feet.offset(-2, -1, -2), feet.offset(2, -1, 14))) {
+            level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+        }
         // The landings are high above the departure point, with no walkable connection.
         BlockPos address = dog.blockPosition().above(96).south(12);
         BlockPos moved = address.south(12);
@@ -181,8 +188,8 @@ final class FrenchieDeliveryGameTests {
     }
 
     static void disconnectedRecipient(GameTestHelper h) {
-        var owner = h.makeMockServerPlayerInLevel();
-        var recipient = h.makeMockServerPlayerInLevel();
+        var owner = networkedPlayer(h);
+        var recipient = networkedPlayer(h);
         var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 2, 1, 2);
         var expected = prepareDelivery(owner, recipient, dog).copy();
         var id = dog.getUUID();
@@ -204,14 +211,61 @@ final class FrenchieDeliveryGameTests {
                 }).thenSucceed();
     }
 
+    static void crossDimension(GameTestHelper h) {
+        var owner = networkedPlayer(h);
+        var recipient = networkedPlayer(h);
+        var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 2, 1, 2);
+        var expected = prepareDelivery(owner, recipient, dog).copy();
+        var id = dog.getUUID();
+        var level = h.getLevel();
+        var nether = level.getServer().getLevel(Level.NETHER);
+        h.assertTrue(nether != null, "The test world needs a Nether");
+        var address = BlockPos.containing(dog.getX() / 8, 132, dog.getZ() / 8);
+        for (var pos : BlockPos.betweenClosed(address.offset(-2, -1, -2), address.offset(2, -1, 2))) {
+            nether.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+        }
+        h.assertTrue(recipient.teleportTo(nether, address.getX() + 0.5, address.getY(), address.getZ() + 0.5,
+                Set.of(), 0, 0, true), "The recipient could not enter the Nether");
+        // Keep the parcel on the dog at arrival so the original UUID can be observed in both dimensions.
+        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
+            recipient.getInventory().setItem(slot, new ItemStack(Items.STONE, 64));
+        }
+        h.startSequence()
+                .thenWaitUntil(() -> h.assertTrue(nether.areEntitiesActuallyLoadedAndTicking(ChunkPos.containing(address)),
+                        "The recipient did not finish entering the Nether"))
+                .thenExecute(() -> {
+                    confirm(owner, recipient, dog);
+                    h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
+                            "The chooser did not accept a player in the Nether");
+                })
+                .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null
+                                && nether.getEntity(id) instanceof FrenchieEntity arrived
+                                && arrived.isDelivering() && arrived.distanceToSqr(recipient) < 36,
+                        "The courier never appeared beside its Nether recipient"))
+                .thenExecute(() -> recipient.getInventory().setItem(7, ItemStack.EMPTY))
+                .thenWaitUntil(() -> h.assertTrue(ItemStack.matches(recipient.getInventory().getItem(7), expected),
+                        "Cross-dimension delivery lost the filled bundle"))
+                .thenWaitUntil(() -> h.assertTrue(nether.getEntity(id) == null
+                                && level.getEntity(id) instanceof FrenchieEntity returned && !returned.isDelivering()
+                                && returned.isOwnedBy(owner) && returned.distanceToSqr(owner) < 36,
+                        "The dog never returned from the Nether"))
+                .thenExecute(() -> {
+                    h.assertTrue(recipient.getInventory().countItem(Items.BUNDLE) == 1
+                                    && owner.getInventory().countItem(Items.BUNDLE) == 0,
+                            "Cross-dimension return duplicated the parcel");
+                    disconnect(recipient);
+                    disconnect(owner);
+                }).thenSucceed();
+    }
+
     static void blockedDeparture(GameTestHelper h) {
         // A glass enclosure lets the owner click from inside but prevents the departure walk.
         for (BlockPos pos : BlockPos.betweenClosed(1, 0, 1, 5, 3, 5)) {
             boolean wall = pos.getX() == 1 || pos.getX() == 5 || pos.getZ() == 1 || pos.getZ() == 5;
             h.setBlock(pos, wall || pos.getY() == 0 || pos.getY() == 3 ? Blocks.GLASS : Blocks.AIR);
         }
-        var owner = h.makeMockServerPlayerInLevel();
-        var recipient = h.makeMockServerPlayerInLevel();
+        var owner = networkedPlayer(h);
+        var recipient = networkedPlayer(h);
         var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 3);
         var expected = prepareDelivery(owner, recipient, dog).copy();
         var landing = dog.blockPosition().above(40);
@@ -238,7 +292,7 @@ final class FrenchieDeliveryGameTests {
 
     static void unloadedHomeBed(GameTestHelper h) {
         var level = h.getLevel();
-        var owner = h.makeMockServerPlayerInLevel();
+        var owner = networkedPlayer(h);
         var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 2, 1, 2);
         var id = dog.getUUID();
         BlockPos start = dog.blockPosition();
@@ -297,7 +351,7 @@ final class FrenchieDeliveryGameTests {
     }
 
     static void legacyBedPickup(GameTestHelper h) {
-        var owner = h.makeMockServerPlayerInLevel();
+        var owner = networkedPlayer(h);
         try {
             var level = h.getLevel();
             var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 2);
@@ -372,6 +426,12 @@ final class FrenchieDeliveryGameTests {
     private static void order(ServerPlayer owner, FrenchieEntity dog, String choice) {
         owner.level().getServer().getCommands().performPrefixedCommand(owner.createCommandSourceStack(),
                 "frenchiedelivery " + dog.getStringUUID() + " " + choice);
+    }
+
+    private static ServerPlayer networkedPlayer(GameTestHelper h) {
+        var player = h.makeMockServerPlayerInLevel();
+        NetworkRegistry.configureMockConnection(player.connection.getConnection());
+        return player;
     }
 
     private static void disconnect(ServerPlayer player) {
