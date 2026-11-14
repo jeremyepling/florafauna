@@ -516,6 +516,10 @@ public class FloraFaunaRegistry {
     public static final Supplier<AttachmentType<Boolean>> SILK_HANGING = ATTACHMENT_TYPES.register("silk_hanging",
             () -> AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
 
+    // A held control belongs to this player session and is never saved or copied on death.
+    public static final Supplier<AttachmentType<Boolean>> PRECISION_MINING = ATTACHMENT_TYPES.register("precision_mining",
+            () -> AttachmentType.builder(() -> false).build());
+
     // Fear system attachment (for fear/stress state tracking)
     public static final Supplier<AttachmentType<FearData>> FEAR_DATA =
             ATTACHMENT_TYPES.register("fear_data", () ->

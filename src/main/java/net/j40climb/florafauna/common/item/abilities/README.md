@@ -54,6 +54,7 @@ Stores enchantment and speed settings:
 | Key | Action | Component Required |
 |-----|--------|-------------------|
 | **C** | Cycle mining mode | `MULTI_BLOCK_MINING` |
+| **J** (hold) | Mine only the targeted block. Release to resume the selected shape. | `MULTI_BLOCK_MINING` |
 | **P** | Open tool config screen | `TOOL_CONFIG` |
 | **R** | Spawn lightning | `LIGHTNING_ABILITY` |
 | **M** | Teleport to surface | `TELEPORT_SURFACE_ABILITY` |

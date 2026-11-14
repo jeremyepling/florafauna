@@ -1,8 +1,8 @@
 package net.j40climb.florafauna.common.item.abilities.multiblock;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
