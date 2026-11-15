@@ -66,6 +66,7 @@ public final class Playtest {
         // The server ignores interaction packets until the client acknowledges the level load.
         awaitServer("Wait for the server to accept player input", player -> player.connection.hasClientLoaded());
         switch (scenario) {
+            case "companions" -> CompanionsPlaytest.steps(this, phase);
             case "plots" -> PlotsPlaytest.steps(this, phase);
             case "recovery" -> RecoveryPlaytest.steps(this, phase);
             case "barrier" -> BarrierPlaytest.steps(this, phase);

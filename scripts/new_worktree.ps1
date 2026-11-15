@@ -34,7 +34,7 @@ if ($FeatureBranch) {
 if ($LASTEXITCODE -ne 0) { throw "git worktree add failed" }
 
 # Copy dev world and options to worktree's run directory
-$runDir = Join-Path $wtPath "run\client-$wtName"
+$runDir = Join-Path $wtPath "run\client-$wtName-core"
 $templateWorld = Join-Path $repoRoot "dev\world-template\dev"
 $templateOptions = Join-Path $repoRoot "dev\options-template.txt"
 
