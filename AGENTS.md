@@ -1,6 +1,6 @@
 # FloraFauna agent guide
 
-Use this guide for work in any FloraFauna checkout. The mod targets Minecraft 26.1 and 26.3 with NeoForge and Java 25. Keep the editing target on 26.1 for commits. Check `versions/<target>/gradle.properties`, `build.gradle` and the Gradle wrapper for the versions in the assigned branch. Keep implementation and assets on the current Minecraft APIs.
+Use this guide for work in any FloraFauna checkout. The core mod targets Minecraft 26.1 and 26.3 with NeoForge and Java 25. Keep the editing target on 26.1 for commits. Check `versions/<target>/gradle.properties`, `build.gradle` and the Gradle wrapper for the versions in the assigned branch. Keep implementation and assets on the current Minecraft APIs. Hammer and Frenchies have independent repositories and test suites. [Companion setup](README.md#play-with-the-hammer-and-frenchies)
 
 ## Coordinate work across agents
 
@@ -32,10 +32,12 @@ Use PowerShell 7 and the checkout's Gradle wrapper on Windows. During iteration,
 | What changed | Check during iteration |
 | --- | --- |
 | Documentation or instructions | Inspect the diff and validate any changed commands. |
-| Java configuration, codecs, cycling or other pure logic | Run the relevant JUnit class or method, e.g. `.\gradlew.bat :26.1-neoforge:test --tests '*HammerConfigTest'`. |
-| Server gameplay, loot, placement or permissions | Run one headless GameTest by ID, e.g. `.\gradlew.bat '-PgameTestFilter=florafauna:hammer_tunnel_gaps' :26.1-neoforge:runGameTestServer`. Use a namespaced wildcard for related cases such as `florafauna:hammer_*`. Check the log for the expected test names and count. |
-| Input, rendering, walking or a save/rejoin interaction | When the behavior needs a real client, run the affected scenario, e.g. `.\scripts\test_dev_world.ps1 -Scenario hammer`. Each scenario manages its own launch phases. |
+| Java configuration, codecs, cycling or other pure logic | Run the relevant JUnit class or method in the repository that owns the feature. |
+| Server gameplay, loot, placement or permissions | Run one headless GameTest by ID, e.g. `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-neoforge:runGameTestServer`. Use a namespaced wildcard for related cases such as `florafauna:mob_barrier_*`. Check the log for the expected test names and count. |
+| Input, rendering, walking or a save/rejoin interaction | When the behavior needs a real client, run the affected scenario, e.g. `.\scripts\test_dev_world.ps1 -Scenario barrier`. Each scenario manages its own launch phases. |
 | Generated data or assets | Run `.\gradlew.bat :26.1-neoforge:runData` on a fresh checkout or after changing generation inputs, then inspect the affected files and exercise the consuming feature. |
+
+For a change spanning repositories, use `-PdevMods=all` with the chosen target's `runGameTestServer` task. Exercise the saved world and player through `.\scripts\test_dev_world.ps1 -Target 26.3 -Scenario companions -DevMods all`. See the [local checkout and version setup](README.md#play-with-the-hammer-and-frenchies).
 
 At the end of a substantial or cross-feature change, the coordinator runs the [two-target headless checks](README.md#build--run) on the combined revision, or uses the equivalent CI result. Group the affected client scenarios in one run. Use `.\scripts\test_dev_world.ps1 -All` for a release, a shared client change that affects every scenario, or an explicit full pass. After fixing a failure, rerun the failed or affected checks. Report what actually ran.
 

@@ -1,6 +1,6 @@
 # FloraFauna
 
-A NeoForge mod for Minecraft 26.1 and 26.3. Players can bond with a symbiote, recover gear from a husk, mine with configurable tools and use living storage and mob transport systems.
+A NeoForge mod for Minecraft 26.1 and 26.3. Players can bond with a symbiote, recover gear from a husk, grow a living storage network and transport bonded mobs. Hammer mining and Frenchie companions are available as separate mods.
 
 Coding agents share the repository's worktree, implementation and testing instructions. Claude Code imports them through `CLAUDE.md`. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
@@ -34,7 +34,36 @@ foreach ($target in '26.1-neoforge', '26.3-neoforge') {
 }
 ```
 
-For a shorter iteration, `:26.1-neoforge:check` runs JUnit and compiles the client playtests. Use `.\gradlew.bat :26.1-neoforge:test --tests '*HammerConfigTest'` for one JUnit class or `.\gradlew.bat '-PgameTestFilter=florafauna:hammer_tunnel_gaps' :26.1-neoforge:runGameTestServer` for a specific GameTest. Ready PRs and release builds run the full headless checks and upload one JAR per version. Draft PRs run `check` on both.
+For a shorter iteration, `:26.1-neoforge:check` compiles client playtests and runs any JUnit tests. Use `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-neoforge:runGameTestServer` to check the saved barrier pen. Ready PRs and release builds run the full headless checks and upload one JAR per version. Draft PRs run `check` on both.
+
+### Play with the Hammer and Frenchies
+
+FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. Each companion repository uses `main` for 26.1 and `26.3` for 26.3. [Hammer source and tests](https://github.com/jeremyepling/florafauna-hammer) · [Frenchies source and tests](https://github.com/jeremyepling/florafauna-frenchies)
+
+From the FloraFauna checkout, clone the companions you want into sibling directories. For 26.3, add the matching branch as a sibling worktree so the 26.1 sources remain available.
+
+```powershell
+git clone https://github.com/jeremyepling/florafauna-hammer.git ../florafauna-hammer
+git clone https://github.com/jeremyepling/florafauna-frenchies.git ../florafauna-frenchies
+git -C ../florafauna-hammer worktree add --track -b 26.3 ../florafauna-hammer-26.3 origin/26.3
+git -C ../florafauna-frenchies worktree add --track -b 26.3 ../florafauna-frenchies-26.3 origin/26.3
+```
+
+Select `none` (the default), `hammer`, `frenchies` or `all` with `-PdevMods`. Gradle builds the selected local companions and adds their jars to the run. On a fresh checkout, generate the core data for each target you plan to use.
+
+```powershell
+.\gradlew.bat :26.1-neoforge:runData
+.\gradlew.bat -PdevMods=hammer :26.1-neoforge:runClient
+.\gradlew.bat :26.3-neoforge:runData
+.\gradlew.bat -PdevMods=all :26.3-neoforge:runClient
+.\gradlew.bat -PdevMods=all :26.3-neoforge:assembleDevMods
+```
+
+The 26.3 build looks for sibling checkouts ending in `-26.3`. For other locations, pass `-PhammerDir=../path-to-hammer` and `-PfrenchiesDir=../path-to-frenchies`. Each selected checkout must declare the matching mod ID and Minecraft version. To make all three mods your usual setup, save a personal IntelliJ Gradle run configuration for each target with its qualified `runClient` task and `-PdevMods=all`.
+
+**Installing the jars.** The collection task writes the core and selected companion jars to `versions/<target>/build/dev-mods/<minecraft-version>/`. The 26.3 example above writes to `versions/26.3-neoforge/build/dev-mods/26.3/`. Copy the chosen jars into the client and server `mods` directories for that Minecraft version.
+
+**Opening a bundled-mod save.** Back up the closed world, replace the old FloraFauna jar with the split core and install the matching companion jars for any Hammer or Frenchie content present in the save before its first load. The companions retain the original `florafauna:*` registry IDs. In a 26.1 migration test, the split mods loaded and saved the named Hammer with its original vein settings and charge, and the sitting Frenchie retained its UUID and owner.
 
 ### IntelliJ editing target
 
@@ -51,7 +80,7 @@ Qualified build and test commands work from either editing target. Shared gamepl
 
 ### Dev World
 
-The client opens the save named `dev` under `run/client-<checkout>/saves/` for 26.1 and `versions/26.3-neoforge/run/client-<checkout>/saves/` for 26.3. The shared template lives in `dev/world-template/dev/` in the main checkout and is gitignored. The worktree creation helper seeds new slots from that template when present. On first launch, Gradle can also seed a missing save from a template present in the same checkout.
+The client opens the save named `dev` under `run/client-<checkout>-<profile>/saves/` for 26.1 and `versions/26.3-neoforge/run/client-<checkout>-<profile>/saves/` for 26.3. Profiles are named `core`, `hammer`, `frenchies` and `frenchies-hammer`. The shared template lives in `dev/world-template/dev/` in the main checkout and is gitignored. The worktree creation helper seeds new slots from that template when present. On first launch, Gradle can also seed a missing save from a template present in the same checkout. To reuse a pre-split dev save, close the game and copy the world folder from the older `client-<checkout>/saves/` into the chosen profile’s `saves/` directory. Select the companions used by that world before opening the copy.
 
 Joining the dev world applies these settings automatically.
 
@@ -75,10 +104,10 @@ Use the shared dev world for a walkthrough. The managed plots start at X 96, Z -
 ```mcfunction
 /ffplot build all
 /ffplot list
-/ffplot visit hammer
+/ffplot visit recovery
 ```
 
-Each plot has a named sign and a lectern with instructions, supplies to collect and expected results. The second walkthrough begins on page four in both the recovery and Frenchie guides. The supply barrel holds the starting kit. At `item_input`, bring one diamond from Creative so the test chest is the only nearby storage destination.
+`/ffplot list` shows the plots available with the current mods. The `hammer` and `tool_actions` plots require Hammer. The `frenchie` plot requires Frenchies. Each plot has a named sign and a lectern with instructions, supplies to collect and expected results. The second walkthrough begins on page four in both the recovery and Frenchie guides. The supply barrel holds the starting kit. At `item_input`, bring one diamond from Creative so the test chest is the only nearby storage destination.
 
 | Plot ID | What you can check |
 | --- | --- |
@@ -90,7 +119,7 @@ Each plot has a named sign and a lectern with instructions, supplies to collect 
 | `transport` | Link an input and output, then capture and release a bonded cow. |
 | `barrier` | Configure a barrier and check its outline against the dark backdrop. |
 | `anchor_bench` | Compare the original feral and hardened anchor stations. Count three cobblestone delivered by the detached pod into its hopper. |
-| `barrier_pens` | Try the Frenchie filter in the west pen and the copper-golem ID and friendly-mob tag in the east pen. |
+| `barrier_pens` | Test the west filter with a gecko or a Frenchie and the copper-golem ID and friendly-mob tag in the east pen. |
 | `creeper_fear` | Bring a cat and a bonded creeper to the facing sides of the two pens. Watch for gunpowder and cooldown. |
 | `blaze_fear` | Use the snow and tall barrier walls to observe a bonded blaze drop rods. |
 | `enderman_fear` | Use the original diorite surfaces or pumpkin-headed stands to trigger pearl drops. |
@@ -98,7 +127,7 @@ Each plot has a named sign and a lectern with instructions, supplies to collect 
 | `tool_actions` | Compare fresh hammer use targets with the original strip of leaves, stripped logs, farmland and path. |
 | `iron_garden` | Bond an iron golem and watch it plant, convert and harvest poppies. Interrupt it and time its return to gardening. |
 
-For **one plot in its own world**, create a Creative superflat save with commands enabled, run `/ffplot build hammer` and then `/ffplot visit hammer`. Reopen that save directly with `.\gradlew.bat "-PdevSave=hammer-lab" :26.1-neoforge:runClient`, using its actual folder name under `run/client-<checkout>/saves/`. You can also place the same structure at a chosen position with vanilla `/place template florafauna:plots/hammer ~ ~ ~` in a clear area. Use `/ffplot build` for plots you want to visit by name.
+For **one plot in its own world**, create a Creative superflat save with commands enabled, run `/ffplot build recovery` and then `/ffplot visit recovery`. Reopen that save directly with `.\gradlew.bat "-PdevSave=recovery-lab" :26.1-neoforge:runClient`, using its actual folder name under `run/client-<checkout>-<profile>/saves/`. You can also place the same structure at a chosen position with vanilla `/place template florafauna:plots/recovery ~ ~ ~` in a clear area. Use `/ffplot build` for plots you want to visit by name.
 
 Run `/ffplot build all` again to add newly registered plots. Existing installations keep your changes. In an older save, `/ffplot reset recovery` and `/ffplot reset frenchie` install their expanded books and restock their kits. Resetting a plot replaces its blocks and storage. Mobs, player inventories, bonds, time and gamerules belong to the world or player. Use an isolated save for tests that need fresh player state or change the time of day.
 
@@ -110,9 +139,9 @@ The captured pens retain their wall filters, heights and sight lines. Portable f
 
 #### Coverage and next checks
 
-The headless suite runs the three fear pens through panic, a counted species-specific drop and cooldown. It also checks the captured barrier collision filters, extraction from the bench pod, and blocked intake retry after space opens in a full chest. The `plots` client scenario visits every entrance, pairs and resets the long route, restarts the world and opens a field guide. The gameplay client scenarios below exercise inputs, rendering and save persistence.
+The headless suite runs the three fear pens through panic, a counted species-specific drop and cooldown. It also checks the captured barrier collision filters, extraction from the bench pod, and blocked intake retry after space opens in a full chest. The `plots` client scenario visits every available entrance, pairs and resets the long route, restarts the world and opens a field guide. The gameplay client scenarios below exercise inputs, rendering and save persistence.
 
-The iron garden GameTests use the same soil bed, flowers and chest as the walkthrough. For husk ownership, run `.\scripts\test_husk_multiplayer.ps1 -Offline` to start a local dedicated server with two clients. The owner dies with 17 shards. A visitor tries to claim them, then the owner makes room for one shard and reconnects to recover the other 16. The Frenchie frontpack client scenario checks the dog's identity, ownership and coat across a restart.
+The iron garden GameTests use the same soil bed, flowers and chest as the walkthrough. For husk ownership, run `.\scripts\test_husk_multiplayer.ps1 -Offline` to start a local dedicated server with two clients. The owner dies with 17 shards. A visitor tries to claim them, then the owner makes room for one shard and reconnects to recover the other 16. The Frenchies repository owns coat and frontpack checks. The core `companions` scenario checks the dog and equipment with all three mods loaded.
 
 The recovery scenario already opens the cocoon screen and uses its spawn and bind buttons. A remaining visual check is to render the containment screen and the station item models and inspect their textures.
 
@@ -121,19 +150,22 @@ The recovery scenario already opens the cocoon screen and uses its spawn and bin
 1. Build the setup in a scratch world. An existing plot makes a convenient starting point. Face south from the entrance at relative `(2, 1, 0)`. Place the sign at `(0, 1, 1)`, lectern at `(2, 1, 1)` and supply barrel at `(4, 1, 1)`. Put the plot ID on the third sign line and give the book a setup page, action page and expected-result page.
 2. Use a structure block in Save mode with the name `florafauna:plots/<id>`. Include the floor, clear air and the entrance. Exclude entities and the authoring block. Start with empty test inventories and unpaired machines so the fixture can move between worlds. Copy the exported `.nbt` from the save's `generated/florafauna/structure/plots/` into [the structure directory](src/main/resources/data/florafauna/structure/plots/).
 3. Add an entry with a new permanent slot to [DevPlot.java](src/main/java/net/j40climb/florafauna/dev/DevPlot.java). The lowercase enum name is the ID. Slots form four columns on 32-block centers. Each template can occupy up to 28×48×28 blocks (X×Y×Z). The manager finds the surface on first placement and saves the elevation.
-4. A headless GameTest can reference `DevPlot.<NAME>.structure()` and assert positions relative to the structure origin. A client scenario can call `DevPlot.<NAME>.place(level, origin)` once during setup and drive the player through the interaction. Leave restart phases to read the saved state. The item-input GameTest and hammer client scenario demonstrate both paths.
+4. A headless GameTest can reference `DevPlot.<NAME>.structure()` and assert positions relative to the structure origin. A client scenario can call `DevPlot.<NAME>.place(level, origin)` once during setup and drive the player through the interaction. Leave restart phases to read the saved state. The item-input GameTest and the plots client scenario exercise the fixture through both paths.
 
 ### Automated client playtests
 
 Close the source world, then run this from the checkout in PowerShell 7 with Java 25. The default source is the selected target's singleplayer `dev` save.
 
 ```powershell
-.\scripts\test_dev_world.ps1 -Scenario hammer
+.\scripts\test_dev_world.ps1 -Target 26.3 -Scenario barrier
+.\scripts\test_dev_world.ps1 -Target 26.3 -Scenario companions -DevMods all -SourceWorld 'C:\path\to\a\closed\save'
 .\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
 .\scripts\test_dev_world.ps1 -All  # Defaults to 26.1
 .\scripts\test_dev_world.ps1 -Target 26.3 -All
 .\scripts\test_husk_multiplayer.ps1 -Target 26.3
 ```
+
+For an integrated headless run, use `.\gradlew.bat -PdevMods=all :26.3-neoforge:runGameTestServer`. The `companions` client scenario exercises both companions. To exercise a core scenario with one companion, use `-Scenario recovery -DevMods hammer`. The script accepts `-HammerDir` and `-FrenchiesDir` for other checkout locations.
 
 Each scenario launches a real Minecraft client in a fresh copy of the save. When 26.3 opens a 26.1 source world, the runner selects Minecraft’s **Create Backup and Load** option for the copy and continues through the 26.3 file upgrade. Let the test control the client until it exits.
 
@@ -141,16 +173,14 @@ Each scenario launches a real Minecraft client in a fresh copy of the save. When
 | --- | --- |
 | `plots` | Build one fixture and the combined layout, visit all guides, preserve an edit across rebuild and restart, reset one plot and open its book. |
 | `recovery` | Drink stew, bind at a cocoon, walk, die, respawn, restart the game, and recover the original inventory exactly once. |
-| `hammer` | Change settings, interrupt a swing and check that all nine cracks clear. Mine a wall and floor, strip logs, flatten and till dirt, then walk three descending flights across a chunk boundary in a generated 28×28×48 quarry. The third flight continues after a save and restart. |
+| `companions` | Equip a named Hammer and dormant symbiote, tame a Frenchie, mine stone and verify the same dog and equipment after restarting. |
 | `barrier` | Place a configured mob barrier, verify its settings on both sides, and compare screenshots with the barrier item held and with an empty hand. |
 | `pods` | Mine drops into storage, restart the game, move the packed pod, and count what a hopper delivers. |
 | `transport` | Bond and capture a named cow, restart, release it once, and verify its identity and recapture cooldown. |
-| `frenchie` | Observe sleep at night, waking in daylight, and the effects of sitting and water. |
-| `frontpack` | Carry a Frenchie through death, respawn and restart, verify its coat on the player, then release the original dog once. |
 | `slime` | Play a note, watch the bonded slime split and rejoin at the grate, and check the hopper and bond after restarting. |
 | `spider` | Bond a spider, see it hanging upside down, shear its line, and collect one string. |
 
-The script prints the output directory under `versions/<target>/.tmp/world-playtests`. Each scenario has its own world and per-phase results. The `frontpack/screenshots` folder contains matched third-person views before and after putdown. The plots, recovery, hammer, barrier and sleep scenarios also save screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
+The script prints the output directory under `versions/<target>/.tmp/world-playtests`. Each scenario has its own world and per-phase results. The `companions/screenshots` folder contains the view after rejoining with the Hammer and the Frenchie. The plots, recovery and barrier scenarios also save screenshots. A failed assertion produces a nonzero script exit. The ordinary mod jar excludes the playtest driver.
 
 ### Worktree Workflow
 
@@ -177,7 +207,7 @@ Logs are written under each slot's `.tmp/worktree-tests`. When ready to publish 
 The Java entry point is `FloraFauna.java`; gameplay lives under `common/`, and registration and client setup under `setup/`, all in the `net.j40climb.florafauna` package. See [AGENTS.md](AGENTS.md#implement-a-feature) for implementation conventions.
 
 - [Player symbiote](src/main/java/net/j40climb/florafauna/common/symbiote/README.md) and [husk recovery](src/main/java/net/j40climb/florafauna/common/block/husk/README.md)
-- [Tool abilities](src/main/java/net/j40climb/florafauna/common/item/abilities/README.md), [mining anchors and pods](src/main/java/net/j40climb/florafauna/common/block/mininganchor/README.md), and [item intake](src/main/java/net/j40climb/florafauna/common/block/iteminput/README.md)
+- [Mining anchors and pods](src/main/java/net/j40climb/florafauna/common/block/mininganchor/README.md) and [item intake](src/main/java/net/j40climb/florafauna/common/block/iteminput/README.md)
 - [Slime grate farm](src/main/java/net/j40climb/florafauna/common/block/slimegrate/README.md)
 - [Mob barriers](src/main/java/net/j40climb/florafauna/common/block/mobbarrier/README.md) and [mob fear](src/main/java/net/j40climb/florafauna/common/mobsymbiote/fear/README.md)
 - [Spider silk habitat](src/main/java/net/j40climb/florafauna/common/mobsymbiote/silk/README.md)
