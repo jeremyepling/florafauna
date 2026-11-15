@@ -7,14 +7,10 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
-import net.minecraft.client.data.models.model.ItemModelUtils;
-import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
@@ -28,7 +24,6 @@ public class FloraFaunaModelProvider extends ModelProvider {
     @Override
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
         registerGeneratedItemModels(itemModels);
-        registerCustomItemModels(itemModels);
 
         registerGeneratedBlockModels(blockModels);
         registerCustomBlockModels(blockModels);
@@ -96,26 +91,8 @@ public class FloraFaunaModelProvider extends ModelProvider {
         itemModels.generateFlatItem(FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(FloraFaunaRegistry.FRENCHIE_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         // Iron Garden system items
         itemModels.generateFlatItem(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get(), ModelTemplates.FLAT_ITEM);
-    }
-
-    // ============================================================
-    // ITEM MODELS (CUSTOM / MANUAL)
-    // ============================================================
-
-    private static void registerCustomItemModels(ItemModelGenerators itemModels) {
-        // Custom: HAMMER uses a manually-authored item model JSON (or a custom loader chain)
-        registerClientItemFromModelJson(itemModels, FloraFaunaRegistry.HAMMER.get());
-    }
-
-    /**
-     * Registers a ClientItem that points at a JSON model location for the item:
-     * assets/florafauna/models/item/<itemname>.json
-     */
-    private static void registerClientItemFromModelJson(ItemModelGenerators itemModels, Item item) {
-        itemModels.itemModelOutput.accept(item, ItemModelUtils.plainModel(ModelLocationUtils.getModelLocation(item)));
     }
 
     // ============================================================
@@ -145,9 +122,8 @@ public class FloraFaunaModelProvider extends ModelProvider {
      */
     @Override
     protected Stream<? extends Holder<Item>> getKnownItems() {
-        // Exclude HAMMER (has custom item model) and blocks with STATE property (manually defined)
+        // Exclude blocks with STATE property (manually defined)
         return FloraFaunaRegistry.ITEMS.getEntries().stream()
-                .filter(x -> !x.equals(FloraFaunaRegistry.HAMMER))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:item_input"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:feral_mining_anchor"))

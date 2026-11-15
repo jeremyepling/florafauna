@@ -31,3 +31,37 @@ buildCache {
     }
 }
 
+def companions = ['hammer', 'frenchies']
+def requested = providers.gradleProperty('devMods').orElse('none').get().trim()
+def selected = requested == 'all' ? companions : requested == 'none' ? [] : requested.split(',', -1)*.trim()
+def unknown = selected - companions
+if (unknown || selected.size() != selected.unique(false).size()) {
+    throw new GradleException("Use -PdevMods=all, none, hammer, frenchies, or hammer,frenchies (got '${requested}').")
+}
+
+// Qualified Stonecutter tasks only need checkouts for their own Minecraft version.
+def available = file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }*.name
+def requestedProjects = gradle.startParameter.taskNames.collectMany { it.tokenize(':') }.intersect(available)
+def targets = (requestedProjects ?: available).unique().collect { it.take(it.lastIndexOf('-')) }
+targets.each { mcVersion ->
+    selected.each { companion ->
+        def versioned = file("../florafauna-${companion}-${mcVersion}")
+        def sibling = versioned.isDirectory() ? versioned : file("../florafauna-${companion}")
+        def dir = file(providers.gradleProperty("${companion}Dir").orElse(sibling.path).get())
+        def metadata = new File(dir, 'gradle.properties')
+        if (!metadata.isFile()) {
+            throw new GradleException("Missing ${companion} checkout at ${dir}. Clone the sibling repository or pass -P${companion}Dir=<checkout>.")
+        }
+        def props = new Properties()
+        metadata.withReader('UTF-8') { props.load(it) }
+        if (props.mod_id != "florafauna_${companion}" || props.minecraft_version != mcVersion) {
+            throw new GradleException("Expected florafauna_${companion} for Minecraft ${mcVersion} at ${dir}, found ${props.mod_id} for ${props.minecraft_version}.")
+        }
+        includeBuild(dir) {
+            name = "dev-${companion}-${mcVersion}"
+            dependencySubstitution {
+                substitute(module("net.j40climb.dev:${companion}-${mcVersion}")).using(project(':'))
+            }
+        }
+    }
+}

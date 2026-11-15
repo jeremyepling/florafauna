@@ -12,9 +12,6 @@ import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
-import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
-import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
-import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
@@ -37,6 +34,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
@@ -44,6 +43,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Debug overlay that displays symbiote state information on screen.
@@ -51,6 +51,17 @@ import java.util.List;
  */
 public class DebugOverlay implements GuiLayer {
     public static final Identifier LAYER_ID = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_debug");
+
+    private static BiConsumer<ItemStack, List<String>> hammerDiagnostics;
+
+    @SuppressWarnings("unchecked") // The matching Hammer sender and message ID define the callback's argument types.
+    public static void receiveHammerDiagnostics(InterModProcessEvent event) {
+        InterModComms.getMessages(FloraFauna.MOD_ID, "hammer_tool_diagnostics"::equals)
+                .filter(message -> message.senderModId().equals("florafauna_hammer"))
+                .map(message -> message.messageSupplier().get())
+                .filter(BiConsumer.class::isInstance)
+                .findFirst().ifPresent(callback -> hammerDiagnostics = (BiConsumer<ItemStack, List<String>>) callback);
+    }
 
     // Auto-enable in dev environment for convenience
     private static boolean enabled = !FMLEnvironment.isProduction();
@@ -448,33 +459,11 @@ public class DebugOverlay implements GuiLayer {
     /**
      * Gets debug lines for all FloraFauna data components on the given item.
      */
-    private static List<String> getModDataComponentLines(ItemStack stack) {
+    public static List<String> getModDataComponentLines(ItemStack stack) {
         List<String> lines = new ArrayList<>();
+        if (hammerDiagnostics != null) hammerDiagnostics.accept(stack, lines);
 
         // Check each FloraFauna data component
-        if (stack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING.get())) {
-            MiningModeData miningData = stack.get(FloraFaunaRegistry.MULTI_BLOCK_MINING.get());
-            if (miningData != null) {
-                lines.add("Mining: " + miningData.shape().name() + ", radius=" + miningData.radius());
-            }
-        }
-
-        if (stack.has(FloraFaunaRegistry.TOOL_CONFIG.get())) {
-            ToolConfig toolConfig = stack.get(FloraFaunaRegistry.TOOL_CONFIG.get());
-            if (toolConfig != null) {
-                String enchant = toolConfig.fortune() ? "Fortune" : "SilkTouch";
-                lines.add("Tool Config: " + enchant + ", " + toolConfig.miningSpeed().name());
-            }
-        }
-
-        if (stack.has(FloraFaunaRegistry.LIGHTNING_ABILITY.get())) {
-            lines.add("Lightning: Yes");
-        }
-
-        if (stack.has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY.get())) {
-            lines.add("Teleport: Yes");
-        }
-
         if (stack.has(FloraFaunaRegistry.SYMBIOTE_DATA.get())) {
             SymbioteData symbioteData = stack.get(FloraFaunaRegistry.SYMBIOTE_DATA.get());
             if (symbioteData != null) {
@@ -484,14 +473,6 @@ public class DebugOverlay implements GuiLayer {
 
         if (stack.has(FloraFaunaRegistry.SYMBIOTE_PROGRESS.get())) {
             lines.add("Symbiote Progress: Present");
-        }
-
-        if (stack.has(FloraFaunaRegistry.THROWABLE_ABILITY.get())) {
-            ThrowableAbilityData throwData = stack.get(FloraFaunaRegistry.THROWABLE_ABILITY.get());
-            if (throwData != null) {
-                lines.add("Throw: dmg=" + throwData.damage() + ", range=" + throwData.maxRange());
-                lines.add("  return=" + (throwData.autoReturn() ? "yes" : "no") + ", speed=" + throwData.returnSpeed());
-            }
         }
 
         if (stack.has(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get())) {

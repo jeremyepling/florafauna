@@ -2,7 +2,6 @@
 # Two offline development clients connect only to a disposable loopback server.
 param(
     [switch]$Offline,
-    [ValidateSet('husk', 'delivery')][string]$Scenario = 'husk',
     [ValidateSet('26.1', '26.3')][string]$Target = '26.1'
 )
 
@@ -14,7 +13,7 @@ $targetDir = Join-Path $checkout "versions/$project"
 $optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
 if ($Target -eq '26.3') { $optionsTemplate = Join-Path $targetDir 'dev/options-template.txt' }
 $runId = [guid]::NewGuid().ToString('N')
-$root = Join-Path $targetDir ".tmp/$Scenario-multiplayer/$runId"
+$root = Join-Path $targetDir ".tmp/husk-multiplayer/$runId"
 $roles = 'Server', 'Owner', 'Visitor'
 foreach ($role in $roles) {
     [IO.Directory]::CreateDirectory((Join-Path $root $role)) | Out-Null
@@ -49,7 +48,7 @@ try {
     if ($Offline) { $options += '--offline' }
     & .\gradlew.bat @options ":${project}:runData" *> (Join-Path $root 'datagen.log')
     if ($LASTEXITCODE -ne 0) { throw "Data generation failed. See $root/datagen.log" }
-    & .\gradlew.bat @options "-PhuskTestId=$runId" "-PhuskTestPort=$port" "-PmultiplayerScenario=$Scenario" ":${project}:playtestClasses" `
+    & .\gradlew.bat @options "-PhuskTestId=$runId" "-PhuskTestPort=$port" ":${project}:playtestClasses" `
         ":${project}:createHuskServerLaunchScript" ":${project}:createHuskOwnerLaunchScript" ":${project}:createHuskVisitorLaunchScript" *> (Join-Path $root 'prepare.log')
     if ($LASTEXITCODE -ne 0) { throw "Could not prepare the multiplayer launchers. See $root/prepare.log" }
 
@@ -66,9 +65,8 @@ try {
         $script.Replace((Join-Path $targetDir 'build\moddev'), $launchDir) | Set-Content -LiteralPath (Join-Path $launchDir $scriptName)
     }
 
-    $phases = if ($Scenario -eq 'delivery') { @(1) } else { @(1, 2) }
-    foreach ($phase in $phases) {
-        Write-Host "Launching dedicated $Scenario phase $phase"
+    foreach ($phase in 1, 2) {
+        Write-Host "Launching dedicated recovery phase $phase"
         Set-Content -LiteralPath (Join-Path $root 'phase') -Value $phase
         $processes = @()
         $deadline = [DateTime]::UtcNow.AddMinutes(4)
