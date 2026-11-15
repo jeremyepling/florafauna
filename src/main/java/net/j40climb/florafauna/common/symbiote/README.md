@@ -8,24 +8,24 @@ The Symbiote is a permanent player companion that provides abilities, observatio
 
 ## Binding Process
 
-1. **Consume Symbiote Stew** - Grants "Symbiote Prepared" effect, sets `symbioteBindable = true`
-2. **Open the Cocoon Chamber** with a Dormant Symbiote in your inventory.
-3. **Select Bind** to transfer the symbiote to the player attachment. **Set Spawn** is a separate chamber action.
-4. **Active** - Abilities enabled, voice system active
+1. **Find a Resonant Bloom** in plains or forests. Breaking one gives two pollen and starts the spore encounter.
+2. **Eat one pollen** to set persistent `symbioteBindable = true`; there is no preparation deadline.
+3. **Make a Cocoon Chamber** from the other pollen, an oak plank, and white wool. Select **Bind** to bond the carried spore. A Dormant Symbiote item can still be used to rebind an existing symbiote.
+4. **Explore and learn** - The bond gives nearby-bloom perception; 25 jumps across two biomes unlock Jump Boost I. Resting at the chamber gives increasingly direct guidance while this adaptation is unfinished.
 
 ## Symbiote States
 
 | State | Description | Abilities |
 |-------|-------------|-----------|
 | UNBOUND | No symbiote | None |
-| READY_TO_BIND | Defined in the enum. Stew records readiness in the separate `symbioteBindable` field. | None |
+| READY_TO_BIND | Defined in the enum. Pollen records readiness in the separate `symbioteBindable` field. | None |
 | BONDED_ACTIVE | Full symbiote bond | Enabled |
 | BONDED_WEAKENED | After death, before recovery | Disabled |
 
 ## State Transitions
 
 ```
-UNBOUND ──(consume stew)──> UNBOUND + symbioteBindable
+UNBOUND ──(consume pollen)──> UNBOUND + symbioteBindable
 UNBOUND + symbioteBindable ──(bind in cocoon)──> BONDED_ACTIVE
 BONDED_ACTIVE ──(die)──> BONDED_WEAKENED + Restoration Husk
 BONDED_WEAKENED ──(interact with husk)──> BONDED_ACTIVE
@@ -121,7 +121,7 @@ If progress stalls (same state for extended time), dreams become more direct.
 | Item | Purpose |
 |------|---------|
 | **Dormant Symbiote** | Carries symbiote data, used for binding |
-| **Symbiote Stew** | Consumable that prepares player for binding |
+| **Symbiotic Pollen** | Consumable that prepares player for binding |
 
 ## Related Systems
 

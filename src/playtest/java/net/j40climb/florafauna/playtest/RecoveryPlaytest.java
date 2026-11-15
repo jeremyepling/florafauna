@@ -51,7 +51,7 @@ final class RecoveryPlaytest {
     }
 
     private static void bindAndDie(Playtest t) {
-        t.server("Arrange a Survival player with stew, a dormant symbiote and counted gear", player -> {
+        t.server("Arrange a Survival player with pollen, a dormant symbiote and counted gear", player -> {
             ServerLevel level = player.level().getServer().overworld();
             DevPlot.RECOVERY.place(level, new BlockPos(-3, 199, -5));
             level.getGameRules().set(GameRules.KEEP_INVENTORY, false, level.getServer());
@@ -64,24 +64,24 @@ final class RecoveryPlaytest {
             player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT);
             player.getInventory().clearContent();
             player.getInventory().setSelectedSlot(0);
-            player.getInventory().setItem(0, new ItemStack(FloraFaunaRegistry.SYMBIOTE_STEW.get()));
+            player.getInventory().setItem(0, new ItemStack(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get()));
             player.getInventory().setItem(1, new ItemStack(FloraFaunaRegistry.DORMANT_SYMBIOTE.get()));
             player.getInventory().setItem(SHARD_SLOT, new ItemStack(Items.AMETHYST_SHARD, SHARDS));
             player.setItemSlot(EquipmentSlot.FEET, new ItemStack(Items.IRON_BOOTS));
             player.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.COPPER_INGOT, COPPER));
             player.inventoryMenu.broadcastChanges();
         });
-        t.awaitClient("Wait for the test platform and stew to synchronize", mc ->
+        t.awaitClient("Wait for the test platform and pollen to synchronize", mc ->
                 mc.screen == null && mc.level.getBlockState(CHAMBER).is(FloraFaunaRegistry.COCOON_CHAMBER.get())
-                        && mc.player.getInventory().getItem(0).is(FloraFaunaRegistry.SYMBIOTE_STEW.get())
+                        && mc.player.getInventory().getItem(0).is(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get())
                         && mc.player.distanceToSqr(0.5, 200, 2.5) < 1);
-        t.client("Hold use and drink the stew", mc -> {
+        t.client("Hold use and consume the pollen", mc -> {
             mc.player.getInventory().setSelectedSlot(0);
             mc.options.keyUse.setDown(true);
             Playtest.require(mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND).consumesAction(),
-                    "The stew rejected the player's use action");
+                    "The pollen rejected the player's use action");
         });
-        t.awaitServer("Verify the stew was consumed and enabled binding", p ->
+        t.awaitServer("Verify the pollen was consumed and enabled binding", p ->
                 data(p).symbioteBindable() && p.getInventory().getItem(0).isEmpty());
         t.client("Release use", mc -> mc.options.keyUse.setDown(false));
         t.awaitClient("Wait for bindable state on the client", mc -> data(mc.player).symbioteBindable());

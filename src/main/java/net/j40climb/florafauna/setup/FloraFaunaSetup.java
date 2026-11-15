@@ -45,7 +45,6 @@ public class FloraFaunaSetup {
                     .displayItems((pParameters, output) -> {
                         // Items
                         output.accept(FloraFaunaRegistry.DORMANT_SYMBIOTE);
-                        output.accept(FloraFaunaRegistry.SYMBIOTE_STEW);
                         output.accept(FloraFaunaRegistry.SYMBIOTIC_POLLEN);
 
                         // Spawn eggs

@@ -87,7 +87,6 @@ public class FloraFaunaModelProvider extends ModelProvider {
     // These are simple models that can be data generated and have no custom json from blockbench
     private static void registerGeneratedItemModels(ItemModelGenerators itemModels) {
         itemModels.generateFlatItem(FloraFaunaRegistry.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(FloraFaunaRegistry.SYMBIOTE_STEW.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);

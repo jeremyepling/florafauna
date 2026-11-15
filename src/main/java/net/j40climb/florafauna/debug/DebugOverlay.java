@@ -176,7 +176,7 @@ public class DebugOverlay implements GuiLayer {
         // Cocoon State section
         lines.add(new DebugLine("--- Cocoon State ---", headerColor));
         lines.add(new DebugLine("Bindable: " + formatBool(data.symbioteBindable()), data.symbioteBindable() ? enabledColor : color));
-        lines.add(new DebugLine("Stew: " + formatBool(data.symbioteStewConsumedOnce()), color));
+        lines.add(new DebugLine("Pollen: " + formatBool(data.pollenConsumedOnce()), color));
         lines.add(new DebugLine("Cocoon Set: " + formatBool(data.cocoonSpawnSetOnce()), color));
         lines.add(new DebugLine("Cocoon: " + formatPosAndDim(data.cocoonSpawnPos(), data.cocoonSpawnDim()), color));
         lines.add(new DebugLine("Prev Bed: " + formatPosAndDim(data.previousBedSpawnPos(), data.previousBedSpawnDim()), color));

@@ -10,7 +10,7 @@ import net.minecraft.util.StringRepresentable;
  * Represents the state of a player's symbiote bond.
  *
  * State transitions:
- * - Drink symbiote_stew → UNBOUND → READY_TO_BIND
+ * - Eat symbiotic pollen → UNBOUND → READY_TO_BIND
  * - Bind in Cocoon → READY_TO_BIND → BONDED_ACTIVE
  * - Die while active → BONDED_ACTIVE → BONDED_WEAKENED
  * - Interact with Restoration Husk → BONDED_WEAKENED → BONDED_ACTIVE

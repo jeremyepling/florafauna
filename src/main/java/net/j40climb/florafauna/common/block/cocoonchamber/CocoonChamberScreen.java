@@ -103,7 +103,7 @@ public class CocoonChamberScreen extends BaseScreen {
         clearSpawnButton.active = data.cocoonSpawnPos() != null;
 
         // Bind is only active if:
-        // - Player is bindable (consumed stew)
+        // - Player is bindable (consumed pollen)
         // - Player is not already bonded
         // (We don't check inventory client-side - server will validate)
         bindButton.active = data.symbioteBindable() && !data.symbioteState().isBonded();

@@ -51,13 +51,6 @@ public class FloraFaunaRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_ferric_poppy", has(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get()))
                 .save(output, FloraFauna.MOD_ID + ":iron_nuggets_from_ferric_poppy");
 
-        ShapelessRecipeBuilder.shapeless(items, RecipeCategory.FOOD, FloraFaunaRegistry.SYMBIOTE_STEW.get())
-                .requires(Items.BOWL)
-                .requires(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get())
-                .requires(Items.WHEAT_SEEDS)
-                .unlockedBy("has_symbiotic_pollen", has(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get()))
-                .save(output);
-
         ShapelessRecipeBuilder.shapeless(items, RecipeCategory.DECORATIONS, FloraFaunaRegistry.COCOON_CHAMBER.get())
                 .requires(Items.OAK_PLANKS)
                 .requires(ItemTags.WOOL)

@@ -17,15 +17,15 @@ public final class CocoonProgressionHooks {
     private CocoonProgressionHooks() {} // Utility class
 
     /**
-     * Called when a player consumes symbiote_stew for the first time.
+     * Called when a player consumes symbiotic pollen for the first time.
      * This prepares them for binding with the symbiote.
      *
-     * @param player the server player who consumed the stew
+     * @param player the server player who consumed the pollen
      */
-    public static void onSymbioteStewConsumed(ServerPlayer player) {
+    public static void onSymbiotePrepared(ServerPlayer player) {
         // Trigger observation for dialogue/advancement
         ObservationArbiter.observe(player, ObservationCategory.BONDING_MILESTONE, 50, Map.of(
-                "event", "stew_consumed"
+                "event", "prepared"
         ));
     }
 

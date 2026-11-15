@@ -179,8 +179,8 @@ public class FloraFaunaCommands {
 
         source.sendSuccess(() -> formatField("command.florafauna.symbiote.bindable",
                 formatBoolean(data.symbioteBindable())), false);
-        source.sendSuccess(() -> formatField("command.florafauna.symbiote.stew_consumed",
-                formatBoolean(data.symbioteStewConsumedOnce())), false);
+        source.sendSuccess(() -> formatField("command.florafauna.symbiote.pollen_consumed",
+                formatBoolean(data.pollenConsumedOnce())), false);
         source.sendSuccess(() -> formatField("command.florafauna.symbiote.cocoon_set",
                 formatBoolean(data.cocoonSpawnSetOnce())), false);
         source.sendSuccess(() -> formatField("command.florafauna.symbiote.cocoon_spawn",

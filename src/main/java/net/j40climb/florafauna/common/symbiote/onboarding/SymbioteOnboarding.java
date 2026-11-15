@@ -44,7 +44,7 @@ public final class SymbioteOnboarding {
         SymbioteVoiceService.forceSpeakUnbonded(player, "symbiote.onboarding.pollen_hint");
     }
 
-    public static void onStewConsumed(ServerPlayer player) {
+    public static void onPrepared(ServerPlayer player) {
         if (hasBloomContact(player) && !player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA)
                 .symbioteState().isBonded()) {
             SymbioteVoiceService.forceSpeakUnbonded(player, "symbiote.onboarding.chamber_hint");

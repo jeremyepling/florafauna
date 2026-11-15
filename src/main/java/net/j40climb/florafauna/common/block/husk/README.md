@@ -19,7 +19,7 @@ When a player with a bonded symbiote dies, their inventory is stored in a Symbio
 | State | Description | On Death |
 |-------|-------------|----------|
 | UNBOUND | No symbiote | Normal death (no husk) |
-| READY_TO_BIND | Unbonded enum state. Drinking stew marks an unbound player bindable. | Normal death (no husk) |
+| READY_TO_BIND | Unbonded enum state. Eating pollen marks an unbound player bindable. | Normal death (no husk) |
 | BONDED_ACTIVE | Full symbiote abilities | Creates Restoration Husk, transitions to WEAKENED |
 | BONDED_WEAKENED | Abilities disabled | Creates Container Husk, stays WEAKENED |
 

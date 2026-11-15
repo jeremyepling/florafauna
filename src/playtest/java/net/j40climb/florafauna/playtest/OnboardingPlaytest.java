@@ -26,6 +26,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -50,11 +51,11 @@ import java.util.Set;
 /** A disposable Survival path from a starter bloom to a first earned adaptation. */
 final class OnboardingPlaytest {
     private static final BlockPos FIRST_BLOOM = new BlockPos(0, 120, 4);
-    private static final BlockPos SECOND_BLOOM = new BlockPos(1, 120, 4);
     private static final BlockPos PERCEPTION_BLOOM = new BlockPos(2, 120, 2);
     private static final BlockPos CHAMBER = new BlockPos(0, 120, 0);
     private static final String FIRST_CONTACT = "symbiote.onboarding.first_contact";
     private static final String POLLEN_HINT = "symbiote.onboarding.pollen_hint";
+    private static final String POLLEN_CONSUMED = "symbiote.onboarding.pollen_consumed";
     private static final String DREAM_REFLECTIVE = "symbiote.dream.jump.reflective";
     private static final String DREAM_DIRECTIONAL = "symbiote.dream.jump.directional";
 
@@ -81,7 +82,6 @@ final class OnboardingPlaytest {
             Playtest.require(level.getBiome(new BlockPos(24, 120, 2)).is(Biomes.FOREST),
                     "Could not establish the forest destination: " + forestFill.right().map(Exception::getMessage).orElse("no change"));
             level.setBlockAndUpdate(FIRST_BLOOM, FloraFaunaRegistry.RESONANT_BLOOM.get().defaultBlockState());
-            level.setBlockAndUpdate(SECOND_BLOOM, FloraFaunaRegistry.RESONANT_BLOOM.get().defaultBlockState());
             Playtest.require(p.teleportTo(level, 0.5, 120, 2.5, Set.of(), 0, 25, true), "Could not reach starter path");
             p.setGameMode(GameType.SURVIVAL);
             p.setHealth(p.getMaxHealth());
@@ -93,20 +93,19 @@ final class OnboardingPlaytest {
             p.getInventory().setSelectedSlot(0);
             p.inventoryMenu.broadcastChanges();
         });
-        t.awaitClient("See both blooms in Survival before touching them", mc -> mc.screen == null
+        t.awaitClient("See the starter bloom in Survival before touching it", mc -> mc.screen == null
                 && mc.gameMode.getPlayerMode() == GameType.SURVIVAL
                 && mc.level.getBlockState(FIRST_BLOOM).is(FloraFaunaRegistry.RESONANT_BLOOM.get())
-                && mc.level.getBlockState(SECOND_BLOOM).is(FloraFaunaRegistry.RESONANT_BLOOM.get())
                 && mc.player.distanceToSqr(0.5, 120, 2.5) < 1);
         long[] renderedAt = new long[1];
-        t.client("Aim down at both starter blooms", mc -> {
+        t.client("Aim down at the starter bloom", mc -> {
             mc.player.setYRot(0);
             mc.player.setXRot(42);
             renderedAt[0] = mc.level.getGameTime() + 15;
         });
         t.awaitClient("Let the bloom path render before the screenshot", mc ->
                 mc.level.getGameTime() >= renderedAt[0] && mc.player.getXRot() >= 35);
-        t.screenshot("onboarding-blooms-before-contact");
+        t.screenshot("onboarding-bloom-before-contact");
         t.client("Break the first bloom with the Survival player's hand", mc -> {
             mc.particleEngine.clearParticles();
             Playtest.require(mc.gameMode.startDestroyBlock(FIRST_BLOOM, Direction.NORTH), "Bloom did not accept breaking");
@@ -120,60 +119,57 @@ final class OnboardingPlaytest {
                         && progress(p).getSignal("resonant_bloom_contact").isPresent()
                         && data(p).symbioteState() == SymbioteState.UNBOUND
                         && p.getInventory().countItem(FloraFaunaRegistry.DORMANT_SYMBIOTE.get()) == 0);
-        t.server("Inspect the first pollen drop and move into pickup range", p ->
-                inspectPollenDropAndMove(p, FIRST_BLOOM, 1));
-        t.awaitServer("Collect exactly one pollen from the first bloom", p -> pollen(p) == 1);
-        t.client("Break the second bloom for the chamber recipe", mc ->
-                Playtest.require(mc.gameMode.startDestroyBlock(SECOND_BLOOM, Direction.NORTH), "Second bloom did not break"));
-        t.server("Inspect the second pollen drop and move into pickup range", p ->
-                inspectPollenDropAndMove(p, SECOND_BLOOM, 2));
-        t.awaitServer("Collect exactly two earned pollen for both recipes", p -> pollen(p) == 2);
-        t.awaitClient("Read the pollen crafting hint", mc -> hasChatKey(mc, POLLEN_HINT));
+        t.server("Inspect the two-pollen drop and move into pickup range", p ->
+                inspectPollenDropAndMove(p, FIRST_BLOOM, 2));
+        t.awaitServer("Collect exactly two pollen from one bloom", p -> pollen(p) == 2);
+        t.awaitClient("Read the pollen guidance", mc -> hasChatKey(mc, POLLEN_HINT));
+        t.client("Consume one of the two earned pollen", mc -> {
+            mc.player.getInventory().setSelectedSlot(0);
+            mc.options.keyUse.setDown(true);
+            Playtest.require(mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND).consumesAction(),
+                    "The symbiotic pollen rejected use");
+        });
+        t.awaitServer("One consumed pollen prepares the spore", p ->
+                pollen(p) == 1 && inventoryCount(p) == 1
+                        && data(p).symbioteBindable() && data(p).pollenConsumedOnce());
+        t.client("Release the pollen use key", mc -> mc.options.keyUse.setDown(false));
+        t.awaitClient("Hear the pollen consumption feedback", mc -> hasChatKey(mc, POLLEN_CONSUMED));
 
-        t.server("Craft the stew and chamber with the real shapeless recipes", p -> {
-            Playtest.require(pollen(p) == 2, "The two blooms must yield exactly two pollen");
-            p.getInventory().setItem(1, new ItemStack(Items.BOWL));
-            p.getInventory().setItem(2, new ItemStack(Items.WHEAT_SEEDS));
-            p.getInventory().setItem(3, new ItemStack(Items.OAK_PLANKS));
-            p.getInventory().setItem(4, new ItemStack(whiteWool()));
-            ItemStack stew = assemble(p, Items.BOWL, FloraFaunaRegistry.SYMBIOTIC_POLLEN.get(), Items.WHEAT_SEEDS);
-            Playtest.require(stew.is(FloraFaunaRegistry.SYMBIOTE_STEW.get()) && stew.getCount() == 1,
-                    "Bowl, pollen and seeds did not craft one Symbiote Stew");
+        long[] pollenTime = new long[1];
+        t.server("Advance the disposable world's clock by more than 12000 ticks", p -> {
+            pollenTime[0] = p.level().getGameTime();
+            ((ServerLevelData) p.level().getLevelData()).setGameTime(pollenTime[0] + 12001);
+        });
+        t.awaitServer("Keep pollen readiness after more than 12000 game ticks", p ->
+                p.level().getGameTime() - pollenTime[0] > 12000
+                        && pollen(p) == 1 && data(p).symbioteBindable()
+                        && data(p).pollenConsumedOnce());
+
+        t.server("Craft the chamber with the remaining pollen", p -> {
+            Playtest.require(pollen(p) == 1, "The chamber must use the bloom's remaining pollen");
+            p.getInventory().setItem(1, new ItemStack(Items.OAK_PLANKS));
+            p.getInventory().setItem(2, new ItemStack(whiteWool()));
             ItemStack chamber = assemble(p, Items.OAK_PLANKS, whiteWool(), FloraFaunaRegistry.SYMBIOTIC_POLLEN.get());
             Playtest.require(chamber.is(FloraFaunaRegistry.COCOON_CHAMBER.get().asItem()) && chamber.getCount() == 1,
                     "Wood, wool and pollen did not craft one Cocoon Chamber");
-            consumePollen(p, 2);
-            for (int slot = 1; slot <= 4; slot++) {
+            consumePollen(p, 1);
+            for (int slot = 1; slot <= 2; slot++) {
                 Playtest.require(p.getInventory().getItem(slot).getCount() == 1, "Missing single recipe ingredient in slot " + slot);
                 p.getInventory().setItem(slot, ItemStack.EMPTY);
             }
-            Playtest.require(pollen(p) == 0, "Crafting failed to consume both pollen");
-            p.getInventory().setItem(0, stew);
-            p.getInventory().setItem(1, chamber);
+            Playtest.require(pollen(p) == 0, "Crafting failed to consume the remaining pollen");
+            p.getInventory().setItem(0, chamber);
             p.inventoryMenu.broadcastChanges();
         });
-        t.awaitClient("Receive both crafted outputs", mc ->
-                mc.player.getInventory().getItem(0).is(FloraFaunaRegistry.SYMBIOTE_STEW.get())
-                        && mc.player.getInventory().getItem(1).is(FloraFaunaRegistry.COCOON_CHAMBER.get().asItem()));
+        t.awaitClient("Receive the crafted chamber", mc ->
+                mc.player.getInventory().getItem(0).is(FloraFaunaRegistry.COCOON_CHAMBER.get().asItem()));
         t.client("Place the crafted chamber on the path", mc -> {
-            mc.player.getInventory().setSelectedSlot(1);
+            mc.player.getInventory().setSelectedSlot(0);
             useBlock(mc, CHAMBER.below(), Direction.UP);
         });
         t.awaitServer("Verify the chamber was placed and its item consumed", p ->
                 p.level().getBlockState(CHAMBER).is(FloraFaunaRegistry.COCOON_CHAMBER.get())
-                        && p.getInventory().getItem(1).isEmpty());
-        t.client("Drink the crafted stew", mc -> {
-            mc.player.getInventory().setSelectedSlot(0);
-            mc.options.keyUse.setDown(true);
-            Playtest.require(mc.gameMode.useItem(mc.player, InteractionHand.MAIN_HAND).consumesAction(),
-                    "The crafted stew rejected use");
-        });
-        t.awaitServer("Stew prepares the spore and returns one bowl", p -> data(p).symbioteBindable()
-                && data(p).symbioteStewConsumedOnce()
-                && p.getInventory().getItem(0).is(Items.BOWL)
-                && p.getInventory().getItem(0).getCount() == 1
-                && p.getInventory().countItem(FloraFaunaRegistry.SYMBIOTE_STEW.get()) == 0);
-        t.client("Release the use key", mc -> mc.options.keyUse.setDown(false));
+                        && p.getInventory().getItem(0).isEmpty() && inventoryCount(p) == 0);
         t.awaitClient("Receive bindable state", mc -> data(mc.player).symbioteBindable());
         useChamberButton(t, "bind");
         t.awaitServer("Bind the resident spore without a Dormant Symbiote item", p ->
@@ -252,6 +248,14 @@ final class OnboardingPlaytest {
         return p.getInventory().countItem(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get());
     }
 
+    private static int inventoryCount(ServerPlayer p) {
+        int count = 0;
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            count += p.getInventory().getItem(i).getCount();
+        }
+        return count;
+    }
+
     private static void inspectPollenDropAndMove(ServerPlayer p, BlockPos bloom, int expectedTotal) {
         List<ItemEntity> nearby = p.level().getEntitiesOfClass(ItemEntity.class, new AABB(bloom).inflate(1.5));
         List<ItemEntity> pollenDrops = nearby.stream()
@@ -261,6 +265,10 @@ final class OnboardingPlaytest {
                 + total + " pollen (expected " + expectedTotal + ", inventory=" + pollen(p)
                 + ", blockDrops=" + p.level().getGameRules().get(GameRules.BLOCK_DROPS)
                 + ", nearby items=" + nearby.stream().map(item -> item.getItem().toString()).toList() + ")");
+        if (pollen(p) == 0) {
+            Playtest.require(pollenDrops.size() == 1 && pollenDrops.getFirst().getItem().getCount() == expectedTotal,
+                    "One bloom should create one stack of " + expectedTotal + " pollen");
+        }
         if (!pollenDrops.isEmpty()) {
             ItemEntity drop = pollenDrops.getFirst();
             Playtest.require(p.teleportTo((ServerLevel) p.level(), drop.getX(), 120, drop.getZ(),
