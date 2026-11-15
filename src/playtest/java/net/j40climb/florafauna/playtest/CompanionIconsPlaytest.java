@@ -27,7 +27,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.entity.EntitySpawnReason;
+//? if <26.3 {
 import net.minecraft.world.entity.EntityType;
+//?} else {
+/*import net.minecraft.world.entity.EntityTypes;
+*///?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -68,7 +72,11 @@ final class CompanionIconsPlaytest {
             dogId[0] = dog.getId();
         });
         t.client("Frame the dog in first person", mc -> {
+            //? if <26.3 {
             mc.options.hideGui = false;
+            //?} else {
+            /*if (mc.gui.hud.isHidden()) mc.gui.hud.toggle();
+            *///?}
             mc.options.setCameraType(CameraType.FIRST_PERSON);
         });
         clickDog(t, dogId, false);

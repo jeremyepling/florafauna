@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Items;
@@ -36,7 +37,11 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+//? if <26.3 {
 import net.neoforged.neoforge.event.level.BlockEvent;
+//?} else {
+/*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+*///?}
 
 import java.util.HashMap;
 import java.util.List;
@@ -221,7 +226,7 @@ final class HammerMiningGameTests {
             swing(player, center, Direction.UP, Direction.SOUTH);
             check(h, center, Blocks.AIR, "ore center");
             check(h, center.east(), Blocks.AIR, "ore neighbor");
-            var bounds = new AABB(center.getCenter(), center.east().getCenter()).inflate(2);
+            var bounds = new AABB(Vec3.atCenterOf(center), Vec3.atCenterOf(center.east())).inflate(2);
             var drops = h.getLevel().getEntitiesOfClass(ItemEntity.class, bounds);
             int count = 0;
             for (var drop : drops) {
@@ -337,7 +342,11 @@ final class HammerMiningGameTests {
         check(h, center.east(2), Blocks.IRON_ORE, "mixed vein respects two-block cap");
 
         configure(player, MiningShape.SHAPELESS);
+        //? if <26.3 {
         for (var entry : Map.of(Blocks.NETHER_GOLD_ORE, Blocks.GOLD_ORE, Blocks.WHITE_WOOL, Blocks.BLACK_WOOL).entrySet()) {
+        //?} else {
+        /*for (var entry : Map.of(Blocks.NETHER_GOLD_ORE, Blocks.GOLD_ORE, Blocks.WOOL.pick(DyeColor.WHITE), Blocks.WOOL.pick(DyeColor.BLACK)).entrySet()) {
+        *///?}
             set(player, center, entry.getKey());
             set(player, center.west(), entry.getKey());
             set(player, center.east(), entry.getValue());

@@ -16,6 +16,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.clock.ClockTimeMarker;
 import net.minecraft.world.clock.ClockTimeMarkers;
+//? if >=26.3 {
+/*import net.minecraft.world.clock.ServerClockManager;
+*///?}
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.BedBlock;
@@ -154,7 +157,7 @@ final class FrenchiePlaytest {
 
     private static void useBed(Playtest t, BlockPos bed) {
         t.awaitClient("Stand awake in reach of the pillow", mc ->
-                mc.screen == null && !mc.player.isSleeping() && mc.player.position().distanceToSqr(bed.getCenter()) < 12);
+                mc.screen == null && !mc.player.isSleeping() && mc.player.position().distanceToSqr(Vec3.atCenterOf(bed)) < 12);
         t.client("Right-click the bed", mc -> {
             Vec3 point = Vec3.atBottomCenterOf(bed).add(0, 0.55, 0);
             mc.player.lookAt(Anchor.EYES, point);
@@ -172,7 +175,12 @@ final class FrenchiePlaytest {
 
     private static void setTime(ServerLevel level, ResourceKey<ClockTimeMarker> marker) {
         var clock = level.dimensionType().defaultClock().orElseThrow();
+        //? if <26.3 {
         Playtest.require(level.getServer().clockManager().moveToTimeMarker(clock, marker), "Overworld lacks time marker " + marker);
+        //?} else {
+        /*var result = level.getServer().clockManager().moveToTimeMarker(clock, marker);
+        Playtest.require(result != ServerClockManager.MoveResult.NO_TIME_MARKER_FOUND, "Overworld lacks time marker " + marker);
+        *///?}
     }
 
     private static void toggleSit(Minecraft mc, int id) {

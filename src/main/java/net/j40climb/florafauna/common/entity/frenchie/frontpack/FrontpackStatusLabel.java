@@ -26,7 +26,11 @@ public final class FrontpackStatusLabel {
     public static void extractLabel(RegisterRenderStateModifiersEvent event) {
         event.registerEntityModifier(new TypeToken<AvatarRenderer<?>>() {}, (avatar, state) -> {
             var pack = avatar.getExistingDataOrNull(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA);
+            //? if <26.3 {
             if (pack == null || !pack.hasCarriedFrenchie() || state.isInvisible || !Minecraft.renderNames()) return;
+            //?} else {
+            /*if (pack == null || !pack.hasCarriedFrenchie() || state.isInvisible || Minecraft.getInstance().gui.hud.isHidden()) return;
+            *///?}
             var warning = avatar.getExistingDataOrNull(FloraFaunaRegistry.FRENCHIE_WARNING);
             var appearance = pack.frenchieNBT();
             FrenchieStatusIcon icon;
@@ -48,6 +52,10 @@ public final class FrontpackStatusLabel {
         var attachment = Vec3.directionFromRotation(0, state.bodyRot).scale(0.46).add(0, state.eyeHeight - 0.65, 0);
         var camera = Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState;
         event.getSubmitNodeCollector().submitNameTag(event.getPoseStack(), attachment, 0, label, !state.isDiscrete,
+                //? if <26.3 {
                 state.lightCoords, state.distanceToCameraSq, camera);
+                //?} else {
+                /*state.lightCoords, camera);
+                *///?}
     }
 }

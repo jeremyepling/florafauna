@@ -6,6 +6,7 @@ import net.j40climb.florafauna.setup.ClientSetup;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.Set;
@@ -22,7 +23,7 @@ final class ChargedHammerPlaytest {
             p.level().setBlockAndUpdate(ore.south(), Blocks.IRON_ORE.defaultBlockState());
             p.teleportTo(p.level(), ore.getX() + 0.5, ore.getY() - 1, ore.getZ() - 6.5, Set.of(), 0f, 0f, true);
         });
-        t.awaitClient("See the charged-throw lane", mc -> mc.player.position().distanceToSqr(ore.north(7).getCenter()) < 6
+        t.awaitClient("See the charged-throw lane", mc -> mc.player.position().distanceToSqr(Vec3.atCenterOf(ore.north(7))) < 6
                 && mc.level.getBlockState(ore).is(Blocks.DIAMOND_ORE) && mc.player.getMainHandItem().is(FloraFaunaRegistry.HAMMER.get()));
         t.client("Hold the mapped throw key", mc -> {
             var key = ClientSetup.THROW_ITEM_KEY.get();

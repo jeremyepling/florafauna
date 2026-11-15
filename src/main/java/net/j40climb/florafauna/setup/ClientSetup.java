@@ -33,7 +33,6 @@ import net.neoforged.neoforge.client.gui.GuiLayer;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.util.Lazy;
-import org.lwjgl.glfw.GLFW;
 
 /**
  * Handles all client-side initialization: renderers, screens, key bindings, GUI layers.
@@ -51,7 +50,7 @@ public class ClientSetup {
             "key.florafauna.summon_lightning",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_R,
+            InputConstants.KEY_R,
             KEY_CATEGORY
     ));
 
@@ -59,7 +58,7 @@ public class ClientSetup {
             "key.florafauna.teleport_surface",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_M,
+            InputConstants.KEY_M,
             KEY_CATEGORY
     ));
 
@@ -67,7 +66,7 @@ public class ClientSetup {
             "key.florafauna.dash",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.MOUSE,
-            GLFW.GLFW_MOUSE_BUTTON_4,
+            InputConstants.MOUSE_BUTTON_4,
             KEY_CATEGORY
     ));
 
@@ -75,7 +74,7 @@ public class ClientSetup {
             "key.florafauna.hammer_config",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_P,
+            InputConstants.KEY_P,
             KEY_CATEGORY
     ));
 
@@ -83,7 +82,7 @@ public class ClientSetup {
             "key.florafauna.throw_item",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_T,
+            InputConstants.KEY_T,
             KEY_CATEGORY
     ));
 
@@ -91,7 +90,7 @@ public class ClientSetup {
             "key.florafauna.cycle_mining_mode",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_C,
+            InputConstants.KEY_C,
             KEY_CATEGORY
     ));
 
@@ -99,7 +98,7 @@ public class ClientSetup {
             "key.florafauna.precision_mining",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_J,
+            InputConstants.KEY_J,
             KEY_CATEGORY
     ));
 
@@ -107,7 +106,7 @@ public class ClientSetup {
             "key.florafauna.mob_barrier_config",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_B,
+            InputConstants.KEY_B,
             KEY_CATEGORY
     ));
 
@@ -115,7 +114,7 @@ public class ClientSetup {
             "key.florafauna.hammer_action_wheel",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_K,
+            InputConstants.KEY_K,
             KEY_CATEGORY
     ));
 
@@ -123,7 +122,7 @@ public class ClientSetup {
             "key.florafauna.noclip",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_N,
+            InputConstants.KEY_N,
             KEY_CATEGORY
     ));
 

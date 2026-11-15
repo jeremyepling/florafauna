@@ -20,7 +20,11 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+//? if <26.3 {
 import net.neoforged.neoforge.event.level.BlockEvent;
+//?} else {
+/*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -37,17 +41,21 @@ import org.jetbrains.annotations.Nullable;
 public class HuskBlock extends BaseEntityBlock {
 
     public static final EnumProperty<HuskType> HUSK_TYPE = EnumProperty.create("husk_type", HuskType.class);
+    //? if <26.3 {
     public static final MapCodec<HuskBlock> CODEC = simpleCodec(HuskBlock::new);
+    //?}
 
     public HuskBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(HUSK_TYPE, HuskType.RESTORATION));
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

@@ -232,7 +232,7 @@ public final class CourierTrips extends SavedData {
                 var fromLevel = level != null ? level : server.getLevel(trip.from.dimension());
                 var from = destination == null ? trip.from.pos() : destination;
                 int seconds = fromLevel == null || owner == null ? 3
-                        : DeliveryGoal.travelSeconds(fromLevel, from.getBottomCenter(), owner.level(), owner.position());
+                        : DeliveryGoal.travelSeconds(fromLevel, Vec3.atBottomCenterOf(from), owner.level(), owner.position());
                 iterator.set(new Trip(trip.dog, trip.owner, Optional.empty(), Optional.empty(), trip.from, now + 20L * seconds));
                 setDirty();
                 DeliveryGoal.tell(owner, trip.dog.getBooleanOr("FrenchieGoingHome", false) ? "home_unavailable"

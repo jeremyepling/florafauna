@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.test;
 
+import net.minecraft.world.phys.Vec3;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -47,7 +48,7 @@ final class FrenchieRecallGameTests {
                 .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) == null, "Dog never departed"))
                 .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) instanceof FrenchieEntity parked
                                 && parked.isGoingHome() && parked.isOrderedToSit()
-                                && parked.position().distanceToSqr(bed.getBottomCenter()) < 16,
+                                && parked.position().distanceToSqr(Vec3.atBottomCenterOf(bed)) < 16,
                         "Dog did not park beside the owner's bed"))
                 .thenWaitUntil(() -> h.assertTrue(!level.hasChunkAt(bed) && level.getEntity(id) == null,
                         "Waiting dog kept its bed loaded"))
@@ -83,7 +84,7 @@ final class FrenchieRecallGameTests {
             owner.snapTo(dog.position().add(1, 0, -1), 0, 0);
             owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             owner.setShiftKeyDown(true);
-            var hit = new BlockHitResult(bed.west().getCenter(), Direction.UP, bed.west(), false);
+            var hit = new BlockHitResult(Vec3.atCenterOf(bed.west()), Direction.UP, bed.west(), false);
             owner.gameMode.useItemOn(owner, level, owner.getMainHandItem(), InteractionHand.MAIN_HAND, hit);
             h.assertTrue(dog.isGoingHome() && !dog.isDelivering() && !owner.isSleeping(),
                     "Sneak-use on the foot of the owner's bed did not send the unladen Frenchie home");

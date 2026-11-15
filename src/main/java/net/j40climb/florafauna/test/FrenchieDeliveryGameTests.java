@@ -140,18 +140,20 @@ final class FrenchieDeliveryGameTests {
         var recipient = networkedPlayer(h);
         var stranger = networkedPlayer(h);
         var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 3, 16, 2);
-        var expected = prepareDelivery(owner, recipient, dog).copy();
         var id = dog.getUUID();
         var level = h.getLevel();
-        var start = dog.position();
-        // An open lane above the pen gives the departure walk enough room to pathfind.
-        var feet = dog.blockPosition();
-        for (var pos : BlockPos.betweenClosed(feet.offset(-2, -1, -2), feet.offset(2, -1, 14))) {
+        // Keep the owner, both recipients' positions and their landing pads in the same
+        // test-loaded chunk. Adjacent terrain may still be generating in accelerated CI.
+        BlockPos feet = ChunkPos.containing(dog.blockPosition()).getMiddleBlockPosition(dog.getBlockY());
+        for (var pos : BlockPos.betweenClosed(feet.offset(-7, -1, -7), feet.offset(7, -1, 7))) {
             level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
         }
-        // The landings are high above the departure point, with no walkable connection.
-        BlockPos address = dog.blockPosition().above(96).south(12);
-        BlockPos moved = address.south(12);
+        dog.snapTo(feet, 0, 0);
+        var expected = prepareDelivery(owner, recipient, dog).copy();
+        var start = dog.position();
+        // The 96-block height difference requires a timed trip without a walkable connection.
+        BlockPos address = feet.above(96).east(4);
+        BlockPos moved = feet.above(96).west(4);
         platform(h, address);
         platform(h, moved);
         var bark = level.registryAccess().lookupOrThrow(Registries.WOLF_SOUND_VARIANT)
@@ -159,7 +161,7 @@ final class FrenchieDeliveryGameTests {
         var barks = new AtomicInteger();
         Consumer<PlayLevelSoundEvent.AtPosition> onBark = sound -> {
             if (sound.getLevel() == level && bark.equals(sound.getSound())
-                    && sound.getPosition().distanceToSqr(moved.getBottomCenter()) < 36) barks.incrementAndGet();
+                    && sound.getPosition().distanceToSqr(Vec3.atBottomCenterOf(moved)) < 36) barks.incrementAndGet();
         };
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, PlayLevelSoundEvent.AtPosition.class, onBark);
         recipient.snapTo(address, 0, 0);
@@ -348,7 +350,11 @@ final class FrenchieDeliveryGameTests {
         // Keep both the bed and its landing floor in a previously untouched chunk.
         BlockPos bed = ChunkPos.containing(start.east(640)).getMiddleBlockPosition(start.getY() + 12);
         var chunk = ChunkPos.containing(bed);
-        level.getChunkAt(bed);
+        // Entity ticking needs a fully generated two-chunk border. Build that terrain before the
+        // accelerated test starts so background world generation does not consume its tick budget.
+        for (var nearby : ChunkPos.rangeClosed(chunk, 2).toList()) {
+            level.getChunk(nearby.x(), nearby.z());
+        }
         platform(h, bed);
         var bedState = Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST);
         level.setBlock(bed.west(), bedState.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
@@ -367,6 +373,13 @@ final class FrenchieDeliveryGameTests {
                     click(owner, dog);
                     h.assertTrue(owner.getMainHandItem().is(Items.BUNDLE), "Preview took the held bundle");
                     order(owner, dog, "choose home");
+                    owner.setRespawnPosition(null, false);
+                    order(owner, dog, "send home");
+                    h.assertTrue(!dog.hasCompanionJob() && ItemStack.matches(owner.getMainHandItem(), parcel()),
+                            "A bed removed after preview took the held bundle");
+                    owner.setRespawnPosition(new ServerPlayer.RespawnConfig(respawn, false), false);
+                    click(owner, dog);
+                    order(owner, dog, "choose home");
                     order(owner, dog, "send home");
                     h.assertTrue(dog.isDelivering() && owner.getMainHandItem().isEmpty(),
                             "The owner could not confirm an unloaded bed");
@@ -382,7 +395,7 @@ final class FrenchieDeliveryGameTests {
                     owner.snapTo(bed.north(2), 0, 0);
                 })
                 .thenWaitUntil(() -> h.assertTrue(level.getEntity(id) instanceof FrenchieEntity waiting
-                                && waiting.isDelivering() && waiting.position().distanceToSqr(bed.getBottomCenter()) < 36,
+                                && waiting.isDelivering() && waiting.position().distanceToSqr(Vec3.atBottomCenterOf(bed)) < 36,
                         "No waiting courier at the distant bed after the owner's visit"))
                 .thenExecute(() -> {
                     var waiting = (FrenchieEntity) level.getEntity(id);

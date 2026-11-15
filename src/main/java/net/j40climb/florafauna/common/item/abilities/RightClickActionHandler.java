@@ -12,20 +12,13 @@ import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.jetbrains.annotations.Nullable;
@@ -90,40 +83,36 @@ public class RightClickActionHandler {
      * @return true if an action was executed and the event should be canceled
      */
     private static boolean handleRightClick(Player player, InteractionHand hand, @Nullable BlockPos clickedPos, @Nullable BlockHitResult hitResult) {
+        long currentTick = player.level().getGameTime();
         ItemStack stack = player.getItemInHand(hand);
         HammerAction selected = stack.getOrDefault(FloraFaunaRegistry.HAMMER_ACTION, HammerAction.AUTO);
-        if (player.level().isClientSide()) {
-            // Consume an explicit throw locally too, so block use cannot also open a GUI or try an air click.
-            return selected == HammerAction.THROW && stack.has(FloraFaunaRegistry.THROWABLE_ABILITY);
-        }
-        if (!(player instanceof ServerPlayer serverPlayer)) {
-            return false;
-        }
-
-        long currentTick = player.level().getGameTime();
         if (selected == HammerAction.THROW) {
             if (!stack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) return false;
-            ThrowItemPayload.throwItem(serverPlayer, hand);
+            if (player instanceof ServerPlayer serverPlayer) ThrowItemPayload.throwItem(serverPlayer, hand);
             return true;
         }
+
+        //? if <26.3 {
+        if (!(player instanceof ServerPlayer)) return false;
+        //?}
 
         // Priority 1: Try multi-tool modifications if targeting a block
         if (clickedPos != null && hitResult != null) {
             MultiToolAbilityData multiTool = stack.get(FloraFaunaRegistry.MULTI_TOOL_ABILITY);
             if (multiTool != null) {
                 var actions = selected.toolActions(multiTool);
-                if (selected != HammerAction.AUTO && !canModifyTarget(serverPlayer, hand, hitResult, actions)) return false;
-                if (actions.hasAnyEnabled() && tryToolModification(serverPlayer, hand, clickedPos, hitResult, actions)) {
+                if (actions.hasAnyEnabled() && tryToolModification(player, hand, clickedPos, hitResult, actions, selected != HammerAction.AUTO)) {
                     // Track that we did a tool modification this tick
                     // This prevents RightClickItem from also executing the ability
-                    recentToolModifications.put(player.getUUID(), currentTick);
+                    if (player instanceof ServerPlayer) {
+                        recentToolModifications.put(player.getUUID(), currentTick);
+                    }
                     return true;
                 }
             }
         }
 
-        // A selected block action that cannot apply leaves the interaction to vanilla.
-        if (selected != HammerAction.AUTO) return false;
+        if (selected != HammerAction.AUTO || !(player instanceof ServerPlayer serverPlayer)) return false;
 
         // Check if we already did a tool modification this tick
         // (Handles case where RightClickItem fires after RightClickBlock did a tool modification)
@@ -164,15 +153,6 @@ public class RightClickActionHandler {
         return true; // Ability executed, cancel the event
     }
 
-    // Let the player open a chest or use a workbench even if a neighboring block is eligible.
-    private static boolean canModifyTarget(ServerPlayer player, InteractionHand hand, BlockHitResult hit, MultiToolAbilityData actions) {
-        if (!actions.hasAnyEnabled()) return false;
-        var ability = actions.strip() ? ItemAbilities.AXE_STRIP : actions.flatten() ? ItemAbilities.SHOVEL_FLATTEN : ItemAbilities.HOE_TILL;
-        BlockState state = player.level().getBlockState(hit.getBlockPos());
-        var changed = state.getToolModifiedState(new UseOnContext(player, hand, hit), ability, true);
-        return changed != null && changed != state;
-    }
-
     /**
      * Attempts to perform a tool modification (strip/path/till) on blocks based on mining pattern.
      * Uses the same pattern calculation as multi-block mining.
@@ -184,67 +164,28 @@ public class RightClickActionHandler {
      * @param multiTool the multi-tool configuration
      * @return true if any modification was performed
      */
-    private static boolean tryToolModification(ServerPlayer player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool) {
+    private static boolean tryToolModification(Player player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool, boolean requireTarget) {
         // Get blocks based on mining pattern (reuses existing pattern logic)
         var blocksToModify = MultiBlockPatterns.plan(player, player.getItemInHand(hand), pos, hitResult.getDirection()).blocks();
 
+        //? if <26.3 {
+        if (requireTarget && !ToolModification.canModifyTarget(player, hand, hitResult, multiTool)) return false;
+        //?}
+
         // Try to modify each block in the pattern
         boolean anyModified = false;
+        if (requireTarget) {
+            // Explicit actions leave normal block use alone when the target cannot transform.
+            if (!blocksToModify.contains(pos) || !ToolModification.apply(player, hand, pos, hitResult, multiTool)) return false;
+            anyModified = true;
+        }
         for (BlockPos targetPos : blocksToModify) {
-            if (tryModifySingleBlock(player, hand, targetPos, hitResult, multiTool)) {
+            if (requireTarget && targetPos.equals(pos)) continue;
+            if (ToolModification.apply(player, hand, targetPos, hitResult, multiTool)) {
                 anyModified = true;
             }
         }
         return anyModified;
     }
 
-    /**
-     * Attempts to perform a tool modification on a single block.
-     *
-     * @param player the player performing the action
-     * @param hand the hand holding the tool
-     * @param pos the position of the target block
-     * @param originalHit the original block hit result (used for direction)
-     * @param multiTool the multi-tool configuration
-     * @return true if the block was modified
-     */
-    private static boolean tryModifySingleBlock(ServerPlayer player, InteractionHand hand, BlockPos pos, BlockHitResult originalHit, MultiToolAbilityData multiTool) {
-        Level level = player.level();
-        BlockState state = level.getBlockState(pos);
-
-        // Create synthetic hit result for this block position
-        BlockHitResult syntheticHit = new BlockHitResult(
-                Vec3.atCenterOf(pos), originalHit.getDirection(), pos, originalHit.isInside());
-        UseOnContext context = new UseOnContext(player, hand, syntheticHit);
-
-        // Try each enabled tool action in order of priority
-        if (multiTool.strip()) {
-            BlockState modified = state.getToolModifiedState(context, ItemAbilities.AXE_STRIP, false);
-            if (modified != null && modified != state) {
-                level.setBlock(pos, modified, 11);
-                level.playSound(null, pos, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0f, 1.0f);
-                return true;
-            }
-        }
-
-        if (multiTool.flatten()) {
-            BlockState modified = state.getToolModifiedState(context, ItemAbilities.SHOVEL_FLATTEN, false);
-            if (modified != null && modified != state) {
-                level.setBlock(pos, modified, 11);
-                level.playSound(null, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0f, 1.0f);
-                return true;
-            }
-        }
-
-        if (multiTool.till()) {
-            BlockState modified = state.getToolModifiedState(context, ItemAbilities.HOE_TILL, false);
-            if (modified != null && modified != state) {
-                level.setBlock(pos, modified, 11);
-                level.playSound(null, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0f, 1.0f);
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

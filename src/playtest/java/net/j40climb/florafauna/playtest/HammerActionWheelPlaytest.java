@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.playtest;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.common.item.abilities.data.HammerAction;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
@@ -41,7 +42,7 @@ final class HammerActionWheelPlaytest {
             var button = mc.screen.children().stream().filter(Button.class::isInstance).map(Button.class::cast)
                     .filter(b -> b.getMessage().equals(action.label())).findFirst().orElseThrow();
             var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0, button.getY() + button.getHeight() / 2.0,
-                    new MouseButtonInfo(0, 0));
+                    new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
             Playtest.require(mc.screen.mouseClicked(click, false), "Wheel ignored mouse click");
         });
         t.awaitServer("Persist " + action.getSerializedName() + " on the server's Hammer", p -> p.getMainHandItem().get(FloraFaunaRegistry.HAMMER_ACTION) == action);

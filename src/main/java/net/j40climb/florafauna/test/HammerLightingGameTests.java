@@ -25,6 +25,9 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
+//? if >=26.3 {
+/*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+*///?}
 
 import java.util.HashMap;
 import java.util.function.Consumer;

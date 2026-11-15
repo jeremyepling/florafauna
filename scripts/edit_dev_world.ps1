@@ -35,7 +35,7 @@ if ((Test-Path $templateOptions) -and (-not (Test-Path (Join-Path $runDir "optio
 
 Write-Host ""
 Write-Host "Running data generation..."
-./gradlew runData --stacktrace
+./gradlew :26.1-neoforge:runData --stacktrace
 if ($LASTEXITCODE -ne 0) {
     Write-Warning "Data generation failed, but launching client anyway..."
 }
@@ -44,7 +44,7 @@ Write-Host ""
 Write-Host "Launching client..."
 Write-Host ""
 
-./gradlew runClient
+./gradlew :26.1-neoforge:runClient
 
 Write-Host ""
 Write-Host "Done editing? Run: .\scripts\save_dev_world.ps1"

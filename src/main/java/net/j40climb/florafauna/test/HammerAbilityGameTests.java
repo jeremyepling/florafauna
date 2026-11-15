@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -53,7 +54,7 @@ final class HammerAbilityGameTests {
     private static ServerPlayer player(GameTestHelper helper) {
         ServerPlayer player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "hammer-test"));
         player.setGameMode(GameType.SURVIVAL);
-        player.setPos(helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
+        player.setPos(Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1))));
         player.setOnGround(true);
         return player;
     }
@@ -63,7 +64,7 @@ final class HammerAbilityGameTests {
         ItemStack hammer = new ItemStack(FloraFaunaRegistry.HAMMER.get());
         player.setItemInHand(InteractionHand.MAIN_HAND, hammer);
         BlockPos target = helper.absolutePos(new BlockPos(1, 1, 1));
-        var hit = new BlockHitResult(target.getCenter(), Direction.UP, target, false);
+        var hit = new BlockHitResult(Vec3.atCenterOf(target), Direction.UP, target, false);
         hammer.set(FloraFaunaRegistry.MULTI_BLOCK_MINING, new MiningModeData(MiningShape.FLAT_3X3, 1, 64, true));
         for (var mode : HammerAction.values()) {
             hammer.set(FloraFaunaRegistry.HAMMER_ACTION, mode);

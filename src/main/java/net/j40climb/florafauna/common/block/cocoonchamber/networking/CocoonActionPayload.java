@@ -15,9 +15,13 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+//? if >=26.3 {
+/*import net.minecraft.util.Prediction;
+*///?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -55,7 +59,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
             return;
         }
 
-        if (player.distanceToSqr(data.chamberPos.getCenter()) > 64.0
+        if (player.distanceToSqr(Vec3.atCenterOf(data.chamberPos)) > 64.0
                 || !player.level().hasChunkAt(data.chamberPos)
                 || !(player.level().getBlockState(data.chamberPos).getBlock() instanceof CocoonChamberBlock)) {
             return;
@@ -193,7 +197,11 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
             // Add the dormant symbiote item to player inventory
             if (!player.getInventory().add(result.symbioteItem())) {
                 // If inventory is full, drop the item
+                //? if <26.3 {
                 player.drop(result.symbioteItem(), false);
+                //?} else {
+                /*player.drop(result.symbioteItem(), false, Prediction.SERVER_ONLY);
+                *///?}
             }
 
             // Trigger progression hook

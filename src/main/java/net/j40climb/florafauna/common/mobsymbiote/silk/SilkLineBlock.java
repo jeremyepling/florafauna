@@ -34,15 +34,19 @@ public class SilkLineBlock extends Block {
     public static final BooleanProperty LAST = BooleanProperty.create("last");
     private static final VoxelShape X_SHAPE = box(0, 9, 5, 16, 15, 11);
     private static final VoxelShape Z_SHAPE = box(5, 9, 0, 11, 15, 16);
+    //? if <26.3 {
     private static final MapCodec<SilkLineBlock> CODEC = simpleCodec(SilkLineBlock::new);
+    //?}
 
     public SilkLineBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AXIS, Direction.Axis.X).setValue(CUT, false)
                 .setValue(FIRST, false).setValue(LAST, false));
     }
+    //? if <26.3 {
 
     @Override protected MapCodec<? extends Block> codec() { return CODEC; }
+    //?}
 
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(AXIS, CUT, FIRST, LAST);

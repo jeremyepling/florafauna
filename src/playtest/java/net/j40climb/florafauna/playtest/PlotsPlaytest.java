@@ -13,8 +13,15 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+//? if <26.3 {
 import net.minecraft.world.level.block.entity.BlockEntityType;
+//?} else {
+/*import net.minecraft.world.level.block.entity.BlockEntityTypes;
+*///?}
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+//? if >=26.3 {
+/*import net.minecraft.world.level.block.entity.SignTextSlot;
+*///?}
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -99,8 +106,13 @@ final class PlotsPlaytest {
         var level = player.level();
         BlockPos entry = player.blockPosition();
         require(level.getBlockEntity(entry.offset(-2, 0, 1)) instanceof SignBlockEntity sign
+        //? if <26.3 {
                 && sign.getFrontText().getMessage(2, false).getString().equals(plot.id()), "Wrong entrance for " + plot.id());
         var lectern = level.getBlockEntity(entry.south(), BlockEntityType.LECTERN);
+        //?} else {
+        /*&& sign.getText(SignTextSlot.FRONT).getMessages(false).get(2).getString().equals(plot.id()), "Wrong entrance for " + plot.id());
+        var lectern = level.getBlockEntity(entry.south(), BlockEntityTypes.LECTERN);
+        *///?}
         var book = lectern.map(block -> block.getBook().get(DataComponents.WRITTEN_BOOK_CONTENT))
                 .orElseThrow(() -> new AssertionError("Missing field guide for " + plot.id()));
         List<String> pages = switch (plot) {

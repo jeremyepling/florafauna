@@ -60,13 +60,21 @@ public class KeyInputEvents {
                     ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.PRESS));
                 }
             } else if (held.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
+                //? if <26.3 {
                 player.swing(InteractionHand.MAIN_HAND);
+                //?} else {
+                /*player.swing(InteractionHand.MAIN_HAND, held.getAttackAnimation(), false);
+                *///?}
                 ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
             }
         }
         if (holdingThrow && !key.isDown()) {
             holdingThrow = false;
+            //? if <26.3 {
             player.swing(InteractionHand.MAIN_HAND);
+            //?} else {
+            /*player.swing(InteractionHand.MAIN_HAND, held.getAttackAnimation(), false);
+            *///?}
             ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.RELEASE));
         }
     }

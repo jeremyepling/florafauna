@@ -16,7 +16,9 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.Item;
+//? if <26.3 {
 import net.minecraft.world.item.ItemInstance;
+//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.TooltipFlag;
@@ -25,8 +27,10 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.state.BlockState;
+//? if <26.3 {
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
+//?}
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -108,6 +112,7 @@ public class HammerItem extends Item {
         return false;
     }
 
+    //? if <26.3 {
     /**
      * Declares which tool actions this item can perform based on its MULTI_TOOL_ABILITY component.
      * This is required for getToolModifiedState to work properly.
@@ -133,6 +138,8 @@ public class HammerItem extends Item {
         }
         return false;
     }
+
+    //?}
 
     /**
      * Determines if this hammer is the correct tool for mining the given block state.

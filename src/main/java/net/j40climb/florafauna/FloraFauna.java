@@ -28,7 +28,11 @@ public class FloraFauna {
 
     public FloraFauna(IEventBus modEventBus, ModContainer modContainer) {
         // Register configs
+        //? if <26.3 {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC, "florafauna-common.toml");
+        //?} else {
+        /*modContainer.registerConfig(ModConfig.Type.LOCAL, Config.SPEC, "florafauna-common.toml");
+        *///?}
         modEventBus.addListener(this::onConfigLoad);
 
         // Initialize all registrations
@@ -42,6 +46,9 @@ public class FloraFauna {
             ClientSetup.init(modEventBus);
         }
         // Register datagen events on the mod bus
+        //? if >=26.3 {
+        /*modEventBus.addListener(FloraFaunaDataGenerators::gatherRegistries);
+        *///?}
         modEventBus.addListener(FloraFaunaDataGenerators::gatherClientData);
         modEventBus.addListener(FloraFaunaDataGenerators::gatherServerData);
 

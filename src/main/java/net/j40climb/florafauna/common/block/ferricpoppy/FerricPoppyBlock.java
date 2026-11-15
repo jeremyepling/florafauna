@@ -18,8 +18,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * Yields iron nuggets when crafted.
  */
 public class FerricPoppyBlock extends Block {
+    //? if <26.3 {
     public static final MapCodec<FerricPoppyBlock> CODEC = simpleCodec(FerricPoppyBlock::new);
-
+    //?}
     // Shape for a cross-shaped flower (like vanilla flowers)
     private static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0);
 
@@ -27,10 +28,12 @@ public class FerricPoppyBlock extends Block {
         super(properties);
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {

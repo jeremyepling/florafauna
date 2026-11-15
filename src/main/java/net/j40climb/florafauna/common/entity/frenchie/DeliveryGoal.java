@@ -95,7 +95,7 @@ final class DeliveryGoal extends Goal {
         nextReminder = 0;
         var level = (ServerLevel) dog.level();
         var destination = target != null ? target.level() : level.getServer().getLevel(bed.dimension());
-        var end = target != null ? target.position() : bed.pos().getBottomCenter();
+        var end = target != null ? target.position() : Vec3.atBottomCenterOf(bed.pos());
         plannedSeconds = CourierTrips.plannedSeconds(level, dog.position(), destination, end);
         beginDeparture(level);
         dog.standUp();
@@ -179,11 +179,11 @@ final class DeliveryGoal extends Goal {
             sendBack(owner, goingHome ? "home_missing" : "bed_missing");
             return;
         }
-        if (departure == null || dog.position().distanceToSqr(departure.getBottomCenter()) > 24 * 24) {
+        if (departure == null || dog.position().distanceToSqr(Vec3.atBottomCenterOf(departure)) > 24 * 24) {
             beginDeparture(level); // Legacy order or the courier was carried elsewhere.
         }
-        Vec3 end = player != null ? player.position() : home.pos().getBottomCenter();
-        Vec3 start = departure.getBottomCenter();
+        Vec3 end = player != null ? player.position() : Vec3.atBottomCenterOf(home.pos());
+        Vec3 start = Vec3.atBottomCenterOf(departure);
         double scale = DimensionType.getTeleportationScale(destinationLevel.dimensionType(), level.dimensionType());
         Vec3 direction = new Vec3(end.x * scale - start.x, 0, end.z * scale - start.z);
         if (direction.lengthSqr() < 1) direction = dog.getForward().multiply(1, 0, 1);
@@ -229,9 +229,9 @@ final class DeliveryGoal extends Goal {
                 sendBack(owner, goingHome ? "home_missing" : "bed_missing");
                 return;
             }
-            if (bedLevel != level || dog.position().distanceToSqr(home.pos().getBottomCenter()) > 16) {
+            if (bedLevel != level || dog.position().distanceToSqr(Vec3.atBottomCenterOf(home.pos())) > 16) {
                 // A waiting courier can be picked up and released somewhere else.
-                CourierTrips.depart(dog, null, home, false, travelSeconds(level, dog.position(), bedLevel, home.pos().getBottomCenter()));
+                CourierTrips.depart(dog, null, home, false, travelSeconds(level, dog.position(), bedLevel, Vec3.atBottomCenterOf(home.pos())));
                 return;
             }
             if (!isBedHead(level, home.pos())) {

@@ -2,12 +2,25 @@ pluginManagement {
     repositories {
         mavenLocal()
         gradlePluginPortal()
+        maven { url = 'https://maven.kikugie.dev/releases' }
         maven { url = 'https://maven.neoforged.net/releases' }
     }
 }
 
 plugins {
+    id 'dev.kikugie.stonecutter' version '0.9.8'
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'florafauna'
+
+stonecutter {
+    centralScript = 'build.gradle'
+    create(rootProject) {
+        file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }
+                .sort { it.name }.each { version(it.name, it.name.take(it.name.lastIndexOf('-'))) }
+        vcsVersion = '26.1-neoforge'
+    }
 }
 
 // Per-worktree local build cache to prevent cross-tree cache interactions

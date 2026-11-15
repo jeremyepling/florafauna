@@ -40,7 +40,10 @@ import java.util.function.BiConsumer;
  */
 public class MobInputBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<MobInputBlock> CODEC = simpleCodec(MobInputBlock::new);
+    //?}
+
     public static final EnumProperty<MobInputState> STATE = EnumProperty.create("state", MobInputState.class);
 
     public MobInputBlock(Properties properties) {
@@ -48,10 +51,12 @@ public class MobInputBlock extends BaseEntityBlock {
         registerDefaultState(stateDefinition.any().setValue(STATE, MobInputState.IDLE));
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

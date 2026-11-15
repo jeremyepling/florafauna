@@ -39,17 +39,21 @@ import org.jetbrains.annotations.Nullable;
  */
 public class ItemInputBlock extends BaseEntityBlock {
 
+    //? if <26.3 {
     public static final MapCodec<ItemInputBlock> CODEC = simpleCodec(ItemInputBlock::new);
+    //?}
 
     public ItemInputBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(AbstractVacuumBlockEntity.STATE, VacuumState.NORMAL));
     }
 
+    //? if <26.3 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

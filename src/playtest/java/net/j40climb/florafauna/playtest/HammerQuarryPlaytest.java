@@ -21,6 +21,7 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
+import net.minecraft.world.phys.Vec3;
 
 /** Deterministic rock, including an entrance and a chunk boundary. Runs only in the disposable copy. */
 final class HammerQuarryPlaytest {
@@ -72,7 +73,7 @@ final class HammerQuarryPlaytest {
         BlockPos face = face(flight);
         String label = "flight " + (flight + 1);
         t.awaitClient("Aim at the next intact rock face for " + label, mc -> {
-            mc.player.lookAt(EntityAnchorArgument.Anchor.EYES, face.getCenter().add(0, 0, -0.5));
+            mc.player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(face).add(0, 0, -0.5));
             return mc.player.onGround() && mc.hitResult instanceof BlockHitResult hit
                     && hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos().equals(face)
                     && hit.getDirection() == Direction.NORTH && mc.level.getBlockState(face).is(Blocks.STONE);

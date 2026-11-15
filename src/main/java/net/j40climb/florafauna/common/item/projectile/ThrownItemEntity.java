@@ -11,6 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundEvent;
+//? if >=26.3 {
+/*import net.minecraft.util.Prediction;
+*///?}
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -129,10 +132,15 @@ public class ThrownItemEntity extends AbstractArrow {
             if (clientSideReturnTickCount++ == 0) {
                 playSound(SoundEvents.TRIDENT_RETURN, 10.0F, 1.0F);
             }
-            if (distanceTo(owner) < 1.5 && level() instanceof ServerLevel serverLevel) {
+            // Catch a returning projectile anywhere along the owner, including its eye-height destination.
+            if (owner.getBoundingBox().distanceToSqr(position()) < 1.5 * 1.5 && level() instanceof ServerLevel serverLevel) {
                 if (pickup != Pickup.CREATIVE_ONLY) {
                     if (owner instanceof Player player) {
+                        //? if <26.3 {
                         player.getInventory().placeItemBackInInventory(getThrownItem().copy());
+                        //?} else {
+                        /*player.getInventory().placeItemBackInInventory(getThrownItem().copy(), Prediction.SERVER_ONLY);
+                        *///?}
                     } else {
                         spawnAtLocation(serverLevel, getThrownItem());
                     }
