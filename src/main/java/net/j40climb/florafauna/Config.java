@@ -178,11 +178,11 @@ public class Config {
             .defineInRange("panicDurationForLeak", 200, 40, 600);
 
     private static final ModConfigSpec.IntValue EXHAUSTED_COOLDOWN_TICKS = BUILDER
-            .comment("Ticks in EXHAUSTED (cooldown) before returning to CALM")
+            .comment("Ticks of exhaustion after a leak. The same duration without a fear source clears accumulated stress.")
             .defineInRange("exhaustedCooldownTicks", 4500, 200, 12000);
 
     private static final ModConfigSpec.IntValue MAX_LEAKS_BEFORE_OVERSTRESS = BUILDER
-            .comment("Consecutive leaks without CALM reset before OVERSTRESS (explosion)")
+            .comment("Consecutive leak attempts before OVERSTRESS when the mob has not had a full threat-free rest")
             .defineInRange("maxLeaksBeforeOverstress", 3, 1, 10);
 
     // Detection range

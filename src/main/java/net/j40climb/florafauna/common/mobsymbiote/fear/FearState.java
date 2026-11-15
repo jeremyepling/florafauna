@@ -37,7 +37,7 @@ public enum FearState {
 
     /**
      * Failure state - mob explodes (for creepers).
-     * Entry: Multiple consecutive LEAKs without CALM reset.
+     * Entry: Repeated leak attempts without a full threat-free rest.
      * Terminal state.
      */
     OVERSTRESS;
