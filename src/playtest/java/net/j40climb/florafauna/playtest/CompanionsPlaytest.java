@@ -1,5 +1,7 @@
 package net.j40climb.florafauna.playtest;
 
+import net.j40climb.florafauna.common.block.wood.WoodType;
+import net.j40climb.florafauna.debug.DebugOverlay;
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +15,10 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.ModList;
 
 import java.util.Set;
@@ -69,10 +75,32 @@ final class CompanionsPlaytest {
         test.awaitServer("Confirm the mined block, Hammer name and Frenchie owner on the server", p ->
                 p.level().isEmptyBlock(STONE) && TOOL_NAME.equals(p.getMainHandItem().get(DataComponents.CUSTOM_NAME))
                 && p.level().getEntity(DOG) instanceof TamableAnimal dog && dog.isOwnedBy(p));
+        test.client("Inspect the standalone Hammer from the core debug overlay", mc -> {
+            var lines = DebugOverlay.getModDataComponentLines(mc.player.getMainHandItem());
+            for (var prefix : new String[]{"Mining:", "Tool Config:", "Lightning:", "Teleport:", "Throw:", "  return="}) {
+                Playtest.require(lines.stream().anyMatch(line -> line.startsWith(prefix)), "Missing Hammer detail: " + prefix);
+            }
+        });
+        if (phase == 1) {
+            var wood = WoodType.DRIFTWOOD.getBlockSet();
+            checkStripping(test, STONE.west(), wood.log().get().defaultBlockState(), wood.strippedLog().get().defaultBlockState(), Direction.Axis.X);
+            checkStripping(test, STONE.east(), wood.wood().get().defaultBlockState(), wood.strippedWood().get().defaultBlockState(), Direction.Axis.Z);
+        }
         if (phase == 2) {
             test.client("Face the Frenchie with both mods' items equipped", mc ->
                     mc.player.lookAt(Anchor.EYES, mc.level.getEntity(DOG).getEyePosition()));
             test.screenshot("companions-rejoined");
         }
+    }
+
+    private static void checkStripping(Playtest test, BlockPos pos, BlockState input, BlockState stripped, Direction.Axis axis) {
+        var before = input.setValue(RotatedPillarBlock.AXIS, axis);
+        var after = stripped.setValue(RotatedPillarBlock.AXIS, axis);
+        test.server("Place core driftwood along " + axis, p -> p.level().setBlockAndUpdate(pos, before));
+        test.awaitClient("Receive the driftwood fixture", mc -> mc.level.getBlockState(pos).equals(before));
+        test.client("Use the standalone Hammer on core driftwood", mc ->
+                mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND,
+                        new BlockHitResult(Vec3.atCenterOf(pos), Direction.NORTH, pos, false)));
+        test.awaitServer("Preserve the driftwood axis after stripping", p -> p.level().getBlockState(pos).equals(after));
     }
 }
