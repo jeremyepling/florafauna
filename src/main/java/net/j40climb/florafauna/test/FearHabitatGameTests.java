@@ -7,6 +7,7 @@ import net.j40climb.florafauna.common.mobsymbiote.fear.FearState;
 import net.j40climb.florafauna.dev.DevPlot;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
@@ -32,6 +33,8 @@ import static net.j40climb.florafauna.test.FloraFaunaGameTests.registerStructure
 import static net.j40climb.florafauna.test.FloraFaunaGameTests.registerTest;
 
 final class FearHabitatGameTests {
+    private static final BlockPos BLAZE_PEN = new BlockPos(3, 1, 12);
+
     static void register(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
         registerStructureTest(event, env, "fear_habitat_uninterrupted_rest", DevPlot.CREEPER_FEAR.structure(),
                 15000, FearHabitatGameTests::uninterruptedRest);
@@ -41,21 +44,29 @@ final class FearHabitatGameTests {
     }
 
     private static void setColdBlocks(GameTestHelper helper, Block block) {
-        helper.setBlock(new BlockPos(2, 1, 12), block);
-        helper.setBlock(new BlockPos(2, 1, 13), block);
+        helper.setBlock(BLAZE_PEN.west(), block);
+        helper.setBlock(BLAZE_PEN.west().above(), block);
     }
 
     private static void uninterruptedRest(GameTestHelper helper) {
-        var blaze = helper.spawnWithNoFreeWill(EntityType.BLAZE, 3, 1, 12);
+        // Panic adds an avoidance goal even to a fixture spawned without free will.
+        // Keep the blaze in range of the cold wall and sheltered through its entire rest.
+        helper.setBlock(BLAZE_PEN.below(), Blocks.STONE);
+        helper.setBlock(BLAZE_PEN.above(2), Blocks.STONE);
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            helper.setBlock(BLAZE_PEN.relative(side), Blocks.STONE);
+            helper.setBlock(BLAZE_PEN.relative(side).above(), Blocks.STONE);
+        }
+        var blaze = helper.spawnWithNoFreeWill(EntityType.BLAZE, BLAZE_PEN);
         bond(helper, blaze);
         setColdBlocks(helper, Blocks.SNOW_BLOCK);
         int checkInterval = Config.fearCheckIntervalTicks;
         helper.startSequence()
                 .thenWaitUntil(() -> helper.assertTrue(FearHelper.getFearState(blaze) == FearState.EXHAUSTED
                         && FearHelper.getLeakCount(blaze) == 1, "Blaze did not exhaust itself producing its first rods"))
-                .thenExecuteAfter(2 * checkInterval, () -> setColdBlocks(helper, Blocks.AIR))
+                .thenExecuteAfter(2 * checkInterval, () -> setColdBlocks(helper, Blocks.STONE))
                 .thenExecuteAfter(8 * checkInterval, () -> setColdBlocks(helper, Blocks.SNOW_BLOCK))
-                .thenExecuteAfter(2 * checkInterval, () -> setColdBlocks(helper, Blocks.AIR))
+                .thenExecuteAfter(2 * checkInterval, () -> setColdBlocks(helper, Blocks.STONE))
                 .thenExecuteFor(Config.exhaustedCooldownTicks - 2 * checkInterval, () ->
                         helper.assertTrue(FearHelper.getLeakCount(blaze) == 1,
                                 "Brief or interrupted rest cleared stress before a full quiet period"))
@@ -64,7 +75,8 @@ final class FearHabitatGameTests {
                 .thenExecute(() -> setColdBlocks(helper, Blocks.SNOW_BLOCK))
                 .thenWaitUntil(() -> helper.assertTrue(blaze.isAlive() && FearHelper.getLeakCount(blaze) == 1
                         && FearHelper.getFearState(blaze) == FearState.EXHAUSTED,
-                        "Rested blaze did not survive and start a fresh harvest cycle"))
+                        "Rested blaze failed to harvest again: " + FearHelper.getFearData(blaze)
+                                + ", health=" + blaze.getHealth() + ", pos=" + blaze.blockPosition()))
                 .thenSucceed();
     }
 
