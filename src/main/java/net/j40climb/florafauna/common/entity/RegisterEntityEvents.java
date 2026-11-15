@@ -1,7 +1,6 @@
 package net.j40climb.florafauna.common.entity;
 
 import net.j40climb.florafauna.FloraFauna;
-import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -20,7 +19,6 @@ public class RegisterEntityEvents {
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(FloraFaunaRegistry.GECKO.get(), GeckoEntity.createAttributes().build());
         event.put(FloraFaunaRegistry.LIZARD.get(), LizardEntity.createAttributes().build());
-        event.put(FloraFaunaRegistry.FRENCHIE.get(), FrenchieEntity.createAttributes().build());
     }
 
     // Manually create the spawn file since I don't have worldgen. Create file in src/generated/resources/data/florafauna/neoforge/biome_modifier/spawn_gecko.json
