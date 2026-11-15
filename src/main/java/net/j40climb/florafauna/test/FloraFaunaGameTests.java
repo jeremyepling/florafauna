@@ -108,6 +108,7 @@ public class FloraFaunaGameTests {
         registerProgressSignalTests(event, defaultEnv);
         registerChaosSuppressorTests(event, defaultEnv);
         registerDialogueRepositoryTests(event, defaultEnv);
+        registerTest(event, defaultEnv, "resonant_bloom_natural_discovery", ResonantBloomGameTests::naturalDiscovery);
 
         // Register item input system tests
         registerItemBufferTests(event, defaultEnv);

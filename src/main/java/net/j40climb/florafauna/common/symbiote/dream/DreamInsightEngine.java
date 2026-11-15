@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.symbiote.dream;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
+import net.j40climb.florafauna.common.symbiote.onboarding.SymbioteOnboarding;
 import net.j40climb.florafauna.common.symbiote.voice.SymbioteVoiceService;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.server.level.ServerPlayer;
@@ -121,6 +122,23 @@ public class DreamInsightEngine {
      * Deliver the dream message to the player.
      */
     private static void deliverDream(ServerPlayer player, DreamContext context, DreamLevel level) {
+        ProgressSignalTracker progress = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        if (player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA).jumpBoost() == 0) {
+            int jumps = SymbioteOnboarding.jumpCount(progress);
+            int biomes = SymbioteOnboarding.jumpBiomeCount(progress);
+            String key;
+            if (jumps >= SymbioteOnboarding.JUMPS_REQUIRED && biomes < SymbioteOnboarding.BIOMES_REQUIRED) {
+                key = "symbiote.dream.jump.new_biome";
+            } else {
+                key = switch (level) {
+                    case L1_REFLECTIVE -> "symbiote.dream.jump.reflective";
+                    case L2_DIRECTIONAL -> "symbiote.dream.jump.directional";
+                    case L3_ANCHORED -> "symbiote.dream.jump.anchored";
+                };
+            }
+            SymbioteVoiceService.sendDreamMessage(player, key, level.getColor());
+            return;
+        }
         // Try to get a dialogue from the repository
         Optional<String> dialogueKey = SymbioteDialogueRepository.selectDreamDialogue(level);
 

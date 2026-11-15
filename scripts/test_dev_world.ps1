@@ -3,7 +3,7 @@
 [CmdletBinding(DefaultParameterSetName = 'Selected')]
 param(
     [Parameter(ParameterSetName = 'Selected', Position = 0)]
-    [ValidateSet('companions', 'recovery', 'pods', 'transport', 'slime', 'spider', 'plots', 'barrier')]
+    [ValidateSet('companions', 'recovery', 'pods', 'transport', 'slime', 'spider', 'plots', 'barrier', 'onboarding')]
     [string[]]$Scenario,
     [Parameter(ParameterSetName = 'Full')]
     [switch]$All,
@@ -19,7 +19,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 if ($All) {
-    $Scenario = @('recovery', 'pods', 'transport', 'slime', 'spider', 'plots', 'barrier')
+    $Scenario = @('recovery', 'pods', 'transport', 'slime', 'spider', 'plots', 'barrier', 'onboarding')
 } elseif (!$Scenario) {
     throw 'Choose a client scenario, e.g. -Scenario recovery, or use -All for the full gameplay suite.'
 }
@@ -91,7 +91,7 @@ try {
     $failed = @()
     foreach ($name in $Scenario) {
         $gameDir = Join-Path $runRoot $name
-        $phases = if ($name -in 'spider', 'barrier') { @(1) } else { @(1, 2) }
+        $phases = if ($name -in 'spider', 'barrier', 'onboarding') { @(1) } else { @(1, 2) }
         foreach ($phase in $phases) {
             Write-Host "Launching $name phase $phase ..."
             $log = Join-Path $gameDir "phase-$phase.log"

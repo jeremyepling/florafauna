@@ -6,6 +6,8 @@ import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonProgressionHooks;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.binding.SymbioteBindingHelper;
+import net.j40climb.florafauna.common.symbiote.dream.DreamInsightEngine;
+import net.j40climb.florafauna.common.symbiote.onboarding.SymbioteOnboarding;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -34,7 +36,8 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         SET_SPAWN,
         CLEAR_SPAWN,
         BIND,
-        UNBIND
+        UNBIND,
+        DREAM
     }
 
     public static final Type<CocoonActionPayload> TYPE = new Type<>(
@@ -70,6 +73,7 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
             case CLEAR_SPAWN -> handleClearSpawn(player);
             case BIND -> handleBind(player, data.chamberPos);
             case UNBIND -> handleUnbind(player);
+            case DREAM -> handleDream(player);
         }
     }
 
@@ -162,7 +166,8 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
 
         // Find dormant symbiote in inventory
         ItemStack symbioteItem = SymbioteBindingHelper.findDormantSymbioteInInventory(player);
-        if (symbioteItem.isEmpty()) {
+        boolean firstBond = symbioteItem.isEmpty() && SymbioteOnboarding.hasBloomContact(player);
+        if (symbioteItem.isEmpty() && !firstBond) {
             player.sendSystemMessage(
                     Component.translatable("symbiote.florafauna.no_dormant_symbiote")
                             .withStyle(style -> style.withColor(0xFF6B6B))
@@ -171,7 +176,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
         }
 
         // Perform binding
-        SymbioteBindingHelper.BindResult result = SymbioteBindingHelper.bindSymbiote(player, symbioteItem);
+        SymbioteBindingHelper.BindResult result = firstBond
+                ? SymbioteBindingHelper.bindBloomSymbiote(player)
+                : SymbioteBindingHelper.bindSymbiote(player, symbioteItem);
 
         if (result.success()) {
             // Clear bindable state - re-fetch data since binding may have modified it
@@ -181,6 +188,9 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
 
             // Trigger progression hook
             CocoonProgressionHooks.onSymbioteBound(player);
+            if (firstBond) {
+                SymbioteOnboarding.onBonded(player);
+            }
         }
 
         // Send feedback
@@ -213,5 +223,11 @@ public record CocoonActionPayload(CocoonAction action, BlockPos chamberPos) impl
                 Component.translatable(result.messageKey())
                         .withStyle(style -> style.withColor(result.success() ? 0x9B59B6 : 0xFF6B6B))
         );
+    }
+
+    private static void handleDream(ServerPlayer player) {
+        if (!DreamInsightEngine.processDream(player)) {
+            player.sendSystemMessage(Component.translatable("symbiote.florafauna.not_bonded"));
+        }
     }
 }

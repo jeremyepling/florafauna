@@ -13,6 +13,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
 import net.j40climb.florafauna.common.block.ferricpoppy.FerricPoppyBlock;
+import net.j40climb.florafauna.common.block.resonantbloom.ResonantBloomBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
@@ -250,6 +251,15 @@ public class FloraFaunaRegistry {
                     .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
             ));
 
+    public static final DeferredBlock<ResonantBloomBlock> RESONANT_BLOOM = registerBlock("resonant_bloom",
+            props -> new ResonantBloomBlock(props
+                    .noCollision()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY)
+            ));
+
     // Separate item registration for ferric poppy (for use in goals)
     public static final DeferredItem<Item> FERRIC_POPPY_ITEM = ITEMS.registerItem("ferric_poppy_item",
             Item::new);
@@ -287,6 +297,8 @@ public class FloraFaunaRegistry {
                             .hasConsumeParticles(true)
                             .build()
             )));
+
+    public static final DeferredItem<Item> SYMBIOTIC_POLLEN = ITEMS.registerItem("symbiotic_pollen", Item::new);
 
     public static final DeferredItem<Item> MOB_SYMBIOTE = ITEMS.registerItem("mob_symbiote",
             MobSymbioteItem::new);

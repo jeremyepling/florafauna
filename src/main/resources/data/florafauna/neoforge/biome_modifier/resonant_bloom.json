@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": ["minecraft:plains", "minecraft:forest", "minecraft:river"],
+  "features": "florafauna:resonant_bloom",
+  "step": "vegetal_decoration"
+}

@@ -75,6 +75,18 @@ public final class SymbioteBindingHelper {
         return new BindResult(true, "symbiote.florafauna.bonded_success");
     }
 
+    /** Bind the organism carried since the bloom encounter, without a dormant item. */
+    public static BindResult bindBloomSymbiote(ServerPlayer player) {
+        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        if (currentData.symbioteState().isBonded()) {
+            return new BindResult(false, "symbiote.florafauna.already_bonded");
+        }
+        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA,
+                currentData.withSymbioteFromItem(SymbioteData.DEFAULT, player.level().getGameTime()));
+        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        return new BindResult(true, "symbiote.florafauna.bonded_success");
+    }
+
     /**
      * Unbinds the symbiote from the player and creates a dormant symbiote item.
      * The symbiote's memories (progress) are preserved in the item.

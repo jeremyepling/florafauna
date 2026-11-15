@@ -74,6 +74,7 @@ public final class Playtest {
             case "slime" -> SlimeGratePlaytest.steps(this, phase);
             case "spider" -> SpiderSilkPlaytest.steps(this, phase);
             case "transport" -> MobTransportPlaytest.steps(this, phase);
+            case "onboarding" -> OnboardingPlaytest.steps(this, phase);
             default -> throw new IllegalArgumentException("Unknown playtest " + scenario);
         }
         deadline = System.nanoTime() + Duration.ofSeconds(90).toNanos();

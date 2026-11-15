@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "florafauna:block/resonant_bloom"
+  }
+}

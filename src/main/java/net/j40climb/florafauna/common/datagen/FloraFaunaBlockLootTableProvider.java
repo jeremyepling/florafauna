@@ -56,6 +56,7 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         // Iron Garden System blocks
         // Ferric Poppy drops the ferric poppy item (for crafting into nuggets)
         dropOther(FloraFaunaRegistry.FERRIC_POPPY.get(), FloraFaunaRegistry.FERRIC_POPPY_ITEM.get());
+        dropOther(FloraFaunaRegistry.RESONANT_BLOOM.get(), FloraFaunaRegistry.SYMBIOTIC_POLLEN.get());
 
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (WoodType woodType : WoodType.values()) {

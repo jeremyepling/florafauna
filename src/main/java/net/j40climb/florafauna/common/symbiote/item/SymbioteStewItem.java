@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.symbiote.item;
 
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonProgressionHooks;
+import net.j40climb.florafauna.common.symbiote.onboarding.SymbioteOnboarding;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+//? if >=26.3 {
+/*import net.minecraft.util.Prediction;
+*///?}
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -79,6 +84,7 @@ public class SymbioteStewItem extends Item {
 
             // Trigger progression hook
             CocoonProgressionHooks.onSymbioteStewConsumed((ServerPlayer) player);
+            SymbioteOnboarding.onStewConsumed((ServerPlayer) player);
 
             // Display feedback
             player.sendSystemMessage(
@@ -88,6 +94,17 @@ public class SymbioteStewItem extends Item {
 
             // Consume the item
             itemStack.shrink(1);
+            ItemStack bowl = new ItemStack(Items.BOWL);
+            if (itemStack.isEmpty()) {
+                return bowl;
+            }
+            if (!player.getInventory().add(bowl)) {
+                //? if <26.3 {
+                player.drop(bowl, false);
+                //?} else {
+                /*player.drop(bowl, false, Prediction.SERVER_ONLY);
+                *///?}
+            }
         }
 
         return itemStack;
