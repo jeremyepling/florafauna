@@ -75,14 +75,14 @@ final class WalkthroughGameTests {
 
     private static void checkBarrierPens(GameTestHelper helper) {
         var cow = helper.spawnWithNoFreeWill(EntityType.COW, 2, 1, 5);
-        var frenchie = helper.spawnWithNoFreeWill(FloraFaunaRegistry.FRENCHIE.get(), 3, 1, 5);
+        var gecko = helper.spawnWithNoFreeWill(FloraFaunaRegistry.GECKO.get(), 3, 1, 5);
         var golem = helper.spawnWithNoFreeWill(EntityType.COPPER_GOLEM, 10, 1, 5);
         var west = helper.absolutePos(new BlockPos(1, 1, 5));
         var east = helper.absolutePos(new BlockPos(9, 1, 5));
         var level = helper.getLevel();
         var wall = level.getBlockState(west);
-        helper.assertTrue(!wall.getCollisionShape(level, west, CollisionContext.of(frenchie)).isEmpty(), "Frenchie crossed its wall");
-        helper.assertTrue(wall.getCollisionShape(level, west, CollisionContext.of(cow)).isEmpty(), "Frenchie wall blocked the cow");
+        helper.assertTrue(!wall.getCollisionShape(level, west, CollisionContext.of(gecko)).isEmpty(), "Gecko crossed its wall");
+        helper.assertTrue(wall.getCollisionShape(level, west, CollisionContext.of(cow)).isEmpty(), "Gecko wall blocked the cow");
         wall = level.getBlockState(east);
         helper.assertTrue(!wall.getCollisionShape(level, east, CollisionContext.of(cow)).isEmpty(), "Tag failed to block the cow");
         helper.assertTrue(!wall.getCollisionShape(level, east, CollisionContext.of(golem)).isEmpty(), "ID failed to block the copper golem");

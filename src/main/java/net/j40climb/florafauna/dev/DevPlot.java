@@ -9,7 +9,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
+import net.neoforged.fml.ModList;
+
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -38,6 +42,14 @@ public enum DevPlot {
                 throw new IllegalStateException("Invalid or duplicate plot slot " + plot.slot);
             }
         }
+    }
+
+    public static List<DevPlot> available() {
+        return Arrays.stream(values()).filter(plot -> switch (plot) {
+            case FRENCHIE -> ModList.get().isLoaded("florafauna_frenchies");
+            case HAMMER, TOOL_ACTIONS -> ModList.get().isLoaded("florafauna_hammer");
+            default -> true;
+        }).toList();
     }
 
     public String id() { return id; }
