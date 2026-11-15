@@ -40,7 +40,9 @@ For a shorter iteration, `:26.1-neoforge:check` compiles client playtests and ru
 
 FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. Each companion repository uses `main` for 26.1 and `26.3` for 26.3. [Hammer source and tests](https://github.com/jeremyepling/hammer) · [Frenchies source and tests](https://github.com/jeremyepling/frenchies)
 
-From the FloraFauna checkout, clone the companions you want into sibling directories. For 26.3, add the matching branch as a sibling worktree so the 26.1 sources remain available.
+In a grouped workspace, use `florafauna/main`, `hammer/main` and `frenchies/main` for the stable checkouts. Place the 26.3 companion worktrees in `hammer/26.3` and `frenchies/26.3`. Both the core checkout and named checkouts under `florafauna/worktrees/<feature>` discover the matching companions.
+
+For a flat workspace, clone the companions into sibling directories. For 26.3, add the matching branch as a sibling worktree so the 26.1 sources remain available.
 
 ```powershell
 git clone https://github.com/jeremyepling/hammer.git ../hammer

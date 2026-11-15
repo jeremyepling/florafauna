@@ -43,11 +43,19 @@ if (unknown || selected.size() != selected.unique(false).size()) {
 def available = file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }*.name
 def requestedProjects = gradle.startParameter.taskNames.collectMany { it.tokenize(':') }.intersect(available)
 def targets = (requestedProjects ?: available).unique().collect { it.take(it.lastIndexOf('-')) }
+// A grouped workspace uses <mod>/main and <mod>/worktrees/<feature>.
+def modHome = rootDir.parentFile.name == 'worktrees' ? rootDir.parentFile.parentFile : rootDir.parentFile
 targets.each { mcVersion ->
     selected.each { companion ->
         def checkoutNames = ["${companion}-${mcVersion}", "florafauna-${companion}-${mcVersion}",
                              companion, "florafauna-${companion}"]
-        def sibling = checkoutNames.collect { file("../${it}") }.find { it.isDirectory() } ?: file("../${companion}")
+        def candidates = []
+        if (modHome.name == 'florafauna') {
+            def versionDir = mcVersion == '26.1' ? 'main' : mcVersion
+            candidates << new File(modHome.parentFile, "${companion}/${versionDir}")
+        }
+        candidates.addAll(checkoutNames.collect { file("../${it}") })
+        def sibling = candidates.find { it.isDirectory() } ?: file("../${companion}")
         def dir = file(providers.gradleProperty("${companion}Dir").orElse(sibling.path).get())
         def metadata = new File(dir, 'gradle.properties')
         if (!metadata.isFile()) {
