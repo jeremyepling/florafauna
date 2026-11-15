@@ -1,12 +1,12 @@
 #Requires -Version 7.0
 # Two offline development clients connect only to a disposable loopback server.
-param([switch]$Offline)
+param([switch]$Offline, [ValidateSet('husk', 'delivery')][string]$Scenario = 'husk')
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $checkout = Split-Path $PSScriptRoot -Parent
 $runId = [guid]::NewGuid().ToString('N')
-$root = Join-Path $checkout ".tmp/husk-multiplayer/$runId"
+$root = Join-Path $checkout ".tmp/$Scenario-multiplayer/$runId"
 $roles = 'Server', 'Owner', 'Visitor'
 foreach ($role in $roles) {
     [IO.Directory]::CreateDirectory((Join-Path $root $role)) | Out-Null
@@ -35,7 +35,7 @@ try {
     if ($Offline) { $options += '--offline' }
     & .\gradlew.bat @options runData *> (Join-Path $root 'datagen.log')
     if ($LASTEXITCODE -ne 0) { throw "Data generation failed. See $root/datagen.log" }
-    & .\gradlew.bat @options "-PhuskTestId=$runId" "-PhuskTestPort=$port" playtestClasses `
+    & .\gradlew.bat @options "-PhuskTestId=$runId" "-PhuskTestPort=$port" "-PmultiplayerScenario=$Scenario" playtestClasses `
         createHuskServerLaunchScript createHuskOwnerLaunchScript createHuskVisitorLaunchScript *> (Join-Path $root 'prepare.log')
     if ($LASTEXITCODE -ne 0) { throw "Could not prepare the multiplayer launchers. See $root/prepare.log" }
 
@@ -52,8 +52,9 @@ try {
         $script.Replace((Join-Path $checkout 'build\moddev'), $launchDir) | Set-Content -LiteralPath (Join-Path $launchDir $scriptName)
     }
 
-    foreach ($phase in 1, 2) {
-        Write-Host "Launching dedicated recovery phase $phase"
+    $phases = if ($Scenario -eq 'delivery') { @(1) } else { @(1, 2) }
+    foreach ($phase in $phases) {
+        Write-Host "Launching dedicated $Scenario phase $phase"
         Set-Content -LiteralPath (Join-Path $root 'phase') -Value $phase
         $processes = @()
         $deadline = [DateTime]::UtcNow.AddMinutes(4)

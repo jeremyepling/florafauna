@@ -46,11 +46,15 @@ public record FrontpackData(
         return hasCarriedFrenchie ? FrenchieVariant.byId(frenchieNBT.getIntOr("Variant", 0)) : null;
     }
 
-    // Keep the original packet layout. Tracking clients need the coat, not the saved entity.
+    // Only send the job's presence. The parcel, its address and the death location stay on the server.
     private CompoundTag appearanceTag() {
         CompoundTag appearance = new CompoundTag();
         if (hasCarriedFrenchie) {
             appearance.putInt("Variant", frenchieNBT.getIntOr("Variant", 0));
+            var name = frenchieNBT.get("CustomName");
+            if (name != null) appearance.put("CustomName", name.copy());
+            if (frenchieNBT.contains("FrenchieParcel")) appearance.putBoolean("FrenchieParcel", true);
+            if (frenchieNBT.contains("FrenchieDeathTrail")) appearance.putBoolean("FrenchieDeathTrail", true);
         }
         return appearance;
     }

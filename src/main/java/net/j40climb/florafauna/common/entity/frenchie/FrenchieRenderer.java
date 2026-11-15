@@ -7,9 +7,11 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Pose;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -30,6 +32,12 @@ public class FrenchieRenderer extends MobRenderer<FrenchieEntity, FrenchieRender
 
     public FrenchieRenderer(EntityRendererProvider.Context context) {
         super(context, new FrenchieModel(context.bakeLayer(FrenchieModel.FRENCHIE)), 0.4f); //last parameter is the size of the shadow
+    }
+
+    @Override
+    protected @Nullable Component getNameTag(FrenchieEntity dog) {
+        var status = FrenchieStatusIcon.of(dog);
+        return status == null ? super.getNameTag(dog) : status.label(dog.hasCustomName() ? dog.getDisplayName() : null);
     }
 
     @Override

@@ -9,6 +9,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
+import net.j40climb.florafauna.common.entity.frenchie.DeliveryPopupPayload;
+import net.j40climb.florafauna.common.entity.frenchie.DeliveryScreen;
 import net.j40climb.florafauna.debug.DebugOverlay;
 import net.j40climb.florafauna.common.item.projectile.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
@@ -163,6 +165,8 @@ public class ClientSetup {
     }
 
     private static void registerPayloads(RegisterClientPayloadHandlersEvent event) {
+        event.register(DeliveryPopupPayload.TYPE, (data, context) ->
+                Minecraft.getInstance().setScreen(new DeliveryScreen(data)));
         event.register(OpenCocoonScreenPayload.TYPE, (data, context) ->
                 Minecraft.getInstance().setScreen(new CocoonChamberScreen(data.chamberPos())));
     }
