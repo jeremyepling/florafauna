@@ -30,8 +30,13 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
-// Worktree-specific run directory suffix for multi-agent parallel development
+// Only selected local checkouts participate in dev runs and the optional jar collection.
+def companionNames = gradle.includedBuilds*.name.findAll { it in ['dev-hammer', 'dev-frenchies'] }
+        .collect { it.substring(4) }
+
 def wt = rootProject.projectDir.name
+def profile = companionNames ? companionNames.sort().join('-') : 'core'
+def clientDir = file("run/client-${wt}-${profile}")
 def devSave = providers.gradleProperty('devSave').orElse('dev').get()
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull
@@ -101,7 +106,7 @@ neoForge {
         }
         client {
             client()
-            gameDirectory = file("run/client-${wt}")
+            gameDirectory = clientDir
 
             // Set default window size
             programArguments.addAll '--width', '1920', '--height', '1080'
@@ -112,7 +117,10 @@ neoForge {
             //   - World Type: Superflat
             //   - Customize: Tunneler's Dream preset
             // DevWorldSetup.java will handle gamerules on join
-            programArguments.addAll '--quickPlaySingleplayer', devSave
+            if (new File(clientDir, "saves/${devSave}/level.dat").isFile() ||
+                    (devSave == 'dev' && file('dev/world-template/dev/level.dat').isFile())) {
+                programArguments.addAll '--quickPlaySingleplayer', devSave
+            }
 
             // Gametests disabled in client/server - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -120,7 +128,7 @@ neoForge {
 
         server {
             server()
-            gameDirectory = file("run/server-${wt}")
+            gameDirectory = file("run/server-${wt}-${profile}")
             programArgument '--nogui'
             // Gametests disabled - use gameTestServer run config instead
             // systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
@@ -132,11 +140,11 @@ neoForge {
         gameTestServer {
             type = "gameTestServer"
             gameDirectory = file("run/gameTestServer-${wt}")
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'neoforge.enabledGameTestNamespaces', ([project.mod_id] + companionNames.collect { "florafauna_${it}" }).join(',')
             def selector = providers.gradleProperty('gameTestFilter').orNull
             if (selector != null) {
                 if (!(selector ==~ /[a-z0-9_.*?-]+:[a-z0-9_.*?\/-]+/)) {
-                    throw new GradleException('Use a namespaced GameTest ID or wildcard, e.g. florafauna:hammer_tunnel_gaps')
+                    throw new GradleException('Use a namespaced GameTest ID or wildcard, e.g. florafauna:slime_grate_harvest_and_reverse')
                 }
                 programArguments.addAll '--tests', selector
             }
@@ -211,6 +219,9 @@ tasks.named('test') {
 }
 
 dependencies {
+    companionNames.each { companion ->
+        localRuntime("net.j40climb.dev:${companion}:local") { transitive = false }
+    }
     testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -235,6 +246,14 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+}
+
+tasks.register('assembleDevMods', Sync) {
+    group = 'build'
+    description = 'Collect the FloraFauna jar and the selected companion jars for this Minecraft version.'
+    from(tasks.named('jar'))
+    from(configurations.localRuntime)
+    into(layout.buildDirectory.dir("dev-mods/${minecraft_version}"))
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -304,7 +323,7 @@ tasks.named('classes').configure { it.finalizedBy(tasks.named('makeBin')) }
 // Delete run/client-*/options.txt to reset to template defaults
 tasks.register('copyDevOptions') {
     def templateFile = file('dev/options-template.txt')
-    def targetFile = file("run/client-${wt}/options.txt")
+    def targetFile = new File(clientDir, 'options.txt')
 
     onlyIf { templateFile.exists() && !targetFile.exists() }
 
@@ -320,7 +339,7 @@ tasks.register('copyDevOptions') {
 // Delete run/client-*/saves/dev to reset to template defaults
 tasks.register('copyDevWorld', Copy) {
     def templateDir = file('dev/world-template/dev')
-    def targetDir = file("run/client-${wt}/saves/dev")
+    def targetDir = new File(clientDir, 'saves/dev')
 
     from templateDir
     into targetDir

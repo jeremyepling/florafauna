@@ -33,7 +33,7 @@ if ($branch -ne "main" -and -not $Force) {
 }
 
 $wtName = Split-Path $repoRoot -Leaf
-$srcWorld = Join-Path $repoRoot "run\client-$wtName\saves\dev"
+$srcWorld = Join-Path $repoRoot "run\client-$wtName-core\saves\dev"
 $dstWorld = Join-Path $mainRepo "dev\world-template\dev"
 
 if (-not (Test-Path $srcWorld)) {
