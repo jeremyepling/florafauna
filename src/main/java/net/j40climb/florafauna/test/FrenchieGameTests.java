@@ -1,5 +1,6 @@
 package net.j40climb.florafauna.test;
 
+import net.minecraft.world.phys.Vec3;
 import io.netty.buffer.Unpooled;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieVariant;
@@ -19,7 +20,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueInput;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.UUID;
@@ -97,6 +97,10 @@ final class FrenchieGameTests {
         var saved = new CompoundTag();
         saved.putInt("Variant", FrenchieVariant.BRINDLE.getId());
         saved.putString("ServerOnly", "test data");
+        var parcel = new CompoundTag();
+        parcel.putString("secret_contents", "private");
+        saved.put("FrenchieParcel", parcel);
+        saved.putString("CustomName", "Pip");
         var full = new FrontpackData(true, saved, 123);
         var bytes = Unpooled.buffer();
         try {
@@ -104,6 +108,10 @@ final class FrenchieGameTests {
             var visual = FrontpackData.STREAM_CODEC.decode(bytes);
             helper.assertTrue(visual.carriedCoat() == FrenchieVariant.BRINDLE && visual.pickupTimestamp() == 123
                     && !visual.frenchieNBT().contains("ServerOnly"), "Tracking clients should receive the coat without the saved entity data");
+            helper.assertTrue(visual.frenchieNBT().getBooleanOr("FrenchieParcel", false)
+                    && visual.frenchieNBT().getCompound("FrenchieParcel").isEmpty()
+                    && "Pip".equals(visual.frenchieNBT().getStringOr("CustomName", "")),
+                    "The carried label needs the dog's name and job without its cargo");
             helper.assertTrue(full.frenchieNBT().contains("ServerOnly"), "Visual sync changed the stored dog");
         } finally {
             bytes.release();

@@ -139,7 +139,28 @@ public class FloraFaunaGameTests {
         // Register mob transport tests
         registerMobTransportTests(event, defaultEnv);
         MobTransportReleaseGameTests.register(event, defaultEnv);
+        registerTest(event, defaultEnv, "frenchie_warning_sight", FrenchieAwarenessGameTests::warningSight);
+        registerTest(event, defaultEnv, "frenchie_bedtime", FrenchieAwarenessGameTests::bedtime);
         registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
+        registerTest(event, defaultEnv, "frenchie_death_trail", FrenchieTrackingGameTests::trackDeath);
+        registerTest(event, defaultEnv, "frenchie_delivery_creative_parcel", FrenchieDeliveryGameTests::creativeParcel);
+        registerTest(event, defaultEnv, "frenchie_compass_orders", FrenchieDeliveryGameTests::compassOrders);
+        registerStructureTest(event, defaultEnv, "frenchie_home_recall",
+                DevPlot.FRENCHIE.structure(), 3000, FrenchieRecallGameTests::recallParkedDog);
+        registerTest(event, defaultEnv, "frenchie_home_bed_interaction", FrenchieRecallGameTests::sendUsingBed);
+        registerTest(event, defaultEnv, "frenchie_delivery_packed_cancel", FrenchieDeliveryGameTests::packAndCancel);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_full",
+                DevPlot.FRENCHIE.structure(), 900, FrenchieDeliveryGameTests::fullRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect",
+                DevPlot.FRENCHIE.structure(), 500, FrenchieDeliveryGameTests::disconnectedRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_cross_dimension",
+                DevPlot.FRENCHIE.structure(), 2400, FrenchieDeliveryGameTests::crossDimension);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_blocked_departure",
+                DevPlot.FRENCHIE.structure(), 650, FrenchieDeliveryGameTests::blockedDeparture);
+        registerTest(event, defaultEnv, "frenchie_delivery_legacy_bed_pickup", FrenchieDeliveryGameTests::legacyBedPickup);
+        registerTest(event, defaultEnv, "frenchie_delivery_respawn_preview", FrenchieBedPreviewGameTest::respawnPreview);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_unloaded_bed",
+                DevPlot.FRENCHIE.structure(), 4000, FrenchieDeliveryGameTests::unloadedHomeBed);
         registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
         registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 

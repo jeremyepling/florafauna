@@ -4,9 +4,11 @@ import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.InBedChatScreen;
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,8 +19,13 @@ import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Set;
 
@@ -104,6 +111,56 @@ final class FrenchiePlaytest {
         });
         t.awaitClient("Wait for the water wake-up to reach the client", mc ->
                 mc.level.getEntity(id[0]) instanceof FrenchieEntity dog && !dog.isFrenchieSleeping());
+
+        testBedtime(t, id);
+    }
+
+    private static void testBedtime(Playtest t, int[] id) {
+        BlockPos bed = new BlockPos(0, 220, 0);
+        t.server("Place an ordinary bed and clear floor beside it at midnight", p -> {
+            var level = p.level();
+            for (var pos : BlockPos.betweenClosed(bed.offset(-3, -1, -3), bed.offset(8, -1, 3))) {
+                level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
+            }
+            var state = Blocks.BED.red().defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH);
+            level.setBlock(bed.south(), state.setValue(BedBlock.PART, BedPart.FOOT), Block.UPDATE_CLIENTS);
+            level.setBlock(bed, state.setValue(BedBlock.PART, BedPart.HEAD), Block.UPDATE_CLIENTS);
+            p.teleportTo(level, 4.5, 220, 0.5, Set.of(), -90, 0, true);
+            dog(p, id[0]).snapTo(bed.east(6), 0, 0);
+            setTime(level, ClockTimeMarkers.MIDNIGHT);
+        });
+        t.awaitClient("Find the Frenchie at the bedside test", mc ->
+                mc.level.getEntity(id[0]) instanceof FrenchieEntity dog && mc.player.distanceToSqr(dog) < 9
+                        && dog.blockPosition().equals(bed.east(6)));
+        t.client("Order the dog to sit several blocks from the pillow", mc -> toggleSit(mc, id[0]));
+        t.awaitServer("Confirm sit before using the bed", p -> dog(p, id[0]).isOrderedToSit());
+        t.server("Stand within reach of the bed", p -> p.teleportTo(p.level(), -1.5, 220, 0.5, Set.of(), -90, 20, true));
+        useBed(t, bed);
+        t.awaitClient("See the seated dog reach the pillow and settle", mc ->
+                mc.gui.screen() instanceof InBedChatScreen && mc.level.getEntity(id[0]) instanceof FrenchieEntity dog
+                        && dog.isFrenchieSleeping() && dog.isBedtimeBuddy()
+                        && CompanionIconsPlaytest.shows(mc, dog, "sleep")
+                        && dog.position().distanceToSqr(Vec3.atBottomCenterOf(bed)) <= 2.25);
+        t.client("Leave the bed early", mc -> mc.gui.screen().onClose());
+        t.awaitServer("Early waking restores sitting without granting Well Rested", p ->
+                !p.isSleeping() && dog(p, id[0]).isOrderedToSit() && !dog(p, id[0]).isBedtimeBuddy()
+                        && !p.hasEffect(FloraFaunaRegistry.WELL_RESTED));
+        useBed(t, bed);
+        t.awaitServer("A full sleep earns two minutes of Well Rested", p -> {
+            var rested = p.getEffect(FloraFaunaRegistry.WELL_RESTED);
+            return !p.isSleeping() && rested != null && rested.getDuration() > 2300 && rested.getDuration() <= 2400
+                    && dog(p, id[0]).isOrderedToSit();
+        });
+    }
+
+    private static void useBed(Playtest t, BlockPos bed) {
+        t.awaitClient("Stand awake in reach of the pillow", mc ->
+                mc.gui.screen() == null && !mc.player.isSleeping() && mc.player.position().distanceToSqr(Vec3.atCenterOf(bed)) < 12);
+        t.client("Right-click the bed", mc -> {
+            Vec3 point = Vec3.atBottomCenterOf(bed).add(0, 0.55, 0);
+            mc.player.lookAt(Anchor.EYES, point);
+            mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(point, Direction.UP, bed, false));
+        });
     }
 
     private static FrenchieEntity dog(ServerPlayer p, int id) {
