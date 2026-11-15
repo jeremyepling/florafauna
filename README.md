@@ -38,15 +38,15 @@ For a shorter iteration, `:26.1-neoforge:check` compiles client playtests and ru
 
 ### Play with the Hammer and Frenchies
 
-FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. Each companion repository uses `main` for 26.1 and `26.3` for 26.3. [Hammer source and tests](https://github.com/jeremyepling/florafauna-hammer) · [Frenchies source and tests](https://github.com/jeremyepling/florafauna-frenchies)
+FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. Each companion repository uses `main` for 26.1 and `26.3` for 26.3. [Hammer source and tests](https://github.com/jeremyepling/hammer) · [Frenchies source and tests](https://github.com/jeremyepling/frenchies)
 
 From the FloraFauna checkout, clone the companions you want into sibling directories. For 26.3, add the matching branch as a sibling worktree so the 26.1 sources remain available.
 
 ```powershell
-git clone https://github.com/jeremyepling/florafauna-hammer.git ../florafauna-hammer
-git clone https://github.com/jeremyepling/florafauna-frenchies.git ../florafauna-frenchies
-git -C ../florafauna-hammer worktree add --track -b 26.3 ../florafauna-hammer-26.3 origin/26.3
-git -C ../florafauna-frenchies worktree add --track -b 26.3 ../florafauna-frenchies-26.3 origin/26.3
+git clone https://github.com/jeremyepling/hammer.git ../hammer
+git clone https://github.com/jeremyepling/frenchies.git ../frenchies
+git -C ../hammer worktree add --track -b 26.3 ../hammer-26.3 origin/26.3
+git -C ../frenchies worktree add --track -b 26.3 ../frenchies-26.3 origin/26.3
 ```
 
 Select `none` (the default), `hammer`, `frenchies` or `all` with `-PdevMods`. Gradle builds the selected local companions and adds their jars to the run. On a fresh checkout, generate the core data for each target you plan to use.

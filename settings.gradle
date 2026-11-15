@@ -45,8 +45,9 @@ def requestedProjects = gradle.startParameter.taskNames.collectMany { it.tokeniz
 def targets = (requestedProjects ?: available).unique().collect { it.take(it.lastIndexOf('-')) }
 targets.each { mcVersion ->
     selected.each { companion ->
-        def versioned = file("../florafauna-${companion}-${mcVersion}")
-        def sibling = versioned.isDirectory() ? versioned : file("../florafauna-${companion}")
+        def checkoutNames = ["${companion}-${mcVersion}", "florafauna-${companion}-${mcVersion}",
+                             companion, "florafauna-${companion}"]
+        def sibling = checkoutNames.collect { file("../${it}") }.find { it.isDirectory() } ?: file("../${companion}")
         def dir = file(providers.gradleProperty("${companion}Dir").orElse(sibling.path).get())
         def metadata = new File(dir, 'gradle.properties')
         if (!metadata.isFile()) {
