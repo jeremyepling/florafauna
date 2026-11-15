@@ -25,7 +25,7 @@ foreach ($wt in $worktrees) {
     if ($wt -eq $repoRoot) { continue }
 
     $wtName = Split-Path $wt -Leaf
-    $runDir = Join-Path $wt "run\client-$wtName"
+    $runDir = Join-Path $wt "run\client-$wtName-core"
     $wtSaves = Join-Path $runDir "saves"
     $wtDev = Join-Path $wtSaves "dev"
     $wtOptions = Join-Path $runDir "options.txt"

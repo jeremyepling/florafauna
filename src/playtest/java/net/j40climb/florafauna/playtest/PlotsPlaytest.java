@@ -30,26 +30,26 @@ final class PlotsPlaytest {
         if (phase == 1) {
             t.server("Restore installed fixtures in the disposable copy", player -> {
                 var storage = player.level().getServer().getCommandStorage();
-                for (DevPlot plot : DevPlot.values()) {
+                for (DevPlot plot : DevPlot.available()) {
                     if (storage.get(plot.structure()).contains("y")) command(player, "reset " + plot.id());
                 }
             });
             t.server("Build a single plot and mark its entrance floor", player -> {
-                command(player, "build hammer");
-                command(player, "visit hammer");
-                checkGuide(player, DevPlot.HAMMER);
+                command(player, "build transport");
+                command(player, "visit transport");
+                checkGuide(player, DevPlot.TRANSPORT);
                 player.level().setBlockAndUpdate(floorMarker(player), Blocks.GOLD_BLOCK.defaultBlockState());
             });
             t.server("Build the combined layout twice and visit each distinct entrance", player -> {
                 command(player, "build all");
                 command(player, "build all");
                 Set<BlockPos> entries = new HashSet<>();
-                for (DevPlot plot : DevPlot.values()) {
+                for (DevPlot plot : DevPlot.available()) {
                     command(player, "visit " + plot.id());
                     checkGuide(player, plot);
                     require(entries.add(player.blockPosition()), "Duplicate address for " + plot.id());
                 }
-                command(player, "visit hammer");
+                command(player, "visit transport");
                 require(player.level().getBlockState(floorMarker(player)).is(Blocks.GOLD_BLOCK), "Build replaced a manual edit");
             });
             t.server("Pair the relocated long route and reset it to the unpaired fixture", player -> {
@@ -73,17 +73,17 @@ final class PlotsPlaytest {
             command(player, "visit pods");
             BlockPos neighbor = floorMarker(player);
             player.level().setBlockAndUpdate(neighbor, Blocks.LAPIS_BLOCK.defaultBlockState());
-            command(player, "visit hammer");
-            checkGuide(player, DevPlot.HAMMER);
+            command(player, "visit transport");
+            checkGuide(player, DevPlot.TRANSPORT);
             require(player.level().getBlockState(floorMarker(player)).is(Blocks.GOLD_BLOCK), "Lost plot or edit on restart");
-            command(player, "reset hammer");
+            command(player, "reset transport");
             require(player.level().getBlockState(floorMarker(player)).is(Blocks.POLISHED_ANDESITE), "Reset missed the edited block");
             require(player.level().getBlockState(neighbor).is(Blocks.LAPIS_BLOCK), "Reset overwrote the neighboring plot");
             player.level().setBlockAndUpdate(neighbor, Blocks.POLISHED_ANDESITE.defaultBlockState());
         });
-        t.awaitClient("Receive the hammer entrance and its book", mc ->
+        t.awaitClient("Receive the transport entrance and its book", mc ->
                 mc.level.getBlockState(mc.player.blockPosition().south()).getOptionalValue(LecternBlock.HAS_BOOK).orElse(false));
-        t.client("Read the hammer guide", mc -> {
+        t.client("Read the transport guide", mc -> {
             BlockPos book = mc.player.blockPosition().south();
             mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(book), Direction.NORTH, book, false));

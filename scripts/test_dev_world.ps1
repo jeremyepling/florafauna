@@ -3,10 +3,14 @@
 [CmdletBinding(DefaultParameterSetName = 'Selected')]
 param(
     [Parameter(ParameterSetName = 'Selected', Position = 0)]
-    [ValidateSet('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'companions', 'delivery', 'slime', 'spider', 'plots', 'barrier')]
+    [ValidateSet('companions', 'recovery', 'pods', 'transport', 'slime', 'spider', 'plots', 'barrier')]
     [string[]]$Scenario,
     [Parameter(ParameterSetName = 'Full')]
     [switch]$All,
+    [ValidateSet('all', 'none', 'hammer', 'frenchies')]
+    [string]$DevMods,
+    [string]$HammerDir,
+    [string]$FrenchiesDir,
     [string]$SourceWorld,
     [switch]$Offline
 )
@@ -14,13 +18,21 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 if ($All) {
-    $Scenario = @('recovery', 'hammer', 'pods', 'transport', 'frenchie', 'frontpack', 'companions', 'delivery', 'slime', 'spider', 'plots', 'barrier')
+    $Scenario = @('recovery', 'pods', 'transport', 'slime', 'spider', 'plots', 'barrier')
 } elseif (!$Scenario) {
-    throw 'Choose a client scenario, e.g. -Scenario hammer, or use -All for the full gameplay suite.'
+    throw 'Choose a client scenario, e.g. -Scenario recovery, or use -All for the full gameplay suite.'
+}
+if ($Scenario -contains 'companions') {
+    if ($DevMods -and $DevMods -ne 'all') { throw 'The companions scenario exercises all three mods. Use -DevMods all.' }
+    $DevMods = 'all'
 }
 $checkout = Split-Path $PSScriptRoot -Parent
 if (!$SourceWorld) {
-    $SourceWorld = Join-Path $checkout "run/client-$(Split-Path $checkout -Leaf)/saves/dev"
+    $profile = switch ($DevMods) { 'all' { 'frenchies-hammer' } 'hammer' { 'hammer' } 'frenchies' { 'frenchies' } default { 'core' } }
+    $SourceWorld = Join-Path $checkout "run/client-$(Split-Path $checkout -Leaf)-$profile/saves/dev"
+    if (!(Test-Path -LiteralPath $SourceWorld)) {
+        throw "Create a dev world in the $profile profile or pass -SourceWorld with a closed save."
+    }
 }
 $world = (Resolve-Path -LiteralPath $SourceWorld).Path
 $level = Join-Path $world 'level.dat'
@@ -36,6 +48,9 @@ if ((Get-Item -LiteralPath $world).Attributes.HasFlag([IO.FileAttributes]::Repar
     throw 'Choose a self-contained save without symbolic links or junctions.'
 }
 $options = @('--console=plain', '--max-workers=4')
+if ($DevMods) { $options += "-PdevMods=$DevMods" }
+if ($HammerDir) { $options += "-PhammerDir=$((Resolve-Path -LiteralPath $HammerDir).Path)" }
+if ($FrenchiesDir) { $options += "-PfrenchiesDir=$((Resolve-Path -LiteralPath $FrenchiesDir).Path)" }
 if ($Offline) { $options += '--offline' }
 $hash = (Get-FileHash -LiteralPath $level).Hash
 Write-Host "Source save: $world"
@@ -70,7 +85,7 @@ try {
     $failed = @()
     foreach ($name in $Scenario) {
         $gameDir = Join-Path $runRoot $name
-        $phases = if ($name -in 'frenchie', 'companions', 'spider', 'barrier') { @(1) } else { @(1, 2) }
+        $phases = if ($name -in 'spider', 'barrier') { @(1) } else { @(1, 2) }
         foreach ($phase in $phases) {
             Write-Host "Launching $name phase $phase ..."
             $log = Join-Path $gameDir "phase-$phase.log"

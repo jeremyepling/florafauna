@@ -3,7 +3,6 @@ package net.j40climb.florafauna.common.datagen;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
-import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockItemTags;
@@ -20,16 +19,6 @@ public class FloraFaunaItemTagsProvider extends ItemTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        // Hammer is a multi-tool - add to all tool tags
-        tag(ItemTags.PICKAXES)
-                .add(FloraFaunaRegistry.HAMMER.key());
-        tag(ItemTags.SHOVELS)
-                .add(FloraFaunaRegistry.HAMMER.key());
-        tag(ItemTags.AXES)
-                .add(FloraFaunaRegistry.HAMMER.key());
-        tag(ItemTags.HOES)
-                .add(FloraFaunaRegistry.HAMMER.key());
-
         // Wood block items - add to appropriate tags
         for (WoodType woodType : WoodType.values()) {
             WoodBlockSet wood = woodType.getBlockSet();
