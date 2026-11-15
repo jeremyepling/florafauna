@@ -91,6 +91,8 @@ public class FloraFaunaGameTests {
         modEventBus.addListener(FloraFaunaGameTests::registerTests);
     }
 
+    // Empty 6 x 4 x 5 room. Keep each test's blocks and entities inside the loaded structure.
+    static final Identifier SMALL_TEST_ROOM = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
     private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
 
     private static void registerTests(RegisterGameTestsEvent event) {
@@ -118,6 +120,7 @@ public class FloraFaunaGameTests {
         // Register mining mode tests
         registerMiningModeTests(event, defaultEnv);
         HammerAbilityGameTests.register(event, defaultEnv);
+        ChargedHammerGameTests.register(event, defaultEnv);
         HammerMiningGameTests.register(event, defaultEnv);
 
         // Register containment chamber tests
@@ -125,7 +128,7 @@ public class FloraFaunaGameTests {
 
         // Register mob barrier tests
         registerMobBarrierTests(event, defaultEnv);
-        registerTest(event, defaultEnv, "slime_grate_harvest_and_reverse", SlimeGrateTests::harvestAndReverse);
+        registerStructureTest(event, defaultEnv, "slime_grate_harvest_and_reverse", SMALL_TEST_ROOM, 100, SlimeGrateTests::harvestAndReverse);
 
         // Register mining anchor tests
         registerMiningAnchorTests(event, defaultEnv);
@@ -140,7 +143,28 @@ public class FloraFaunaGameTests {
         // Register mob transport tests
         registerMobTransportTests(event, defaultEnv);
         MobTransportReleaseGameTests.register(event, defaultEnv);
+        registerTest(event, defaultEnv, "frenchie_warning_sight", FrenchieAwarenessGameTests::warningSight);
+        registerTest(event, defaultEnv, "frenchie_bedtime", FrenchieAwarenessGameTests::bedtime);
         registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
+        registerTest(event, defaultEnv, "frenchie_death_trail", FrenchieTrackingGameTests::trackDeath);
+        registerTest(event, defaultEnv, "frenchie_delivery_creative_parcel", FrenchieDeliveryGameTests::creativeParcel);
+        registerTest(event, defaultEnv, "frenchie_compass_orders", FrenchieDeliveryGameTests::compassOrders);
+        registerStructureTest(event, defaultEnv, "frenchie_home_recall",
+                DevPlot.FRENCHIE.structure(), 3000, FrenchieRecallGameTests::recallParkedDog);
+        registerTest(event, defaultEnv, "frenchie_home_bed_interaction", FrenchieRecallGameTests::sendUsingBed);
+        registerTest(event, defaultEnv, "frenchie_delivery_packed_cancel", FrenchieDeliveryGameTests::packAndCancel);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_full",
+                DevPlot.FRENCHIE.structure(), 900, FrenchieDeliveryGameTests::fullRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_recipient_disconnect",
+                DevPlot.FRENCHIE.structure(), 500, FrenchieDeliveryGameTests::disconnectedRecipient);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_cross_dimension",
+                DevPlot.FRENCHIE.structure(), 2400, FrenchieDeliveryGameTests::crossDimension);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_blocked_departure",
+                DevPlot.FRENCHIE.structure(), 650, FrenchieDeliveryGameTests::blockedDeparture);
+        registerTest(event, defaultEnv, "frenchie_delivery_legacy_bed_pickup", FrenchieDeliveryGameTests::legacyBedPickup);
+        registerTest(event, defaultEnv, "frenchie_delivery_respawn_preview", FrenchieBedPreviewGameTest::respawnPreview);
+        registerStructureTest(event, defaultEnv, "frenchie_delivery_unloaded_bed",
+                DevPlot.FRENCHIE.structure(), 4000, FrenchieDeliveryGameTests::unloadedHomeBed);
         registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
         registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 
@@ -152,10 +176,9 @@ public class FloraFaunaGameTests {
 
         // Register structure-based tests
         registerItemInputStructureTests(event, defaultEnv);
-        Identifier silkGarden = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
-        registerStructureTest(event, defaultEnv, "silk_early_shear", silkGarden, 250, SpiderSilkTests::earlyCut);
-        registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", silkGarden, 320, SpiderSilkTests::dispenser);
-        registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", silkGarden, 145, SpiderSilkTests::blocked);
+        registerStructureTest(event, defaultEnv, "silk_early_shear", SMALL_TEST_ROOM, 250, SpiderSilkTests::earlyCut);
+        registerStructureTest(event, defaultEnv, "silk_dispenser_harvest", SMALL_TEST_ROOM, 320, SpiderSilkTests::dispenser);
+        registerStructureTest(event, defaultEnv, "silk_wild_and_blocked", SMALL_TEST_ROOM, 145, SpiderSilkTests::blocked);
         WalkthroughGameTests.register(event, defaultEnv);
     }
 
@@ -1037,14 +1060,17 @@ public class FloraFaunaGameTests {
     private static void testMiningModeCycling(GameTestHelper helper) {
         MiningModeData data = MiningModeData.DEFAULT;
 
-        // Cycle through all shapes: SINGLE → FLAT_3X3 → FLAT_5X5 → FLAT_7X7 → SHAPELESS → TUNNEL_UP → TUNNEL_DOWN
+        // Existing shapes keep their order; new patterns follow the original staircase modes.
         MiningShape[] expectedOrder = {
             MiningShape.FLAT_3X3,
             MiningShape.FLAT_5X5,
             MiningShape.FLAT_7X7,
             MiningShape.SHAPELESS,
             MiningShape.TUNNEL_UP,
-            MiningShape.TUNNEL_DOWN
+            MiningShape.TUNNEL_DOWN,
+            MiningShape.WALKABLE_TUNNEL,
+            MiningShape.LARGE_TUNNEL,
+            MiningShape.BORE
         };
 
         for (MiningShape expected : expectedOrder) {
@@ -1058,22 +1084,22 @@ public class FloraFaunaGameTests {
     }
 
     private static void testMiningModeWrapAround(GameTestHelper helper) {
-        // Start from TUNNEL_DOWN (last shape)
-        MiningModeData data = new MiningModeData(MiningShape.TUNNEL_DOWN, 0, 64, true);
+        // Start from the last configured shape.
+        MiningModeData data = new MiningModeData(MiningShape.BORE, 0, 64, true);
 
         // Next mode should wrap to SINGLE
         data = data.getNextMode();
 
         if (data.shape() != MiningShape.SINGLE) {
-            throw helper.assertionException("After TUNNEL_DOWN should wrap to SINGLE, got: " + data.shape());
+            throw helper.assertionException("After BORE should wrap to SINGLE, got: " + data.shape());
         }
 
         helper.succeed();
     }
 
     private static void testMiningModeRadiusPerShape(GameTestHelper helper) {
-        // Expected radii: SINGLE=0, FLAT_3X3=1, FLAT_5X5=2, FLAT_7X7=3, SHAPELESS=1, TUNNEL_UP=0, TUNNEL_DOWN=0
-        int[] expectedRadii = {0, 1, 2, 3, 1, 0, 0};
+        // Only flat and shapeless mining use a configurable radius.
+        int[] expectedRadii = {0, 1, 2, 3, 1, 0, 0, 0, 0, 0};
         MiningShape[] shapes = MiningShape.values();
 
         for (int i = 0; i < shapes.length; i++) {

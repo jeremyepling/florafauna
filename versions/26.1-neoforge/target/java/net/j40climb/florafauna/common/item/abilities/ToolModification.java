@@ -14,6 +14,14 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.ItemAbilities;
 
 final class ToolModification {
+    static boolean canModifyTarget(Player player, InteractionHand hand, BlockHitResult hit, MultiToolAbilityData actions) {
+        if (!actions.hasAnyEnabled()) return false;
+        var ability = actions.strip() ? ItemAbilities.AXE_STRIP : actions.flatten() ? ItemAbilities.SHOVEL_FLATTEN : ItemAbilities.HOE_TILL;
+        BlockState state = player.level().getBlockState(hit.getBlockPos());
+        var changed = state.getToolModifiedState(new UseOnContext(player, hand, hit), ability, true);
+        return changed != null && changed != state;
+    }
+
     static boolean apply(Player player, InteractionHand hand, BlockPos pos, BlockHitResult originalHit, MultiToolAbilityData multiTool) {
         Level level = player.level();
         BlockState state = level.getBlockState(pos);

@@ -26,7 +26,10 @@ class HammerConfigTest {
             "FLAT_7X7, SHAPELESS, 1",
             "SHAPELESS, TUNNEL_UP, 0",
             "TUNNEL_UP, TUNNEL_DOWN, 0",
-            "TUNNEL_DOWN, SINGLE, 0"
+            "TUNNEL_DOWN, WALKABLE_TUNNEL, 0",
+            "WALKABLE_TUNNEL, LARGE_TUNNEL, 0",
+            "LARGE_TUNNEL, BORE, 0",
+            "BORE, SINGLE, 0"
     })
     void cyclingSetsTheNextShapeAndRadiusAndKeepsCustomRules(MiningShape current, MiningShape next, int radius) {
         var mode = new MiningModeData(current, current.getRadius(), 7, false);

@@ -60,6 +60,7 @@ public final class HammerPlaytest {
     static void steps(Playtest t, int phase) {
         if (phase == 2) {
             HammerQuarryPlaytest.resume(t);
+            ChargedHammerPlaytest.steps(t);
             return;
         }
         if (phase != 1) {
@@ -80,11 +81,7 @@ public final class HammerPlaytest {
         });
         t.awaitClient("Open the tool configuration screen", mc -> mc.screen instanceof ToolConfigScreen);
         t.client("Click the speed control to switch from Efficiency to Instabreak", mc -> {
-            Button button = speedButton(mc, "efficiency");
-            var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
-                    button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
-            Playtest.require(mc.screen.mouseClicked(click, false), "Speed button click was ignored");
-            mc.screen.mouseReleased(click);
+            clickConfigButton(mc, "speed.efficiency");
             mc.screen.onClose();
         });
         t.awaitServer("Receive the speed update on the server", p ->
@@ -94,14 +91,19 @@ public final class HammerPlaytest {
         t.client("Press the menu key again", mc -> KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey()));
         t.awaitClient("Reopen the tool configuration screen", mc -> mc.screen instanceof ToolConfigScreen);
         t.client("Verify the persisted speed label and press Cycle Mining Mode", mc -> {
-            speedButton(mc, "instabreak");
+            configButton(mc, "speed.instabreak");
             mc.screen.onClose();
             KeyMapping.click(ClientSetup.CYCLE_MINING_MODE_KEY.get().getKey());
         });
         t.awaitServer("Select flat 3×3 mining on the server", p ->
                 p.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING).shape() == MiningShape.FLAT_3X3);
 
+        setVeinPreference(t, true);
+        setVeinPreference(t, false);
+        setLighting(t, true);
+        setLighting(t, false);
         interruptSwing(t);
+        HammerPrecisionPlaytest.steps(t, WALL);
         minePlane(t, WALL, Direction.NORTH, "wall");
         minePlane(t, FLOOR, Direction.UP, "floor");
 
@@ -135,7 +137,40 @@ public final class HammerPlaytest {
                 MultiToolAbilityData.DEFAULT, Blocks.DIRT_PATH.defaultBlockState());
         checkTransform(t, "Till dirt when flattening is disabled", Blocks.DIRT.defaultBlockState(),
                 MultiToolAbilityData.DEFAULT.withFlatten(false), Blocks.FARMLAND.defaultBlockState());
+        HammerActionWheelPlaytest.steps(t, WALL);
         HammerQuarryPlaytest.start(t);
+    }
+
+    private static void setVeinPreference(Playtest t, boolean exact) {
+        String current = exact ? "vein.same_ore" : "vein.exact";
+        String next = exact ? "vein.exact" : "vein.same_ore";
+        t.client("Press the menu key to change vein matching", mc -> KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey()));
+        t.awaitClient("Open the vein matching control", mc -> mc.screen instanceof ToolConfigScreen);
+        t.client("Click the vein matching control to select " + next, mc -> {
+            clickConfigButton(mc, current);
+            configButton(mc, next);
+            mc.screen.onClose();
+        });
+        t.awaitServer("Save vein matching " + next + " on the held hammer", p ->
+                p.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).exactVein() == exact);
+        t.awaitClient("Synchronize vein matching " + next + " to the client", mc ->
+                mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).exactVein() == exact);
+    }
+
+    private static void setLighting(Playtest t, boolean enable) {
+        String current = enable ? "lighting.off" : "lighting.on";
+        String next = enable ? "lighting.on" : "lighting.off";
+        t.client("Press the tool menu key to change auto torches", mc -> KeyMapping.click(ClientSetup.HAMMER_CONFIG_KEY.get().getKey()));
+        t.awaitClient("Open the tunnel lighting control", mc -> mc.screen instanceof ToolConfigScreen);
+        t.client("Click the auto torches control to select " + next, mc -> {
+            clickConfigButton(mc, current);
+            configButton(mc, next);
+            mc.screen.onClose();
+        });
+        t.awaitServer("Save auto torches " + next + " on the held Hammer", p ->
+                p.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).tunnelLighting() == enable);
+        t.awaitClient("Sync auto torches " + next + " to the client", mc ->
+                mc.player.getMainHandItem().get(FloraFaunaRegistry.TOOL_CONFIG).tunnelLighting() == enable);
     }
 
     private static void interruptSwing(Playtest t) {
@@ -151,9 +186,15 @@ public final class HammerPlaytest {
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) expected.add(WALL.offset(x, y, 0));
         }
-        t.awaitClient("Render cracks at exactly the nine target positions, then release attack", mc -> {
+        t.awaitClient("Render cracks at all nine target positions, then hold precision", mc -> {
             if (!cracks.equals(expected)) return false;
+            ClientSetup.PRECISION_MINING_KEY.get().setDown(true);
+            return true;
+        });
+        t.awaitClient("Hold precision mid-swing and show the center crack alone", mc -> {
+            if (!cracks.equals(Set.of(WALL))) return false;
             mc.options.keyAttack.setDown(false);
+            ClientSetup.PRECISION_MINING_KEY.get().setDown(false);
             return true;
         });
         t.awaitClient("Clear all cracks when the swing is interrupted", mc -> !mc.gameMode.isDestroying() && cracks.isEmpty());
@@ -204,12 +245,20 @@ public final class HammerPlaytest {
         player.inventoryMenu.broadcastChanges();
     }
 
-    private static Button speedButton(Minecraft mc, String speed) {
-        String expected = Component.translatable("gui.florafauna.tool_config.speed." + speed).getString();
+    private static void clickConfigButton(Minecraft mc, String setting) {
+        Button button = configButton(mc, setting);
+        var click = new MouseButtonEvent(button.getX() + button.getWidth() / 2.0,
+                button.getY() + button.getHeight() / 2.0, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
+        Playtest.require(mc.screen.mouseClicked(click, false), "Button click was ignored: " + setting);
+        mc.screen.mouseReleased(click);
+    }
+
+    private static Button configButton(Minecraft mc, String setting) {
+        String expected = Component.translatable("gui.florafauna.tool_config." + setting).getString();
         return mc.screen.children().stream()
                 .filter(Button.class::isInstance).map(Button.class::cast)
                 .filter(button -> button.getMessage().getString().equals(expected))
-                .findFirst().orElseThrow(() -> new AssertionError("Missing speed button: " + expected));
+                .findFirst().orElseThrow(() -> new AssertionError("Missing config button: " + expected));
     }
 
     private static boolean aimedAt(Minecraft mc, BlockPos center, Direction face) {

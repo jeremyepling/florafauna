@@ -102,5 +102,12 @@ public class FrontpackModel extends EntityModel<AvatarRenderState> {
         // Apply the idle animation (static pose that's always active)
         // Using the KeyframeAnimation.apply() method like in FrenchieModel
         this.idlingAnimation.apply(this.idleAnimationState, renderState.ageInTicks, 1.0F);
+        Float yaw = renderState.getRenderData(FrontpackClientEvents.ALERT_YAW);
+        if (yaw != null) {
+            var head = root.getChild("frenchie").getChild("body").getChild("head");
+            head.yRot += (float) Math.toRadians(yaw);
+            head.getChild("earR").zRot -= 0.2F;
+            head.getChild("earL").zRot += 0.2F;
+        }
     }
 }

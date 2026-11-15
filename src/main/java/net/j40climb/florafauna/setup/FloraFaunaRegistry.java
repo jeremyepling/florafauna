@@ -46,6 +46,8 @@ import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAncho
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
+import net.j40climb.florafauna.common.entity.frenchie.WellRestedEffect;
+import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackWarning;
 import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
@@ -53,6 +55,7 @@ import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
 import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
+import net.j40climb.florafauna.common.item.abilities.data.HammerAction;
 import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.item.hammer.HammerItem;
@@ -67,6 +70,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.core.BlockPos;
@@ -83,6 +87,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.Consumable;
@@ -98,6 +103,8 @@ import net.neoforged.neoforge.registries.*;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import net.j40climb.florafauna.common.item.abilities.networking.ChargedThrowPayload;
 
 import static net.j40climb.florafauna.common.item.hammer.HammerItem.HAMMER_MATERIAL;
 
@@ -116,6 +123,10 @@ public class FloraFaunaRegistry {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, FloraFauna.MOD_ID);
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, FloraFauna.MOD_ID);
+    public static final DeferredRegister<TicketType> TICKET_TYPES =
+            DeferredRegister.create(Registries.TICKET_TYPE, FloraFauna.MOD_ID);
+    public static final Supplier<TicketType> COURIER_STOP = TICKET_TYPES.register("courier_stop",
+            () -> new TicketType(120, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_PERSIST));
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, FloraFauna.MOD_ID);
 
@@ -396,6 +407,8 @@ public class FloraFaunaRegistry {
 
     // ==================== MOB EFFECTS ====================
 
+    public static final Holder<MobEffect> WELL_RESTED = MOB_EFFECTS.register("well_rested", WellRestedEffect::new);
+
     public static final Holder<MobEffect> SYMBIOTE_PREPARED = MOB_EFFECTS.register(
             "symbiote_prepared",
             SymbiotePreparedEffect::new);
@@ -430,6 +443,12 @@ public class FloraFaunaRegistry {
                     builder -> builder.persistent(ProgressSignalTracker.CODEC).networkSynchronized(ProgressSignalTracker.STREAM_CODEC));
 
     // Throwable ability data component
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> HAMMER_CHARGE =
+            DATA_COMPONENTS.registerComponentType("hammer_charge", b -> b.persistent(Codec.intRange(0, HammerItem.MAX_CHARGE))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final Supplier<AttachmentType<ChargedThrowPayload.Hold>> THROW_HOLD = ATTACHMENT_TYPES.register("throw_hold",
+            () -> AttachmentType.builder(() -> new ChargedThrowPayload.Hold(ItemStack.EMPTY, net.minecraft.world.level.Level.OVERWORLD, 0)).build());
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ThrowableAbilityData>> THROWABLE_ABILITY =
             DATA_COMPONENTS.registerComponentType("throwable_ability",
                     builder -> builder.persistent(ThrowableAbilityData.CODEC).networkSynchronized(ThrowableAbilityData.STREAM_CODEC));
@@ -438,6 +457,10 @@ public class FloraFaunaRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<RightClickAction>> RIGHT_CLICK_ACTION =
             DATA_COMPONENTS.registerComponentType("right_click_action",
                     builder -> builder.persistent(RightClickAction.CODEC).networkSynchronized(RightClickAction.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<HammerAction>> HAMMER_ACTION =
+            DATA_COMPONENTS.registerComponentType("hammer_action",
+                    builder -> builder.persistent(HammerAction.CODEC).networkSynchronized(HammerAction.STREAM_CODEC));
 
     // Multi-tool ability data component - enables strip/path/till on right-click
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MultiToolAbilityData>> MULTI_TOOL_ABILITY =
@@ -463,6 +486,10 @@ public class FloraFaunaRegistry {
                             .sync(PlayerSymbioteData.STREAM_CODEC)
                             .copyOnDeath()
                             .build());
+
+    public static final Supplier<AttachmentType<FrontpackWarning>> FRENCHIE_WARNING =
+            ATTACHMENT_TYPES.register("frenchie_warning", () -> AttachmentType.builder(() -> FrontpackWarning.NONE)
+                    .sync(FrontpackWarning.STREAM_CODEC).build());
 
     public static final Supplier<AttachmentType<FrontpackData>> FRENCH_FRONTPACK_DATA =
             ATTACHMENT_TYPES.register("french_frontpack_data", () ->
@@ -515,6 +542,10 @@ public class FloraFaunaRegistry {
     // Only live spiders hanging from silk need this client pose. It resets on world load.
     public static final Supplier<AttachmentType<Boolean>> SILK_HANGING = ATTACHMENT_TYPES.register("silk_hanging",
             () -> AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
+
+    // A held control belongs to this player session and is never saved or copied on death.
+    public static final Supplier<AttachmentType<Boolean>> PRECISION_MINING = ATTACHMENT_TYPES.register("precision_mining",
+            () -> AttachmentType.builder(() -> false).build());
 
     // Fear system attachment (for fear/stress state tracking)
     public static final Supplier<AttachmentType<FearData>> FEAR_DATA =
@@ -573,6 +604,7 @@ public class FloraFaunaRegistry {
         BLOCK_ENTITIES.register(modEventBus);
         MENUS.register(modEventBus);
         MOB_EFFECTS.register(modEventBus);
+        TICKET_TYPES.register(modEventBus);
         ATTACHMENT_TYPES.register(modEventBus);
     }
 }

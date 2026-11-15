@@ -6,6 +6,8 @@ import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
 import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.item.abilities.data.MiningSpeed;
 import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
+import net.j40climb.florafauna.common.item.abilities.multiblock.LavaExposure;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.common.item.abilities.networking.UpdateToolConfigPayload;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
@@ -19,12 +21,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.phys.AABB;
@@ -40,7 +44,9 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 *///?}
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -55,9 +61,64 @@ final class HammerMiningGameTests {
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_ore_drops", MINE, 100, HammerMiningGameTests::oreDrops);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_repeated_excavation", MINE, 100, HammerMiningGameTests::repeat);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_limit_and_connectivity", MINE, 100, HammerMiningGameTests::vein);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_material_pairs", MINE, 100, HammerMiningGameTests::veinMaterialPairs);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_vein_exact_and_boundaries", MINE, 100, HammerMiningGameTests::veinBoundaries);
+        HammerLightingGameTests.register(event, env, MINE);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_tunnel_gaps", MINE, 100, HammerMiningGameTests::gaps);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_lava_exposure", MINE, 100, HammerMiningGameTests::lavaExposure);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_dimension_floor", MINE, 100, HammerMiningGameTests::buildFloor);
+        FloraFaunaGameTests.registerStructureTest(event, env, "hammer_precision_is_per_player", MINE, 100, HammerMiningGameTests::precision);
         FloraFaunaGameTests.registerStructureTest(event, env, "hammer_permission_and_tool_rules", MINE, 100, HammerMiningGameTests::eligibility);
+    }
+
+    private static void lavaExposure(GameTestHelper h) {
+        var player = player(h, MiningShape.BORE);
+        var center = h.absolutePos(new BlockPos(6, 12, 10));
+        fill(player, center.offset(-1, -2, -2), center.offset(9, 2, 2), Blocks.STONE);
+        set(player, center.below(), Blocks.LAVA);
+        set(player, center.east(3).south(), Blocks.LAVA);
+        player.level().setBlock(center.east(5).above(), Blocks.LAVA.defaultBlockState().setValue(LiquidBlock.LEVEL, 3), Block.UPDATE_CLIENTS);
+        set(player, center.east(7), Blocks.LAVA);
+        set(player, center.east(4).north().above(), Blocks.LAVA); // Only touches an edge.
+        set(player, center.east(4).south(), Blocks.WATER);
+        set(player, center.east(), Blocks.AIR);
+        set(player, center.east().above(), Blocks.LAVA);
+        set(player, center.east(2), Blocks.BEDROCK);
+        set(player, center.east(2).north(), Blocks.LAVA);
+
+        var expected = Set.of(new LavaExposure(center, Direction.DOWN), new LavaExposure(center.east(3), Direction.SOUTH),
+                new LavaExposure(center.east(5), Direction.UP), new LavaExposure(center.east(6), Direction.EAST));
+        var plan = MultiBlockPatterns.plan(player, player.getMainHandItem(), center, Direction.WEST);
+        h.assertTrue(Set.copyOf(LavaExposure.find(player.level(), plan)).equals(expected), "Wrong exposed faces along the bore");
+        player.setData(FloraFaunaRegistry.PRECISION_MINING, true);
+        var precise = MultiBlockPatterns.plan(player, player.getMainHandItem(), center, Direction.WEST);
+        h.assertTrue(LavaExposure.find(player.level(), precise).equals(List.of(new LavaExposure(center, Direction.DOWN))),
+                "Precision preview marked lava outside the single block");
+        check(h, center.east(6), Blocks.STONE, "Preview changed the wall");
+        player.setData(FloraFaunaRegistry.PRECISION_MINING, false);
+        swing(player, center, Direction.WEST, Direction.EAST);
+        check(h, center.east(6), Blocks.AIR, "Lava warning blocked the cut");
+        check(h, center.east(7), Blocks.LAVA, "Lava warning consumed lava");
+        h.succeed();
+    }
+
+    private static void precision(GameTestHelper h) {
+        var precise = player(h, MiningShape.TUNNEL_DOWN);
+        var other = player(h, MiningShape.TUNNEL_DOWN);
+        var center = h.absolutePos(new BlockPos(11, 14, 11));
+        var originalMode = precise.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING);
+        precise.setData(FloraFaunaRegistry.PRECISION_MINING, true);
+        fill(precise, center.offset(0, -6, -4), center.above(2), Blocks.STONE);
+        swing(precise, center, Direction.SOUTH, Direction.NORTH);
+        check(h, center, Blocks.AIR, "Precision break");
+        check(h, center.below(2), Blocks.STONE, "Precision placed an unwanted stair");
+        check(h, center.north(), Blocks.STONE, "Precision mined a neighbor");
+        set(precise, center, Blocks.STONE);
+        swing(other, center, Direction.SOUTH, Direction.NORTH);
+        stair(h, center.below(2), Direction.SOUTH);
+        h.assertTrue(originalMode.equals(precise.getMainHandItem().get(FloraFaunaRegistry.MULTI_BLOCK_MINING)),
+                "Temporary precision rewrote the held tool");
+        h.succeed();
     }
 
     private static void allFaces(GameTestHelper h, MiningShape mode) {
@@ -67,9 +128,9 @@ final class HammerMiningGameTests {
         player.setOnGround(true);
         for (Direction face : Direction.values()) {
             for (Direction heading : Direction.Plane.HORIZONTAL) {
-                // Only a vertical hit derives travel from the player. Run all four rotations on the floor.
-                if (face != Direction.UP && heading != Direction.NORTH) continue;
-                fill(player, center.offset(-6, -8, -6), center.offset(6, 9, 6), Blocks.STONE);
+                // Check both player axes on vertical hits. Side hits depend only on the face.
+                if (face.getAxis().isHorizontal() && heading != Direction.NORTH) continue;
+                fill(player, center.offset(-7, -8, -7), center.offset(7, 9, 7), Blocks.STONE);
                 Map<BlockPos, Block> expected = new HashMap<>();
                 Direction stairsFace = Direction.NORTH;
                 switch (mode) {
@@ -93,6 +154,39 @@ final class HammerMiningGameTests {
                             expected.put(ore, Blocks.AIR);
                         }
                     }
+                    case WALKABLE_TUNNEL, LARGE_TUNNEL, BORE -> {
+                        Direction endDirection = face.getOpposite();
+                        int length = mode == MiningShape.BORE ? 7 : 5;
+                        BlockPos end = center.relative(endDirection, length - 1);
+                        BlockPos first = center;
+                        BlockPos last = end;
+                        if (mode == MiningShape.LARGE_TUNNEL) {
+                            // One block of padding along each axis perpendicular to the depth.
+                            int x = face.getAxis() == Direction.Axis.X ? 0 : 1;
+                            int y = face.getAxis() == Direction.Axis.Y ? 0 : 1;
+                            int z = face.getAxis() == Direction.Axis.Z ? 0 : 1;
+                            first = center.offset(-x, -y, -z);
+                            last = end.offset(x, y, z);
+                        } else if (mode == MiningShape.WALKABLE_TUNNEL) {
+                            if (face.getAxis().isHorizontal()) {
+                                last = end.above(2);
+                            } else {
+                                first = center.relative(heading.getOpposite());
+                                last = end.relative(heading);
+                            }
+                        }
+                        for (BlockPos pos : BlockPos.betweenClosed(first, last)) expected.put(pos.immutable(), Blocks.AIR);
+                        h.assertTrue(expected.size() == switch (mode) {
+                            case WALKABLE_TUNNEL -> 15;
+                            case LARGE_TUNNEL -> 45;
+                            default -> 7;
+                        }, "Incorrect test footprint for " + mode);
+                        // Air and denied cells consume depth. Blocks beyond the gaps still break.
+                        set(player, center.relative(endDirection), Blocks.AIR);
+                        BlockPos protectedBlock = center.relative(endDirection, 2);
+                        set(player, protectedBlock, Blocks.BEDROCK);
+                        expected.put(protectedBlock, Blocks.BEDROCK);
+                    }
                     case TUNNEL_UP, TUNNEL_DOWN -> {
                         boolean up = mode == MiningShape.TUNNEL_UP;
                         if (face == Direction.DOWN || (up && face == Direction.UP)) {
@@ -110,7 +204,7 @@ final class HammerMiningGameTests {
                     }
                 }
                 swing(player, center, face, heading);
-                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-6, -8, -6), center.offset(6, 9, 6))) {
+                for (BlockPos pos : BlockPos.betweenClosed(center.offset(-7, -8, -7), center.offset(7, 9, 7))) {
                     Block block = expected.getOrDefault(pos, Blocks.STONE);
                     check(h, pos, block, mode + " " + face + " " + heading);
                     if (block == Blocks.COBBLESTONE_STAIRS) stair(h, pos, stairsFace);
@@ -181,6 +275,85 @@ final class HammerMiningGameTests {
             check(h, tread.above(5), Blocks.STONE, "roof");
             check(h, tread.below(), Blocks.STONE, "floor");
             check(h, tread.north(), Blocks.STONE, "side wall");
+        }
+        h.succeed();
+    }
+
+    private static void veinMaterialPairs(GameTestHelper h) {
+        var player = player(h, MiningShape.SHAPELESS);
+        BlockPos center = h.absolutePos(new BlockPos(5, 12, 5));
+        Map<Block, Block> pairs = Map.of(
+                Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE,
+                Blocks.COPPER_ORE, Blocks.DEEPSLATE_COPPER_ORE,
+                Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE,
+                Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE,
+                Blocks.GOLD_ORE, Blocks.DEEPSLATE_GOLD_ORE,
+                Blocks.IRON_ORE, Blocks.DEEPSLATE_IRON_ORE,
+                Blocks.LAPIS_ORE, Blocks.DEEPSLATE_LAPIS_ORE,
+                Blocks.REDSTONE_ORE, Blocks.DEEPSLATE_REDSTONE_ORE);
+        pairs.forEach((stone, deep) -> {
+            checkMixedVein(h, player, center, stone, deep);
+            checkMixedVein(h, player, center, deep, stone);
+        });
+        h.succeed();
+    }
+
+    private static void checkMixedVein(GameTestHelper h, ServerPlayer player, BlockPos center, Block start, Block variant) {
+        BlockPos neighbor = center.offset(1, 1, 0);
+        BlockPos end = neighbor.offset(1, 1, 1);
+        BlockPos island = end.east(2);
+        Block other = start == Blocks.IRON_ORE || variant == Blocks.IRON_ORE ? Blocks.COPPER_ORE : Blocks.IRON_ORE;
+        set(player, center, start);
+        set(player, neighbor, variant);
+        set(player, end, start);
+        set(player, island, variant);
+        set(player, center.north(), other);
+        set(player, center.south(), Blocks.NETHER_GOLD_ORE);
+
+        var plan = MultiBlockPatterns.plan(player, player.getMainHandItem(), center, Direction.UP);
+        if (!plan.blocks().equals(List.of(center, neighbor, end))) throw h.assertionException("Incorrect mixed vein preview for " + start);
+        swing(player, center, Direction.UP, Direction.NORTH);
+        for (BlockPos pos : plan.blocks()) check(h, pos, Blocks.AIR, "mixed vein swing");
+        check(h, island, variant, "disconnected island");
+        check(h, center.north(), other, "touching different material");
+        check(h, center.south(), Blocks.NETHER_GOLD_ORE, "touching Nether gold");
+    }
+
+    private static void veinBoundaries(GameTestHelper h) {
+        var player = player(h, MiningShape.SHAPELESS);
+        BlockPos center = h.absolutePos(new BlockPos(5, 12, 5));
+        UpdateToolConfigPayload.applyToHeldItem(player, ToolConfig.DEFAULT.withToggledVeinMatching());
+        set(player, center, Blocks.IRON_ORE);
+        set(player, center.west(), Blocks.IRON_ORE);
+        set(player, center.east(), Blocks.DEEPSLATE_IRON_ORE);
+        set(player, center.east(2), Blocks.IRON_ORE);
+        swing(player, center, Direction.UP, Direction.NORTH);
+        check(h, center, Blocks.AIR, "exact center");
+        check(h, center.west(), Blocks.AIR, "exact neighbor");
+        check(h, center.east(), Blocks.DEEPSLATE_IRON_ORE, "exact mode rejects variant");
+        check(h, center.east(2), Blocks.IRON_ORE, "variant cannot bridge exact blocks");
+
+        UpdateToolConfigPayload.applyToHeldItem(player, ToolConfig.DEFAULT);
+        player.getMainHandItem().set(FloraFaunaRegistry.MULTI_BLOCK_MINING, new MiningModeData(MiningShape.SHAPELESS, 1, 2, true));
+        set(player, center, Blocks.IRON_ORE);
+        swing(player, center, Direction.UP, Direction.NORTH);
+        check(h, center, Blocks.AIR, "capped mixed vein center");
+        check(h, center.east(), Blocks.AIR, "variant consumes one slot");
+        check(h, center.east(2), Blocks.IRON_ORE, "mixed vein respects two-block cap");
+
+        configure(player, MiningShape.SHAPELESS);
+        //? if <26.3 {
+        for (var entry : Map.of(Blocks.NETHER_GOLD_ORE, Blocks.GOLD_ORE, Blocks.WHITE_WOOL, Blocks.BLACK_WOOL).entrySet()) {
+        //?} else {
+        /*for (var entry : Map.of(Blocks.NETHER_GOLD_ORE, Blocks.GOLD_ORE, Blocks.WOOL.pick(DyeColor.WHITE), Blocks.WOOL.pick(DyeColor.BLACK)).entrySet()) {
+        *///?}
+            set(player, center, entry.getKey());
+            set(player, center.west(), entry.getKey());
+            set(player, center.east(), entry.getValue());
+            swing(player, center, Direction.UP, Direction.NORTH);
+            check(h, center, Blocks.AIR, "exact block center");
+            check(h, center.west(), Blocks.AIR, "identical neighbor");
+            check(h, center.east(), entry.getValue(), "unpaired block stays exact");
         }
         h.succeed();
     }
@@ -325,7 +498,7 @@ final class HammerMiningGameTests {
         h.succeed();
     }
 
-    private static ServerPlayer player(GameTestHelper h, MiningShape mode) {
+    static ServerPlayer player(GameTestHelper h, MiningShape mode) {
         var player = new FakePlayer(h.getLevel(), new GameProfile(UUID.randomUUID(), "mining-test"));
         player.setGameMode(GameType.CREATIVE);
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(FloraFaunaRegistry.HAMMER.get()));
@@ -333,11 +506,11 @@ final class HammerMiningGameTests {
         return player;
     }
 
-    private static void configure(ServerPlayer player, MiningShape mode) {
+    static void configure(ServerPlayer player, MiningShape mode) {
         player.getMainHandItem().set(FloraFaunaRegistry.MULTI_BLOCK_MINING, new MiningModeData(mode, mode.getRadius(), 64, true));
     }
 
-    private static void swing(ServerPlayer player, BlockPos target, Direction face, Direction heading) {
+    static void swing(ServerPlayer player, BlockPos target, Direction face, Direction heading) {
         Vec3 stand = Vec3.atCenterOf(target.relative(face, 2));
         player.setPos(stand.x, stand.y - player.getEyeHeight(), stand.z);
         player.setYRot(heading.toYRot());
@@ -350,15 +523,15 @@ final class HammerMiningGameTests {
         }
     }
 
-    private static void set(ServerPlayer player, BlockPos pos, Block block) {
+    static void set(ServerPlayer player, BlockPos pos, Block block) {
         player.level().setBlock(pos, block.defaultBlockState(), Block.UPDATE_CLIENTS);
     }
 
-    private static void fill(ServerPlayer player, BlockPos min, BlockPos max, Block block) {
+    static void fill(ServerPlayer player, BlockPos min, BlockPos max, Block block) {
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) set(player, pos, block);
     }
 
-    private static void check(GameTestHelper h, BlockPos pos, Block expected, String detail) {
+    static void check(GameTestHelper h, BlockPos pos, Block expected, String detail) {
         var state = h.getLevel().getBlockState(pos);
         if (!state.is(expected)) throw h.assertionException(detail + " at " + pos + ": expected " + expected + ", got " + state);
     }

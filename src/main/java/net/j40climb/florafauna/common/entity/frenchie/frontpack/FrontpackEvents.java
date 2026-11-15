@@ -2,9 +2,11 @@ package net.j40climb.florafauna.common.entity.frenchie.frontpack;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
+import net.j40climb.florafauna.common.entity.frenchie.CourierTrips;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ProblemReporter;
@@ -70,8 +72,10 @@ public class FrontpackEvents {
         );
 
         player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, newData);
+        if (frenchie.hasCompanionJob()) player.sendOverlayMessage(Component.translatable("frenchie.florafauna.order.packed"));
 
         // Despawn the entity
+        CourierTrips.forget(frenchie);
         frenchie.discard();
 
         // Play pickup sound
@@ -101,6 +105,7 @@ public class FrontpackEvents {
         if (!level.noCollision(dog, dog.getBoundingBox()) || !level.addFreshEntity(dog)) return;
 
         player.setData(FloraFaunaRegistry.FRENCH_FRONTPACK_DATA, FrontpackData.DEFAULT);
+        if (dog.hasCompanionJob()) player.sendOverlayMessage(Component.translatable("frenchie.florafauna.order.resumed"));
         player.playSound(SoundEvents.ARMOR_EQUIP_LEATHER.value(), 1.0f, 1.0f);
     }
 }

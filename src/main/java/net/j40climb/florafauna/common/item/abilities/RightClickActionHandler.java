@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.item.abilities;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
+import net.j40climb.florafauna.common.item.abilities.data.HammerAction;
 import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
 import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockPatterns;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
@@ -82,17 +83,25 @@ public class RightClickActionHandler {
      * @return true if an action was executed and the event should be canceled
      */
     private static boolean handleRightClick(Player player, InteractionHand hand, @Nullable BlockPos clickedPos, @Nullable BlockHitResult hitResult) {
+        long currentTick = player.level().getGameTime();
+        ItemStack stack = player.getItemInHand(hand);
+        HammerAction selected = stack.getOrDefault(FloraFaunaRegistry.HAMMER_ACTION, HammerAction.AUTO);
+        if (selected == HammerAction.THROW) {
+            if (!stack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) return false;
+            if (player instanceof ServerPlayer serverPlayer) ThrowItemPayload.throwItem(serverPlayer, hand);
+            return true;
+        }
+
         //? if <26.3 {
         if (!(player instanceof ServerPlayer)) return false;
         //?}
-        long currentTick = player.level().getGameTime();
-        ItemStack stack = player.getItemInHand(hand);
 
         // Priority 1: Try multi-tool modifications if targeting a block
         if (clickedPos != null && hitResult != null) {
             MultiToolAbilityData multiTool = stack.get(FloraFaunaRegistry.MULTI_TOOL_ABILITY);
-            if (multiTool != null && multiTool.hasAnyEnabled()) {
-                if (tryToolModification(player, hand, clickedPos, hitResult, multiTool)) {
+            if (multiTool != null) {
+                var actions = selected.toolActions(multiTool);
+                if (actions.hasAnyEnabled() && tryToolModification(player, hand, clickedPos, hitResult, actions, selected != HammerAction.AUTO)) {
                     // Track that we did a tool modification this tick
                     // This prevents RightClickItem from also executing the ability
                     if (player instanceof ServerPlayer) {
@@ -103,9 +112,7 @@ public class RightClickActionHandler {
             }
         }
 
-        if (!(player instanceof ServerPlayer serverPlayer)) {
-            return false;
-        }
+        if (selected != HammerAction.AUTO || !(player instanceof ServerPlayer serverPlayer)) return false;
 
         // Check if we already did a tool modification this tick
         // (Handles case where RightClickItem fires after RightClickBlock did a tool modification)
@@ -157,17 +164,28 @@ public class RightClickActionHandler {
      * @param multiTool the multi-tool configuration
      * @return true if any modification was performed
      */
-    private static boolean tryToolModification(Player player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool) {
+    private static boolean tryToolModification(Player player, InteractionHand hand, BlockPos pos, BlockHitResult hitResult, MultiToolAbilityData multiTool, boolean requireTarget) {
         // Get blocks based on mining pattern (reuses existing pattern logic)
         var blocksToModify = MultiBlockPatterns.plan(player, player.getItemInHand(hand), pos, hitResult.getDirection()).blocks();
 
+        //? if <26.3 {
+        if (requireTarget && !ToolModification.canModifyTarget(player, hand, hitResult, multiTool)) return false;
+        //?}
+
         // Try to modify each block in the pattern
         boolean anyModified = false;
+        if (requireTarget) {
+            // Explicit actions leave normal block use alone when the target cannot transform.
+            if (!blocksToModify.contains(pos) || !ToolModification.apply(player, hand, pos, hitResult, multiTool)) return false;
+            anyModified = true;
+        }
         for (BlockPos targetPos : blocksToModify) {
+            if (requireTarget && targetPos.equals(pos)) continue;
             if (ToolModification.apply(player, hand, targetPos, hitResult, multiTool)) {
                 anyModified = true;
             }
         }
         return anyModified;
     }
+
 }

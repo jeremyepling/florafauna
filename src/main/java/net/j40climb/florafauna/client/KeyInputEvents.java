@@ -6,10 +6,14 @@ import net.j40climb.florafauna.noclip.ClippingEntity;
 import net.j40climb.florafauna.noclip.NoClipClientState;
 import net.j40climb.florafauna.noclip.NoClipPayload;
 import net.j40climb.florafauna.common.item.abilities.menu.ToolConfigScreen;
+import net.j40climb.florafauna.common.item.abilities.menu.HammerActionWheel;
 import net.j40climb.florafauna.common.item.abilities.networking.CycleMiningModePayload;
+import net.j40climb.florafauna.common.item.abilities.networking.PrecisionMiningPayload;
+import net.j40climb.florafauna.common.item.abilities.multiblock.MultiBlockVisualFeedback;
 import net.j40climb.florafauna.common.item.abilities.networking.SpawnLightningPayload;
 import net.j40climb.florafauna.common.item.abilities.networking.TeleportToSurfacePayload;
 import net.j40climb.florafauna.common.item.abilities.networking.ThrowItemPayload;
+import net.j40climb.florafauna.common.item.abilities.networking.ChargedThrowPayload;
 import net.j40climb.florafauna.common.symbiote.abilities.DashPayload;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.ClientSetup;
@@ -22,13 +26,80 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
 public class KeyInputEvents {
+
+    private static int throwKeyPlayerId = Integer.MIN_VALUE;
+    private static boolean holdingThrow;
+    private static int throwSlot;
+
+    private static void updateThrowKey(Minecraft mc, ItemStack held) {
+        Player player = mc.player;
+        if (throwKeyPlayerId != player.getId()) {
+            throwKeyPlayerId = player.getId();
+            holdingThrow = false;
+        }
+        var key = ClientSetup.THROW_ITEM_KEY.get();
+        if (holdingThrow && (mc.screen != null || player.getInventory().getSelectedSlot() != throwSlot
+                || !held.is(FloraFaunaRegistry.HAMMER.get()))) {
+            ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.CANCEL));
+            holdingThrow = false;
+        }
+        while (key.consumeClick()) {
+            if (held.is(FloraFaunaRegistry.HAMMER.get())) {
+                if (mc.screen == null && !holdingThrow && held.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
+                    holdingThrow = true;
+                    throwSlot = player.getInventory().getSelectedSlot();
+                    ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.PRESS));
+                }
+            } else if (held.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
+                //? if <26.3 {
+                player.swing(InteractionHand.MAIN_HAND);
+                //?} else {
+                /*player.swing(InteractionHand.MAIN_HAND, held.getAttackAnimation(), false);
+                *///?}
+                ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
+            }
+        }
+        if (holdingThrow && !key.isDown()) {
+            holdingThrow = false;
+            //? if <26.3 {
+            player.swing(InteractionHand.MAIN_HAND);
+            //?} else {
+            /*player.swing(InteractionHand.MAIN_HAND, held.getAttackAnimation(), false);
+            *///?}
+            ClientPacketDistributor.sendToServer(new ChargedThrowPayload(ChargedThrowPayload.RELEASE));
+        }
+    }
+
+    @SubscribeEvent
+    public static void beforeClientTick(ClientTickEvent.Pre event) {
+        updatePrecision(Minecraft.getInstance());
+    }
+
+    // Sync before the vanilla mining packet, including a press and an instant break in the same tick.
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void beforeMining(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getEntity().level().isClientSide()) updatePrecision(Minecraft.getInstance());
+    }
+
+    private static void updatePrecision(Minecraft mc) {
+        if (mc.player == null || mc.getConnection() == null) return;
+        boolean held = mc.screen == null && ClientSetup.PRECISION_MINING_KEY.get().isDown()
+                && mc.player.getMainHandItem().has(FloraFaunaRegistry.MULTI_BLOCK_MINING);
+        // A new local player must also initialize its server state after respawn or a level change.
+        if (Boolean.valueOf(held).equals(mc.player.getExistingDataOrNull(FloraFaunaRegistry.PRECISION_MINING))) return;
+        mc.player.setData(FloraFaunaRegistry.PRECISION_MINING, held);
+        ClientPacketDistributor.sendToServer(new PrecisionMiningPayload(held));
+        MultiBlockVisualFeedback.invalidatePattern(mc.player);
+    }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -65,18 +136,7 @@ public class KeyInputEvents {
                 ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
             }
         }
-        while (ClientSetup.THROW_ITEM_KEY.get().consumeClick()) {
-            // Component-based check - works with any item that has THROWABLE_ABILITY
-            if (itemStack.has(FloraFaunaRegistry.THROWABLE_ABILITY)) {
-                // Play throw animation (arm swing)
-                //? if <26.3 {
-                player.swing(InteractionHand.MAIN_HAND);
-                //?} else {
-                /*player.swing(InteractionHand.MAIN_HAND, itemStack.getAttackAnimation(), false);
-                *///?}
-                ClientPacketDistributor.sendToServer(new ThrowItemPayload(true));
-            }
-        }
+        updateThrowKey(mc, itemStack);
         while (ClientSetup.CYCLE_MINING_MODE_KEY.get().consumeClick()) {
             // Component-based check - works with any item that has MULTI_BLOCK_MINING
             if (itemStack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING)) {
@@ -108,6 +168,11 @@ public class KeyInputEvents {
                 player.sendOverlayMessage(
                         Component.translatable("command.florafauna.noclip.creative_only")
                 );
+            }
+        }
+        while (ClientSetup.HAMMER_ACTION_WHEEL_KEY.get().consumeClick()) {
+            if (mc.screen == null && itemStack.has(FloraFaunaRegistry.HAMMER_ACTION)) {
+                mc.setScreen(new HammerActionWheel(player.getInventory().getSelectedSlot(), itemStack));
             }
         }
     }
