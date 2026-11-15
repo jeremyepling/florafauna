@@ -44,7 +44,7 @@ foreach ($role in 'Owner', 'Visitor') {
 Push-Location -LiteralPath $checkout
 try {
     Write-Host "Multiplayer test world and logs: $root"
-    $options = @('--console=plain', '--max-workers=4')
+    $options = @('--console=plain')
     if ($Offline) { $options += '--offline' }
     & .\gradlew.bat @options ":${project}:runData" *> (Join-Path $root 'datagen.log')
     if ($LASTEXITCODE -ne 0) { throw "Data generation failed. See $root/datagen.log" }

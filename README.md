@@ -2,7 +2,7 @@
 
 A NeoForge mod for Minecraft 26.1 and 26.3. Players can bond with a symbiote, recover gear from a husk, grow a living storage network and transport bonded mobs. Hammer mining and Frenchie companions are available as separate mods.
 
-Coding agents share the repository's worktree, implementation and testing instructions. Claude Code imports them through `CLAUDE.md`. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
+Coding agents share the repository's worktree, implementation and testing instructions. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
 ## Development Setup
 
@@ -186,7 +186,7 @@ The script prints the output directory under `versions/<target>/.tmp/world-playt
 
 ### Worktree Workflow
 
-From the checkout on `main`, choose an unused slot number:
+Use a named worktree for each feature. In the grouped layout, run `git worktree add -b feature/new-mob ../worktrees/new-mob main` from `florafauna/main`. Independent features and checks can start together. For an existing numbered-slot layout, the following helpers are also available.
 
 ```powershell
 .\scripts\wt_list.ps1                          # List existing worktrees

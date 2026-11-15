@@ -35,7 +35,7 @@ $targets = @(foreach ($number in $Slot) {
     }
 })
 
-$options = @('--max-workers=4', '--console=plain')
+$options = @('--console=plain')
 if ($Offline) { $options += '--offline' }
 foreach ($target in $targets) {
     Write-Host "Slot $($target.Slot) log: $($target.Log)"

@@ -53,7 +53,7 @@ if ((Get-Item -LiteralPath $world).Attributes.HasFlag([IO.FileAttributes]::Repar
         (Get-ChildItem -LiteralPath $world -Recurse -Force -Attributes ReparsePoint | Select-Object -First 1)) {
     throw 'Choose a self-contained save without symbolic links or junctions.'
 }
-$options = @('--console=plain', '--max-workers=4')
+$options = @('--console=plain')
 if ($DevMods) { $options += "-PdevMods=$DevMods" }
 if ($HammerDir) { $options += "-PhammerDir=$((Resolve-Path -LiteralPath $HammerDir).Path)" }
 if ($FrenchiesDir) { $options += "-PfrenchiesDir=$((Resolve-Path -LiteralPath $FrenchiesDir).Path)" }
