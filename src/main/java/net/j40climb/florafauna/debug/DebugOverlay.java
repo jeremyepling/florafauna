@@ -12,9 +12,6 @@ import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenData;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
-import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
-import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
-import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
@@ -452,29 +449,6 @@ public class DebugOverlay implements GuiLayer {
         List<String> lines = new ArrayList<>();
 
         // Check each FloraFauna data component
-        if (stack.has(FloraFaunaRegistry.MULTI_BLOCK_MINING.get())) {
-            MiningModeData miningData = stack.get(FloraFaunaRegistry.MULTI_BLOCK_MINING.get());
-            if (miningData != null) {
-                lines.add("Mining: " + miningData.shape().name() + ", radius=" + miningData.radius());
-            }
-        }
-
-        if (stack.has(FloraFaunaRegistry.TOOL_CONFIG.get())) {
-            ToolConfig toolConfig = stack.get(FloraFaunaRegistry.TOOL_CONFIG.get());
-            if (toolConfig != null) {
-                String enchant = toolConfig.fortune() ? "Fortune" : "SilkTouch";
-                lines.add("Tool Config: " + enchant + ", " + toolConfig.miningSpeed().name());
-            }
-        }
-
-        if (stack.has(FloraFaunaRegistry.LIGHTNING_ABILITY.get())) {
-            lines.add("Lightning: Yes");
-        }
-
-        if (stack.has(FloraFaunaRegistry.TELEPORT_SURFACE_ABILITY.get())) {
-            lines.add("Teleport: Yes");
-        }
-
         if (stack.has(FloraFaunaRegistry.SYMBIOTE_DATA.get())) {
             SymbioteData symbioteData = stack.get(FloraFaunaRegistry.SYMBIOTE_DATA.get());
             if (symbioteData != null) {
@@ -484,14 +458,6 @@ public class DebugOverlay implements GuiLayer {
 
         if (stack.has(FloraFaunaRegistry.SYMBIOTE_PROGRESS.get())) {
             lines.add("Symbiote Progress: Present");
-        }
-
-        if (stack.has(FloraFaunaRegistry.THROWABLE_ABILITY.get())) {
-            ThrowableAbilityData throwData = stack.get(FloraFaunaRegistry.THROWABLE_ABILITY.get());
-            if (throwData != null) {
-                lines.add("Throw: dmg=" + throwData.damage() + ", range=" + throwData.maxRange());
-                lines.add("  return=" + (throwData.autoReturn() ? "yes" : "no") + ", speed=" + throwData.returnSpeed());
-            }
         }
 
         if (stack.has(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get())) {

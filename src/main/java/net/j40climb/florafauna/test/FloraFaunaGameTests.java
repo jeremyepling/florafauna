@@ -15,8 +15,6 @@ import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.vacuum.BufferTransfer;
 import net.j40climb.florafauna.common.block.vacuum.ClaimedItemData;
 import net.j40climb.florafauna.common.block.vacuum.ItemBuffer;
-import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
-import net.j40climb.florafauna.common.item.abilities.data.MiningShape;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueEntry;
 import net.j40climb.florafauna.common.symbiote.dialogue.SymbioteDialogueRepository;
 import net.j40climb.florafauna.common.symbiote.observation.ChaosSuppressor;
@@ -115,11 +113,6 @@ public class FloraFaunaGameTests {
         registerClaimedItemDataTests(event, defaultEnv);
         registerPodItemHandlerTests(event, defaultEnv);
 
-        // Register mining mode tests
-        registerMiningModeTests(event, defaultEnv);
-        HammerAbilityGameTests.register(event, defaultEnv);
-        HammerMiningGameTests.register(event, defaultEnv);
-
         // Register containment chamber tests
         registerContainmentChamberTests(event, defaultEnv);
 
@@ -140,9 +133,6 @@ public class FloraFaunaGameTests {
         // Register mob transport tests
         registerMobTransportTests(event, defaultEnv);
         MobTransportReleaseGameTests.register(event, defaultEnv);
-        registerTest(event, defaultEnv, "frenchie_owner_orders", FrenchieGameTests::ownerOrders);
-        registerTest(event, defaultEnv, "frenchie_frontpack_respawn_release", FrenchieGameTests::frontpackRespawnRelease);
-        registerTest(event, defaultEnv, "frenchie_frontpack_appearance", FrenchieGameTests::frontpackAppearance);
 
         // Register fear system tests
         registerFearSystemTests(event, defaultEnv);
@@ -1004,83 +994,6 @@ public class FloraFaunaGameTests {
         }
         if (buffer.getTotalItemCount() != 0) {
             throw helper.assertionException("Total count should be 0 after clear, got: " + buffer.getTotalItemCount());
-        }
-
-        helper.succeed();
-    }
-
-    // ==================== Mining Mode Tests ====================
-
-    private static void registerMiningModeTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
-        registerTest(event, env, "mining_mode_initial_state", FloraFaunaGameTests::testMiningModeInitialState);
-        registerTest(event, env, "mining_mode_cycling", FloraFaunaGameTests::testMiningModeCycling);
-        registerTest(event, env, "mining_mode_wrap_around", FloraFaunaGameTests::testMiningModeWrapAround);
-        registerTest(event, env, "mining_mode_radius_per_shape", FloraFaunaGameTests::testMiningModeRadiusPerShape);
-    }
-
-    private static void testMiningModeInitialState(GameTestHelper helper) {
-        MiningModeData data = MiningModeData.DEFAULT;
-
-        if (data.shape() != MiningShape.SINGLE) {
-            throw helper.assertionException("Default shape should be SINGLE, got: " + data.shape());
-        }
-        if (data.radius() != 0) {
-            throw helper.assertionException("Default radius should be 0, got: " + data.radius());
-        }
-        if (data.maxBlocksToBreak() != 64) {
-            throw helper.assertionException("Default maxBlocksToBreak should be 64, got: " + data.maxBlocksToBreak());
-        }
-
-        helper.succeed();
-    }
-
-    private static void testMiningModeCycling(GameTestHelper helper) {
-        MiningModeData data = MiningModeData.DEFAULT;
-
-        // Cycle through all shapes: SINGLE → FLAT_3X3 → FLAT_5X5 → FLAT_7X7 → SHAPELESS → TUNNEL_UP → TUNNEL_DOWN
-        MiningShape[] expectedOrder = {
-            MiningShape.FLAT_3X3,
-            MiningShape.FLAT_5X5,
-            MiningShape.FLAT_7X7,
-            MiningShape.SHAPELESS,
-            MiningShape.TUNNEL_UP,
-            MiningShape.TUNNEL_DOWN
-        };
-
-        for (MiningShape expected : expectedOrder) {
-            data = data.getNextMode();
-            if (data.shape() != expected) {
-                throw helper.assertionException("Expected " + expected + ", got: " + data.shape());
-            }
-        }
-
-        helper.succeed();
-    }
-
-    private static void testMiningModeWrapAround(GameTestHelper helper) {
-        // Start from TUNNEL_DOWN (last shape)
-        MiningModeData data = new MiningModeData(MiningShape.TUNNEL_DOWN, 0, 64, true);
-
-        // Next mode should wrap to SINGLE
-        data = data.getNextMode();
-
-        if (data.shape() != MiningShape.SINGLE) {
-            throw helper.assertionException("After TUNNEL_DOWN should wrap to SINGLE, got: " + data.shape());
-        }
-
-        helper.succeed();
-    }
-
-    private static void testMiningModeRadiusPerShape(GameTestHelper helper) {
-        // Expected radii: SINGLE=0, FLAT_3X3=1, FLAT_5X5=2, FLAT_7X7=3, SHAPELESS=1, TUNNEL_UP=0, TUNNEL_DOWN=0
-        int[] expectedRadii = {0, 1, 2, 3, 1, 0, 0};
-        MiningShape[] shapes = MiningShape.values();
-
-        for (int i = 0; i < shapes.length; i++) {
-            int actualRadius = shapes[i].getRadius();
-            if (actualRadius != expectedRadii[i]) {
-                throw helper.assertionException(shapes[i] + " should have radius " + expectedRadii[i] + ", got: " + actualRadius);
-            }
         }
 
         helper.succeed();

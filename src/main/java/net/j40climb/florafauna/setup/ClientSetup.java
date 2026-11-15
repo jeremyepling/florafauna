@@ -10,12 +10,9 @@ import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.debug.DebugOverlay;
-import net.j40climb.florafauna.common.item.projectile.ThrownItemRenderer;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
-import net.j40climb.florafauna.common.entity.frenchie.FrenchieModel;
 import net.j40climb.florafauna.common.entity.gecko.GeckoModel;
 import net.j40climb.florafauna.common.entity.lizard.LizardModel;
-import net.j40climb.florafauna.common.entity.frenchie.FrenchieRenderer;
 import net.j40climb.florafauna.common.entity.gecko.GeckoRenderer;
 import net.j40climb.florafauna.common.entity.lizard.LizardRenderer;
 import net.minecraft.client.KeyMapping;
@@ -44,51 +41,11 @@ public class ClientSetup {
     public static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(
             Identifier.fromNamespaceAndPath("florafauna", "key-category"));
 
-    public static final Lazy<KeyMapping> SUMMON_LIGHTNING_KEY = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.summon_lightning",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            InputConstants.KEY_R,
-            KEY_CATEGORY
-    ));
-
-    public static final Lazy<KeyMapping> TELEPORT_SURFACE_KEY = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.teleport_surface",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            InputConstants.KEY_M,
-            KEY_CATEGORY
-    ));
-
     public static final Lazy<KeyMapping> DASH_KEY = Lazy.of(() -> new KeyMapping(
             "key.florafauna.dash",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.MOUSE,
             InputConstants.MOUSE_BUTTON_4,
-            KEY_CATEGORY
-    ));
-
-    public static final Lazy<KeyMapping> HAMMER_CONFIG_KEY = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.hammer_config",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            InputConstants.KEY_P,
-            KEY_CATEGORY
-    ));
-
-    public static final Lazy<KeyMapping> THROW_ITEM_KEY = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.throw_item",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            InputConstants.KEY_T,
-            KEY_CATEGORY
-    ));
-
-    public static final Lazy<KeyMapping> CYCLE_MINING_MODE_KEY = Lazy.of(() -> new KeyMapping(
-            "key.florafauna.cycle_mining_mode",
-            KeyConflictContext.IN_GAME,
-            InputConstants.Type.KEYSYM,
-            InputConstants.KEY_C,
             KEY_CATEGORY
     ));
 
@@ -134,7 +91,6 @@ public class ClientSetup {
     private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(GeckoModel.GECKO, GeckoModel::createBodyLayer);
         event.registerLayerDefinition(LizardModel.LIZARD, LizardModel::createBodyLayer);
-        event.registerLayerDefinition(FrenchieModel.FRENCHIE, FrenchieModel::createBodyLayer);
     }
 
     // ==================== EVENT HANDLERS ====================
@@ -156,8 +112,6 @@ public class ClientSetup {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
         event.registerEntityRenderer(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);
-        event.registerEntityRenderer(FloraFaunaRegistry.FRENCHIE.get(), FrenchieRenderer::new);
-        event.registerEntityRenderer(FloraFaunaRegistry.THROWN_ITEM.get(), ThrownItemRenderer::new);
     }
 
     /**
@@ -173,12 +127,7 @@ public class ClientSetup {
     private static void registerKeyBindings(RegisterKeyMappingsEvent event) {
         event.registerCategory(KEY_CATEGORY);
 
-        event.register(SUMMON_LIGHTNING_KEY.get());
-        event.register(TELEPORT_SURFACE_KEY.get());
         event.register(DASH_KEY.get());
-        event.register(HAMMER_CONFIG_KEY.get());
-        event.register(THROW_ITEM_KEY.get());
-        event.register(CYCLE_MINING_MODE_KEY.get());
         event.register(MOB_BARRIER_CONFIG_KEY.get());
         event.register(NOCLIP_KEY.get());
     }

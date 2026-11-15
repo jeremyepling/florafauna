@@ -45,17 +45,8 @@ import net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlo
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlock;
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.wood.WoodType;
-import net.j40climb.florafauna.common.entity.frenchie.FrenchieEntity;
-import net.j40climb.florafauna.common.entity.frenchie.frontpack.FrontpackData;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
-import net.j40climb.florafauna.common.item.projectile.ThrownItemEntity;
-import net.j40climb.florafauna.common.item.abilities.data.MiningModeData;
-import net.j40climb.florafauna.common.item.abilities.data.MultiToolAbilityData;
-import net.j40climb.florafauna.common.item.abilities.data.RightClickAction;
-import net.j40climb.florafauna.common.item.abilities.data.ThrowableAbilityData;
-import net.j40climb.florafauna.common.item.abilities.data.ToolConfig;
-import net.j40climb.florafauna.common.item.hammer.HammerItem;
 import net.j40climb.florafauna.common.symbiote.binding.SymbiotePreparedEffect;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
@@ -67,15 +58,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.core.BlockPos;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Unit;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -98,8 +86,6 @@ import net.neoforged.neoforge.registries.*;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static net.j40climb.florafauna.common.item.hammer.HammerItem.HAMMER_MATERIAL;
 
 /**
  * Central registration class for all mod content.
@@ -277,7 +263,6 @@ public class FloraFaunaRegistry {
 
     public static final ResourceKey<EntityType<?>> GECKO_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "gecko"));
     public static final ResourceKey<EntityType<?>> LIZARD_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "lizard"));
-    public static final ResourceKey<EntityType<?>> FRENCHIE_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "frenchie"));
 
     public static final Supplier<EntityType<GeckoEntity>> GECKO = ENTITY_TYPES.register("gecko",
             () -> EntityType.Builder.of(GeckoEntity::new, MobCategory.CREATURE)
@@ -287,24 +272,7 @@ public class FloraFaunaRegistry {
             () -> EntityType.Builder.of(LizardEntity::new, MobCategory.CREATURE)
                     .sized(1.4f, 1.35f).build(LIZARD_KEY));
 
-    public static final Supplier<EntityType<FrenchieEntity>> FRENCHIE = ENTITY_TYPES.register("frenchie",
-            () -> EntityType.Builder.of(FrenchieEntity::new, MobCategory.CREATURE)
-                    .sized(0.9f, 0.9f).build(FRENCHIE_KEY));
-
-    // Projectile entity
-    public static final ResourceKey<EntityType<?>> THROWN_ITEM_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "thrown_item"));
-    public static final Supplier<EntityType<ThrownItemEntity>> THROWN_ITEM = ENTITY_TYPES.register("thrown_item",
-            () -> EntityType.Builder.<ThrownItemEntity>of(ThrownItemEntity::new, MobCategory.MISC)
-                    .sized(0.5f, 0.5f)
-                    .clientTrackingRange(4)
-                    .updateInterval(20)
-                    .build(THROWN_ITEM_KEY));
-
     // ==================== ITEMS ====================
-
-    // Tools
-    public static final DeferredItem<Item> HAMMER = ITEMS.registerItem("hammer", properties ->
-            new HammerItem(properties.tool(HAMMER_MATERIAL, BlockTags.MINEABLE_WITH_PICKAXE, 8, -2.4f, 0)));
 
     // Custom Items
     public static final DeferredItem<Item> DORMANT_SYMBIOTE = ITEMS.registerItem("dormant_symbiote",
@@ -328,8 +296,6 @@ public class FloraFaunaRegistry {
             new SpawnEggItem(properties.spawnEgg(GECKO.get())));
     public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
             new SpawnEggItem(properties.spawnEgg(LIZARD.get())));
-    public static final DeferredItem<Item> FRENCHIE_SPAWN_EGG = ITEMS.registerItem("frenchie_spawn_egg", properties ->
-            new SpawnEggItem(properties.spawnEgg(FRENCHIE.get())));
 
     // ==================== BLOCK ENTITIES ====================
 
@@ -402,24 +368,6 @@ public class FloraFaunaRegistry {
 
     // ==================== DATA COMPONENTS ====================
 
-    // Tool ability data components
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MiningModeData>> MULTI_BLOCK_MINING =
-            DATA_COMPONENTS.registerComponentType("multi_block_mining",
-                    builder -> builder.persistent(MiningModeData.CODEC).networkSynchronized(MiningModeData.STREAM_CODEC));
-
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ToolConfig>> TOOL_CONFIG =
-            DATA_COMPONENTS.registerComponentType("tool_config",
-                    builder -> builder.persistent(ToolConfig.CODEC).networkSynchronized(ToolConfig.STREAM_CODEC));
-
-    // Marker components for abilities
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Unit>> LIGHTNING_ABILITY =
-            DATA_COMPONENTS.registerComponentType("lightning_ability",
-                    builder -> builder.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE)));
-
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Unit>> TELEPORT_SURFACE_ABILITY =
-            DATA_COMPONENTS.registerComponentType("teleport_surface_ability",
-                    builder -> builder.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE)));
-
     // Symbiote item data components
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<SymbioteData>> SYMBIOTE_DATA =
             DATA_COMPONENTS.registerComponentType("symbiote_data",
@@ -428,21 +376,6 @@ public class FloraFaunaRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS =
             DATA_COMPONENTS.registerComponentType("symbiote_progress",
                     builder -> builder.persistent(ProgressSignalTracker.CODEC).networkSynchronized(ProgressSignalTracker.STREAM_CODEC));
-
-    // Throwable ability data component
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ThrowableAbilityData>> THROWABLE_ABILITY =
-            DATA_COMPONENTS.registerComponentType("throwable_ability",
-                    builder -> builder.persistent(ThrowableAbilityData.CODEC).networkSynchronized(ThrowableAbilityData.STREAM_CODEC));
-
-    // Right-click action data component - configures what ability triggers on right-click
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<RightClickAction>> RIGHT_CLICK_ACTION =
-            DATA_COMPONENTS.registerComponentType("right_click_action",
-                    builder -> builder.persistent(RightClickAction.CODEC).networkSynchronized(RightClickAction.STREAM_CODEC));
-
-    // Multi-tool ability data component - enables strip/path/till on right-click
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MultiToolAbilityData>> MULTI_TOOL_ABILITY =
-            DATA_COMPONENTS.registerComponentType("multi_tool_ability",
-                    builder -> builder.persistent(MultiToolAbilityData.CODEC).networkSynchronized(MultiToolAbilityData.STREAM_CODEC));
 
     // Mob barrier config data component
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<MobBarrierConfig>> MOB_BARRIER_CONFIG =
@@ -461,14 +394,6 @@ public class FloraFaunaRegistry {
                     AttachmentType.builder(() -> PlayerSymbioteData.DEFAULT)
                             .serialize(PlayerSymbioteData.CODEC.fieldOf("player_symbiote_data"))
                             .sync(PlayerSymbioteData.STREAM_CODEC)
-                            .copyOnDeath()
-                            .build());
-
-    public static final Supplier<AttachmentType<FrontpackData>> FRENCH_FRONTPACK_DATA =
-            ATTACHMENT_TYPES.register("french_frontpack_data", () ->
-                    AttachmentType.builder(() -> FrontpackData.DEFAULT)
-                            .serialize(FrontpackData.CODEC.fieldOf("french_frontpack_data"))
-                            .sync(FrontpackData.STREAM_CODEC)
                             .copyOnDeath()
                             .build());
 

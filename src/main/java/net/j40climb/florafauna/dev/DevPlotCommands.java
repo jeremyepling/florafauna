@@ -21,12 +21,12 @@ public final class DevPlotCommands {
         var root = Commands.literal("ffplot").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
         var build = Commands.literal("build").then(Commands.literal("all").executes(context -> {
             int placed = 0;
-            for (DevPlot plot : DevPlot.values()) placed += build(context.getSource(), plot, false);
+            for (DevPlot plot : DevPlot.available()) placed += build(context.getSource(), plot, false);
             return placed;
         }));
         var visit = Commands.literal("visit");
         var reset = Commands.literal("reset");
-        for (DevPlot plot : DevPlot.values()) {
+        for (DevPlot plot : DevPlot.available()) {
             build.then(Commands.literal(plot.id()).executes(c -> build(c.getSource(), plot, false)));
             reset.then(Commands.literal(plot.id()).executes(c -> build(c.getSource(), plot, true)));
             visit.then(Commands.literal(plot.id()).executes(c -> visit(c.getSource(), plot)));
@@ -36,7 +36,7 @@ public final class DevPlotCommands {
     }
 
     private static int list(CommandSourceStack source) {
-        for (DevPlot plot : DevPlot.values()) {
+        for (DevPlot plot : DevPlot.available()) {
             var saved = record(source, plot);
             BlockPos pos = plot.gridPosition(saved.getIntOr("y", 0));
             String address = saved.contains("y") ? pos.toShortString()
@@ -44,7 +44,7 @@ public final class DevPlotCommands {
             source.sendSuccess(() -> Component.translatable(saved.contains("y")
                     ? "command.florafauna.plot.address" : "command.florafauna.plot.available", plot.id(), address), false);
         }
-        return DevPlot.values().length;
+        return DevPlot.available().size();
     }
 
     // The vanilla command storage persists with this save (including copies and restarts).
