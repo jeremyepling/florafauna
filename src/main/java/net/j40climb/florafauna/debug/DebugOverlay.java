@@ -34,6 +34,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
@@ -41,6 +43,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Debug overlay that displays symbiote state information on screen.
@@ -48,6 +51,17 @@ import java.util.List;
  */
 public class DebugOverlay implements GuiLayer {
     public static final Identifier LAYER_ID = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_debug");
+
+    private static BiConsumer<ItemStack, List<String>> hammerDiagnostics;
+
+    @SuppressWarnings("unchecked") // The matching Hammer sender and message ID define the callback's argument types.
+    public static void receiveHammerDiagnostics(InterModProcessEvent event) {
+        InterModComms.getMessages(FloraFauna.MOD_ID, "hammer_tool_diagnostics"::equals)
+                .filter(message -> message.senderModId().equals("florafauna_hammer"))
+                .map(message -> message.messageSupplier().get())
+                .filter(BiConsumer.class::isInstance)
+                .findFirst().ifPresent(callback -> hammerDiagnostics = (BiConsumer<ItemStack, List<String>>) callback);
+    }
 
     // Auto-enable in dev environment for convenience
     private static boolean enabled = !FMLEnvironment.isProduction();
@@ -445,8 +459,9 @@ public class DebugOverlay implements GuiLayer {
     /**
      * Gets debug lines for all FloraFauna data components on the given item.
      */
-    private static List<String> getModDataComponentLines(ItemStack stack) {
+    public static List<String> getModDataComponentLines(ItemStack stack) {
         List<String> lines = new ArrayList<>();
+        if (hammerDiagnostics != null) hammerDiagnostics.accept(stack, lines);
 
         // Check each FloraFauna data component
         if (stack.has(FloraFaunaRegistry.SYMBIOTE_DATA.get())) {

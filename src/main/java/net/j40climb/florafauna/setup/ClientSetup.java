@@ -86,6 +86,7 @@ public class ClientSetup {
         modEventBus.addListener(ClientSetup::registerPayloads);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
+        modEventBus.addListener(DebugOverlay::receiveHammerDiagnostics);
     }
 
     private static void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
