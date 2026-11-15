@@ -7,6 +7,6 @@ color: green
 
 Read the shared instructions and the entity wizard. Start with the creature whose behavior is closest to the request. [AGENTS.md](../../AGENTS.md) · [Entity wizard](../skills/entity-wizard.md)
 
-The Gecko demonstrates variants and saved data. The Frenchie demonstrates a companion, animations and how to extract render state. Follow the entity's registration through the spawn egg, attributes, model layer and renderer. [Gecko](../../src/main/java/net/j40climb/florafauna/common/entity/gecko) · [Frenchies repository](https://github.com/jeremyepling/florafauna-frenchies)
+The Gecko demonstrates variants and saved data. The Frenchie demonstrates a companion, animations and how to extract render state. Follow the entity's registration through the spawn egg, attributes, model layer and renderer. [Gecko](../../src/main/java/net/j40climb/florafauna/common/entity/gecko) · [Frenchies repository](https://github.com/jeremyepling/frenchies)
 
 Verify spawning, the requested behavior and the client animation. For persistent traits, save and reopen a test world. Report the registry IDs, resources, checks and any outstanding art or gameplay work.

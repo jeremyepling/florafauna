@@ -26,7 +26,7 @@ During iteration, run the affected check. [Test scope](AGENTS.md#verify-from-the
 
 ### Play with the Hammer and Frenchies
 
-The Hammer and Frenchies are independent NeoForge mods. Their source, feature tests and installable jars live in [FloraFauna Hammer](https://github.com/jeremyepling/florafauna-hammer) and [FloraFauna Frenchies](https://github.com/jeremyepling/florafauna-frenchies). Match the Minecraft version in all checkouts: use the companions' **main** branches for 26.1 or their **26.3** branches for 26.3.
+The Hammer and Frenchies are independent NeoForge mods. Their source, feature tests and installable jars live in [Hammer](https://github.com/jeremyepling/hammer) and [Frenchies](https://github.com/jeremyepling/frenchies). Match the Minecraft version in all checkouts: use the companions' **main** branches for 26.1 or their **26.3** branches for 26.3.
 
 Clone those two repositories beside this checkout. From FloraFauna, use the same Gradle wrapper you normally use:
 
@@ -39,7 +39,7 @@ Clone those two repositories beside this checkout. From FloraFauna, use the same
 
 The first command generates FloraFauna's assets on a fresh checkout. The client commands build the selected companions from source and launch Minecraft. Use **all**, **hammer**, **frenchies**, or **none**. The default is **none**. To make all three your usual setup, save the `-PdevMods=all runClient` command as an IntelliJ Gradle run configuration. Each selection has its own dev client directory and saves. With a fresh profile and no template, create a world named `dev` on the first launch.
 
-A sibling named `florafauna-hammer-26.3` or `florafauna-frenchies-26.3` takes precedence when running 26.3. For worktrees elsewhere, add `-PhammerDir=../path-to-hammer` and `-PfrenchiesDir=../path-to-frenchies`. Gradle checks the mod ID and Minecraft version of each selected checkout. The combined build uses Gradle composite substitution, so editing a companion updates the next run without publishing or copying a jar. [Gradle composite builds](https://docs.gradle.org/current/userguide/composite_builds.html)
+A sibling named `hammer-26.3` or `frenchies-26.3` takes precedence when running 26.3. For worktrees elsewhere, add `-PhammerDir=../path-to-hammer` and `-PfrenchiesDir=../path-to-frenchies`. Gradle checks the mod ID and Minecraft version of each selected checkout. The combined build uses Gradle composite substitution, so editing a companion updates the next run without publishing or copying a jar. [Gradle composite builds](https://docs.gradle.org/current/userguide/composite_builds.html)
 
 **Playing outside Gradle.** The collection task writes the selected jars to `build/dev-mods/<minecraft-version>/`. Copy the desired jars for that Minecraft version to the client and server `mods` directories. For worlds created with the bundled mod, back up the world, replace the old FloraFauna jar with the split core (0.0.2 or later), and install the companion jars for content used by the save before opening it. The separate mods use the original `florafauna:*` item, entity and component IDs.
 
