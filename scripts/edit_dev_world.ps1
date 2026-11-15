@@ -6,7 +6,7 @@ if ($LASTEXITCODE -ne 0) { throw "Not in a git repo." }
 
 $branch = git rev-parse --abbrev-ref HEAD
 $wtName = Split-Path $repoRoot -Leaf
-$runDir = Join-Path $repoRoot "run\client-$wtName"
+$runDir = Join-Path $repoRoot "run\client-$wtName-core"
 $savesDir = Join-Path $runDir "saves"
 $devWorld = Join-Path $savesDir "dev"
 
