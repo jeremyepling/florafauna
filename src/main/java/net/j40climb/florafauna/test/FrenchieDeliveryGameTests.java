@@ -83,6 +83,27 @@ final class FrenchieDeliveryGameTests {
         h.succeed();
     }
 
+    static void creativeParcel(GameTestHelper h) {
+        var sender = networkedPlayer(h);
+        var recipient = networkedPlayer(h);
+        try {
+            var dog = h.spawn(FloraFaunaRegistry.FRENCHIE.get(), 1, 1, 1);
+            var expected = prepareDelivery(sender, recipient, dog).copy();
+            sender.setGameMode(GameType.CREATIVE);
+            confirm(sender, recipient, dog);
+            h.assertTrue(dog.isDelivering() && sender.getMainHandItem().isEmpty(),
+                    "Creative confirmation must transfer the exact bundle to the courier");
+            click(sender, dog);
+            h.assertTrue(!dog.isDelivering() && ItemStack.matches(expected, sender.getMainHandItem())
+                            && sender.getInventory().countItem(Items.BUNDLE) == 1,
+                    "Canceling a creative delivery must return the original contents exactly once");
+        } finally {
+            disconnect(recipient);
+            disconnect(sender);
+        }
+        h.succeed();
+    }
+
     static void packAndCancel(GameTestHelper h) {
         var owner = networkedPlayer(h);
         var recipient = networkedPlayer(h);
