@@ -14,7 +14,7 @@ Coding agents share the repository's worktree, implementation and testing instru
 
 ### Build & Run
 
-Feature PRs target `main`. Stonecutter defaults to editing Minecraft 26.1. Both targets use ModDevGradle and Java 25. Their exact Minecraft and NeoForge versions and supported ranges live in [26.1 properties](versions/26.1-neoforge/gradle.properties) and [26.3 properties](versions/26.3-neoforge/gradle.properties).
+Maintain Minecraft 26.1 and 26.3 together on `main`. Start feature branches from `main`, edit shared gameplay once, and test both targets before merging. Stonecutter defaults to editing 26.1. Use version-specific code or resources where the Minecraft or NeoForge APIs and data formats differ. Both targets use ModDevGradle and Java 25. Their exact versions and supported ranges live in [26.1 properties](versions/26.1-neoforge/gradle.properties) and [26.3 properties](versions/26.3-neoforge/gradle.properties).
 
 To build one JAR, generate that target's data first, then package it in a second invocation.
 
@@ -38,18 +38,9 @@ For a shorter iteration, `:26.1-neoforge:check` compiles client playtests and ru
 
 ### Play with the Hammer and Frenchies
 
-FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. Each companion repository uses `main` for 26.1 and `26.3` for 26.3. [Hammer source and tests](https://github.com/jeremyepling/hammer) · [Frenchies source and tests](https://github.com/jeremyepling/frenchies)
+FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. A Stonecutter companion checkout supplies both targets. [Hammer source and tests](https://github.com/jeremyepling/hammer) · [Frenchies source and tests](https://github.com/jeremyepling/frenchies)
 
-In a grouped workspace, use `florafauna/main`, `hammer/main` and `frenchies/main` for the stable checkouts. Place the 26.3 companion worktrees in `hammer/26.3` and `frenchies/26.3`. Both the core checkout and named checkouts under `florafauna/worktrees/<feature>` discover the matching companions.
-
-For a flat workspace, clone the companions into sibling directories. For 26.3, add the matching branch as a sibling worktree so the 26.1 sources remain available.
-
-```powershell
-git clone https://github.com/jeremyepling/hammer.git ../hammer
-git clone https://github.com/jeremyepling/frenchies.git ../frenchies
-git -C ../hammer worktree add --track -b 26.3 ../hammer-26.3 origin/26.3
-git -C ../frenchies worktree add --track -b 26.3 ../frenchies-26.3 origin/26.3
-```
+Use `florafauna/main`, `hammer/main` and `frenchies/main` in the grouped workspace, or place the three repositories side by side. Gradle selects the companion subproject matching the core task. For older single-version companion checkouts, the grouped layout also supports `hammer/26.3` and `frenchies/26.3`.
 
 Select `none` (the default), `hammer`, `frenchies` or `all` with `-PdevMods`. Gradle builds the selected local companions and adds their jars to the run. On a fresh checkout, generate the core data for each target you plan to use.
 
@@ -61,7 +52,7 @@ Select `none` (the default), `hammer`, `frenchies` or `all` with `-PdevMods`. Gr
 .\gradlew.bat -PdevMods=all :26.3-neoforge:assembleDevMods
 ```
 
-The 26.3 build looks for sibling checkouts ending in `-26.3`. For other locations, pass `-PhammerDir=../path-to-hammer` and `-PfrenchiesDir=../path-to-frenchies`. Each selected checkout must declare the matching mod ID and Minecraft version. To make all three mods your usual setup, save a personal IntelliJ Gradle run configuration for each target with its qualified `runClient` task and `-PdevMods=all`.
+For feature worktrees or other locations, pass `-PhammerDir=../path-to-hammer` and `-PfrenchiesDir=../path-to-frenchies`. Each selected checkout must declare the matching mod ID and Minecraft version. To make all three mods your usual setup, save a personal IntelliJ Gradle run configuration for each target with its qualified `runClient` task and `-PdevMods=all`.
 
 **Installing the jars.** The collection task writes the core and selected companion jars to `versions/<target>/build/dev-mods/<minecraft-version>/`. The 26.3 example above writes to `versions/26.3-neoforge/build/dev-mods/26.3/`. Copy the chosen jars into the client and server `mods` directories for that Minecraft version.
 
