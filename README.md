@@ -14,7 +14,7 @@ Coding agents share the repository's worktree, implementation and testing instru
 
 ### Build & Run
 
-Feature PRs target `main`. Stonecutter defaults to editing Minecraft 26.1. Both targets use ModDevGradle and Java 25. Their exact Minecraft and NeoForge versions and supported ranges live in [26.1 properties](versions/26.1-neoforge/gradle.properties) and [26.3 properties](versions/26.3-neoforge/gradle.properties).
+Maintain Minecraft 26.1 and 26.3 together on `main`. Start feature branches from `main`, edit shared gameplay once, and test both targets before merging. Stonecutter defaults to editing 26.1. Use version-specific code or resources where the Minecraft or NeoForge APIs and data formats differ. Both targets use ModDevGradle and Java 25. Their exact versions and supported ranges live in [26.1 properties](versions/26.1-neoforge/gradle.properties) and [26.3 properties](versions/26.3-neoforge/gradle.properties).
 
 To build one JAR, generate that target's data first, then package it in a second invocation.
 
