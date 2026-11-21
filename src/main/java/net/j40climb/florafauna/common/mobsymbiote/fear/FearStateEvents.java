@@ -8,6 +8,7 @@ import net.j40climb.florafauna.common.mobsymbiote.fear.creeper.CreeperFearHandle
 import net.j40climb.florafauna.common.mobsymbiote.fear.enderman.EndermanFearHandler;
 import net.j40climb.florafauna.common.mobsymbiote.fear.goals.FearAvoidanceGoal;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteHelper;
+import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
@@ -89,6 +90,13 @@ public class FearStateEvents {
             case EXHAUSTED -> handleExhausted(mob, currentTick);
             case OVERSTRESS -> handleOverstress(mob);
         }
+
+        // Rest can start during exhaustion and continue after the mob returns to calm.
+        FearData data = FearHelper.getFearData(mob);
+        FearData rested = data.checkRest(fearSource.isPresent(), currentTick, Config.exhaustedCooldownTicks);
+        if (rested != data) {
+            mob.setData(FloraFaunaRegistry.FEAR_DATA, rested);
+        }
     }
 
     /**
@@ -140,15 +148,14 @@ public class FearStateEvents {
     /**
      * PANICKED state: Mob shakes, hissing sounds, particles.
      * Exit (up): Duration threshold → LEAK
-     * Exit (down): Fear source removed → CALM (with leak count reset)
+     * Exit (down): Fear source removed → CALM
      */
     private static void handlePanicked(Mob mob, Optional<FearSource> fearSource, long currentTick) {
         if (fearSource.isEmpty()) {
-            // Fear source gone - return to CALM and reset leak count
             if (mob instanceof EnderMan enderman) {
                 EndermanFearHandler.onExitPanicked(enderman);
             }
-            FearHelper.resetToCalm(mob, currentTick, true);
+            FearHelper.resetToCalm(mob, currentTick, false);
             return;
         }
 
@@ -216,9 +223,7 @@ public class FearStateEvents {
     private static void handleExhausted(Mob mob, long currentTick) {
         long ticksInState = FearHelper.getTicksInState(mob, currentTick);
         if (ticksInState >= Config.exhaustedCooldownTicks) {
-            // Cooldown complete - return to CALM but preserve leak count
-            FearHelper.setFearState(mob, FearState.CALM, currentTick);
-            FearHelper.clearFearSourcePos(mob);
+            FearHelper.resetToCalm(mob, currentTick, false);
         }
     }
 

@@ -2009,6 +2009,7 @@ public class FloraFaunaGameTests {
     // ==================== Fear System Tests ====================
 
     private static void registerFearSystemTests(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> env) {
+        FearHabitatGameTests.register(event, env);
         registerTest(event, env, "fear_state_helper_methods", FloraFaunaGameTests::testFearStateHelperMethods);
         registerTest(event, env, "fear_data_default_state", FloraFaunaGameTests::testFearDataDefaultState);
         registerTest(event, env, "fear_data_state_transitions", FloraFaunaGameTests::testFearDataStateTransitions);

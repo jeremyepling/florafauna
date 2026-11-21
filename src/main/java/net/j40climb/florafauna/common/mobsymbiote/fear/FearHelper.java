@@ -112,7 +112,6 @@ public final class FearHelper {
 
     /**
      * Resets the consecutive leak count.
-     * Called when a mob returns to CALM naturally (fear source removed).
      *
      * @param mob The mob to reset
      */
@@ -159,11 +158,11 @@ public final class FearHelper {
     }
 
     /**
-     * Resets a mob to the CALM state with all fear data cleared.
+     * Return to CALM and clear the avoidance target.
      *
      * @param mob         The mob to reset
      * @param currentTick The current game tick
-     * @param resetLeaks  If true, also reset the leak count
+     * @param resetLeaks  If true, also clear accumulated stress and its rest timer
      */
     public static void resetToCalm(Mob mob, long currentTick, boolean resetLeaks) {
         FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);

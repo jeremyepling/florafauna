@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.common.mobsymbiote;
 
 import net.j40climb.florafauna.Config;
+import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.block.mobtransport.LuredToBlockGoal;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.setup.FloraFaunaTags;
@@ -13,11 +14,15 @@ import net.minecraft.world.entity.EntityType;
 *///?}
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility methods for working with MobSymbiote data.
  */
+@EventBusSubscriber(modid = FloraFauna.MOD_ID)
 public final class MobSymbioteHelper {
 
     private MobSymbioteHelper() {
@@ -65,7 +70,23 @@ public final class MobSymbioteHelper {
         MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
                 current.withMobSymbioteLevel(MobSymbioteData.LEVEL_TRANSPORT, currentTick));
-        if (mob.getType() == EntityType.SLIME) {
+        keepHabitatMobPersistent(mob);
+    }
+
+    @SubscribeEvent
+    public static void onEntityJoin(EntityJoinLevelEvent event) {
+        // Older saves and transport tickets may contain a bond without vanilla persistence.
+        if (!event.getLevel().isClientSide() && event.getEntity() instanceof Mob mob
+                && !mob.isPersistenceRequired() && mob.hasData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA)
+                && hasMobSymbiote(mob)) {
+            keepHabitatMobPersistent(mob);
+        }
+    }
+
+    private static void keepHabitatMobPersistent(Mob mob) {
+        var type = mob.getType();
+        if (type == EntityType.SLIME || type == EntityType.SPIDER || type == EntityType.CREEPER
+                || type == EntityType.ENDERMAN || type == EntityType.BLAZE) {
             mob.setPersistenceRequired();
         }
     }

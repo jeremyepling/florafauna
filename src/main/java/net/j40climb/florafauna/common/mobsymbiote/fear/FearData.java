@@ -18,7 +18,8 @@ import java.util.Optional;
  *
  * @param fearState Current fear state
  * @param stateEnteredTick Game tick when current state was entered
- * @param leakCountSinceCooldown Consecutive leaks without returning to CALM naturally
+ * @param leakCountSinceCooldown Consecutive leaks since the last full threat-free rest
+ * @param restStartedTick First threat-free check after a leak, or -1 while not resting
  * @param fearSourceX X position of fear source (for avoidance direction)
  * @param fearSourceY Y position of fear source
  * @param fearSourceZ Z position of fear source
@@ -31,8 +32,11 @@ public record FearData(
         int fearSourceX,
         int fearSourceY,
         int fearSourceZ,
-        boolean hasFearSourcePos
+        boolean hasFearSourcePos,
+        long restStartedTick
 ) {
+    private static final long NOT_RESTING = -1L;
+
     public static final Codec<FearData> CODEC = RecordCodecBuilder.create(builder -> builder.group(
             Codec.STRING.xmap(FearState::valueOf, FearState::name)
                     .fieldOf("fearState").forGetter(d -> d.fearState),
@@ -41,7 +45,8 @@ public record FearData(
             Codec.INT.fieldOf("fearSourceX").forGetter(FearData::fearSourceX),
             Codec.INT.fieldOf("fearSourceY").forGetter(FearData::fearSourceY),
             Codec.INT.fieldOf("fearSourceZ").forGetter(FearData::fearSourceZ),
-            Codec.BOOL.fieldOf("hasFearSourcePos").forGetter(FearData::hasFearSourcePos)
+            Codec.BOOL.fieldOf("hasFearSourcePos").forGetter(FearData::hasFearSourcePos),
+            Codec.LONG.optionalFieldOf("restStartedTick", NOT_RESTING).forGetter(FearData::restStartedTick)
     ).apply(builder, FearData::new));
 
     public static final StreamCodec<ByteBuf, FearData> STREAM_CODEC = StreamCodec.composite(
@@ -52,11 +57,12 @@ public record FearData(
             ByteBufCodecs.VAR_INT, FearData::fearSourceY,
             ByteBufCodecs.VAR_INT, FearData::fearSourceZ,
             ByteBufCodecs.BOOL, FearData::hasFearSourcePos,
+            ByteBufCodecs.VAR_LONG, FearData::restStartedTick,
             FearData::new
     );
 
     public static final FearData DEFAULT = new FearData(
-            FearState.CALM, 0L, 0, 0, 0, 0, false
+            FearState.CALM, 0L, 0, 0, 0, 0, false, NOT_RESTING
     );
 
     /**
@@ -68,7 +74,7 @@ public record FearData(
      */
     public FearData withState(FearState newState, long tick) {
         return new FearData(newState, tick, leakCountSinceCooldown,
-                fearSourceX, fearSourceY, fearSourceZ, hasFearSourcePos);
+                fearSourceX, fearSourceY, fearSourceZ, hasFearSourcePos, restStartedTick);
     }
 
     /**
@@ -79,7 +85,7 @@ public record FearData(
      */
     public FearData withLeakCount(int count) {
         return new FearData(fearState, stateEnteredTick, count,
-                fearSourceX, fearSourceY, fearSourceZ, hasFearSourcePos);
+                fearSourceX, fearSourceY, fearSourceZ, hasFearSourcePos, NOT_RESTING);
     }
 
     /**
@@ -90,7 +96,7 @@ public record FearData(
      */
     public FearData withFearSourcePos(BlockPos pos) {
         return new FearData(fearState, stateEnteredTick, leakCountSinceCooldown,
-                pos.getX(), pos.getY(), pos.getZ(), true);
+                pos.getX(), pos.getY(), pos.getZ(), true, restStartedTick);
     }
 
     /**
@@ -100,7 +106,26 @@ public record FearData(
      */
     public FearData withoutFearSourcePos() {
         return new FearData(fearState, stateEnteredTick, leakCountSinceCooldown,
-                0, 0, 0, false);
+                0, 0, 0, false, restStartedTick);
+    }
+
+    public FearData checkRest(boolean threatened, long tick, int requiredTicks) {
+        if (leakCountSinceCooldown == 0) {
+            return this;
+        }
+        long start = restStartedTick;
+        if (threatened) {
+            start = NOT_RESTING;
+        } else if (start == NOT_RESTING) {
+            start = tick;
+        } else if (tick - start >= requiredTicks) {
+            return resetLeakCount();
+        }
+        if (start == restStartedTick) {
+            return this;
+        }
+        return new FearData(fearState, stateEnteredTick, leakCountSinceCooldown,
+                fearSourceX, fearSourceY, fearSourceZ, hasFearSourcePos, start);
     }
 
     /**
@@ -135,7 +160,7 @@ public record FearData(
     }
 
     /**
-     * Reset the leak count (when returning to CALM naturally).
+     * Reset the leak count and finish the current rest.
      *
      * @return New FearData with zero count
      */

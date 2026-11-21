@@ -142,14 +142,14 @@ By default, **EITHER** condition triggers fear. Set `blazeRequireBothConditions=
 
 ## Overstress Mechanic
 
-Consecutive LEAK events without returning to CALM naturally trigger OVERSTRESS:
+Bonded creepers, endermen and blazes stay in the world when players leave their pens. They can still die from overstress. With the default settings, repeated harvest attempts have these outcomes.
 
-| Leak Count | Result |
+| Harvest attempt since last full rest | Result |
 |------------|--------|
 | 1-2 | Safe |
 | 3+ | OVERSTRESS (mob dies) |
 
-The counter resets only when the mob naturally returns to CALM (fear source leaves).
+After a harvest, remove all fear sources for one full `exhaustedCooldownTicks` period (3 minutes 45 seconds by default) to reset the count. Rest can begin at any point during exhaustion and continue once the mob is calm. If a threat returns early, the mob needs a fresh uninterrupted rest.
 
 **Death Types:**
 - **Creeper**: Explodes
@@ -224,7 +224,7 @@ When looking at a fearful mob with debug overlay enabled:
 1. Lure creepers with MobSymbiote to collection area
 2. Place cats/ocelots nearby (within 16 blocks)
 3. Hopper system collects gunpowder drops
-4. Allow EXHAUSTED cooldown to prevent OVERSTRESS
+4. Move the cat or ocelot out of sight for a full rest between harvests.
 
 ### Enderman Farm
 1. Build containment area with reflective walls (polished stone, glass)
