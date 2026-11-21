@@ -13,6 +13,7 @@ import net.j40climb.florafauna.common.block.mobbarrier.data.MobBarrierConfig;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlock;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberBlockEntity;
 import net.j40climb.florafauna.common.block.ferricpoppy.FerricPoppyBlock;
+import net.j40climb.florafauna.common.block.resonantbloom.ResonantBloomBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlock;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberBlockEntity;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
@@ -47,11 +48,10 @@ import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAncho
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.common.entity.gecko.GeckoEntity;
 import net.j40climb.florafauna.common.entity.lizard.LizardEntity;
-import net.j40climb.florafauna.common.symbiote.binding.SymbiotePreparedEffect;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
 import net.j40climb.florafauna.common.symbiote.item.DormantSymbioteItem;
-import net.j40climb.florafauna.common.symbiote.item.SymbioteStewItem;
+import net.j40climb.florafauna.common.symbiote.item.SymbioticPollenItem;
 import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.minecraft.core.Holder;
@@ -64,7 +64,6 @@ import com.mojang.serialization.Codec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -101,7 +100,6 @@ public class FloraFaunaRegistry {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, FloraFauna.MOD_ID);
-    public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, FloraFauna.MOD_ID);
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, FloraFauna.MOD_ID);
 
@@ -250,6 +248,15 @@ public class FloraFaunaRegistry {
                     .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
             ));
 
+    public static final DeferredBlock<ResonantBloomBlock> RESONANT_BLOOM = registerBlock("resonant_bloom",
+            props -> new ResonantBloomBlock(props
+                    .noCollision()
+                    .instabreak()
+                    .sound(SoundType.GRASS)
+                    .offsetType(BlockBehaviour.OffsetType.XZ)
+                    .pushReaction(PushReaction.DESTROY)
+            ));
+
     // Separate item registration for ferric poppy (for use in goals)
     public static final DeferredItem<Item> FERRIC_POPPY_ITEM = ITEMS.registerItem("ferric_poppy_item",
             Item::new);
@@ -278,12 +285,12 @@ public class FloraFaunaRegistry {
     public static final DeferredItem<Item> DORMANT_SYMBIOTE = ITEMS.registerItem("dormant_symbiote",
             DormantSymbioteItem::new);
 
-    public static final DeferredItem<Item> SYMBIOTE_STEW = ITEMS.registerItem("symbiote_stew", properties ->
-            new SymbioteStewItem(properties.component(net.minecraft.core.component.DataComponents.CONSUMABLE,
+    public static final DeferredItem<Item> SYMBIOTIC_POLLEN = ITEMS.registerItem("symbiotic_pollen", properties ->
+            new SymbioticPollenItem(properties.component(net.minecraft.core.component.DataComponents.CONSUMABLE,
                     Consumable.builder()
-                            .consumeSeconds(2.0f)
-                            .animation(ItemUseAnimation.DRINK)
-                            .sound(SoundEvents.GENERIC_DRINK)
+                            .consumeSeconds(1.2f)
+                            .animation(ItemUseAnimation.EAT)
+                            .sound(SoundEvents.GENERIC_EAT)
                             .hasConsumeParticles(true)
                             .build()
             )));
@@ -359,12 +366,6 @@ public class FloraFaunaRegistry {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER_MENU =
             registerMenuType("containment_chamber", ContainmentChamberMenu::new);
-
-    // ==================== MOB EFFECTS ====================
-
-    public static final Holder<MobEffect> SYMBIOTE_PREPARED = MOB_EFFECTS.register(
-            "symbiote_prepared",
-            SymbiotePreparedEffect::new);
 
     // ==================== DATA COMPONENTS ====================
 
@@ -497,7 +498,6 @@ public class FloraFaunaRegistry {
         ENTITY_TYPES.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         MENUS.register(modEventBus);
-        MOB_EFFECTS.register(modEventBus);
         ATTACHMENT_TYPES.register(modEventBus);
     }
 }

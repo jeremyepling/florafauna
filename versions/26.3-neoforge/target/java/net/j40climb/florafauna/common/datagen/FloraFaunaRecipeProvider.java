@@ -8,6 +8,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.data.recipes.*;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.world.item.Items;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.ItemLike;
 
@@ -49,6 +50,13 @@ public class FloraFaunaRecipeProvider extends RecipeProvider {
                 .requires(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get())
                 .unlockedBy("has_ferric_poppy", has(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get()))
                 .save(output, FloraFauna.MOD_ID + ":iron_nuggets_from_ferric_poppy");
+
+        ShapelessRecipeBuilder.shapeless(items, RecipeCategory.DECORATIONS, FloraFaunaRegistry.COCOON_CHAMBER.get())
+                .requires(Items.OAK_PLANKS)
+                .requires(ItemTags.WOOL)
+                .requires(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get())
+                .unlockedBy("has_symbiotic_pollen", has(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get()))
+                .save(output);
     }
 
     private void planksFromLog(ItemLike planks, ItemLike log, String logName) {

@@ -16,7 +16,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * Screen for the Cocoon Chamber - a button-only GUI.
- * Displays four action buttons: Set Spawn, Clear Spawn, Bind, Unbind.
+ * Displays spawn, bonding, and dream actions.
  * <p>
  * This screen uses {@link BaseScreen} (not BaseContainerScreen) because it has
  * no inventory slots. Server communication is handled via {@link CocoonActionPayload}.
@@ -36,6 +36,7 @@ public class CocoonChamberScreen extends BaseScreen {
     private Button clearSpawnButton;
     private Button bindButton;
     private Button unbindButton;
+    private Button dreamButton;
 
     public CocoonChamberScreen(BlockPos chamberPos) {
         super(Component.translatable("gui.florafauna.cocoon.title"));
@@ -76,6 +77,12 @@ public class CocoonChamberScreen extends BaseScreen {
         ).bounds(buttonX, startY + BUTTON_SPACING * 3, BUTTON_WIDTH, BUTTON_HEIGHT).build();
         addRenderableWidget(unbindButton);
 
+        dreamButton = Button.builder(
+                Component.translatable("gui.florafauna.cocoon.dream"),
+                this::onDream
+        ).bounds(buttonX, startY + BUTTON_SPACING * 4, BUTTON_WIDTH, BUTTON_HEIGHT).build();
+        addRenderableWidget(dreamButton);
+
         updateButtonStates();
     }
 
@@ -96,13 +103,14 @@ public class CocoonChamberScreen extends BaseScreen {
         clearSpawnButton.active = data.cocoonSpawnPos() != null;
 
         // Bind is only active if:
-        // - Player is bindable (consumed stew)
+        // - Player is bindable (consumed pollen)
         // - Player is not already bonded
         // (We don't check inventory client-side - server will validate)
         bindButton.active = data.symbioteBindable() && !data.symbioteState().isBonded();
 
         // Unbind is only active if player is bonded
         unbindButton.active = data.symbioteState().isBonded();
+        dreamButton.active = data.symbioteState().isBonded();
     }
 
     private void onSetSpawn(Button button) {
@@ -122,6 +130,11 @@ public class CocoonChamberScreen extends BaseScreen {
 
     private void onUnbind(Button button) {
         ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.UNBIND, chamberPos));
+        onClose();
+    }
+
+    private void onDream(Button button) {
+        ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.DREAM, chamberPos));
         onClose();
     }
 }

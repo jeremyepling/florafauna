@@ -45,7 +45,7 @@ public class FloraFaunaSetup {
                     .displayItems((pParameters, output) -> {
                         // Items
                         output.accept(FloraFaunaRegistry.DORMANT_SYMBIOTE);
-                        output.accept(FloraFaunaRegistry.SYMBIOTE_STEW);
+                        output.accept(FloraFaunaRegistry.SYMBIOTIC_POLLEN);
 
                         // Spawn eggs
                         output.accept(FloraFaunaRegistry.GECKO_SPAWN_EGG);
@@ -55,6 +55,7 @@ public class FloraFaunaSetup {
                         output.accept(FloraFaunaRegistry.TEAL_MOSS_BLOCK);
                         output.accept(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER);
                         output.accept(FloraFaunaRegistry.COCOON_CHAMBER);
+                        output.accept(FloraFaunaRegistry.RESONANT_BLOOM);
                         output.accept(FloraFaunaRegistry.MOB_BARRIER);
                         output.accept(FloraFaunaRegistry.SLIME_GRATE);
                         output.accept(FloraFaunaRegistry.HUSK);

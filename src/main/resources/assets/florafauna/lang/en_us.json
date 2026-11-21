@@ -39,7 +39,7 @@
   "plot.florafauna.item_input.expect": "Watch the diamond drift into the input. Within a few seconds the chest should contain exactly one diamond. Take it out to repeat.",
   "plot.florafauna.recovery.title": "Husk recovery",
   "plot.florafauna.recovery.setup": "Solo run: Stow your gear. If bonded, use /florafauna symbiote unbond. Switch to Survival with Keep Inventory off. Take only the top row of the barrel. For the two-player run, turn to page four.",
-  "plot.florafauna.recovery.steps": "Drink the stew. Use the cocoon to set spawn and bind. Equip the boots, hold the three copper ingots in your offhand and note the slot with 17 shards. Walk down the runway and use /kill.",
+  "plot.florafauna.recovery.steps": "Eat the pollen. Use the cocoon to set spawn and bind. Equip the boots, hold the three copper ingots in your offhand and note the slot with 17 shards. Walk down the runway and use /kill.",
   "plot.florafauna.recovery.expect": "Respawn at the cocoon. Quit and rejoin. Follow the waypoint and use the husk. Check all counts and slots. Use the husk again and check for duplicates.",
   "plot.florafauna.recovery.owner": "Two-player run: In Survival, bind at the cocoon. Carry only the 17 shards down the runway and use /kill. Have the other player use and try to mine the husk. It should stay put and give them nothing.",
   "plot.florafauna.recovery.full": "After respawning, take the barrel's 64 shards and 35 cobblestone. Put one cobblestone in each of your other 35 inventory slots. Hold the shards and use your husk. Your shard count should stay at 64.",
@@ -81,8 +81,6 @@
 
   "item.florafauna.dormant_symbiote": "Dormant Symbiote",
   "tooltip.florafauna.dormant_symbiote": "A mysterious alien lifeform, waiting to be awakened",
-  "item.florafauna.symbiote_stew": "Symbiote Stew",
-  "tooltip.florafauna.symbiote_stew": "A strange concoction that prepares you for symbiosis",
 
   "item.florafauna.gecko_spawn_egg": "Gecko Spawn Egg",
   "entity.florafauna.gecko": "Gecko",
@@ -111,6 +109,7 @@
   "gui.florafauna.cocoon.clear_spawn": "Clear Spawn",
   "gui.florafauna.cocoon.bind": "Bind Symbiote",
   "gui.florafauna.cocoon.unbind": "Unbind Symbiote",
+  "gui.florafauna.cocoon.dream": "Rest / Dream",
   "block.florafauna.mob_barrier": "Mob Barrier",
   "block.florafauna.husk": "Husk",
 
@@ -198,7 +197,7 @@
   "command.florafauna.symbiote.abilities_active": "Abilities Active",
   "command.florafauna.symbiote.cocoon_header": "Cocoon State",
   "command.florafauna.symbiote.bindable": "Bindable",
-  "command.florafauna.symbiote.stew_consumed": "Stew Consumed",
+  "command.florafauna.symbiote.pollen_consumed": "Pollen Consumed",
   "command.florafauna.symbiote.cocoon_set": "Cocoon Set",
   "command.florafauna.symbiote.cocoon_spawn": "Cocoon Spawn",
   "command.florafauna.symbiote.previous_bed": "Previous Bed",
@@ -261,7 +260,7 @@
   "symbiote.florafauna.spawn_set": "Cocoon spawn point set",
   "symbiote.florafauna.spawn_cleared": "Cocoon spawn point cleared",
   "symbiote.florafauna.no_cocoon_spawn": "No cocoon spawn set",
-  "symbiote.florafauna.not_bindable": "You must consume Symbiote Stew first",
+  "symbiote.florafauna.not_bindable": "You must consume Symbiotic Pollen first",
   "symbiote.florafauna.no_dormant_symbiote": "You need a Dormant Symbiote in your inventory",
   "symbiote.florafauna.already_bonded": "You already have a bonded symbiote",
   "symbiote.florafauna.not_bonded": "You don't have a bonded symbiote",
@@ -269,14 +268,11 @@
   "symbiote.florafauna.bonded_success": "The symbiote has bonded with you",
   "symbiote.florafauna.unbonded_success": "The symbiote has been released",
   "symbiote.florafauna.cocoon_destroyed": "Your cocoon spawn has been destroyed, restoring previous spawn",
-  "symbiote.florafauna.stew_consumed": "You feel... different. The cocoon beckons.",
   "symbiote.florafauna.already_prepared": "You are already prepared for symbiosis",
-  "symbiote.florafauna.effect_expired": "The preparation has worn off...",
 
   "symbiote.florafauna.husk_not_owner": "This husk does not recognize you.",
   "symbiote.florafauna.abilities_restored": "Your symbiote awakens... abilities restored.",
 
-  "effect.florafauna.symbiote_prepared": "Symbiote Prepared",
 
   "waypoint.florafauna.husk": "Restoration Husk",
 
@@ -298,5 +294,21 @@
   "symbiote.dialogue.mob_input_capture": "Another unwilling volunteer.",
 
   "block.florafauna.ferric_poppy": "Ferric Poppy",
-  "item.florafauna.ferric_poppy_item": "Ferric Poppy"
+  "item.florafauna.ferric_poppy_item": "Ferric Poppy",
+  "block.florafauna.resonant_bloom": "Resonant Bloom",
+  "item.florafauna.resonant_bloom": "Resonant Bloom",
+  "item.florafauna.symbiotic_pollen": "Symbiotic Pollen",
+  "symbiote.onboarding.first_contact": "Ah. You broke my flower. I suppose we should introduce ourselves.",
+  "symbiote.onboarding.pollen_hint": "The spores are in you now. Eat one pollen to wake the bond. Keep the other for a Cocoon Chamber.",
+  "symbiote.onboarding.chamber_hint": "Good. Make a Cocoon Chamber from an oak plank, white wool, and the other pollen. Bind us when you're ready.",
+  "symbiote.onboarding.pollen_consumed": "I can feel you more clearly. Build the chamber when you're ready; I am not in a hurry.",
+  "symbiote.onboarding.bonded_perception": "Now I can sense nearby blooms. Look for their drifting spores.",
+  "symbiote.onboarding.learn_by_doing": "Move through different biomes and use your body. Each repeated challenge teaches me how to help. Try jumping.",
+  "symbiote.onboarding.jump_progress": "Your legs keep making the same argument. I am beginning to agree.",
+  "symbiote.onboarding.new_biome_hint": "I know this ground too well. Take those legs somewhere new.",
+  "symbiote.onboarding.jump_adapted": "There. Jumping feels lighter now. Repetition and new places make useful teachers.",
+  "symbiote.dream.jump.reflective": "I keep seeing you rise, then fall. There may be a lesson in the space between.",
+  "symbiote.dream.jump.directional": "Jump more often. Let me compare how you move in different biomes.",
+  "symbiote.dream.jump.anchored": "Jump 25 times across at least two biomes. Then I can make each jump stronger.",
+  "symbiote.dream.jump.new_biome": "You have jumped enough. Jump in another biome so I can finish adapting."
 }

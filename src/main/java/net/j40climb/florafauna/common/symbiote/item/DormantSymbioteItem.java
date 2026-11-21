@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * A dormant symbiote item that can be bound to a player via the Cocoon Chamber.
  *
  * This item no longer binds on consume. Instead:
- * 1. Player consumes symbiote_stew to become "bindable"
+ * 1. Player consumes symbiotic pollen to become "bindable"
  * 2. Player uses Cocoon Chamber's Bind action with this item in inventory
  * 3. Cocoon Chamber consumes this item and binds the symbiote to the player
  *

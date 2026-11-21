@@ -12,6 +12,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.ItemLike;
 
 import java.util.concurrent.CompletableFuture;
@@ -75,6 +76,13 @@ public class FloraFaunaRecipeProvider extends RecipeProvider.Runner {
                     .requires(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get())
                     .unlockedBy("has_ferric_poppy", has(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get()))
                     .save(output, FloraFauna.MOD_ID + ":iron_nuggets_from_ferric_poppy");
+
+            ShapelessRecipeBuilder.shapeless(items, RecipeCategory.DECORATIONS, FloraFaunaRegistry.COCOON_CHAMBER.get())
+                    .requires(Items.OAK_PLANKS)
+                    .requires(Blocks.WHITE_WOOL)
+                    .requires(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get())
+                    .unlockedBy("has_symbiotic_pollen", has(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get()))
+                    .save(output);
         }
 
         private void planksFromLog(ItemLike planks, ItemLike log, String logName) {
