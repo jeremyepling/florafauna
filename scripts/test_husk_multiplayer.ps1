@@ -28,6 +28,7 @@ $listener.Stop()
     'level-name=world', 'level-type=minecraft:flat', 'level-seed=1234', 'generate-structures=false',
     'gamemode=survival', 'spawn-protection=0', 'view-distance=3', 'simulation-distance=3', 'max-players=2'
 ) | Set-Content -LiteralPath (Join-Path $root 'server/server.properties')
+'eula=true' | Set-Content -LiteralPath (Join-Path $root 'server/eula.txt')
 
 # Offline-mode UUIDs for the two fixed development usernames in build.gradle.
 @(
