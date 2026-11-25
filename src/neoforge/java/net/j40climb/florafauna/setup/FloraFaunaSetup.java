@@ -42,56 +42,7 @@ public class FloraFaunaSetup {
             CREATIVE_TABS.register("florafauna_items_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.florafauna.florafauna_items_tab"))
                     .icon(() -> new ItemStack(FloraFaunaRegistry.DORMANT_SYMBIOTE.get()))
-                    .displayItems((pParameters, output) -> {
-                        // Items
-                        output.accept(FloraFaunaRegistry.DORMANT_SYMBIOTE);
-                        output.accept(FloraFaunaRegistry.SYMBIOTIC_POLLEN);
-
-                        // Spawn eggs
-                        output.accept(FloraFaunaRegistry.GECKO_SPAWN_EGG);
-                        output.accept(FloraFaunaRegistry.LIZARD_SPAWN_EGG);
-
-                        // Blocks
-                        output.accept(FloraFaunaRegistry.TEAL_MOSS_BLOCK);
-                        output.accept(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER);
-                        output.accept(FloraFaunaRegistry.COCOON_CHAMBER);
-                        output.accept(FloraFaunaRegistry.RESONANT_BLOOM);
-                        output.accept(FloraFaunaRegistry.MOB_BARRIER);
-                        output.accept(FloraFaunaRegistry.SLIME_GRATE);
-                        output.accept(FloraFaunaRegistry.HUSK);
-
-                        // Item Input System blocks
-                        output.accept(FloraFaunaRegistry.STORAGE_ANCHOR);
-                        output.accept(FloraFaunaRegistry.ITEM_INPUT);
-                        output.accept(FloraFaunaRegistry.FIELD_RELAY);
-
-                        // Mining Anchor System blocks
-                        output.accept(FloraFaunaRegistry.TIER1_MINING_ANCHOR);
-                        output.accept(FloraFaunaRegistry.TIER2_MINING_ANCHOR);
-                        output.accept(FloraFaunaRegistry.TIER2_POD);
-
-                        // Mob Transport System blocks
-                        output.accept(FloraFaunaRegistry.MOB_INPUT);
-                        output.accept(FloraFaunaRegistry.MOB_OUTPUT);
-                        output.accept(FloraFaunaRegistry.MOB_SYMBIOTE);
-
-                        // Iron Garden System blocks
-                        output.accept(FloraFaunaRegistry.FERRIC_POPPY);
-                        output.accept(FloraFaunaRegistry.FERRIC_POPPY_ITEM);
-
-                        // Wood blocks - iterates through all wood types
-                        for (WoodType woodType : WoodType.values()) {
-                            WoodBlockSet wood = woodType.getBlockSet();
-                            output.accept(wood.log());
-                            output.accept(wood.strippedLog());
-                            output.accept(wood.wood());
-                            output.accept(wood.strippedWood());
-                            output.accept(wood.planks());
-                            output.accept(wood.slab());
-                            output.accept(wood.fence());
-                            output.accept(wood.fenceGate());
-                        }
-                    }).build());
+                    .displayItems((parameters, output) -> FloraFaunaCreativeItems.accept(output)).build());
 
     // ==================== NETWORKING ====================
 

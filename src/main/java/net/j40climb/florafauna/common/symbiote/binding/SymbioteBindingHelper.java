@@ -42,7 +42,7 @@ public final class SymbioteBindingHelper {
      */
     public static BindResult bindSymbiote(ServerPlayer player, ItemStack symbioteItem) {
         // Check if player already has a bonded symbiote
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (currentData.symbioteState().isBonded()) {
             return new BindResult(false, "symbiote.florafauna.already_bonded");
         }
@@ -54,20 +54,20 @@ public final class SymbioteBindingHelper {
 
         // Read symbiote state from item components
         SymbioteData itemData = symbioteItem.getOrDefault(
-                FloraFaunaRegistry.SYMBIOTE_DATA,
+                FloraFaunaRegistry.SYMBIOTE_DATA.get(),
                 SymbioteData.DEFAULT
         );
         ProgressSignalTracker progressTracker = symbioteItem.getOrDefault(
-                FloraFaunaRegistry.SYMBIOTE_PROGRESS,
+                FloraFaunaRegistry.SYMBIOTE_PROGRESS.get(),
                 ProgressSignalTracker.DEFAULT
         );
 
         // Bond the symbiote - use helper method to preserve cocoon state
         PlayerSymbioteData bondedData = currentData.withSymbioteFromItem(itemData, player.level().getGameTime());
 
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bondedData);
-        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, progressTracker);
-        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bondedData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, progressTracker);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         // Consume the item
         symbioteItem.shrink(1);
@@ -77,13 +77,13 @@ public final class SymbioteBindingHelper {
 
     /** Bind the organism carried since the bloom encounter, without a dormant item. */
     public static BindResult bindBloomSymbiote(ServerPlayer player) {
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (currentData.symbioteState().isBonded()) {
             return new BindResult(false, "symbiote.florafauna.already_bonded");
         }
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA,
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA,
                 currentData.withSymbioteFromItem(SymbioteData.DEFAULT, player.level().getGameTime()));
-        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
         return new BindResult(true, "symbiote.florafauna.bonded_success");
     }
 
@@ -95,28 +95,28 @@ public final class SymbioteBindingHelper {
      * @return UnbindResult containing the created item (if successful)
      */
     public static UnbindResult unbindSymbiote(ServerPlayer player) {
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             return UnbindResult.failure("symbiote.florafauna.not_bonded");
         }
 
         // Read current player state (progress tracker preserves memories)
-        ProgressSignalTracker progressTracker = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        ProgressSignalTracker progressTracker = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
 
         // Create dormant symbiote item with current player state
         ItemStack symbioteItem = new ItemStack(FloraFaunaRegistry.DORMANT_SYMBIOTE.get());
 
         // Copy player symbiote state to item component
         SymbioteData itemData = currentData.toItemData();
-        symbioteItem.set(FloraFaunaRegistry.SYMBIOTE_DATA, itemData);
-        symbioteItem.set(FloraFaunaRegistry.SYMBIOTE_PROGRESS, progressTracker);
+        symbioteItem.set(FloraFaunaRegistry.SYMBIOTE_DATA.get(), itemData);
+        symbioteItem.set(FloraFaunaRegistry.SYMBIOTE_PROGRESS.get(), progressTracker);
 
         // Reset symbiote bond state while preserving cocoon state
         PlayerSymbioteData unbondedData = currentData.withSymbioteReset();
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, unbondedData);
-        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
-        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, unbondedData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         return new UnbindResult(true, "symbiote.florafauna.unbonded_success", symbioteItem);
     }

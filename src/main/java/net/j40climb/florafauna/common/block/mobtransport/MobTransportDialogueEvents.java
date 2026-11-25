@@ -32,7 +32,7 @@ public class MobTransportDialogueEvents {
                 continue;
             }
 
-            var data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+            var data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
             if (!data.symbioteState().isBonded()) {
                 continue;
             }

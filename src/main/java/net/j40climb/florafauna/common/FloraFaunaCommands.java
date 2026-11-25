@@ -38,11 +38,25 @@ import net.minecraft.server.level.ServerPlayer;
 /*import net.minecraft.util.Prediction;
 *///?}
 import net.minecraft.world.level.Level;
+//? if neoforge {
 import net.neoforged.api.distmarker.Dist;
+//?}
+//? if neoforge {
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//?}
+//? if neoforge {
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -145,7 +159,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Display the header
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.header")
@@ -208,7 +222,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.already_bonded"));
@@ -221,9 +235,9 @@ public class FloraFaunaCommands {
                 1,
                 false, false, false, 0
         );
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
-        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
-        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         ObservationArbiter.observe(player, ObservationCategory.BONDING_MILESTONE, 100, Map.of(
                 "event", "bonded"
@@ -270,7 +284,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -278,9 +292,9 @@ public class FloraFaunaCommands {
         }
 
         PlayerSymbioteData resetData = currentData.withSymbioteReset();
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, resetData);
-        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
-        player.setData(FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, resetData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.VOICE_COOLDOWNS, VoiceCooldownState.DEFAULT);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.reset_success")
                 .withStyle(style -> style.withColor(0xF39C12)), false);
@@ -295,7 +309,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -320,7 +334,7 @@ public class FloraFaunaCommands {
                 return 0;
         }
 
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         boolean newState = switch (ability.toLowerCase()) {
             case "dash" -> newData.dash();
@@ -347,7 +361,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -356,7 +370,7 @@ public class FloraFaunaCommands {
 
         int level = IntegerArgumentType.getInteger(context, "level");
         PlayerSymbioteData newData = currentData.withJumpBoost(level);
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
         source.sendSuccess(() -> Component.translatable("command.florafauna.symbiote.jump_boost_set",
                 level).withStyle(style -> style.withColor(0xF39C12)), false);
@@ -374,7 +388,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -399,7 +413,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        PlayerSymbioteData currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {
             source.sendFailure(Component.translatable("command.florafauna.symbiote.not_bonded"));
@@ -514,7 +528,7 @@ public class FloraFaunaCommands {
      * Gets the player's bound mining anchor, or null if none is bound.
      */
     private static AbstractMiningAnchorBlockEntity getBoundAnchor(ServerPlayer player) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!data.hasAnchorBound()) {
             return null;
@@ -678,6 +692,7 @@ public class FloraFaunaCommands {
      *   /florafauna debug on - Enable debug overlay
      *   /florafauna debug off - Disable debug overlay
      */
+    //? if neoforge {
     @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
     public static class ClientCommands {
 
@@ -770,4 +785,5 @@ public class FloraFaunaCommands {
             return 1;
         }
     }
+    //?}
 }

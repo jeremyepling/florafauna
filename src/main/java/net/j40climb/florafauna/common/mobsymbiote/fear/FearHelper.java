@@ -28,7 +28,7 @@ public final class FearHelper {
         if (!(entity instanceof Mob)) {
             return FearState.CALM;
         }
-        FearData data = entity.getData(FloraFaunaRegistry.FEAR_DATA);
+        FearData data = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.FEAR_DATA);
         return data.fearState();
     }
 
@@ -42,7 +42,7 @@ public final class FearHelper {
         if (!(entity instanceof Mob)) {
             return FearData.DEFAULT;
         }
-        return entity.getData(FloraFaunaRegistry.FEAR_DATA);
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.FEAR_DATA);
     }
 
     /**
@@ -53,8 +53,8 @@ public final class FearHelper {
      * @param currentTick The current game tick
      */
     public static void setFearState(Mob mob, FearState newState, long currentTick) {
-        FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);
-        mob.setData(FloraFaunaRegistry.FEAR_DATA, current.withState(newState, currentTick));
+        FearData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, current.withState(newState, currentTick));
     }
 
     /**
@@ -68,7 +68,7 @@ public final class FearHelper {
         if (!(entity instanceof Mob)) {
             return 0;
         }
-        FearData data = entity.getData(FloraFaunaRegistry.FEAR_DATA);
+        FearData data = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.FEAR_DATA);
         return data.getTicksInState(currentTick);
     }
 
@@ -106,8 +106,8 @@ public final class FearHelper {
      * @param mob The mob that leaked
      */
     public static void incrementLeakCount(Mob mob) {
-        FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);
-        mob.setData(FloraFaunaRegistry.FEAR_DATA, current.incrementLeakCount());
+        FearData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, current.incrementLeakCount());
     }
 
     /**
@@ -116,8 +116,8 @@ public final class FearHelper {
      * @param mob The mob to reset
      */
     public static void resetLeakCount(Mob mob) {
-        FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);
-        mob.setData(FloraFaunaRegistry.FEAR_DATA, current.resetLeakCount());
+        FearData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, current.resetLeakCount());
     }
 
     /**
@@ -130,7 +130,7 @@ public final class FearHelper {
         if (!(entity instanceof Mob)) {
             return 0;
         }
-        FearData data = entity.getData(FloraFaunaRegistry.FEAR_DATA);
+        FearData data = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.FEAR_DATA);
         return data.leakCountSinceCooldown();
     }
 
@@ -143,8 +143,8 @@ public final class FearHelper {
      * @param pos The position of the fear source
      */
     public static void setFearSourcePos(Mob mob, BlockPos pos) {
-        FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);
-        mob.setData(FloraFaunaRegistry.FEAR_DATA, current.withFearSourcePos(pos));
+        FearData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, current.withFearSourcePos(pos));
     }
 
     /**
@@ -153,8 +153,8 @@ public final class FearHelper {
      * @param mob The mob to update
      */
     public static void clearFearSourcePos(Mob mob) {
-        FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);
-        mob.setData(FloraFaunaRegistry.FEAR_DATA, current.withoutFearSourcePos());
+        FearData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, current.withoutFearSourcePos());
     }
 
     /**
@@ -165,12 +165,12 @@ public final class FearHelper {
      * @param resetLeaks  If true, also clear accumulated stress and its rest timer
      */
     public static void resetToCalm(Mob mob, long currentTick, boolean resetLeaks) {
-        FearData current = mob.getData(FloraFaunaRegistry.FEAR_DATA);
+        FearData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
         FearData updated = current.withState(FearState.CALM, currentTick)
                 .withoutFearSourcePos();
         if (resetLeaks) {
             updated = updated.resetLeakCount();
         }
-        mob.setData(FloraFaunaRegistry.FEAR_DATA, updated);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, updated);
     }
 }

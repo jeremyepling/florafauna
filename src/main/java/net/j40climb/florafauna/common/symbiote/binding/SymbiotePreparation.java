@@ -12,7 +12,7 @@ public final class SymbiotePreparation {
     private SymbiotePreparation() {}
 
     public static boolean prepare(ServerPlayer player) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (data.symbioteBindable()) {
             player.sendOverlayMessage(Component.translatable("symbiote.florafauna.already_prepared"));
             return false;
@@ -21,7 +21,7 @@ public final class SymbiotePreparation {
             player.sendOverlayMessage(Component.translatable("symbiote.florafauna.already_bonded"));
             return false;
         }
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA,
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA,
                 data.withSymbioteBindable(true).withPollenConsumedOnce(true));
         CocoonProgressionHooks.onSymbiotePrepared(player);
         SymbioteOnboarding.onPrepared(player);

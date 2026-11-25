@@ -14,7 +14,11 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+//? if neoforge {
 import net.neoforged.neoforge.network.PacketDistributor;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.PacketDistributor;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 /**

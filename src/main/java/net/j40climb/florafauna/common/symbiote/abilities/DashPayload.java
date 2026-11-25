@@ -9,7 +9,11 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
+//? if neoforge {
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.IPayloadContext;
+*///?}
 
 public enum DashPayload implements CustomPacketPayload {
     INSTANCE;
@@ -24,7 +28,7 @@ public enum DashPayload implements CustomPacketPayload {
     }
 
     public static void dash(ServerPlayer player) {
-        PlayerSymbioteData symbiote = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbiote = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbiote.symbioteState().areAbilitiesActive() || !symbiote.dash()) {
             return;
         }

@@ -38,12 +38,12 @@ final class SlimeGrateTests {
         HopperBlockEntity hopper = helper.getBlockEntity(grate.below(), HopperBlockEntity.class);
         helper.startSequence()
                 .thenWaitUntil(() -> {
-                    helper.assertTrue(farmed.getData(FloraFaunaRegistry.SLIME_LAST_SHED) >= 0,
+                    helper.assertTrue(net.j40climb.florafauna.platform.AttachmentAccess.get(farmed, FloraFaunaRegistry.SLIME_LAST_SHED) >= 0,
                             "A played note must lure the slime through the grate");
                     helper.assertTrue(farmed.getX() > panelX, "Slime must reach far side");
                 })
                 .thenExecute(() -> {
-                    helper.assertTrue(!wild.hasData(FloraFaunaRegistry.SLIME_NOTE), "Ordinary slimes must ignore the note");
+                    helper.assertTrue(!net.j40climb.florafauna.platform.AttachmentAccess.has(wild, FloraFaunaRegistry.SLIME_NOTE), "Ordinary slimes must ignore the note");
                     helper.setBlock(near.south(), Blocks.REDSTONE_BLOCK);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(farmed.getX() < panelX, "Return note must lure the slime back"))

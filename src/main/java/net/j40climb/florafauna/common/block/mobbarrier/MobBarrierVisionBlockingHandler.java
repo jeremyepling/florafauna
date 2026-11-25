@@ -11,18 +11,27 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
+//?}
 
 /**
  * Handles vision blocking for MobBarrier blocks.
  * When a mob tries to target an entity, checks if there's a MobBarrier
  * with blockVision=true between them that would block this mob's vision.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class MobBarrierVisionBlockingHandler {
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onLivingChangeTarget(LivingChangeTargetEvent event) {
         // Only handle Mob entities (not all LivingEntities)
@@ -47,12 +56,14 @@ public class MobBarrierVisionBlockingHandler {
             event.setCanceled(true);
         }
     }
+    //?}
+
 
     /**
      * Checks if vision between mob and target is blocked by a MobBarrier
      * with blockVision enabled for this mob type.
      */
-    private static boolean isVisionBlockedByBarrier(Mob mob, LivingEntity target) {
+    public static boolean isVisionBlockedByBarrier(Mob mob, LivingEntity target) {
         Level level = mob.level();
         Vec3 mobEye = mob.getEyePosition();
         Vec3 targetEye = target.getEyePosition();

@@ -22,6 +22,7 @@ eclipse
 .eclipse
 run
 runs
+logs/
 run-data
 nul
 

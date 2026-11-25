@@ -1,0 +1,213 @@
+import java.time.Duration
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.fabricmc.fabric-loom' version '1.16.3'
+}
+
+version = mod_version
+group = mod_group_id
+base.archivesName = "${mod_id}-${project.name}"
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+stonecutter.constants.put('fabric', true)
+stonecutter.constants.put('neoforge', false)
+apply from: rootProject.file('gradle/version-compat.gradle')
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url = 'https://maven.fabricmc.net/' }
+}
+
+def loaderSources = sourceSets.create('fabric')
+sourceSets.main.java.source(loaderSources.java)
+sourceSets.main.resources.source(loaderSources.resources)
+sourceSets.main.java.srcDir 'target/java'
+sourceSets.main.resources.srcDir 'target/resources'
+sourceSets.main.java.exclude 'net/j40climb/florafauna/common/datagen/**'
+sourceSets.main.resources.exclude 'data/florafauna/neoforge/**', 'data/neoforge/**', 'META-INF/accesstransformer.cfg', 'META-INF/neoforge.mods.toml'
+
+// Data is identical across loaders; generate it once with the matching Minecraft providers.
+def dataProject = project(":${minecraft_version}-neoforge")
+def generatedResources = dataProject.layout.buildDirectory.dir('generated/resources/datagen')
+sourceSets.main.resources.srcDir generatedResources
+tasks.named('processResources') { dependsOn "${dataProject.path}:runData" }
+
+def fabricPlaytestSources = sourceSets.create('fabricPlaytest')
+sourceSets.create('playtest') {
+    java.source(fabricPlaytestSources.java)
+    resources.source(fabricPlaytestSources.resources)
+    java.srcDir 'target/playtest'
+    compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+    runtimeClasspath += sourceSets.main.runtimeClasspath
+}
+def fabricGameTests = sourceSets.create('fabricGameTest') {
+    compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+    runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+}
+def fabricTestSources = sourceSets.create('fabricTest')
+sourceSets.test {
+    java.source(fabricTestSources.java)
+    compileClasspath += sourceSets.main.compileClasspath
+    runtimeClasspath += sourceSets.main.runtimeClasspath
+}
+
+def fabricLoaderVersion = '0.19.5'
+def companionNames = ['hammer', 'frenchies'].findAll { companion ->
+    gradle.includedBuilds.any { it.name == "dev-${companion}" || it.name == "dev-${companion}-${minecraft_version}" }
+}
+def playtestId = providers.gradleProperty('playtestId').orNull
+def playtestScenario = providers.gradleProperty('playtestScenario').orNull
+def playtestPhase = providers.gradleProperty('playtestPhase').orNull
+def huskTestId = providers.gradleProperty('huskTestId').orNull
+def huskTestPort = providers.gradleProperty('huskTestPort').orNull
+if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenario ==~ /[a-z]+/) || !(playtestPhase in ['1', '2']))) {
+    throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
+}
+if (huskTestId != null && (!(huskTestId ==~ /[0-9a-f]{32}/) || !(huskTestPort ==~ /[0-9]{1,5}/) || !(1..65535).contains(huskTestPort.toInteger()))) {
+    throw new GradleException('Use scripts/test_husk_multiplayer.ps1 to prepare the multiplayer run.')
+}
+configurations {
+    localRuntime
+    runtimeClasspath.extendsFrom localRuntime
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${fabricLoaderVersion}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    implementation include('com.electronwill.night-config:core:3.8.3')
+    implementation include('com.electronwill.night-config:toml:3.8.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    companionNames.each { companion ->
+        localRuntime("net.j40climb.dev:${companion}-${project.name}:local") { transitive = false }
+    }
+}
+
+loom {
+    accessWidenerPath = file('target/resources/florafauna.accesswidener')
+    mods {
+        florafauna { sourceSet sourceSets.main }
+        florafauna_gametest { sourceSet fabricGameTests }
+        if (playtestId != null || huskTestId != null) {
+            florafauna_playtest { sourceSet sourceSets.playtest }
+        }
+    }
+    runs {
+        client { runDir 'run/client' }
+        server { runDir 'run/server' }
+        gameTestServer {
+            server()
+            source fabricGameTests
+            runDir 'run/gameTestServer'
+            vmArg '-Dfabric-api.gametest=true'
+            vmArg "-Dfabric-api.gametest.filter=${providers.gradleProperty('gameTestFilter').getOrElse('florafauna:*')}"
+            vmArg "-Dfabric-api.gametest.report-file=${file('build/test-results/gametest.xml')}"
+        }
+        if (playtestId != null) {
+            worldPlaytest {
+                client()
+                source sourceSets.playtest
+                def directory = file(".tmp/world-playtests/${playtestId}/${playtestScenario}")
+                runDir project.relativePath(directory)
+                programArgs '--width', '960', '--height', '540', '--quickPlaySingleplayer', 'playtest'
+                vmArg "-Dflorafauna.playtest.directory=${directory.absolutePath}"
+                vmArg "-Dflorafauna.playtest.scenario=${playtestScenario}"
+                vmArg "-Dflorafauna.playtest.phase=${playtestPhase}"
+            }
+        }
+        if (huskTestId != null) {
+            def directory = file(".tmp/husk-multiplayer/${huskTestId}")
+            huskServer {
+                server()
+                source sourceSets.playtest
+                runDir project.relativePath(new File(directory, 'Server'))
+                programArg '--nogui'
+                vmArgs "-Dflorafauna.huskTest.root=${directory.absolutePath}", '-Xmx1G'
+            }
+            ['Owner', 'Visitor'].each { role ->
+                create("husk${role}") {
+                    client()
+                    source sourceSets.playtest
+                    runDir project.relativePath(new File(directory, role))
+                    programArgs '--username', "FF${role}", '--width', '640', '--height', '360',
+                            '--quickPlayMultiplayer', "127.0.0.1:${huskTestPort}"
+                    vmArgs "-Dflorafauna.huskTest.client=${role}", '-Xmx1G'
+                }
+            }
+        }
+    }
+}
+
+tasks.matching { it.name == 'runWorldPlaytest' }.configureEach { timeout = Duration.ofMinutes(4) }
+
+// Snapshot each multiplayer launch before starting any process. Nothing in this private
+// directory is regenerated by another Gradle invocation or another test run.
+if (huskTestId != null) {
+    ['Server', 'Owner', 'Visitor'].each { role ->
+        tasks.register("createHusk${role}LaunchScript") {
+            group = 'fabric'
+            dependsOn 'playtestClasses', 'configureLaunch'
+            if (role != 'Server') dependsOn 'configureClientLaunch'
+            notCompatibleWithConfigurationCache('Snapshots Loom development launch configuration for an isolated multiplayer run.')
+            doLast {
+                def name = "husk${role}"
+                def settings = loom.runs.getByName(name)
+                def config = net.fabricmc.loom.configuration.ide.RunConfig.runConfig(project, settings)
+                def runTask = tasks.named("runHusk${role}").get()
+                def directory = file(".tmp/husk-multiplayer/${huskTestId}/launch")
+                directory.mkdirs()
+                def launchConfig = new File(directory, "${name}Launch.cfg")
+                launchConfig.bytes = loom.files.devLauncherConfig.bytes
+                def quote = { Object value -> '"' + value.toString().replace('\\', '\\\\').replace('"', '\\"') + '"' }
+                def vmArgs = config.vmArgs.collect { arg ->
+                    arg.startsWith('-Dfabric.dli.config=') ? "-Dfabric.dli.config=${launchConfig.absolutePath}" : arg
+                }
+                new File(directory, "${name}RunVmArgs.txt").text = vmArgs.collect(quote).join('\n')
+                new File(directory, "${name}RunClasspath.txt").text = '-classpath\n' + quote(runTask.classpath.asPath)
+                new File(directory, "${name}RunProgramArgs.txt").text = config.programArgs.collect(quote).join('\n')
+                def javaExecutable = javaToolchains.launcherFor(java.toolchain).get().executablePath.asFile
+                def gameDirectory = file(config.runDir)
+                gameDirectory.mkdirs()
+                def argsPrefix = new File(directory, name).absolutePath
+                new File(directory, "runHusk${role}.cmd").text = """@echo off
+cd /d "${gameDirectory.absolutePath}"
+"${javaExecutable.absolutePath}" "@${argsPrefix}RunVmArgs.txt" "@${argsPrefix}RunClasspath.txt" ${config.mainClass} "@${argsPrefix}RunProgramArgs.txt"
+"""
+            }
+        }
+    }
+}
+
+tasks.register('runData') {
+    group = 'fabric'
+    description = 'Generate shared resources using the matching Minecraft data providers.'
+    dependsOn "${dataProject.path}:runData"
+}
+tasks.register('assembleDevMods', Sync) {
+    group = 'build'
+    description = 'Collect matching Fabric core and companion jars.'
+    from tasks.named('jar')
+    from configurations.localRuntime
+    into layout.buildDirectory.dir("dev-mods/${minecraft_version}")
+}
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('check') { dependsOn tasks.named('fabricGameTestClasses'), tasks.named('compilePlaytestJava') }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+processResources {
+    def metadata = [version: project.version, mod_id: mod_id, mod_name: mod_name, mod_version: mod_version,
+                    mod_description: mod_description, mod_authors: mod_authors, mod_license: mod_license,
+                    minecraft_version: minecraft_version, fabric_loader_version: fabricLoaderVersion,
+                    fabric_api_version: fabric_api_version]
+    inputs.properties metadata
+    filesMatching('fabric.mod.json') { expand metadata }
+    filesMatching('data/florafauna/tags/entity_type/*.json') {
+        filter { line -> line.replace('#neoforge:bosses', '#c:bosses') }
+    }
+    exclude '.cache/**'
+}
+publishing {
+    publications { mavenJava(MavenPublication) { from components.java } }
+}

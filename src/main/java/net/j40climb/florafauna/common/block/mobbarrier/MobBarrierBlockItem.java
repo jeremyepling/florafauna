@@ -26,6 +26,7 @@ public class MobBarrierBlockItem extends BlockItem {
                 .component(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get(), MobBarrierConfig.DEFAULT));
     }
 
+    //? if neoforge {
     //? if <26.3 {
     @Override
     protected boolean updateCustomBlockEntityTag(BlockPos pos, Level level, @Nullable Player player, ItemStack stack, BlockState state) {
@@ -39,6 +40,8 @@ public class MobBarrierBlockItem extends BlockItem {
         copyConfig(level, pos, stack);
     }
     *///?}
+
+    //?}
 
     private static void copyConfig(Level level, BlockPos pos, ItemStack stack) {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MobBarrierBlockEntity barrier) {

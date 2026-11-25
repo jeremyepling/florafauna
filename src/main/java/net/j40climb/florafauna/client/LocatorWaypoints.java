@@ -54,7 +54,7 @@ public final class LocatorWaypoints {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Check conditions: active husk, BONDED_WEAKENED state, same dimension
         if (!data.restorationHuskActive()) {
@@ -149,7 +149,7 @@ public final class LocatorWaypoints {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Check conditions: active waypoint anchor, same dimension
         if (!data.hasActiveWaypointAnchor()) {

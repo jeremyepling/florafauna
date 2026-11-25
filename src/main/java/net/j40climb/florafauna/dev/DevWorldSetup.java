@@ -7,10 +7,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.level.gamerules.GameRules;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.loading.FMLEnvironment;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+//?}
 
 /**
  * Development-only world setup that runs on player join.
@@ -27,13 +32,21 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
  * To reset: delete the world and recreate it.
  * World should be created as: Superflat, Creative, Tunneler's Dream preset
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class DevWorldSetup {
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        onPlayerLoggedIn(event.getEntity());
+    }
+    //?}
+
+    public static void onPlayerLoggedIn(net.minecraft.world.entity.player.Player subject) {
         // Only run in dev environment (not production)
-        if (!FMLEnvironment.isProduction() && event.getEntity() instanceof ServerPlayer player) {
+        if (!net.j40climb.florafauna.platform.PlatformEnvironment.isProduction() && subject instanceof ServerPlayer player) {
             setupDevWorld(player);
         }
     }

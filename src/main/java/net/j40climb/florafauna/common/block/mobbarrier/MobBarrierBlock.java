@@ -126,8 +126,19 @@ public class MobBarrierBlock extends BaseEntityBlock {
         return InteractionResult.PASS;
     }
 
+    //? if fabric {
+    /*@Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level,pos,state,placer,stack);
+        if(!level.isClientSide()&&level.getBlockEntity(pos) instanceof MobBarrierBlockEntity barrier)
+            barrier.setConfig(stack.getOrDefault(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get(),MobBarrierConfig.DEFAULT));
+    }
+    *///?}
+
     @Nullable
+    //? if neoforge {
     @Override
+    //?}
     public PathType getBlockPathType(BlockState state, BlockGetter level, BlockPos pos, @Nullable Mob mob) {
         if (mob != null) {
             MobBarrierConfig config = getConfigAtPos(level, pos);

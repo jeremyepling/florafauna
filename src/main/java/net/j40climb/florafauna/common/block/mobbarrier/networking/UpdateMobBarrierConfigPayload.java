@@ -13,7 +13,11 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+//? if neoforge {
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.IPayloadContext;
+*///?}
 
 import java.util.List;
 

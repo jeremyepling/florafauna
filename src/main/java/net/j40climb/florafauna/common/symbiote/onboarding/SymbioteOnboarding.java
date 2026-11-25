@@ -11,13 +11,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+//?}
 
 /** The first playable route from a wild bloom to an earned adaptation. */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public final class SymbioteOnboarding {
     public static final String BLOOM_CONTACT = "resonant_bloom_contact";
     public static final String ADAPTIVE_JUMP = "adaptive_jump";
@@ -28,7 +38,7 @@ public final class SymbioteOnboarding {
     private SymbioteOnboarding() {}
 
     public static boolean hasBloomContact(ServerPlayer player) {
-        return player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT)
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT)
                 .getSignal(BLOOM_CONTACT).isPresent();
     }
 
@@ -37,7 +47,7 @@ public final class SymbioteOnboarding {
             return;
         }
         ProgressSignalUpdater.recordObservation(player, BLOOM_CONTACT);
-        if (player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA).symbioteState().isBonded()) {
+        if (net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA).symbioteState().isBonded()) {
             return;
         }
         SymbioteVoiceService.forceSpeakUnbonded(player, "symbiote.onboarding.first_contact");
@@ -45,7 +55,7 @@ public final class SymbioteOnboarding {
     }
 
     public static void onPrepared(ServerPlayer player) {
-        if (hasBloomContact(player) && !player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA)
+        if (hasBloomContact(player) && !net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA)
                 .symbioteState().isBonded()) {
             SymbioteVoiceService.forceSpeakUnbonded(player, "symbiote.onboarding.chamber_hint");
         }
@@ -64,28 +74,34 @@ public final class SymbioteOnboarding {
         return (int) progress.signals().keySet().stream().filter(key -> key.startsWith(JUMP_BIOME_PREFIX)).count();
     }
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onJump(LivingEvent.LivingJumpEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
+        onJump(event.getEntity());
+    }
+    //?}
+
+    public static void onJump(net.minecraft.world.entity.LivingEntity subject) {
+        if (!(subject instanceof ServerPlayer player)) {
             return;
         }
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!data.symbioteState().areAbilitiesActive() || data.jumpBoost() > 0) {
             return;
         }
 
         ProgressSignalUpdater.recordObservation(player, ADAPTIVE_JUMP);
-        ProgressSignalTracker observedProgress = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        ProgressSignalTracker observedProgress = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         player.level().getBiome(player.blockPosition()).unwrapKey().ifPresent(biome -> {
             String key = JUMP_BIOME_PREFIX + biome.identifier();
             if (observedProgress.getSignal(key).isEmpty()) {
-                player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT,
+                net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT,
                         observedProgress.withSignalUpdated(key, ConceptSignal.firstSeen(key, player.level().getGameTime())));
             }
         });
-        ProgressSignalTracker progress = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        ProgressSignalTracker progress = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         if (jumpCount(progress) >= JUMPS_REQUIRED && jumpBiomeCount(progress) >= BIOMES_REQUIRED) {
-            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, data.withJumpBoost(1));
+            net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, data.withJumpBoost(1));
             SymbioteVoiceService.forceSpeak(player, "symbiote.onboarding.jump_adapted");
         } else if (jumpCount(progress) == 10) {
             SymbioteVoiceService.forceSpeak(player, "symbiote.onboarding.jump_progress");
@@ -95,11 +111,17 @@ public final class SymbioteOnboarding {
     }
 
     /** A small nearby spore shimmer is the first, always-on perception cue. */
+    //? if neoforge {
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)
+        onPlayerTick(event.getEntity());
+    }
+    //?}
+
+    public static void onPlayerTick(net.minecraft.world.entity.player.Player subject) {
+        if (!(subject instanceof ServerPlayer player)
                 || player.tickCount % 80 != 0
-                || !player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA).symbioteState().isBonded()
+                || !net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA).symbioteState().isBonded()
                 || !(player.level() instanceof ServerLevel level)) {
             return;
         }

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "florafauna_playtest",
+  "version": "1",
+  "name": "FloraFauna Client Playtests",
+  "entrypoints": {
+    "main": ["net.j40climb.florafauna.playtest.FabricPlaytest"],
+    "client": ["net.j40climb.florafauna.playtest.FabricClientPlaytest"]
+  },
+  "depends": {"florafauna": "*"}
+}

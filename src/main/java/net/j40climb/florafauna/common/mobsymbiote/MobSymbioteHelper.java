@@ -14,15 +14,23 @@ import net.minecraft.world.entity.EntityType;
 *///?}
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility methods for working with MobSymbiote data.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public final class MobSymbioteHelper {
 
     private MobSymbioteHelper() {
@@ -41,7 +49,7 @@ public final class MobSymbioteHelper {
         if (!(entity instanceof Mob)) {
             return false;
         }
-        MobSymbioteData data = entity.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        MobSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         return data.hasMobSymbiote();
     }
 
@@ -55,7 +63,7 @@ public final class MobSymbioteHelper {
         if (!(entity instanceof Mob)) {
             return MobSymbioteData.LEVEL_NONE;
         }
-        MobSymbioteData data = entity.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        MobSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         return data.mobSymbioteLevel();
     }
 
@@ -67,17 +75,23 @@ public final class MobSymbioteHelper {
      * @param currentTick The current game tick
      */
     public static void applyMobSymbioteLevel1(Mob mob, long currentTick) {
-        MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
-        mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
+        MobSymbioteData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
                 current.withMobSymbioteLevel(MobSymbioteData.LEVEL_TRANSPORT, currentTick));
         keepHabitatMobPersistent(mob);
     }
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
+        onEntityJoin(event.getEntity(), event.getLevel());
+    }
+    //?}
+
+    public static void onEntityJoin(net.minecraft.world.entity.Entity subject, net.minecraft.world.level.Level world) {
         // Older saves and transport tickets may contain a bond without vanilla persistence.
-        if (!event.getLevel().isClientSide() && event.getEntity() instanceof Mob mob
-                && !mob.isPersistenceRequired() && mob.hasData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA)
+        if (!world.isClientSide() && subject instanceof Mob mob
+                && !mob.isPersistenceRequired() && net.j40climb.florafauna.platform.AttachmentAccess.has(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA)
                 && hasMobSymbiote(mob)) {
             keepHabitatMobPersistent(mob);
         }
@@ -104,8 +118,8 @@ public final class MobSymbioteHelper {
         if (!mob.is(FloraFaunaTags.EntityTypes.MOB_SYMBIOTE_LEVEL2_ELIGIBLE)) {
             return false;
         }
-        MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
-        mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
+        MobSymbioteData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
                 current.withMobSymbioteLevel(MobSymbioteData.LEVEL_ENHANCED, currentTick));
         return true;
     }
@@ -116,8 +130,8 @@ public final class MobSymbioteHelper {
      * @param mob The mob to remove the symbiote from
      */
     public static void removeMobSymbiote(Mob mob) {
-        MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
-        mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
+        MobSymbioteData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA,
                 current.withMobSymbioteLevel(MobSymbioteData.LEVEL_NONE, 0L));
     }
 
@@ -139,9 +153,9 @@ public final class MobSymbioteHelper {
      * @param mob The mob to mark
      */
     public static void markRecentlyReleased(Mob mob) {
-        MobSymbioteData current = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        MobSymbioteData current = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         long immunityUntil = mob.level().getGameTime() + Config.recentlyReleasedImmunityTicks;
-        mob.setData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA, current.withRecentlyReleased(immunityUntil));
+        net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA, current.withRecentlyReleased(immunityUntil));
     }
 
     /**
@@ -155,7 +169,7 @@ public final class MobSymbioteHelper {
         if (!(entity instanceof Mob)) {
             return false;
         }
-        MobSymbioteData data = entity.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        MobSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         return data.hasReleaseImmunity(currentTick);
     }
 

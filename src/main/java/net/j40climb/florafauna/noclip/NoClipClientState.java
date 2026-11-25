@@ -1,17 +1,22 @@
 package net.j40climb.florafauna.noclip;
 
 import net.j40climb.florafauna.FloraFauna;
+
+//? if neoforge {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+//?}
 
 /**
  * Client-side state management for no-clip mode.
  * Tracks whether the local player has noclip enabled.
  * Resets on logout to prevent state from persisting across sessions.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+//?}
 public class NoClipClientState {
 
     private static boolean enabled = false;
@@ -43,8 +48,8 @@ public class NoClipClientState {
     /**
      * Resets noclip state when player logs out.
      */
+//? if neoforge {
     @SubscribeEvent
-    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
-        enabled = false;
-    }
+    public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) { setEnabled(false); }
+//?}
 }

@@ -1,0 +1,30 @@
+stonecutter {
+    replacements {
+        string {
+            direction = project.minecraft_version == '26.3'
+            replace('mc.screen', 'mc.gui.screen()')
+            replace('mc.setScreen(', 'mc.gui.setScreen(')
+            replace('Minecraft.getInstance().setScreen(', 'Minecraft.getInstance().gui.setScreen(')
+            replace('monster.Slime;', 'monster.cubemob.Slime;')
+            replace('PushReaction.DESTROY', 'PushReaction.POPPED')
+            replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
+        }
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/(?<![\w.])BlockEvent\.BreakEvent\b/, 'BreakBlockEvent',
+                    /(?<![\w.])BreakBlockEvent\b/, 'BlockEvent.BreakEvent')
+        }
+        // Match vanilla constants, leaving EntityType.Builder and FloraFaunaTags.EntityTypes alone.
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/(?<![\w.])EntityType\.(?=[A-Z_]+\b)/, 'EntityTypes.',
+                    /(?<![\w.])EntityTypes\.(?=[A-Z_]+\b)/, 'EntityType.')
+        }
+        regex {
+            direction = project.minecraft_version == '26.3'
+            replace(/\bEnderMan(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'Enderman',
+                    /\bEnderman(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'EnderMan')
+        }
+    }
+}
+

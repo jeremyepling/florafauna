@@ -13,9 +13,21 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.ResourceHandler;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.ResourceHandler;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemResource;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemResource;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.transaction.Transaction;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

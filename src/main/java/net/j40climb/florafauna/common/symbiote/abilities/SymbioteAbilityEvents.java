@@ -10,10 +10,18 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+//?}
 
 import java.util.List;
 
@@ -21,22 +29,30 @@ import java.util.List;
  * Event handler for symbiote abilities.
  * Handles creeper detection, speed effect, fall damage negation, and jump boost.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class SymbioteAbilityEvents {
 
     /**
      * Handle player tick events for abilities that need periodic checking
      */
+    //? if neoforge {
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        Player player = event.getEntity();
+        onPlayerTick(event.getEntity());
+    }
+    //?}
+
+    public static void onPlayerTick(net.minecraft.world.entity.player.Player subject) {
+        Player player = subject;
 
         // Only process on server side
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
 
-        PlayerSymbioteData symbioteData = serverPlayer.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(serverPlayer, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().areAbilitiesActive()) {
             return;
         }
@@ -146,22 +162,29 @@ public class SymbioteAbilityEvents {
     /**
      * Handle fall damage to negate it when featherFalling is enabled
      */
+    //? if neoforge {
     @SubscribeEvent
     public static void onLivingDamage(LivingDamageEvent.Pre event) {
+        event.setNewDamage(onLivingDamage(event.getEntity(), event.getSource(), event.getNewDamage()));
+    }
+    //?}
+
+    public static float onLivingDamage(net.minecraft.world.entity.LivingEntity subject, net.minecraft.world.damagesource.DamageSource source, float damage) {
         // Only process for server-side players with bonded symbiotes
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
-            return;
+        if (!(subject instanceof ServerPlayer player)) {
+            return damage;
         }
 
-        PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (!symbioteData.symbioteState().areAbilitiesActive()) {
-            return;
+            return damage;
         }
 
         // Check if this is fall damage and featherFalling is enabled
-        if (symbioteData.featherFalling() && event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FALL)) {
+        if (symbioteData.featherFalling() && source.is(net.minecraft.tags.DamageTypeTags.IS_FALL)) {
             // Cancel the fall damage
-            event.setNewDamage(0);
+            return 0;
         }
+        return damage;
     }
 }

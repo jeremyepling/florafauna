@@ -19,7 +19,11 @@ import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+//? if neoforge {
 import net.neoforged.fml.ModList;
+//?} else {
+/*import net.fabricmc.loader.api.FabricLoader;
+*///?}
 
 import java.util.Set;
 import java.util.UUID;
@@ -34,9 +38,13 @@ final class CompanionsPlaytest {
     private static final BlockPos STONE = new BlockPos(0, 201, 2);
 
     static void steps(Playtest test, int phase) {
-        test.client("Load all three separate NeoForge mods", mc -> {
+        test.client("Load all three separate mods", mc -> {
             for (String id : new String[]{"florafauna", "florafauna_hammer", "florafauna_frenchies"}) {
+                //? if neoforge {
                 Playtest.require(ModList.get().isLoaded(id), "Missing mod " + id);
+                //?} else {
+                /*Playtest.require(FabricLoader.getInstance().isModLoaded(id), "Missing mod " + id);
+                *///?}
             }
         });
         if (phase == 1) {

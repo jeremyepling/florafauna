@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "florafauna",
+  "version": "${version}",
+  "name": "FloraFauna",
+  "description": "Living tools, symbiotes, and connected habitats.",
+  "authors": [
+    "j40climb"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.j40climb.florafauna.FloraFauna"
+    ],
+    "client": [
+      "net.j40climb.florafauna.setup.ClientSetup"
+    ]
+  },
+  "mixins": [
+    "florafauna.mixins.json",
+    "florafauna.fabric.mixins.json",
+    {
+      "config": "florafauna.fabric.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "accessWidener": "florafauna.accesswidener",
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=25",
+    "fabric-api": ">=${fabric_api_version}"
+  }
+}

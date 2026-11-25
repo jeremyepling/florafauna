@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "florafauna_gametest",
+  "version": "1",
+  "name": "FloraFauna GameTest Fixtures",
+  "mixins": ["florafauna.gametest.mixins.json"],
+  "depends": {"florafauna": "*"}
+}

@@ -8,9 +8,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.state.BlockState;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+//?}
 
 /**
  * Event handler for player death when bonded to a symbiote.
@@ -23,16 +29,24 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
  * - Updates player state to BONDED_WEAKENED
  * - Tracks restoration husk location if applicable
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class HuskDeathHandler {
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
+        onPlayerDeath(event.getEntity());
+    }
+    //?}
+
+    public static void onPlayerDeath(net.minecraft.world.entity.LivingEntity subject) {
+        if (!(subject instanceof ServerPlayer player)) {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only process if player has a bonded symbiote
         if (!data.symbioteState().isBonded()) {
@@ -78,6 +92,6 @@ public class HuskDeathHandler {
             updatedData = updatedData.withRestorationHusk(huskPos, huskLevel.dimension(), true);
         }
 
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
     }
 }

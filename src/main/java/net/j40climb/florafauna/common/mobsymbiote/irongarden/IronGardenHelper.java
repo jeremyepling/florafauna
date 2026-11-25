@@ -33,7 +33,7 @@ public final class IronGardenHelper {
         if (!(entity instanceof IronGolem)) {
             return IronGardenData.DEFAULT;
         }
-        return entity.getData(FloraFaunaRegistry.IRON_GARDEN_DATA);
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.IRON_GARDEN_DATA);
     }
 
     /**
@@ -43,7 +43,7 @@ public final class IronGardenHelper {
      * @param data The new iron garden data
      */
     public static void setData(IronGolem golem, IronGardenData data) {
-        golem.setData(FloraFaunaRegistry.IRON_GARDEN_DATA, data);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(golem, FloraFaunaRegistry.IRON_GARDEN_DATA, data);
     }
 
     /**
@@ -57,7 +57,7 @@ public final class IronGardenHelper {
         if (!(entity instanceof IronGolem)) {
             return false;
         }
-        MobSymbioteData symbioteData = entity.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        MobSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(entity, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
         return symbioteData.hasMobSymbiote();
     }
 

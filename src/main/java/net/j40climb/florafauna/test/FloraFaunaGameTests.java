@@ -41,10 +41,21 @@ import net.minecraft.nbt.CompoundTag;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceTier;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
-import net.neoforged.neoforge.capabilities.Capabilities;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.ResourceHandler;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.ResourceHandler;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemResource;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemResource;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.transaction.Transaction;
+*///?}
 import net.minecraft.core.BlockPos;
 import net.j40climb.florafauna.dev.DevPlot;
 import net.minecraft.core.Direction;
@@ -64,9 +75,17 @@ import net.minecraft.world.entity.EntityType;
 *///?}
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+//? if neoforge {
 import net.neoforged.bus.api.IEventBus;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.common.util.FakePlayer;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+//?} else {
+/*import net.j40climb.florafauna.test.fabric.RegisterGameTestsEvent;
+*///?}
 
 import java.util.List;
 import java.util.UUID;
@@ -85,17 +104,25 @@ public class FloraFaunaGameTests {
      * Register the game test event listener on the mod event bus.
      * Call this from the main mod constructor.
      */
+    //? if neoforge {
     public static void register(IEventBus modEventBus) {
         modEventBus.addListener(FloraFaunaGameTests::registerTests);
     }
+    //?} else {
+    /*public static void registerFabric() {
+        net.j40climb.florafauna.test.fabric.RegisterGameTestsEvent.initialize(FloraFaunaGameTests::registerTests);
+    }
+    *///?}
 
     // Empty 6 x 4 x 5 room. Keep each test's blocks and entities inside the loaded structure.
     static final Identifier SMALL_TEST_ROOM = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "test_silk_garden");
     private static final Identifier EMPTY_STRUCTURE = Identifier.withDefaultNamespace("empty");
 
     private static void registerTests(RegisterGameTestsEvent event) {
-        // Install our colored test reporter for better visibility
+        // Fabric installs its XML reporter; retain it so headless results are machine-readable.
+        //? if neoforge {
         GlobalTestReporter.replaceWith(new ColoredTestReporter());
+        //?}
 
         // Register a minimal test environment
         Holder<TestEnvironmentDefinition<?>> defaultEnv = event.registerEnvironment(
@@ -889,8 +916,7 @@ public class FloraFaunaGameTests {
         pod.getBuffer().add(new ItemStack(Items.COBBLESTONE, 64));
 
         // Query the capability like a hopper would (from below, direction DOWN)
-        ResourceHandler<ItemResource> handler = helper.getLevel().getCapability(
-                Capabilities.Item.BLOCK, absolutePos, Direction.DOWN);
+        ResourceHandler<ItemResource> handler = net.j40climb.florafauna.platform.StorageAccess.get(helper.getLevel(), absolutePos, Direction.DOWN);
 
         if (handler == null) {
             throw helper.assertionException("Capability returned null - not registered!");
@@ -2666,7 +2692,11 @@ public class FloraFaunaGameTests {
     // ==================== Helper Methods ====================
 
     static ServerPlayer createTestPlayer(GameTestHelper helper) {
+        //? if neoforge {
         return new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "test-player"));
+        //?} else {
+        /*return net.j40climb.florafauna.test.fabric.TestPlayers.create(helper.getLevel());
+        *///?}
     }
 
     /**

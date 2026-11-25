@@ -14,16 +14,26 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.level.block.Blocks;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+//?}
 
 /**
  * Event handler for the Iron Garden state machine.
  * Manages state transitions and goal injection for gardening Iron Golems.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class IronGardenStateEvents {
 
     // Goal priorities (lower = higher priority)
@@ -38,9 +48,14 @@ public class IronGardenStateEvents {
      * Main tick handler for the iron garden system.
      * Runs after entity tick to update garden state.
      */
+    //? if neoforge {
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
-        Entity entity = event.getEntity();
+        onEntityTick(event.getEntity());
+    }
+    //?}
+
+    public static void onEntityTick(net.minecraft.world.entity.Entity entity) {
 
         // Only process on server
         if (entity.level().isClientSide()) {
@@ -67,9 +82,15 @@ public class IronGardenStateEvents {
      * Breaks calmness and returns to BONDED_NOT_CALM state.
      * Note: Only taking damage breaks calm, not attacking.
      */
+    //? if neoforge {
     @SubscribeEvent
     public static void onGolemDamaged(LivingDamageEvent.Post event) {
-        LivingEntity entity = event.getEntity();
+        onGolemDamaged(event.getEntity());
+    }
+    //?}
+
+    public static void onGolemDamaged(net.minecraft.world.entity.LivingEntity subject) {
+        LivingEntity entity = subject;
 
         // Only process Iron Golems on server
         if (entity.level().isClientSide() || !(entity instanceof IronGolem golem)) {

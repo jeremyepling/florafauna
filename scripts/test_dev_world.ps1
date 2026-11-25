@@ -13,7 +13,8 @@ param(
     [string]$FrenchiesDir,
     [string]$SourceWorld,
     [switch]$Offline,
-    [ValidateSet('26.1', '26.3')][string]$Target = '26.1'
+    [ValidateSet('26.1', '26.3')][string]$Target = '26.1',
+    [ValidateSet('neoforge', 'fabric')][string]$Loader = 'neoforge'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,14 +29,15 @@ if ($Scenario -contains 'companions') {
     $DevMods = 'all'
 }
 $checkout = Split-Path $PSScriptRoot -Parent
-$project = "$Target-neoforge"
+$project = "$Target-$Loader"
 $targetDir = Join-Path $checkout "versions/$project"
 $optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
-if ($Target -eq '26.3') { $optionsTemplate = Join-Path $targetDir 'dev/options-template.txt' }
+if ($Target -eq '26.3') { $optionsTemplate = Join-Path $checkout "versions/$Target-neoforge/dev/options-template.txt" }
 if (!$SourceWorld) {
     $saveRoot = if ($Target -eq '26.1') { $checkout } else { $targetDir }
     $profile = switch ($DevMods) { 'all' { 'frenchies-hammer' } 'hammer' { 'hammer' } 'frenchies' { 'frenchies' } default { 'core' } }
-    $SourceWorld = Join-Path $saveRoot "run/client-$(Split-Path $checkout -Leaf)-$profile/saves/dev"
+    $SourceWorld = if ($Loader -eq 'fabric') { Join-Path $targetDir 'run/client/saves/dev' }
+        else { Join-Path $saveRoot "run/client-$(Split-Path $checkout -Leaf)-$profile/saves/dev" }
     if (!(Test-Path -LiteralPath $SourceWorld)) {
         throw "Create a dev world in the $profile profile or pass -SourceWorld with a closed save."
     }

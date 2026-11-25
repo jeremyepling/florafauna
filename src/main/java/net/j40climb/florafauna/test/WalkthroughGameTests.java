@@ -29,7 +29,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.phys.shapes.CollisionContext;
+//? if neoforge {
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+//?} else {
+/*import net.j40climb.florafauna.test.fabric.RegisterGameTestsEvent;
+*///?}
 
 import static net.j40climb.florafauna.test.FloraFaunaGameTests.registerStructureTest;
 

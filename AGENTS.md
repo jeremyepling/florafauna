@@ -1,6 +1,6 @@
 # FloraFauna agent guide
 
-Use this guide for work in any FloraFauna checkout. The core mod targets Minecraft 26.1 and 26.3 with NeoForge and Java 25. Keep the editing target on 26.1 for commits. Check `versions/<target>/gradle.properties`, `build.gradle` and the Gradle wrapper for the versions in the assigned branch. Keep implementation and assets on the current Minecraft APIs. Hammer and Frenchies have independent repositories and test suites. [Companion setup](README.md#play-with-the-hammer-and-frenchies)
+Use this guide for work in any FloraFauna checkout. The core mod targets Minecraft 26.1 and 26.3 with Fabric, NeoForge and Java 25. Keep the editing target on 26.1 NeoForge for commits. Check `versions/<target>/gradle.properties`, `build.gradle`, `fabric.gradle` and the Gradle wrapper for the versions in the assigned branch. Keep implementation and assets on the current Minecraft APIs. Hammer and Frenchies have independent repositories and test suites. [Companion setup](README.md#play-with-the-hammer-and-frenchies)
 
 ## Coordinate work across agents
 

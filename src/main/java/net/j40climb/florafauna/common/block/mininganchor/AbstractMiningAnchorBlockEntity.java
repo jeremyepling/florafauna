@@ -502,7 +502,7 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         ResourceKey<Level> thisDim = serverLevel.dimension();
 
         for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
-            PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+            PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
             boolean changed = false;
             PlayerSymbioteData newData = data;
@@ -526,7 +526,7 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
             }
 
             if (changed) {
-                player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+                net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
             }
         }
     }
@@ -541,7 +541,7 @@ public abstract class AbstractMiningAnchorBlockEntity extends AbstractVacuumBloc
         ResourceKey<Level> thisDim = serverLevel.dimension();
 
         for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
-            PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+            PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
             // Send dialogue to players who had this as waypoint or bound anchor
             boolean wasWaypoint = data.hasActiveWaypointAnchor() &&

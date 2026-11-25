@@ -23,10 +23,20 @@ import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueOutput;
+//? if neoforge {
 import net.neoforged.bus.api.EventPriority;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.common.NeoForge;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+//?} else {
+/*import net.j40climb.florafauna.test.fabric.RegisterGameTestsEvent;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+//?}
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,14 +68,18 @@ final class MobTransportReleaseGameTests {
         return CapturedMobTicket.create(EntityType.COW, tag.buildResult(), 0, readyAt, h.absolutePos(CENTER), level.dimension());
     }
 
-    private static Consumer<EntityJoinLevelEvent> cancelPassenger(GameTestHelper h, UUID id) {
+    private static Runnable cancelPassenger(GameTestHelper h, UUID id) {
+        //? if neoforge {
         Consumer<EntityJoinLevelEvent> cancel = event -> {
             if (event.getLevel() == h.getLevel() && id.equals(event.getEntity().getUUID())) {
                 event.setCanceled(true);
             }
         };
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, EntityJoinLevelEvent.class, cancel);
-        return cancel;
+        return () -> NeoForge.EVENT_BUS.unregister(cancel);
+        //?} else {
+        /*return net.j40climb.florafauna.test.fabric.FabricSpawnVeto.block(h.getLevel(), id);
+        *///?}
     }
 
     private static void regularRetry(GameTestHelper h) {
@@ -80,7 +94,7 @@ final class MobTransportReleaseGameTests {
             require(h, output.getPendingReleaseCount() == 1 && level.getEntity(id) == null,
                     "Rejected spawn removed the ticket");
         } finally {
-            NeoForge.EVENT_BUS.unregister(listener);
+            listener.run();
         }
         for (int i = 0; i < Config.releaseCheckIntervalTicks; i++) {
             output.tick(level, output.getBlockPos(), output.getBlockState());
@@ -120,7 +134,7 @@ final class MobTransportReleaseGameTests {
                     "Partial release lost a ticket or kept a completed ticket");
             require(h, input.isPaired() && output.getInputCount() == 1, "Failed break canceled a pairing");
         } finally {
-            NeoForge.EVENT_BUS.unregister(listener);
+            listener.run();
         }
         var firstEntity = level.getEntity(first);
         player.gameMode.destroyBlock(transport.getBlockPos());
@@ -160,7 +174,7 @@ final class MobTransportReleaseGameTests {
                     && level.getEntity(first) != null && level.getEntity(blocked) == null && input.isPaired(),
                     "Destructive blast lost custody, pairing or emitted loot after a rejected spawn");
         } finally {
-            NeoForge.EVENT_BUS.unregister(veto);
+            veto.run();
         }
 
         var firstEntity = level.getEntity(first);

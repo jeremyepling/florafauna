@@ -11,7 +11,9 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+//? if neoforge {
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+//?}
 import org.slf4j.Logger;
 
 import java.io.Reader;
@@ -111,10 +113,12 @@ public class SymbioteDialogueLoader extends SimplePreparableReloadListener<List<
      *
      * @param event The add server reload listeners event
      */
+    //? if neoforge {
     public static void registerReloadListener(AddServerReloadListenersEvent event) {
         event.addListener(LISTENER_ID, new SymbioteDialogueLoader());
         LOGGER.debug("Registered symbiote dialogue reload listener");
     }
+    //?}
 
     /**
      * Get the current repository (convenience method)

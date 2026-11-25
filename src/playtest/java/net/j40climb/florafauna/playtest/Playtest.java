@@ -8,10 +8,18 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
+//? if neoforge {
 import net.neoforged.api.distmarker.Dist;
+//?}
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+//?}
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -27,7 +35,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /** Drives one real client and its integrated server. Only loaded by the playtest run. */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+//?}
 public final class Playtest {
     private static final Logger LOG = LogUtils.getLogger();
     private static final long TIMEOUT = Duration.ofSeconds(35).toNanos();
@@ -129,8 +139,11 @@ public final class Playtest {
         if (!condition) throw new AssertionError(message);
     }
 
+    //? if neoforge {
     @SubscribeEvent
-    public static void tick(ClientTickEvent.Post event) {
+    public static void tick(ClientTickEvent.Post event) { tick(); }
+    //?}
+    public static void tick() {
         String path = System.getProperty("florafauna.playtest.directory");
         if (path == null) return;
         Minecraft mc = Minecraft.getInstance();

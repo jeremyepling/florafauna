@@ -7,9 +7,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemResource;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemResource;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.ResourceHandler;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.ResourceHandler;
+*///?}
 
 import javax.annotation.Nullable;
 
@@ -89,7 +96,7 @@ public record StorageDestination(
      */
     @Nullable
     public ResourceHandler<ItemResource> getResourceHandler(Level level, @Nullable Direction accessSide) {
-        return level.getCapability(Capabilities.Item.BLOCK, pos, accessSide);
+        return net.j40climb.florafauna.platform.StorageAccess.get(level, pos, accessSide);
     }
 
     /**

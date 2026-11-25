@@ -38,7 +38,7 @@ public class ObservationArbiter {
             Map<String, Object> context
     ) {
         // Get progress tracker for tier determination and line selection
-        ProgressSignalTracker progress = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        ProgressSignalTracker progress = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
 
         // Determine the appropriate tier
         VoiceTier tier = determineTier(category, severity, progress);
@@ -120,7 +120,7 @@ public class ObservationArbiter {
             ObservationCategory category,
             int severity
     ) {
-        ProgressSignalTracker tracker = player.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        ProgressSignalTracker tracker = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         long currentTick = player.level().getGameTime();
 
         // Track first-time category experience
@@ -141,7 +141,7 @@ public class ObservationArbiter {
         // Mark progress tick
         tracker = tracker.withProgressTick(currentTick);
 
-        player.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, tracker);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, tracker);
     }
 
     /**

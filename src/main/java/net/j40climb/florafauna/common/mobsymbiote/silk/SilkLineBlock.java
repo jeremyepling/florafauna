@@ -25,7 +25,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+//? if neoforge {
 import net.neoforged.neoforge.common.ItemAbilities;
+//?}
 
 public class SilkLineBlock extends Block {
     public static final EnumProperty<Direction.Axis> AXIS = EnumProperty.create("axis", Direction.Axis.class, Direction.Axis.X, Direction.Axis.Z);
@@ -66,7 +68,7 @@ public class SilkLineBlock extends Block {
         return state.getValue(AXIS) == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
     }
 
-    static boolean canCut(Level level, BlockPos pos, BlockState state) {
+    public static boolean canCut(Level level, BlockPos pos, BlockState state) {
         if (!(state.getBlock() instanceof SilkLineBlock)) return false;
         SilkSpan span = SilkSpan.existing(level, pos, along(state));
         if (span == null) return false;
@@ -76,9 +78,17 @@ public class SilkLineBlock extends Block {
         return true;
     }
 
+    private static boolean isShears(ItemStack tool) {
+        //? if neoforge {
+        return tool.canPerformAction(ItemAbilities.SHEARS_HARVEST);
+        //?} else {
+        /*return tool.is(Items.SHEARS);
+        *///?}
+    }
+
     @Override protected InteractionResult useItemOn(ItemStack tool, BlockState state, Level level, BlockPos pos,
             Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!tool.canPerformAction(ItemAbilities.SHEARS_HARVEST) || !player.mayBuild() || !canCut(level, pos, state)) return InteractionResult.PASS;
+        if (!isShears(tool) || !player.mayBuild() || !canCut(level, pos, state)) return InteractionResult.PASS;
         if (level instanceof ServerLevel server) {
             server.setBlockAndUpdate(pos, state.setValue(CUT, true));
             server.scheduleTick(pos, this, 1);

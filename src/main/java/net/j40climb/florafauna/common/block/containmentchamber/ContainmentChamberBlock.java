@@ -57,7 +57,15 @@ public class ContainmentChamberBlock extends BaseEntityBlock {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ContainmentChamberBlockEntity chamber) {
                 if (player instanceof ServerPlayer serverPlayer) {
+                    //? if neoforge {
                     serverPlayer.openMenu(new SimpleMenuProvider(chamber, Component.translatable("block.florafauna.containment_chamber")), pos);
+                    //?} else {
+                    /*serverPlayer.openMenu(new net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<net.minecraft.core.BlockPos>() {
+                        public net.minecraft.core.BlockPos getScreenOpeningData(ServerPlayer player) { return pos; }
+                        public net.minecraft.network.chat.Component getDisplayName() { return chamber.getDisplayName(); }
+                        public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, net.minecraft.world.entity.player.Inventory inventory, Player player) { return chamber.createMenu(id, inventory, player); }
+                    });
+                    *///?}
                 }
             }
         }

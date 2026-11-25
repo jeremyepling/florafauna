@@ -17,14 +17,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+//? if neoforge {
 import net.neoforged.bus.api.EventPriority;
+//?}
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 //? if <26.3 {
 import net.neoforged.neoforge.event.level.BlockEvent;
 //?} else {
 /*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 *///?}
+//?}
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -37,7 +45,9 @@ import org.jetbrains.annotations.Nullable;
  * - Never used as a spawn point
  * - Light level 7 for RESTORATION type (beacon effect)
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class HuskBlock extends BaseEntityBlock {
 
     public static final EnumProperty<HuskType> HUSK_TYPE = EnumProperty.create("husk_type", HuskType.class);
@@ -102,6 +112,7 @@ public class HuskBlock extends BaseEntityBlock {
         return HuskInteractionHandler.handleInteraction(serverPlayer, huskEntity, state, level, pos);
     }
 
+    //? if neoforge {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBreak(BlockEvent.BreakEvent event) {
         if (event.getState().getBlock() instanceof HuskBlock
@@ -110,6 +121,8 @@ public class HuskBlock extends BaseEntityBlock {
             event.setCanceled(true);
         }
     }
+    //?}
+
 
     /**
      * Prevent non-owners from breaking the block.

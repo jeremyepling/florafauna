@@ -11,24 +11,38 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelData;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+//?}
 
 /**
  * Handles respawn validation for Cocoon Chamber spawns.
  * If the cocoon spawn point is invalid (block destroyed), restores previous bed spawn.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class CocoonRespawnHandler {
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) {
+        onPlayerRespawn(event.getEntity());
+    }
+    //?}
+
+    public static void onPlayerRespawn(net.minecraft.world.entity.player.Player subject) {
+        if (!(subject instanceof ServerPlayer player)) {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only check if player has cocoon spawn set
         if (data.cocoonSpawnPos() == null || data.cocoonSpawnDim() == null) {
@@ -42,9 +56,15 @@ public class CocoonRespawnHandler {
         }
     }
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
+        onPlayerLogout(event.getEntity());
+    }
+    //?}
+
+    public static void onPlayerLogout(net.minecraft.world.entity.player.Player subject) {
+        if (subject instanceof ServerPlayer player) {
             ChaosSuppressor.clearPlayer(player);
         }
     }
@@ -87,7 +107,7 @@ public class CocoonRespawnHandler {
 
         // Clear cocoon spawn data but preserve previous bed spawn for future use
         PlayerSymbioteData updatedData = data.withCocoonSpawn(null, null);
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, updatedData);
 
         // Notify player
         player.sendSystemMessage(

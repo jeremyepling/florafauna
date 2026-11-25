@@ -17,7 +17,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.j40climb.florafauna.setup.ClientSetup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -271,7 +271,7 @@ public class MobBarrierConfigScreen extends BaseScreen {
     }
 
     private void sendConfigToServer() {
-        ClientPacketDistributor.sendToServer(new UpdateMobBarrierConfigPayload(config));
+        ClientSetup.sendToServer(new UpdateMobBarrierConfigPayload(config));
     }
 
     // ===================

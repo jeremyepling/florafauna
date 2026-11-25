@@ -8,7 +8,11 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+//? if neoforge {
 import net.neoforged.neoforge.network.PacketDistributor;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.PacketDistributor;
+*///?}
 
 /**
  * Handles symbiote dialogue triggers and fill state sync for Mining Anchors.
@@ -32,7 +36,7 @@ public class MiningAnchorDialogueEvents {
     ) {
         // Find all players who have this anchor as their active waypoint
         for (ServerPlayer player : level.players()) {
-            var data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+            var data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
             // Check if this is the player's active waypoint anchor
             if (!data.hasActiveWaypointAnchor()) {

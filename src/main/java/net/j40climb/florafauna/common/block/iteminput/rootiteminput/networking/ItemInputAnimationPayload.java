@@ -8,7 +8,11 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+//? if neoforge {
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.IPayloadContext;
+*///?}
 
 /**
  * Sent from server to client when an item entity is claimed by an Item Input block.

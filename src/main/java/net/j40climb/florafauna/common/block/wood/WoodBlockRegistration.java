@@ -3,7 +3,11 @@ package net.j40climb.florafauna.common.block.wood;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.properties.WoodType;
+//? if neoforge {
 import net.neoforged.neoforge.registries.DeferredBlock;
+//?} else {
+/*import net.j40climb.florafauna.platform.registry.DeferredBlock;
+*///?}
 
 /**
  * Registers all blocks for a wood type (log, stripped_log, wood, stripped_wood, planks).

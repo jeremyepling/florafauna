@@ -61,7 +61,7 @@ final class RecoveryPlaytest {
             player.setHealth(player.getMaxHealth());
             player.getFoodData().setFoodLevel(16);
             player.removeAllEffects();
-            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT);
             player.getInventory().clearContent();
             player.getInventory().setSelectedSlot(0);
             player.getInventory().setItem(0, new ItemStack(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get()));
@@ -145,7 +145,7 @@ final class RecoveryPlaytest {
     }
 
     private static PlayerSymbioteData data(Player player) {
-        return player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
     }
 
     private static boolean hasWaypoint(Player player) {

@@ -11,13 +11,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.Set;
 
 public final class DevPlotCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        if (FMLEnvironment.isProduction()) return;
+        if (net.j40climb.florafauna.platform.PlatformEnvironment.isProduction()) return;
         var root = Commands.literal("ffplot").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
         var build = Commands.literal("build").then(Commands.literal("all").executes(context -> {
             int placed = 0;

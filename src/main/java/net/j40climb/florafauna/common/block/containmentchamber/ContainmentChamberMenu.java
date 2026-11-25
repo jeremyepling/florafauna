@@ -9,7 +9,11 @@ import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ResourceHandlerSlot;
+*///?}
 
 public class ContainmentChamberMenu extends BaseContainerMenu {
     public final ContainmentChamberBlockEntity blockEntity;

@@ -23,7 +23,11 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+//? if neoforge {
 import net.neoforged.neoforge.network.PacketDistributor;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.PacketDistributor;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -139,7 +143,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
     protected boolean shouldCollectItem(ItemEntity itemEntity) {
         // If block drops only mode is enabled, filter by BlockDropData
         if (collectBlockDropsOnly()) {
-            BlockDropData dropData = itemEntity.getData(FloraFaunaRegistry.BLOCK_DROP_DATA);
+            BlockDropData dropData = net.j40climb.florafauna.platform.AttachmentAccess.get(itemEntity, FloraFaunaRegistry.BLOCK_DROP_DATA);
             if (!dropData.isBlockDrop()) {
                 return false;
             }
@@ -182,7 +186,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
             }
 
             // Skip already claimed items
-            ClaimedItemData existingData = itemEntity.getData(FloraFaunaRegistry.CLAIMED_ITEM_DATA);
+            ClaimedItemData existingData = net.j40climb.florafauna.platform.AttachmentAccess.get(itemEntity, FloraFaunaRegistry.CLAIMED_ITEM_DATA);
             if (existingData.claimed()) {
                 continue;
             }
@@ -219,7 +223,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
                 currentTick,
                 getAnimationDuration(), quantity
         );
-        itemEntity.setData(FloraFaunaRegistry.CLAIMED_ITEM_DATA, claimData);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(itemEntity, FloraFaunaRegistry.CLAIMED_ITEM_DATA, claimData);
 
         // Send animation payload to nearby clients
         if (level instanceof ServerLevel serverLevel) {
@@ -248,7 +252,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
         long currentTick = level.getGameTime();
 
         for (ItemEntity itemEntity : nearbyItems) {
-            ClaimedItemData claimData = itemEntity.getData(FloraFaunaRegistry.CLAIMED_ITEM_DATA);
+            ClaimedItemData claimData = net.j40climb.florafauna.platform.AttachmentAccess.get(itemEntity, FloraFaunaRegistry.CLAIMED_ITEM_DATA);
 
             // Only process items claimed by this block
             if (!claimData.claimed() || !claimData.vacuumBlockPos().equals(worldPosition)) {
@@ -282,7 +286,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
     }
 
     private static void releaseClaim(ItemEntity itemEntity) {
-        itemEntity.setData(FloraFaunaRegistry.CLAIMED_ITEM_DATA, ClaimedItemData.DEFAULT);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(itemEntity, FloraFaunaRegistry.CLAIMED_ITEM_DATA, ClaimedItemData.DEFAULT);
         itemEntity.setPickUpDelay(0);
     }
 
@@ -333,7 +337,7 @@ public abstract class AbstractVacuumBlockEntity extends BlockEntity {
 
         List<ItemEntity> nearbyItems = level.getEntitiesOfClass(ItemEntity.class, scanArea);
         for (ItemEntity itemEntity : nearbyItems) {
-            ClaimedItemData claimData = itemEntity.getData(FloraFaunaRegistry.CLAIMED_ITEM_DATA);
+            ClaimedItemData claimData = net.j40climb.florafauna.platform.AttachmentAccess.get(itemEntity, FloraFaunaRegistry.CLAIMED_ITEM_DATA);
             if (claimData.claimed() && claimData.vacuumBlockPos().equals(worldPosition)) {
                 releaseClaim(itemEntity);
             }

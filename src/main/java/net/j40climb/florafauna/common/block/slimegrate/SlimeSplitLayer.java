@@ -20,19 +20,27 @@ import net.minecraft.world.entity.EntityType;
 /*import net.minecraft.world.entity.EntityTypes;
 *///?}
 import net.minecraft.world.entity.monster.Slime;
+//? if neoforge {
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+//?}
 
 /** Both lobes belong to the same animal. Use the normal slime models, including the translucent skin. */
 public final class SlimeSplitLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
+    //? if neoforge {
     private static final ContextKey<Float> PROGRESS = new ContextKey<>(Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "slime_split"));
+    //?} else {
+    /*private static final net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey<Float> PROGRESS =
+            net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey.create(() -> "florafauna slime split");
+    *///?}
     private final SlimeOuterLayer skin;
 
-    private SlimeSplitLayer(SlimeRenderer renderer, EntityModelSet models) {
+    public SlimeSplitLayer(SlimeRenderer renderer, EntityModelSet models) {
         super(renderer);
         skin = new SlimeOuterLayer(renderer, models);
     }
 
+    //? if neoforge {
     public static void addLayer(EntityRenderersEvent.AddLayers event) {
         if (event.getRenderer(EntityType.SLIME) instanceof SlimeRenderer renderer) {
             renderer.addLayer(new SlimeSplitLayer(renderer, event.getEntityModels()));
@@ -40,16 +48,25 @@ public final class SlimeSplitLayer extends RenderLayer<SlimeRenderState, SlimeMo
     }
 
     public static void registerState(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(SlimeRenderer.class, (Slime slime, SlimeRenderState state) -> {
-            if (!slime.hasData(FloraFaunaRegistry.SLIME_LAST_SHED)) return;
-            long shed = slime.getData(FloraFaunaRegistry.SLIME_LAST_SHED);
-            double age = slime.level().getGameTime() - shed + state.ageInTicks - slime.tickCount;
-            if (shed < 0 || age < 0 || age >= SlimeGrateFarm.SPLIT_TICKS) return;
-            float progress = (float) (age / SlimeGrateFarm.SPLIT_TICKS);
-            float opening = opening(progress);
-            state.scale *= 1f - 0.37f * opening;
-            state.setRenderData(PROGRESS, progress);
-        });
+        event.registerEntityModifier(SlimeRenderer.class, SlimeSplitLayer::extractState);
+    }
+    //?}
+
+    public static void extractState(Slime slime, SlimeRenderState state) {
+        //? if fabric {
+        /*state.setData(PROGRESS, null);
+        *///?}
+        if (!net.j40climb.florafauna.platform.AttachmentAccess.has(slime, FloraFaunaRegistry.SLIME_LAST_SHED)) return;
+        long shed = net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_LAST_SHED);
+        double age = slime.level().getGameTime() - shed + state.ageInTicks - slime.tickCount;
+        if (shed < 0 || age < 0 || age >= SlimeGrateFarm.SPLIT_TICKS) return;
+        float progress = (float) (age / SlimeGrateFarm.SPLIT_TICKS);
+        state.scale *= 1f - 0.37f * opening(progress);
+        //? if neoforge {
+        state.setRenderData(PROGRESS, progress);
+        //?} else {
+        /*state.setData(PROGRESS, progress);
+        *///?}
     }
 
     // Open quickly, hang for a beat, then draw the two faces back together.
@@ -59,7 +76,11 @@ public final class SlimeSplitLayer extends RenderLayer<SlimeRenderState, SlimeMo
 
     @Override
     public void submit(PoseStack pose, SubmitNodeCollector collector, int light, SlimeRenderState state, float yRot, float xRot) {
+        //? if neoforge {
         Float progress = state.getRenderData(PROGRESS);
+        //?} else {
+        /*Float progress = state.getData(PROGRESS);
+        *///?}
         if (progress == null || state.isInvisible) return;
         float spread = opening(progress);
         pose.pushPose();

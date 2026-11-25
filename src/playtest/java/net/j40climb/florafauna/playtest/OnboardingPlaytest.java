@@ -87,8 +87,8 @@ final class OnboardingPlaytest {
             p.setHealth(p.getMaxHealth());
             p.getFoodData().setFoodLevel(16);
             p.removeAllEffects();
-            p.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT);
-            p.setData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(p, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(p, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT, ProgressSignalTracker.DEFAULT);
             p.getInventory().clearContent();
             p.getInventory().setSelectedSlot(0);
             p.inventoryMenu.broadcastChanges();
@@ -277,11 +277,11 @@ final class OnboardingPlaytest {
     }
 
     private static PlayerSymbioteData data(net.minecraft.world.entity.player.Player p) {
-        return p.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(p, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
     }
 
     private static ProgressSignalTracker progress(ServerPlayer p) {
-        return p.getData(FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(p, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
     }
 
     private static void useChamberButton(Playtest t, String action) {

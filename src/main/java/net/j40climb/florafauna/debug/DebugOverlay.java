@@ -34,11 +34,13 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+//? if neoforge {
 import net.neoforged.fml.InterModComms;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.GuiLayer;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -49,11 +51,16 @@ import java.util.function.BiConsumer;
  * Debug overlay that displays symbiote state information on screen.
  * Toggle with /symbiote_debug command.
  */
-public class DebugOverlay implements GuiLayer {
+public class DebugOverlay
+//? if neoforge {
+        implements GuiLayer
+//?}
+{
     public static final Identifier LAYER_ID = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_debug");
 
     private static BiConsumer<ItemStack, List<String>> hammerDiagnostics;
 
+//? if neoforge {
     @SuppressWarnings("unchecked") // The matching Hammer sender and message ID define the callback's argument types.
     public static void receiveHammerDiagnostics(InterModProcessEvent event) {
         InterModComms.getMessages(FloraFauna.MOD_ID, "hammer_tool_diagnostics"::equals)
@@ -63,8 +70,14 @@ public class DebugOverlay implements GuiLayer {
                 .findFirst().ifPresent(callback -> hammerDiagnostics = (BiConsumer<ItemStack, List<String>>) callback);
     }
 
+
+//?}
     // Auto-enable in dev environment for convenience
+    //? if neoforge {
     private static boolean enabled = !FMLEnvironment.isProduction();
+    //?} else {
+    /*private static boolean enabled = net.fabricmc.loader.api.FabricLoader.getInstance().isDevelopmentEnvironment();
+    *///?}
 
     public static boolean isEnabled() {
         return enabled;
@@ -81,14 +94,19 @@ public class DebugOverlay implements GuiLayer {
     /**
      * Registers the GUI layer. Called from FloraFauna mod event bus.
      */
+//? if neoforge {
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(LAYER_ID, new DebugOverlay());
     }
 
+
+//?}
     // Simple record to hold a line of text with its color
     private record DebugLine(String text, int color) {}
 
+    //? if neoforge {
     @Override
+    //?}
     public void render(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         if (!enabled) {
             return;
@@ -154,7 +172,7 @@ public class DebugOverlay implements GuiLayer {
     private void buildDebugLines(List<DebugLine> lines, LocalPlayer player,
                                   int color, int headerColor, int valueColor,
                                   int enabledColor, int disabledColor) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Header
         lines.add(new DebugLine("=== Symbiote Debug ===", headerColor));
@@ -257,8 +275,8 @@ public class DebugOverlay implements GuiLayer {
         long currentTick = player.level().getGameTime();
 
         // Check for MobSymbiote data
-        if (mob.hasData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA)) {
-            MobSymbioteData symbioteData = mob.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
+        if (net.j40climb.florafauna.platform.AttachmentAccess.has(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA)) {
+            MobSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.MOB_SYMBIOTE_DATA);
             if (symbioteData.hasMobSymbiote()) {
                 lines.add(new DebugLine("-- MobSymbiote --", headerColor));
                 lines.add(new DebugLine("Level: " + symbioteData.mobSymbioteLevel(), enabledColor));
@@ -274,8 +292,8 @@ public class DebugOverlay implements GuiLayer {
         }
 
         // Check for Fear data
-        if (mob.hasData(FloraFaunaRegistry.FEAR_DATA)) {
-            FearData fearData = mob.getData(FloraFaunaRegistry.FEAR_DATA);
+        if (net.j40climb.florafauna.platform.AttachmentAccess.has(mob, FloraFaunaRegistry.FEAR_DATA)) {
+            FearData fearData = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.FEAR_DATA);
             FearState state = fearData.fearState();
 
             lines.add(new DebugLine("-- Fear State --", headerColor));
@@ -324,8 +342,8 @@ public class DebugOverlay implements GuiLayer {
         }
 
         // Check for Iron Garden data (Iron Golems only)
-        if (mob instanceof IronGolem golem && mob.hasData(FloraFaunaRegistry.IRON_GARDEN_DATA)) {
-            IronGardenData gardenData = mob.getData(FloraFaunaRegistry.IRON_GARDEN_DATA);
+        if (mob instanceof IronGolem golem && net.j40climb.florafauna.platform.AttachmentAccess.has(mob, FloraFaunaRegistry.IRON_GARDEN_DATA)) {
+            IronGardenData gardenData = net.j40climb.florafauna.platform.AttachmentAccess.get(mob, FloraFaunaRegistry.IRON_GARDEN_DATA);
             IronGardenState state = gardenData.ironGardenState();
 
             // Only show if the golem is bonded (participating in iron garden)

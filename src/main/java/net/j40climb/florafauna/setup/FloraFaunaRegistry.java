@@ -77,11 +77,21 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+//? if neoforge {
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.*;
+import net.j40climb.florafauna.platform.registry.AttachmentBuilder;
+//?} else {
+/*import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.j40climb.florafauna.platform.registry.FabricRegistries.*;
+import net.j40climb.florafauna.platform.registry.DeferredBlock;
+import net.minecraft.world.inventory.SimpleContainerData;
+*///?}
+import net.j40climb.florafauna.platform.PlatformRegistration;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -95,6 +105,7 @@ public class FloraFaunaRegistry {
 
     // ==================== REGISTRIES ====================
 
+    //? if neoforge {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(FloraFauna.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(FloraFauna.MOD_ID);
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, FloraFauna.MOD_ID);
@@ -102,6 +113,17 @@ public class FloraFaunaRegistry {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, FloraFauna.MOD_ID);
     public static final DeferredRegister.DataComponents DATA_COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, FloraFauna.MOD_ID);
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, FloraFauna.MOD_ID);
+
+    //?} else {
+    /*    public static final Blocks BLOCKS = new Blocks();
+    public static final Items ITEMS = new Items();
+    public static final Entries<EntityType<?>> ENTITY_TYPES = new Entries<>(BuiltInRegistries.ENTITY_TYPE);
+    public static final Entries<BlockEntityType<?>> BLOCK_ENTITIES = new Entries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE);
+    public static final Entries<MenuType<?>> MENUS = new Entries<>(BuiltInRegistries.MENU);
+    public static final Components DATA_COMPONENTS = new Components();
+    public static final Attachments ATTACHMENT_TYPES = new Attachments();
+
+    *///?}
 
     // ==================== BLOCKS ====================
 
@@ -137,12 +159,12 @@ public class FloraFaunaRegistry {
             props -> new SlimeGrateBlock(props.noOcclusion().strength(2.0F).sound(SoundType.METAL)));
 
     public static final Supplier<AttachmentType<Long>> SLIME_LAST_SHED = ATTACHMENT_TYPES.register("slime_last_shed",
-            () -> AttachmentType.builder(() -> -1L)
+            () -> AttachmentBuilder.builder(() -> -1L)
                     .serialize(Codec.LONG.fieldOf("tick"))
                     .sync(ByteBufCodecs.VAR_LONG).build());
 
     public static final Supplier<AttachmentType<SlimeGrateFarm.Lure>> SLIME_NOTE = ATTACHMENT_TYPES.register("slime_note",
-            () -> AttachmentType.builder(() -> new SlimeGrateFarm.Lure(BlockPos.ZERO, -1)).build());
+            () -> AttachmentBuilder.builder(() -> new SlimeGrateFarm.Lure(BlockPos.ZERO, -1)).build());
 
     // Register custom MobBarrierBlockItem (carries config component)
     static {
@@ -258,7 +280,7 @@ public class FloraFaunaRegistry {
             ));
 
     // Separate item registration for ferric poppy (for use in goals)
-    public static final DeferredItem<Item> FERRIC_POPPY_ITEM = ITEMS.registerItem("ferric_poppy_item",
+    public static final Supplier<Item> FERRIC_POPPY_ITEM = ITEMS.registerItem("ferric_poppy_item",
             Item::new);
 
     // Wood blocks registered via ModWoodType enum
@@ -282,10 +304,10 @@ public class FloraFaunaRegistry {
     // ==================== ITEMS ====================
 
     // Custom Items
-    public static final DeferredItem<Item> DORMANT_SYMBIOTE = ITEMS.registerItem("dormant_symbiote",
+    public static final Supplier<Item> DORMANT_SYMBIOTE = ITEMS.registerItem("dormant_symbiote",
             DormantSymbioteItem::new);
 
-    public static final DeferredItem<Item> SYMBIOTIC_POLLEN = ITEMS.registerItem("symbiotic_pollen", properties ->
+    public static final Supplier<Item> SYMBIOTIC_POLLEN = ITEMS.registerItem("symbiotic_pollen", properties ->
             new SymbioticPollenItem(properties.component(net.minecraft.core.component.DataComponents.CONSUMABLE,
                     Consumable.builder()
                             .consumeSeconds(1.2f)
@@ -295,96 +317,106 @@ public class FloraFaunaRegistry {
                             .build()
             )));
 
-    public static final DeferredItem<Item> MOB_SYMBIOTE = ITEMS.registerItem("mob_symbiote",
+    public static final Supplier<Item> MOB_SYMBIOTE = ITEMS.registerItem("mob_symbiote",
             MobSymbioteItem::new);
 
     // Spawn Eggs (entities must be declared before these)
-    public static final DeferredItem<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
+    public static final Supplier<Item> GECKO_SPAWN_EGG = ITEMS.registerItem("gecko_spawn_egg", properties ->
             new SpawnEggItem(properties.spawnEgg(GECKO.get())));
-    public static final DeferredItem<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
+    public static final Supplier<Item> LIZARD_SPAWN_EGG = ITEMS.registerItem("lizard_spawn_egg", properties ->
             new SpawnEggItem(properties.spawnEgg(LIZARD.get())));
 
     // ==================== BLOCK ENTITIES ====================
 
     public static final Supplier<BlockEntityType<ContainmentChamberBlockEntity>> CONTAINMENT_CHAMBER_BE = BLOCK_ENTITIES.register(
             "containment_chamber",
-            () -> new BlockEntityType<>(ContainmentChamberBlockEntity::new, false, SYMBIOTE_CONTAINMENT_CHAMBER.get()));
+            () -> PlatformRegistration.blockEntity(ContainmentChamberBlockEntity::new, SYMBIOTE_CONTAINMENT_CHAMBER.get()));
 
     public static final Supplier<BlockEntityType<CocoonChamberBlockEntity>> COCOON_CHAMBER_BE = BLOCK_ENTITIES.register(
             "cocoon_chamber",
-            () -> new BlockEntityType<>(CocoonChamberBlockEntity::new, false, COCOON_CHAMBER.get()));
+            () -> PlatformRegistration.blockEntity(CocoonChamberBlockEntity::new, COCOON_CHAMBER.get()));
 
     public static final Supplier<BlockEntityType<HuskBlockEntity>> HUSK_BE = BLOCK_ENTITIES.register(
             "husk",
-            () -> new BlockEntityType<>(HuskBlockEntity::new, false, HUSK.get()));
+            () -> PlatformRegistration.blockEntity(HuskBlockEntity::new, HUSK.get()));
 
     public static final Supplier<BlockEntityType<MobBarrierBlockEntity>> MOB_BARRIER_BE = BLOCK_ENTITIES.register(
             "mob_barrier",
-            () -> new BlockEntityType<>(MobBarrierBlockEntity::new, false, MOB_BARRIER.get()));
+            () -> PlatformRegistration.blockEntity(MobBarrierBlockEntity::new, MOB_BARRIER.get()));
 
     // Item Input System block entities
     public static final Supplier<BlockEntityType<StorageAnchorBlockEntity>> STORAGE_ANCHOR_BE = BLOCK_ENTITIES.register(
             "storage_anchor",
-            () -> new BlockEntityType<>(StorageAnchorBlockEntity::new, false, STORAGE_ANCHOR.get()));
+            () -> PlatformRegistration.blockEntity(StorageAnchorBlockEntity::new, STORAGE_ANCHOR.get()));
 
     public static final Supplier<BlockEntityType<ItemInputBlockEntity>> ITEM_INPUT_BE = BLOCK_ENTITIES.register(
             "item_input",
-            () -> new BlockEntityType<>(ItemInputBlockEntity::new, false, ITEM_INPUT.get()));
+            () -> PlatformRegistration.blockEntity(ItemInputBlockEntity::new, ITEM_INPUT.get()));
 
     public static final Supplier<BlockEntityType<FieldRelayBlockEntity>> FIELD_RELAY_BE = BLOCK_ENTITIES.register(
             "field_relay",
-            () -> new BlockEntityType<>(FieldRelayBlockEntity::new, false, FIELD_RELAY.get()));
+            () -> PlatformRegistration.blockEntity(FieldRelayBlockEntity::new, FIELD_RELAY.get()));
 
     // Mining Anchor System block entities
     public static final Supplier<BlockEntityType<Tier1MiningAnchorBlockEntity>> TIER1_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
             "tier1_mining_anchor",
-            () -> new BlockEntityType<>(Tier1MiningAnchorBlockEntity::new, false, TIER1_MINING_ANCHOR.get()));
+            () -> PlatformRegistration.blockEntity(Tier1MiningAnchorBlockEntity::new, TIER1_MINING_ANCHOR.get()));
 
     public static final Supplier<BlockEntityType<Tier2MiningAnchorBlockEntity>> TIER2_MINING_ANCHOR_BE = BLOCK_ENTITIES.register(
             "tier2_mining_anchor",
-            () -> new BlockEntityType<>(Tier2MiningAnchorBlockEntity::new, false, TIER2_MINING_ANCHOR.get()));
+            () -> PlatformRegistration.blockEntity(Tier2MiningAnchorBlockEntity::new, TIER2_MINING_ANCHOR.get()));
 
     // Storage Pod block entities
     public static final Supplier<BlockEntityType<Tier1PodBlockEntity>> TIER1_POD_BE = BLOCK_ENTITIES.register(
             "tier1_pod",
-            () -> new BlockEntityType<>(Tier1PodBlockEntity::new, false, TIER1_POD.get()));
+            () -> PlatformRegistration.blockEntity(Tier1PodBlockEntity::new, TIER1_POD.get()));
 
     public static final Supplier<BlockEntityType<Tier2PodBlockEntity>> TIER2_POD_BE = BLOCK_ENTITIES.register(
             "tier2_pod",
-            () -> new BlockEntityType<>(Tier2PodBlockEntity::new, false, TIER2_POD.get()));
+            () -> PlatformRegistration.blockEntity(Tier2PodBlockEntity::new, TIER2_POD.get()));
 
     // Mob Transport System block entities
     public static final Supplier<BlockEntityType<MobInputBlockEntity>> MOB_INPUT_BE = BLOCK_ENTITIES.register(
             "mob_input",
-            () -> new BlockEntityType<>(MobInputBlockEntity::new, false, MOB_INPUT.get()));
+            () -> PlatformRegistration.blockEntity(MobInputBlockEntity::new, MOB_INPUT.get()));
 
     public static final Supplier<BlockEntityType<MobOutputBlockEntity>> MOB_OUTPUT_BE = BLOCK_ENTITIES.register(
             "mob_output",
-            () -> new BlockEntityType<>(MobOutputBlockEntity::new, false, MOB_OUTPUT.get()));
+            () -> PlatformRegistration.blockEntity(MobOutputBlockEntity::new, MOB_OUTPUT.get()));
 
     // ==================== MENUS ====================
 
-    public static final DeferredHolder<MenuType<?>, MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER_MENU =
+    //? if neoforge {
+    public static final Supplier<MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER_MENU =
             registerMenuType("containment_chamber", ContainmentChamberMenu::new);
+
+    //?} else {
+    /*    public static final Supplier<MenuType<ContainmentChamberMenu>> CONTAINMENT_CHAMBER_MENU =
+            MENUS.register("containment_chamber", () -> new ExtendedMenuType<>(
+                    (id, inventory, pos) -> new ContainmentChamberMenu(id, inventory,
+                            inventory.player.level().getBlockEntity(pos), new SimpleContainerData(2)),
+                    BlockPos.STREAM_CODEC));
+
+    *///?}
 
     // ==================== DATA COMPONENTS ====================
 
     // Symbiote item data components
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<SymbioteData>> SYMBIOTE_DATA =
+    public static final Supplier<DataComponentType<SymbioteData>> SYMBIOTE_DATA =
             DATA_COMPONENTS.registerComponentType("symbiote_data",
                     builder -> builder.persistent(SymbioteData.CODEC).networkSynchronized(SymbioteData.STREAM_CODEC));
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS =
+    public static final Supplier<DataComponentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS =
             DATA_COMPONENTS.registerComponentType("symbiote_progress",
                     builder -> builder.persistent(ProgressSignalTracker.CODEC).networkSynchronized(ProgressSignalTracker.STREAM_CODEC));
 
     // Mob barrier config data component
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<MobBarrierConfig>> MOB_BARRIER_CONFIG =
+    public static final Supplier<DataComponentType<MobBarrierConfig>> MOB_BARRIER_CONFIG =
             DATA_COMPONENTS.registerComponentType("mob_barrier_config",
                     builder -> builder.persistent(MobBarrierConfig.CODEC).networkSynchronized(MobBarrierConfig.STREAM_CODEC));
 
     // Pod contents data component (for Hardened Pods that keep items when broken)
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<PodContents>> POD_CONTENTS =
+    public static final Supplier<DataComponentType<PodContents>> POD_CONTENTS =
             DATA_COMPONENTS.registerComponentType("pod_contents",
                     builder -> builder.persistent(PodContents.CODEC).networkSynchronized(PodContents.STREAM_CODEC));
 
@@ -392,7 +424,7 @@ public class FloraFaunaRegistry {
 
     public static final Supplier<AttachmentType<PlayerSymbioteData>> PLAYER_SYMBIOTE_DATA =
             ATTACHMENT_TYPES.register("player_symbiote_data", () ->
-                    AttachmentType.builder(() -> PlayerSymbioteData.DEFAULT)
+                    AttachmentBuilder.builder(() -> PlayerSymbioteData.DEFAULT)
                             .serialize(PlayerSymbioteData.CODEC.fieldOf("player_symbiote_data"))
                             .sync(PlayerSymbioteData.STREAM_CODEC)
                             .copyOnDeath()
@@ -400,7 +432,7 @@ public class FloraFaunaRegistry {
 
     public static final Supplier<AttachmentType<ProgressSignalTracker>> SYMBIOTE_PROGRESS_ATTACHMENT =
             ATTACHMENT_TYPES.register("symbiote_progress", () ->
-                    AttachmentType.builder(() -> ProgressSignalTracker.DEFAULT)
+                    AttachmentBuilder.builder(() -> ProgressSignalTracker.DEFAULT)
                             .serialize(ProgressSignalTracker.CODEC.fieldOf("symbiote_progress"))
                             .sync(ProgressSignalTracker.STREAM_CODEC)
                             .copyOnDeath()
@@ -408,7 +440,7 @@ public class FloraFaunaRegistry {
 
     public static final Supplier<AttachmentType<VoiceCooldownState>> VOICE_COOLDOWNS =
             ATTACHMENT_TYPES.register("voice_cooldowns", () ->
-                    AttachmentType.builder(() -> VoiceCooldownState.DEFAULT)
+                    AttachmentBuilder.builder(() -> VoiceCooldownState.DEFAULT)
                             .serialize(VoiceCooldownState.CODEC.fieldOf("voice_cooldowns"))
                             .sync(VoiceCooldownState.STREAM_CODEC)
                             .copyOnDeath()
@@ -417,7 +449,7 @@ public class FloraFaunaRegistry {
     // Vacuum System entity attachments (for ItemEntity)
     public static final Supplier<AttachmentType<ClaimedItemData>> CLAIMED_ITEM_DATA =
             ATTACHMENT_TYPES.register("claimed_item_data", () ->
-                    AttachmentType.builder(() -> ClaimedItemData.DEFAULT)
+                    AttachmentBuilder.builder(() -> ClaimedItemData.DEFAULT)
                             .serialize(ClaimedItemData.CODEC.fieldOf("claimed_item_data"))
                             .sync(ClaimedItemData.STREAM_CODEC)
                             .build());
@@ -425,7 +457,7 @@ public class FloraFaunaRegistry {
     // Block drop tracking (marks items that came from block breaking)
     public static final Supplier<AttachmentType<BlockDropData>> BLOCK_DROP_DATA =
             ATTACHMENT_TYPES.register("block_drop_data", () ->
-                    AttachmentType.builder(() -> BlockDropData.DEFAULT)
+                    AttachmentBuilder.builder(() -> BlockDropData.DEFAULT)
                             .serialize(BlockDropData.CODEC.fieldOf("block_drop_data"))
                             .sync(BlockDropData.STREAM_CODEC)
                             .build());
@@ -433,19 +465,19 @@ public class FloraFaunaRegistry {
     // Mob symbiote attachment (for marking mobs as bonded for capture)
     public static final Supplier<AttachmentType<MobSymbioteData>> MOB_SYMBIOTE_DATA =
             ATTACHMENT_TYPES.register("mob_symbiote_data", () ->
-                    AttachmentType.builder(() -> MobSymbioteData.DEFAULT)
+                    AttachmentBuilder.builder(() -> MobSymbioteData.DEFAULT)
                             .serialize(MobSymbioteData.CODEC.fieldOf("mob_symbiote_data"))
                             .sync(MobSymbioteData.STREAM_CODEC)
                             .build());
 
     // Only live spiders hanging from silk need this client pose. It resets on world load.
     public static final Supplier<AttachmentType<Boolean>> SILK_HANGING = ATTACHMENT_TYPES.register("silk_hanging",
-            () -> AttachmentType.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
+            () -> AttachmentBuilder.builder(() -> false).sync(ByteBufCodecs.BOOL).build());
 
     // Fear system attachment (for fear/stress state tracking)
     public static final Supplier<AttachmentType<FearData>> FEAR_DATA =
             ATTACHMENT_TYPES.register("fear_data", () ->
-                    AttachmentType.builder(() -> FearData.DEFAULT)
+                    AttachmentBuilder.builder(() -> FearData.DEFAULT)
                             .serialize(FearData.CODEC.fieldOf("fear_data"))
                             .sync(FearData.STREAM_CODEC)
                             .build());
@@ -453,7 +485,7 @@ public class FloraFaunaRegistry {
     // Iron Garden system attachment (for iron golem gardening state)
     public static final Supplier<AttachmentType<IronGardenData>> IRON_GARDEN_DATA =
             ATTACHMENT_TYPES.register("iron_garden_data", () ->
-                    AttachmentType.builder(() -> IronGardenData.DEFAULT)
+                    AttachmentBuilder.builder(() -> IronGardenData.DEFAULT)
                             .serialize(IronGardenData.CODEC.fieldOf("iron_garden_data"))
                             .sync(IronGardenData.STREAM_CODEC)
                             .build());
@@ -477,16 +509,20 @@ public class FloraFaunaRegistry {
         return BLOCKS.registerBlock(name, function);
     }
 
+    //? if neoforge {
     /**
      * Helper to register menu types.
      */
-    private static <T extends AbstractContainerMenu> DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(
+    private static <T extends AbstractContainerMenu> Supplier<MenuType<T>> registerMenuType(
             String name, IContainerFactory<T> factory) {
         return MENUS.register(name, () -> IMenuTypeExtension.create(factory));
     }
 
+    //?}
+
     // ==================== INITIALIZATION ====================
 
+    //? if neoforge {
     /**
      * Registers all registries to the mod event bus.
      */
@@ -500,4 +536,18 @@ public class FloraFaunaRegistry {
         MENUS.register(modEventBus);
         ATTACHMENT_TYPES.register(modEventBus);
     }
+    //?} else {
+    /*// Installs queued Fabric content before registry freeze.
+    public static void init() {
+        // DATA_COMPONENTS must be registered before ITEMS because MobBarrierBlockItem uses MOB_BARRIER_CONFIG
+        DATA_COMPONENTS.register();
+        BLOCKS.register();
+        ENTITY_TYPES.register();
+        ITEMS.register();
+        BLOCK_ENTITIES.register();
+        MENUS.register();
+        ATTACHMENT_TYPES.register();
+    }
+    *///?}
+
 }

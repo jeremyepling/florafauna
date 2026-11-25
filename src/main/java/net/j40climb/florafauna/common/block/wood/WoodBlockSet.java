@@ -1,7 +1,11 @@
 package net.j40climb.florafauna.common.block.wood;
 
 import net.minecraft.world.level.block.*;
+//? if neoforge {
 import net.neoforged.neoforge.registries.DeferredBlock;
+//?} else {
+/*import net.j40climb.florafauna.platform.registry.DeferredBlock;
+*///?}
 
 /**
  * Holds all the block references for a single wood type.

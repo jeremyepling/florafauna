@@ -10,17 +10,35 @@ import net.minecraft.world.entity.EntityType;
 *///?}
 import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.level.block.state.BlockState;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.common.ItemAbilities;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.level.BlockEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+//?}
 
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public final class SpiderSilkEvents {
+    //? if neoforge {
     @SubscribeEvent
     public static void onSpiderTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof Spider spider) || spider.getType() != EntityType.SPIDER
+        onSpiderTick(event.getEntity());
+    }
+    //?}
+
+    public static void onSpiderTick(net.minecraft.world.entity.Entity entity) {
+        if (!(entity instanceof Spider spider) || spider.getType() != EntityType.SPIDER
                 || spider.level().isClientSide() || spider.tickCount % 20 != 1 || !MobSymbioteHelper.hasMobSymbiote(spider)) return;
         if (!spider.isPersistenceRequired()) spider.setPersistenceRequired();
         if (spider.goalSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof SpinSilkGoal)) {
@@ -29,6 +47,7 @@ public final class SpiderSilkEvents {
     }
 
     // The vanilla dispenser applies the returned state, charges its shears and emits the shear game event.
+    //? if neoforge {
     @SubscribeEvent
     public static void onDispenserShear(BlockEvent.BlockToolModificationEvent event) {
         if (event.getPlayer() != null || event.getItemAbility() != ItemAbilities.SHEARS_HARVEST ||
@@ -39,6 +58,8 @@ public final class SpiderSilkEvents {
             if (!event.isSimulated()) level.scheduleTick(event.getPos(), silk.getBlock(), 1);
         }
     }
+    //?}
+
 
     private SpiderSilkEvents() {}
 }

@@ -2,16 +2,17 @@
 # Two offline development clients connect only to a disposable loopback server.
 param(
     [switch]$Offline,
-    [ValidateSet('26.1', '26.3')][string]$Target = '26.1'
+    [ValidateSet('26.1', '26.3')][string]$Target = '26.1',
+    [ValidateSet('neoforge', 'fabric')][string]$Loader = 'neoforge'
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $checkout = Split-Path $PSScriptRoot -Parent
-$project = "$Target-neoforge"
+$project = "$Target-$Loader"
 $targetDir = Join-Path $checkout "versions/$project"
 $optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
-if ($Target -eq '26.3') { $optionsTemplate = Join-Path $targetDir 'dev/options-template.txt' }
+if ($Target -eq '26.3') { $optionsTemplate = Join-Path $checkout "versions/$Target-neoforge/dev/options-template.txt" }
 $runId = [guid]::NewGuid().ToString('N')
 $root = Join-Path $targetDir ".tmp/husk-multiplayer/$runId"
 $roles = 'Server', 'Owner', 'Visitor'
@@ -52,17 +53,25 @@ try {
         ":${project}:createHuskServerLaunchScript" ":${project}:createHuskOwnerLaunchScript" ":${project}:createHuskVisitorLaunchScript" *> (Join-Path $root 'prepare.log')
     if ($LASTEXITCODE -ne 0) { throw "Could not prepare the multiplayer launchers. See $root/prepare.log" }
 
-    # Snapshot the generated launchers and argfiles: later Gradle runs reuse build/moddev.
     $launchDir = Join-Path $root 'launch'
     [IO.Directory]::CreateDirectory($launchDir) | Out-Null
-    foreach ($role in $roles) {
-        foreach ($suffix in 'RunClasspath.txt', 'RunVmArgs.txt', 'RunProgramArgs.txt', 'Log4j2.xml') {
-            $name = "husk$role$suffix"
-            Copy-Item -LiteralPath (Join-Path $targetDir "build/moddev/$name") -Destination (Join-Path $launchDir $name)
+    if ($Loader -eq 'neoforge') {
+        # Snapshot NeoForge's generated launchers and argfiles: later Gradle runs reuse build/moddev.
+        foreach ($role in $roles) {
+            foreach ($suffix in 'RunClasspath.txt', 'RunVmArgs.txt', 'RunProgramArgs.txt', 'Log4j2.xml') {
+                $name = "husk$role$suffix"
+                Copy-Item -LiteralPath (Join-Path $targetDir "build/moddev/$name") -Destination (Join-Path $launchDir $name)
+            }
+            $scriptName = "runHusk$role.cmd"
+            $script = Get-Content -Raw -LiteralPath (Join-Path $targetDir "build/moddev/$scriptName")
+            $script.Replace((Join-Path $targetDir 'build\moddev'), $launchDir) | Set-Content -LiteralPath (Join-Path $launchDir $scriptName)
         }
-        $scriptName = "runHusk$role.cmd"
-        $script = Get-Content -Raw -LiteralPath (Join-Path $targetDir "build/moddev/$scriptName")
-        $script.Replace((Join-Path $targetDir 'build\moddev'), $launchDir) | Set-Content -LiteralPath (Join-Path $launchDir $scriptName)
+    }
+    # Fabric's preparation tasks write complete run-owned launchers directly into $launchDir.
+    foreach ($role in $roles) {
+        if (!(Test-Path -LiteralPath (Join-Path $launchDir "runHusk$role.cmd") -PathType Leaf)) {
+            throw "Missing $Loader launcher runHusk$role.cmd in $launchDir"
+        }
     }
 
     foreach ($phase in 1, 2) {

@@ -13,10 +13,21 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.ResourceHandler;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.ResourceHandler;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemResource;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemResource;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.transaction.Transaction;
+*///?}
 
 import java.util.EnumSet;
 
@@ -190,7 +201,7 @@ public class DepositHarvestGoal extends Goal {
             return false;
         }
         // Verify it has inventory capability with room
-        ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, null);
+        ResourceHandler<ItemResource> handler = net.j40climb.florafauna.platform.StorageAccess.get(level, pos, null);
         if (handler == null) {
             return false;
         }
@@ -218,7 +229,7 @@ public class DepositHarvestGoal extends Goal {
 
                     if (state.is(FloraFaunaTags.Blocks.IRON_GARDEN_STORAGE)) {
                         // Verify it has inventory capability
-                        ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, checkPos, null);
+                        ResourceHandler<ItemResource> handler = net.j40climb.florafauna.platform.StorageAccess.get(level, checkPos, null);
                         if (handler != null) {
                             // Check if there's room using the Transfer API
                             ItemResource resource = ItemResource.of(new ItemStack(FloraFaunaRegistry.FERRIC_POPPY_ITEM.get(), 1));
@@ -256,7 +267,7 @@ public class DepositHarvestGoal extends Goal {
         }
 
         // Get the resource handler using new Transfer API
-        ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, storagePos, null);
+        ResourceHandler<ItemResource> handler = net.j40climb.florafauna.platform.StorageAccess.get(level, storagePos, null);
 
         if (handler != null) {
             // Try to insert poppies using the Transfer API

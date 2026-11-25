@@ -25,7 +25,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+//? if neoforge {
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+//?} else {
+/*import net.j40climb.florafauna.test.fabric.RegisterGameTestsEvent;
+*///?}
 
 import java.util.stream.Stream;
 

@@ -80,7 +80,7 @@ final class SpiderSilkPlaytest {
             var spider = (Spider) p.level().getEntity(id[0]);
             int drops = p.level().getEntitiesOfClass(ItemEntity.class, new AABB(PEN).inflate(4), e -> e.getItem().is(Items.STRING))
                     .stream().mapToInt(i -> i.getItem().getCount()).sum();
-            return spider != null && spider.isAlive() && !spider.getData(FloraFaunaRegistry.SILK_HANGING)
+            return spider != null && spider.isAlive() && !net.j40climb.florafauna.platform.AttachmentAccess.get(spider, FloraFaunaRegistry.SILK_HANGING)
                     && p.level().isEmptyBlock(PEN.above()) && drops + p.getInventory().countItem(Items.STRING) == 1
                     && p.getMainHandItem().getDamageValue() == 1;
         });

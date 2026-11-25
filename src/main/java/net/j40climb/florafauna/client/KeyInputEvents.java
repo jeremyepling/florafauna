@@ -13,17 +13,25 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+
+//? if neoforge {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+//?}
 
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+//?}
 public class KeyInputEvents {
 
+    //? if neoforge {
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+        public static void onClientTick(ClientTickEvent.Post event) { onClientTick(); }
+    //?}
+
+    public static void onClientTick() {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null)
@@ -33,9 +41,9 @@ public class KeyInputEvents {
         // The key mappings have to be consumed during the event or it will replay the event on each tick. Don't check anything for this outside of player null
         while (ClientSetup.DASH_KEY.get().consumeClick()) {
             // Check if player has a bonded symbiote
-            PlayerSymbioteData symbioteData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+            PlayerSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
             if (symbioteData.symbioteState().areAbilitiesActive() && symbioteData.dash()) {
-                ClientPacketDistributor.sendToServer(DashPayload.INSTANCE);
+                ClientSetup.sendToServer(DashPayload.INSTANCE);
             }
         }
         while (ClientSetup.MOB_BARRIER_CONFIG_KEY.get().consumeClick()) {
@@ -53,7 +61,7 @@ public class KeyInputEvents {
                     clippingPlayer.setClipping(newState);
                 }
                 // Send to server so it doesn't rubber-band us
-                ClientPacketDistributor.sendToServer(new NoClipPayload(newState));
+                ClientSetup.sendToServer(new NoClipPayload(newState));
                 player.sendOverlayMessage(
                         Component.translatable(newState ?
                                 "command.florafauna.noclip.enabled" :

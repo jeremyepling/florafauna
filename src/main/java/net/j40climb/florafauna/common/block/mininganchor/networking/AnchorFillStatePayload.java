@@ -9,7 +9,11 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+//? if neoforge {
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+//?} else {
+/*import net.j40climb.florafauna.platform.network.IPayloadContext;
+*///?}
 
 /**
  * Server -> Client payload to sync anchor fill state to bound players.
@@ -36,7 +40,7 @@ public record AnchorFillStatePayload(BlockPos anchorPos, AnchorFillState fillSta
     public static void handleClient(AnchorFillStatePayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             var player = context.player();
-            var currentData = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+            var currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
             // Only update if this is for the player's active waypoint anchor
             if (currentData.hasActiveWaypointAnchor() &&
@@ -44,7 +48,7 @@ public record AnchorFillStatePayload(BlockPos anchorPos, AnchorFillState fillSta
                 currentData.activeWaypointAnchorPos().equals(payload.anchorPos())) {
 
                 var newData = currentData.withLastAnnouncedFillState(payload.fillState());
-                player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+                net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
             }
         });
     }

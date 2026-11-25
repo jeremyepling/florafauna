@@ -13,7 +13,9 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+//? if neoforge {
 import net.neoforged.neoforge.event.EventHooks;
+//?}
 
 import java.util.EnumSet;
 
@@ -39,10 +41,10 @@ final class SpinSilkGoal extends Goal {
     @Override public boolean canUse() {
         ServerLevel level = (ServerLevel) spider.level();
         long time = level.getGameTime();
-        if (time < nextSearch || time < spider.getPersistentData().getLongOr(NEXT_SPIN, 0) ||
+        if (time < nextSearch || time < net.j40climb.florafauna.platform.SilkCooldown.get(spider) ||
                 !MobSymbioteHelper.hasMobSymbiote(spider) || MobSymbioteHelper.isBeingLured(spider)) return false;
         nextSearch = time + 40;
-        if (!EventHooks.canEntityGrief(level, spider)) return false;
+        if (!net.j40climb.florafauna.platform.GameplayAccess.canEntityGrief(level, spider)) return false;
         BlockPos center = spider.blockPosition();
         for (BlockPos pos : BlockPos.betweenClosed(center.offset(-5, -1, -5), center.offset(5, 1, 5))) {
             if (!level.hasChunkAt(pos) || !level.getBlockState(pos).is(BlockTags.FENCES)
@@ -92,7 +94,7 @@ final class SpinSilkGoal extends Goal {
         long elapsed = level.getGameTime() - phaseStarted;
         switch (phase) {
             case APPROACH -> {
-                if (elapsed > 80 || !EventHooks.canEntityGrief(level, spider)) { phase = Phase.FINISHED; return; }
+                if (elapsed > 80 || !net.j40climb.florafauna.platform.GameplayAccess.canEntityGrief(level, spider)) { phase = Phase.FINISHED; return; }
                 if (spider.position().distanceToSqr(hang) > 1.6) return;
                 if (span.coveredPost(level) == null ||
                         !level.noCollision(spider, spider.getBoundingBox().move(hang.subtract(spider.position())))) { phase = Phase.FINISHED; return; }
@@ -105,9 +107,9 @@ final class SpinSilkGoal extends Goal {
                     level.setBlockAndUpdate(span.piece(i), silk.setValue(SilkLineBlock.FIRST, i == 0)
                             .setValue(SilkLineBlock.LAST, i == span.length() - 1));
                 }
-                spider.getPersistentData().putLong(NEXT_SPIN, level.getGameTime() + SPIN_COOLDOWN);
+                net.j40climb.florafauna.platform.SilkCooldown.set(spider, level.getGameTime() + SPIN_COOLDOWN);
                 spider.getNavigation().stop();
-                spider.setData(FloraFaunaRegistry.SILK_HANGING, true);
+                net.j40climb.florafauna.platform.AttachmentAccess.set(spider, FloraFaunaRegistry.SILK_HANGING, true);
                 phaseStarted = level.getGameTime();
                 phase = Phase.HANG;
                 holdPosition();
@@ -115,7 +117,7 @@ final class SpinSilkGoal extends Goal {
             case HANG -> {
                 boolean cut = !SilkLineBlock.matches(level, span.first(), span.along());
                 if (cut || elapsed >= HANG_TICKS || !level.noCollision(spider, spider.getBoundingBox().move(hang.subtract(spider.position())))) {
-                    spider.setData(FloraFaunaRegistry.SILK_HANGING, false);
+                    net.j40climb.florafauna.platform.AttachmentAccess.set(spider, FloraFaunaRegistry.SILK_HANGING, false);
                     if (cut) {
                         level.sendParticles(ParticleTypes.POOF, spider.getX(), spider.getY(), spider.getZ(), 6, 0.25, 0.08, 0.25, 0.02);
                         level.playSound(null, spider.blockPosition(), SoundEvents.SLIME_SQUISH_SMALL, SoundSource.NEUTRAL, 0.7F, 1.35F);
@@ -141,7 +143,7 @@ final class SpinSilkGoal extends Goal {
     }
 
     @Override public void stop() {
-        spider.setData(FloraFaunaRegistry.SILK_HANGING, false);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(spider, FloraFaunaRegistry.SILK_HANGING, false);
         spider.getNavigation().stop();
         span = null;
         phase = Phase.FINISHED;

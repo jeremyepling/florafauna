@@ -11,9 +11,15 @@ import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.Heightmap;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
+//?}
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,7 +32,9 @@ import java.util.Map;
 import java.util.Set;
 
 /** Test-only measurement of blooms in freshly generated normal-terrain chunks. */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public final class BloomDensityProbe {
     private static final String REPORT_ENV = "FLORAFAUNA_BLOOM_DENSITY_REPORT";
     private static final BlockPos SEARCH_ORIGIN = new BlockPos(4096, 64, 4096);
@@ -36,14 +44,17 @@ public final class BloomDensityProbe {
 
     private BloomDensityProbe() {}
 
+    //? if neoforge {
     @SubscribeEvent
-    public static void onServerStarted(ServerStartedEvent event) {
+    public static void onServerStarted(ServerStartedEvent event) { onServerStarted(event.getServer()); }
+    //?}
+    public static void onServerStarted(net.minecraft.server.MinecraftServer server) {
         String reportName = System.getenv(REPORT_ENV);
         if (reportName == null || reportName.isBlank()) return;
         Path report = Path.of(reportName);
         try {
             Files.createDirectories(report.getParent());
-            Files.writeString(report, measure(event.getServer().overworld()));
+            Files.writeString(report, measure(server.overworld()));
         } catch (Exception e) {
             try {
                 Files.writeString(report, "FAIL: " + e + System.lineSeparator());

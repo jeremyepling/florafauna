@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.j40climb.florafauna.setup.ClientSetup;
 
 /**
  * Screen for the Cocoon Chamber - a button-only GUI.
@@ -97,7 +97,7 @@ public class CocoonChamberScreen extends BaseScreen {
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Clear spawn is only active if cocoon spawn is set
         clearSpawnButton.active = data.cocoonSpawnPos() != null;
@@ -114,27 +114,27 @@ public class CocoonChamberScreen extends BaseScreen {
     }
 
     private void onSetSpawn(Button button) {
-        ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.SET_SPAWN, chamberPos));
+        ClientSetup.sendToServer(new CocoonActionPayload(CocoonAction.SET_SPAWN, chamberPos));
         onClose();
     }
 
     private void onClearSpawn(Button button) {
-        ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.CLEAR_SPAWN, chamberPos));
+        ClientSetup.sendToServer(new CocoonActionPayload(CocoonAction.CLEAR_SPAWN, chamberPos));
         onClose();
     }
 
     private void onBind(Button button) {
-        ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.BIND, chamberPos));
+        ClientSetup.sendToServer(new CocoonActionPayload(CocoonAction.BIND, chamberPos));
         onClose();
     }
 
     private void onUnbind(Button button) {
-        ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.UNBIND, chamberPos));
+        ClientSetup.sendToServer(new CocoonActionPayload(CocoonAction.UNBIND, chamberPos));
         onClose();
     }
 
     private void onDream(Button button) {
-        ClientPacketDistributor.sendToServer(new CocoonActionPayload(CocoonAction.DREAM, chamberPos));
+        ClientSetup.sendToServer(new CocoonActionPayload(CocoonAction.DREAM, chamberPos));
         onClose();
     }
 }

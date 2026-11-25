@@ -2,7 +2,6 @@ package net.j40climb.florafauna.common.block.iteminput.shared;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.capabilities.Capabilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,6 +73,6 @@ public class ContainerScanner {
      * @return true if the block has IItemHandler capability
      */
     public static boolean hasItemCapability(Level level, BlockPos pos) {
-        return level.getCapability(Capabilities.Item.BLOCK, pos, null) != null;
+        return net.j40climb.florafauna.platform.StorageAccess.get(level, pos, null) != null;
     }
 }

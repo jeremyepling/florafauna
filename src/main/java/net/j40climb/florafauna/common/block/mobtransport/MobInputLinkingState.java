@@ -3,9 +3,15 @@ package net.j40climb.florafauna.common.block.mobtransport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.j40climb.florafauna.FloraFauna;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+//?}
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Uses player UUID as key for cross-dimension support.
  * ConcurrentHashMap for thread safety during server tick processing.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public final class MobInputLinkingState {
 
     private MobInputLinkingState() {
@@ -32,9 +40,15 @@ public final class MobInputLinkingState {
     // ConcurrentHashMap allows safe concurrent access from multiple threads
     private static final Map<UUID, GlobalPos> linkingPlayers = new ConcurrentHashMap<>();
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        clearLinking(event.getEntity());
+        onLogout(event.getEntity());
+    }
+    //?}
+
+    public static void onLogout(net.minecraft.world.entity.player.Player subject) {
+        clearLinking(subject);
     }
 
     /**

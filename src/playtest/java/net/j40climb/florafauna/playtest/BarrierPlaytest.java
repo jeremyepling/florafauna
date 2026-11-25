@@ -54,13 +54,13 @@ final class BarrierPlaytest {
             p.setGameMode(GameType.SURVIVAL);
             p.getInventory().clearContent();
             var stack = new ItemStack(FloraFaunaRegistry.MOB_BARRIER.asItem(), 2);
-            stack.set(FloraFaunaRegistry.MOB_BARRIER_CONFIG, CONFIG);
+            stack.set(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get(), CONFIG);
             p.getInventory().setItem(0, stack);
             p.getInventory().setSelectedSlot(0);
             p.inventoryMenu.broadcastChanges();
         });
         t.awaitClient("Receive both configured barrier items", mc -> mc.player.getInventory().getItem(0).getCount() == 2
-                && CONFIG.equals(mc.player.getInventory().getItem(0).get(FloraFaunaRegistry.MOB_BARRIER_CONFIG))
+                && CONFIG.equals(mc.player.getInventory().getItem(0).get(FloraFaunaRegistry.MOB_BARRIER_CONFIG.get()))
                 && mc.level.getBlockState(BARRIER.below()).is(SUPPORT));
         t.client("Aim at the top face of the support", mc -> {
             mc.options.setCameraType(CameraType.FIRST_PERSON);

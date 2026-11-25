@@ -41,12 +41,12 @@ final class SlimeGratePlaytest {
                 if (slimes.size() != 1) return false;
                 Slime slime = slimes.getFirst();
                 return slime.getSize() == 2 && slime.isPersistenceRequired() && MobSymbioteHelper.hasMobSymbiote(slime)
-                        && slime.getData(FloraFaunaRegistry.SLIME_LAST_SHED) >= 0
+                        && net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_LAST_SHED) >= 0
                         && ((HopperBlockEntity)p.level().getBlockEntity(GRATE.below())).countItem(Items.SLIME_BALL) == 1;
             });
             t.awaitServer("Wait for Jelly's coat to regrow", p -> {
                 Slime slime = (Slime)p.level().getEntity(JELLY);
-                return p.level().getGameTime() - slime.getData(FloraFaunaRegistry.SLIME_LAST_SHED) >= SlimeGrateFarm.RECOAT_TICKS;
+                return p.level().getGameTime() - net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_LAST_SHED) >= SlimeGrateFarm.RECOAT_TICKS;
             });
             t.server("Play the opposite floor note with redstone", p -> {
                 Slime slime = (Slime)p.level().getEntity(JELLY);
@@ -93,7 +93,7 @@ final class SlimeGratePlaytest {
             id[0] = slime.getId();
         });
         t.awaitClient("Face the upright grate once the habitat is on the client", mc -> {
-            if (mc.level.getEntity(id[0]) == null || !mc.level.getBlockState(GRATE).is(FloraFaunaRegistry.SLIME_GRATE)) return false;
+            if (mc.level.getEntity(id[0]) == null || !mc.level.getBlockState(GRATE).is(FloraFaunaRegistry.SLIME_GRATE.get())) return false;
             //? if <26.3 {
             mc.options.hideGui = true;
             //?} else {
@@ -117,7 +117,7 @@ final class SlimeGratePlaytest {
         t.awaitClient("Watch the synchronized split reach full separation", mc -> {
             Slime slime = (Slime)mc.level.getEntity(id[0]);
             mc.player.lookAt(Anchor.EYES, slime.getEyePosition());
-            long shed = slime.getData(FloraFaunaRegistry.SLIME_LAST_SHED);
+            long shed = net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_LAST_SHED);
             return shed >= 0 && mc.level.getGameTime() - shed >= 8 && mc.level.getGameTime() - shed < 32;
         });
         t.screenshot("slime-grate-split");
@@ -128,7 +128,7 @@ final class SlimeGratePlaytest {
         t.awaitClient("See Jelly whole after the temporary split", mc -> {
             Slime slime = (Slime)mc.level.getEntity(id[0]);
             mc.player.lookAt(Anchor.EYES, slime.getEyePosition());
-            return mc.level.getGameTime() - slime.getData(FloraFaunaRegistry.SLIME_LAST_SHED) > SlimeGrateFarm.SPLIT_TICKS;
+            return mc.level.getGameTime() - net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_LAST_SHED) > SlimeGrateFarm.SPLIT_TICKS;
         });
         t.screenshot("slime-grate-rejoined");
     }

@@ -17,8 +17,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemResource;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemResource;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemStacksResourceHandler;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;

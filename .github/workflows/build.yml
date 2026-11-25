@@ -14,11 +14,11 @@ concurrency:
 
 jobs:
   build:
-    name: NeoForge ${{ matrix.target }}
+    name: ${{ matrix.target }}
     strategy:
       fail-fast: false
       matrix:
-        target: [26.1-neoforge, 26.3-neoforge]
+        target: [26.1-neoforge, 26.3-neoforge, 26.1-fabric, 26.3-fabric]
     runs-on: ubuntu-latest
     env:
       TARGET: ${{ matrix.target }}

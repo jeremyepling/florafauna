@@ -9,6 +9,11 @@ plugins {
 
 version = mod_version
 group = mod_group_id
+stonecutter.constants.put('fabric', false)
+stonecutter.constants.put('neoforge', true)
+def loaderSources = sourceSets.create('neoforge')
+sourceSets.main.java.source(loaderSources.java)
+sourceSets.main.resources.source(loaderSources.resources)
 
 repositories {
     mavenLocal()
@@ -49,35 +54,7 @@ if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenari
 sourceSets.main.java.srcDir 'target/java'
 sourceSets.main.resources.srcDir 'target/resources'
 
-stonecutter {
-    replacements {
-        string {
-            direction = project.minecraft_version == '26.3'
-            replace('mc.screen', 'mc.gui.screen()')
-            replace('mc.setScreen(', 'mc.gui.setScreen(')
-            replace('Minecraft.getInstance().setScreen(', 'Minecraft.getInstance().gui.setScreen(')
-            replace('monster.Slime;', 'monster.cubemob.Slime;')
-            replace('PushReaction.DESTROY', 'PushReaction.POPPED')
-            replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
-        }
-        regex {
-            direction = project.minecraft_version == '26.3'
-            replace(/(?<![\w.])BlockEvent\.BreakEvent\b/, 'BreakBlockEvent',
-                    /(?<![\w.])BreakBlockEvent\b/, 'BlockEvent.BreakEvent')
-        }
-        // Match vanilla constants, leaving EntityType.Builder and FloraFaunaTags.EntityTypes alone.
-        regex {
-            direction = project.minecraft_version == '26.3'
-            replace(/(?<![\w.])EntityType\.(?=[A-Z_]+\b)/, 'EntityTypes.',
-                    /(?<![\w.])EntityTypes\.(?=[A-Z_]+\b)/, 'EntityType.')
-        }
-        regex {
-            direction = project.minecraft_version == '26.3'
-            replace(/\bEnderMan(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'Enderman',
-                    /\bEnderman(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'EnderMan')
-        }
-    }
-}
+apply from: rootProject.file('gradle/version-compat.gradle')
 
 sourceSets.create('playtest') {
     java.srcDir 'target/playtest'
@@ -250,7 +227,7 @@ tasks.named('test') {
 
 dependencies {
     companionNames.each { companion ->
-        localRuntime("net.j40climb.dev:${companion}-${minecraft_version}:local") { transitive = false }
+        localRuntime("net.j40climb.dev:${companion}-${project.name}:local") { transitive = false }
     }
     testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

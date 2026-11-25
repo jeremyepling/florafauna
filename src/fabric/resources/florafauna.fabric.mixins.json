@@ -1,0 +1,23 @@
+{
+  "required": true,
+  "package": "net.j40climb.florafauna.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "FabricEntityTickMixin",
+    "FabricPlayerDeathMixin",
+    "FabricLivingEntityMixin",
+    "FabricPlayerWakeMixin",
+    "FabricMobTargetMixin",
+    "FabricEndermanMixin",
+    "FabricNoteBlockMixin",
+    "FabricBlockDropMixin",
+    "FabricDispenserShearsMixin",
+    "SpawnPlacementsInvoker",
+    "FabricTransportBreakMixin",
+    "FabricBarrierPathMixin",
+    "FabricPlayerDamageMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

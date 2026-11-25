@@ -1,6 +1,6 @@
 # FloraFauna
 
-A NeoForge mod for Minecraft 26.1 and 26.3. Players can bond with a symbiote, recover gear from a husk, grow a living storage network and transport bonded mobs. Hammer mining and Frenchie companions are available as separate mods.
+A Fabric and NeoForge mod for Minecraft 26.1 and 26.3. Players can bond with a symbiote, recover gear from a husk, grow a living storage network and transport bonded mobs. Hammer mining and Frenchie companions are available as separate mods.
 
 Coding agents share the repository's worktree, implementation and testing instructions. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
@@ -14,7 +14,7 @@ Coding agents share the repository's worktree, implementation and testing instru
 
 ### Build & Run
 
-Maintain Minecraft 26.1 and 26.3 together on `main`. Start feature branches from `main`, edit shared gameplay once, and test both targets before merging. Stonecutter defaults to editing 26.1. Use version-specific code or resources where the Minecraft or NeoForge APIs and data formats differ. Both targets use ModDevGradle and Java 25. Their exact versions and supported ranges live in [26.1 properties](versions/26.1-neoforge/gradle.properties) and [26.3 properties](versions/26.3-neoforge/gradle.properties).
+Maintain Minecraft 26.1 and 26.3 together on `main`, with Fabric and NeoForge builds for each. Start feature branches from `main`, edit shared gameplay once, and test all four targets before merging. Stonecutter defaults to editing 26.1 NeoForge. Use target-specific code or resources where Minecraft or loader APIs differ. All targets use Java 25; Fabric uses Loom and NeoForge uses ModDevGradle. Exact dependencies live in `versions/<minecraft-version>-<loader>/gradle.properties` and the loader build scripts.
 
 To build one JAR, generate that target's data first, then package it in a second invocation.
 
@@ -23,10 +23,10 @@ To build one JAR, generate that target's data first, then package it in a second
 .\gradlew.bat :26.1-neoforge:build
 ```
 
-The result is `versions/26.1-neoforge/build/libs/florafauna-26.1-neoforge-<mod version>.jar`. Substitute `26.3-neoforge` for the other JAR. Each subproject owns its generated data under `build/generated/resources/datagen`, compiled classes, launch files and JARs. To run the full headless checks for both targets from a clean checkout, use PowerShell 7.
+The result is `versions/26.1-neoforge/build/libs/florafauna-26.1-neoforge-<mod version>.jar`. Substitute `26.3-neoforge`, `26.1-fabric` or `26.3-fabric` for the other JARs. Install the matching loader and, for Fabric, Fabric API. Fabric builds generate and consume shared data from the matching NeoForge target automatically. Each subproject owns its compiled classes, launch files and JARs. To run the full headless checks for all targets from a clean checkout, use PowerShell 7.
 
 ```powershell
-foreach ($target in '26.1-neoforge', '26.3-neoforge') {
+foreach ($target in '26.1-neoforge', '26.3-neoforge', '26.1-fabric', '26.3-fabric') {
     .\gradlew.bat ":${target}:runData"
     if ($LASTEXITCODE) { throw "Datagen failed for $target" }
     .\gradlew.bat ":${target}:build" ":${target}:runGameTestServer"
@@ -34,13 +34,13 @@ foreach ($target in '26.1-neoforge', '26.3-neoforge') {
 }
 ```
 
-For a shorter iteration, `:26.1-neoforge:check` compiles client playtests and runs any JUnit tests. Use `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-neoforge:runGameTestServer` to check the saved barrier pen. Ready PRs and release builds run the full headless checks and upload one JAR per version. Draft PRs run `check` on both.
+For a shorter iteration, `:<target>:check` runs unit and compilation checks. Use `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-fabric:runGameTestServer` to check the saved barrier pen on Fabric. Ready PRs and release builds run the full headless checks and upload one JAR per Minecraft version and loader. Draft PRs run `check` on all four targets.
 
 ### Play with the Hammer and Frenchies
 
 FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. A Stonecutter companion checkout supplies both targets. [Hammer source and tests](https://github.com/jeremyepling/hammer) · [Frenchies source and tests](https://github.com/jeremyepling/frenchies)
 
-Use `florafauna/main`, `hammer/main` and `frenchies/main` in the grouped workspace, or place the three repositories side by side. Gradle selects the companion subproject matching the core task. For older single-version companion checkouts, the grouped layout also supports `hammer/26.3` and `frenchies/26.3`.
+Use `florafauna/main`, `hammer/main` and `frenchies/main` in the grouped workspace, or place the three repositories side by side. Gradle selects the companion subproject matching the core task's Minecraft version and loader. For older NeoForge-only companion checkouts, the grouped layout also supports `hammer/26.3` and `frenchies/26.3`.
 
 Select `none` (the default), `hammer`, `frenchies` or `all` with `-PdevMods`. Gradle builds the selected local companions and adds their jars to the run. On a fresh checkout, generate the core data for each target you plan to use.
 
@@ -50,6 +50,7 @@ Select `none` (the default), `hammer`, `frenchies` or `all` with `-PdevMods`. Gr
 .\gradlew.bat :26.3-neoforge:runData
 .\gradlew.bat -PdevMods=all :26.3-neoforge:runClient
 .\gradlew.bat -PdevMods=all :26.3-neoforge:assembleDevMods
+.\gradlew.bat -PdevMods=all :26.3-fabric:assembleDevMods
 ```
 
 For feature worktrees or other locations, pass `-PhammerDir=../path-to-hammer` and `-PfrenchiesDir=../path-to-frenchies`. Each selected checkout must declare the matching mod ID and Minecraft version. To make all three mods your usual setup, save a personal IntelliJ Gradle run configuration for each target with its qualified `runClient` task and `-PdevMods=all`.
@@ -155,7 +156,9 @@ Close the source world, then run this from the checkout in PowerShell 7 with Jav
 .\scripts\test_dev_world.ps1 -Scenario recovery -SourceWorld 'C:\path\to\a\closed\26.1\save'
 .\scripts\test_dev_world.ps1 -All  # Defaults to 26.1
 .\scripts\test_dev_world.ps1 -Target 26.3 -All
+.\scripts\test_dev_world.ps1 -Target 26.3 -Loader fabric -All -SourceWorld 'C:\path\to\a\closed\save'
 .\scripts\test_husk_multiplayer.ps1 -Target 26.3
+.\scripts\test_husk_multiplayer.ps1 -Target 26.3 -Loader fabric
 ```
 
 For an integrated headless run, use `.\gradlew.bat -PdevMods=all :26.3-neoforge:runGameTestServer`. The `companions` client scenario exercises both companions. To exercise a core scenario with one companion, use `-Scenario recovery -DevMods hammer`. The script accepts `-HammerDir` and `-FrenchiesDir` for other checkout locations.

@@ -150,15 +150,12 @@ public class MobInputBlock extends BaseEntityBlock {
         super.onExplosionHit(state, level, pos, explosion, drops);
     }
 
+    //? if neoforge {
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player,
                                        ItemStack tool, boolean willHarvest, FluidState fluid) {
-        if (level instanceof ServerLevel server && level.getBlockEntity(pos) instanceof MobInputBlockEntity transport
-                && !transport.releaseBeforeRemoval(server)) {
-            level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
-            player.sendOverlayMessage(Component.translatable("message.florafauna.mob_transport.release_blocked"));
-            return false;
-        }
+        if (!MobTransportRemoval.beforePlayerBreak(level,pos,player)) return false;
         return super.onDestroyedByPlayer(state, level, pos, player, tool, willHarvest, fluid);
     }
+    //?}
 }

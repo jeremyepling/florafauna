@@ -119,7 +119,7 @@ final class MobTransportPlaytest {
             require(cow.hasCustomName() && NAME.equals(cow.getCustomName().getString()), "Cow lost its custom name");
             require(MobSymbioteHelper.getMobSymbioteLevel(cow) == 1, "Released cow lost its symbiote");
             require(MobSymbioteHelper.hasReleaseImmunity(cow, p.level().getGameTime()), "Released cow has no capture immunity");
-            long until = cow.getData(FloraFaunaRegistry.MOB_SYMBIOTE_DATA).recentlyReleasedUntil();
+            long until = net.j40climb.florafauna.platform.AttachmentAccess.get(cow, FloraFaunaRegistry.MOB_SYMBIOTE_DATA).recentlyReleasedUntil();
             long duration = Config.recentlyReleasedImmunityTicks;
             require(until >= lastStoredTick[0] + duration && until <= firstReleasedTick[0] + duration,
                     "Immunity expires at " + until + "; cow was released between ticks " + lastStoredTick[0]

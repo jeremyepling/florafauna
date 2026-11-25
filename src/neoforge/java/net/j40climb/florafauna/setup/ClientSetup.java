@@ -65,6 +65,10 @@ public class ClientSetup {
             KEY_CATEGORY
     ));
 
+    public static void sendToServer(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+        net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(payload);
+    }
+
     // ==================== GUI LAYERS ====================
 
     public static final Identifier SYMBIOTE_DEBUG_LAYER_ID = Identifier.fromNamespaceAndPath(
@@ -98,7 +102,7 @@ public class ClientSetup {
 
     private static void registerSilkPose(RegisterRenderStateModifiersEvent event) {
         event.registerEntityModifier(new TypeToken<SpiderRenderer<Spider>>() {}, (spider, state) -> {
-            if (spider.hasData(FloraFaunaRegistry.SILK_HANGING) && spider.getData(FloraFaunaRegistry.SILK_HANGING)) state.isUpsideDown = true;
+            if (net.j40climb.florafauna.platform.AttachmentAccess.has(spider, FloraFaunaRegistry.SILK_HANGING) && net.j40climb.florafauna.platform.AttachmentAccess.get(spider, FloraFaunaRegistry.SILK_HANGING)) state.isUpsideDown = true;
         });
     }
 

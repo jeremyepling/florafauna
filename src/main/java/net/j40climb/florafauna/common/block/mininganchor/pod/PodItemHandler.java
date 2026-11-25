@@ -3,11 +3,31 @@ package net.j40climb.florafauna.common.block.mininganchor.pod;
 import net.j40climb.florafauna.common.block.vacuum.ItemBuffer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+//? if neoforge {
 import net.neoforged.neoforge.transfer.ResourceHandler;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.ResourceHandler;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.TransferPreconditions;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.TransferPreconditions;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.item.ItemResource;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.item.ItemResource;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.transaction.SnapshotJournal;
+*///?}
+//? if neoforge {
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+//?} else {
+/*import net.j40climb.florafauna.platform.transfer.transaction.TransactionContext;
+*///?}
 
 import java.util.ArrayList;
 import java.util.List;

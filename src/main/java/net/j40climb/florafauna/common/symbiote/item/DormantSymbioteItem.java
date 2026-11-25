@@ -31,8 +31,8 @@ public class DormantSymbioteItem extends Item {
 
     public DormantSymbioteItem(Properties properties) {
         super(properties
-                .component(FloraFaunaRegistry.SYMBIOTE_DATA, SymbioteData.DEFAULT)
-                .component(FloraFaunaRegistry.SYMBIOTE_PROGRESS, ProgressSignalTracker.DEFAULT)
+                .component(FloraFaunaRegistry.SYMBIOTE_DATA.get(), SymbioteData.DEFAULT)
+                .component(FloraFaunaRegistry.SYMBIOTE_PROGRESS.get(), ProgressSignalTracker.DEFAULT)
         );
     }
 
@@ -59,7 +59,7 @@ public class DormantSymbioteItem extends Item {
         tooltipComponents.accept(Component.translatable("tooltip.florafauna.dormant_symbiote"));
 
         // Show tier if advanced
-        SymbioteData data = itemStack.getOrDefault(FloraFaunaRegistry.SYMBIOTE_DATA, SymbioteData.DEFAULT);
+        SymbioteData data = itemStack.getOrDefault(FloraFaunaRegistry.SYMBIOTE_DATA.get(), SymbioteData.DEFAULT);
         if (data.tier() > 1) {
             tooltipComponents.accept(Component.translatable("tooltip.florafauna.symbiote_tier", data.tier())
                     .withStyle(style -> style.withColor(0x9B59B6)));

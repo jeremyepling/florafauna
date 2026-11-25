@@ -74,7 +74,7 @@ public final class HuskInteractionHandler {
      * Called when interacting with a RESTORATION husk.
      */
     private static void restoreSymbiote(ServerPlayer player) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only restore if currently weakened
         if (data.symbioteState() != SymbioteState.BONDED_WEAKENED) {
@@ -86,7 +86,7 @@ public final class HuskInteractionHandler {
                 .withSymbioteState(SymbioteState.BONDED_ACTIVE)
                 .clearRestorationHusk();
 
-        player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, restored);
+        net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, restored);
 
         // Display restoration message
         player.sendSystemMessage(

@@ -7,14 +7,17 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+//? if neoforge {
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
+//?}
 
 /**
  * Tracks and renders item absorption animations on the client side.
@@ -23,7 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Applies a shrinking/sinking effect
  * - Removes the animation when complete
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+//?}
 public class ItemInputAnimationTracker {
 
     /**
@@ -105,9 +110,14 @@ public class ItemInputAnimationTracker {
     /**
      * Updates animations and spawns particles on level tick.
      */
+//? if neoforge {
     @SubscribeEvent
     public static void onLevelTick(LevelTickEvent.Post event) {
-        if (!event.getLevel().isClientSide()) return;
+        if (event.getLevel().isClientSide()) tick();
+    }
+//?}
+
+    public static void tick() {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;

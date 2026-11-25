@@ -49,7 +49,7 @@ final class SpiderSilkTests {
         ItemStack shears = new ItemStack(Items.SHEARS);
         player.setItemInHand(InteractionHand.MAIN_HAND, shears);
         test.startSequence().thenWaitUntil(() -> {
-            test.assertTrue(spider.getData(FloraFaunaRegistry.SILK_HANGING), "Spider did not hang");
+            test.assertTrue(net.j40climb.florafauna.platform.AttachmentAccess.get(spider, FloraFaunaRegistry.SILK_HANGING), "Spider did not hang");
             test.assertBlockPresent(FloraFaunaRegistry.SILK_LINE.get(), GAP.east());
         }).thenExecute(() -> {
             BlockPos pos = test.absolutePos(GAP.east());
@@ -57,7 +57,7 @@ final class SpiderSilkTests {
             var hit = new BlockHitResult(Vec3.atCenterOf(pos), Direction.NORTH, pos, false);
             test.assertTrue(state.useItemOn(shears, test.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(), "Occupied line rejected shears");
         }).thenExecuteAfter(8, () -> {
-            test.assertTrue(spider.isAlive() && spider.getHealth() == health && !spider.getData(FloraFaunaRegistry.SILK_HANGING), "Early shear hurt or stranded spider");
+            test.assertTrue(spider.isAlive() && spider.getHealth() == health && !net.j40climb.florafauna.platform.AttachmentAccess.get(spider, FloraFaunaRegistry.SILK_HANGING), "Early shear hurt or stranded spider");
             test.assertBlockPresent(Blocks.AIR, GAP);
             test.assertBlockPresent(Blocks.AIR, GAP.east());
             test.assertTrue(string(test) == 1 && shears.getDamageValue() == 1, "Expected one string and one use of shears");
@@ -68,8 +68,8 @@ final class SpiderSilkTests {
         Spider spider = habitat(test);
         MobSymbioteHelper.applyMobSymbioteLevel1(spider, test.getLevel().getGameTime());
         BlockPos dispenser = GAP.north();
-        test.startSequence().thenWaitUntil(() -> test.assertTrue(spider.getData(FloraFaunaRegistry.SILK_HANGING), "Spider did not spin"))
-                .thenWaitUntil(() -> test.assertTrue(!spider.getData(FloraFaunaRegistry.SILK_HANGING), "Spider did not leave"))
+        test.startSequence().thenWaitUntil(() -> test.assertTrue(net.j40climb.florafauna.platform.AttachmentAccess.get(spider, FloraFaunaRegistry.SILK_HANGING), "Spider did not spin"))
+                .thenWaitUntil(() -> test.assertTrue(!net.j40climb.florafauna.platform.AttachmentAccess.get(spider, FloraFaunaRegistry.SILK_HANGING), "Spider did not leave"))
                 .thenExecute(() -> {
                     test.assertBlockPresent(FloraFaunaRegistry.SILK_LINE.get(), GAP);
                     test.setBlock(dispenser, Blocks.DISPENSER.defaultBlockState().setValue(DispenserBlock.FACING, Direction.SOUTH));

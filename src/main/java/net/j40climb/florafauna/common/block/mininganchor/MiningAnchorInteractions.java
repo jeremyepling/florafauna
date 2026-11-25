@@ -25,7 +25,7 @@ public class MiningAnchorInteractions {
      * @return true if the interaction was handled
      */
     public static boolean handleSetWaypoint(ServerPlayer player, BlockPos pos, Level level) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Must have a bonded symbiote to use waypoints
         if (!data.symbioteState().isBonded()) {
@@ -44,7 +44,7 @@ public class MiningAnchorInteractions {
 
             // Clear waypoint
             PlayerSymbioteData newData = data.clearActiveWaypointAnchor();
-            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
             player.sendOverlayMessage(
                     Component.translatable("message.florafauna.mining_anchor.waypoint_cleared")
@@ -52,7 +52,7 @@ public class MiningAnchorInteractions {
         } else {
             // Set as waypoint
             PlayerSymbioteData newData = data.withActiveWaypointAnchor(pos, dim);
-            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
             player.sendOverlayMessage(
                     Component.translatable("message.florafauna.mining_anchor.waypoint_set")
@@ -72,7 +72,7 @@ public class MiningAnchorInteractions {
      * @return true if the interaction was handled
      */
     public static boolean handleBindToggle(ServerPlayer player, BlockPos pos, Level level) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Must have a bonded symbiote to bind anchors
         if (!data.symbioteState().isBonded()) {
@@ -94,7 +94,7 @@ public class MiningAnchorInteractions {
             if (pos.equals(data.activeWaypointAnchorPos()) && dim.equals(data.activeWaypointAnchorDim())) {
                 newData = newData.clearActiveWaypointAnchor();
             }
-            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
             player.sendOverlayMessage(
                     Component.translatable("message.florafauna.mining_anchor.unbound")
@@ -104,7 +104,7 @@ public class MiningAnchorInteractions {
             PlayerSymbioteData newData = data
                     .withBoundAnchor(pos, dim)
                     .withActiveWaypointAnchor(pos, dim);
-            player.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
             player.sendOverlayMessage(
                     Component.translatable("message.florafauna.mining_anchor.bound")

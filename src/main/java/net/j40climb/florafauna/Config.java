@@ -1,7 +1,11 @@
 package net.j40climb.florafauna;
 
 import com.mojang.logging.LogUtils;
+//? if neoforge {
 import net.neoforged.neoforge.common.ModConfigSpec;
+//?} else {
+/*import net.j40climb.florafauna.platform.config.ModConfigSpec;
+*///?}
 import org.slf4j.Logger;
 
 /**

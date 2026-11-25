@@ -23,12 +23,22 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.level.NoteBlockEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+//?}
 
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public final class SlimeGrateFarm {
     public static final int RECOAT_TICKS = 600;
     public static final int SPLIT_TICKS = 40;
@@ -37,39 +47,51 @@ public final class SlimeGrateFarm {
     // Only the last shed time is saved and synchronized. A note is a short-lived movement cue.
     public record Lure(BlockPos target, long until) {}
 
+    //? if neoforge {
     @SubscribeEvent
     public static void onNote(NoteBlockEvent.Play event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) return;
-        BlockPos note = event.getPos();
+        onNote(event.getLevel(), event.getPos());
+    }
+    //?}
+
+    public static void onNote(net.minecraft.world.level.LevelAccessor world, net.minecraft.core.BlockPos position) {
+        if (!(world instanceof ServerLevel level)) return;
+        BlockPos note = position;
         Lure lure = new Lure(note.immutable(), level.getGameTime() + 120);
         for (Slime slime : level.getEntitiesOfClass(Slime.class, new AABB(note).inflate(HEARING_RANGE),
                 s -> s.getType() == EntityType.SLIME && MobSymbioteHelper.hasMobSymbiote(s)
                         && s.distanceToSqr(Vec3.atCenterOf(note)) <= HEARING_RANGE * HEARING_RANGE)) {
             slime.setPersistenceRequired();
-            slime.setData(FloraFaunaRegistry.SLIME_NOTE, lure);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(slime, FloraFaunaRegistry.SLIME_NOTE, lure);
         }
     }
 
+    //? if neoforge {
     @SubscribeEvent
     public static void afterMove(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof Slime slime) || !(slime.level() instanceof ServerLevel level)
-                || !slime.hasData(FloraFaunaRegistry.SLIME_NOTE)) return;
-        Lure lure = slime.getData(FloraFaunaRegistry.SLIME_NOTE);
+        afterMove(event.getEntity());
+    }
+    //?}
+
+    public static void afterMove(net.minecraft.world.entity.Entity entity) {
+        if (!(entity instanceof Slime slime) || !(slime.level() instanceof ServerLevel level)
+                || !net.j40climb.florafauna.platform.AttachmentAccess.has(slime, FloraFaunaRegistry.SLIME_NOTE)) return;
+        Lure lure = net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_NOTE);
         if (lure.until < level.getGameTime() || !level.getBlockState(lure.target).is(Blocks.NOTE_BLOCK)
                 || !MobSymbioteHelper.hasMobSymbiote(slime) || slime.isPassenger() || !slime.isAlive()) {
-            slime.removeData(FloraFaunaRegistry.SLIME_NOTE);
+            net.j40climb.florafauna.platform.AttachmentAccess.remove(slime, FloraFaunaRegistry.SLIME_NOTE);
             return;
         }
 
         Vec3 old = slime.oldPosition();
         Vec3 now = slime.position();
-        long last = slime.getData(FloraFaunaRegistry.SLIME_LAST_SHED);
+        long last = net.j40climb.florafauna.platform.AttachmentAccess.get(slime, FloraFaunaRegistry.SLIME_LAST_SHED);
         if ((last < 0 || level.getGameTime() - last >= RECOAT_TICKS) && old.distanceToSqr(now) <= 4) {
             AABB swept = new AABB(old, now).expandTowards(0, slime.getBbHeight(), 0);
             for (BlockPos pos : BlockPos.betweenClosed(BlockPos.containing(swept.getMinPosition()), BlockPos.containing(swept.getMaxPosition()))) {
                 BlockState state = level.getBlockState(pos);
-                if (state.is(FloraFaunaRegistry.SLIME_GRATE) && crossesPanel(old, now, slime.getBbHeight(), pos, state.getValue(SlimeGrateBlock.AXIS), lure.target)) {
-                    slime.setData(FloraFaunaRegistry.SLIME_LAST_SHED, level.getGameTime());
+                if (state.is(FloraFaunaRegistry.SLIME_GRATE.get()) && crossesPanel(old, now, slime.getBbHeight(), pos, state.getValue(SlimeGrateBlock.AXIS), lure.target)) {
+                    net.j40climb.florafauna.platform.AttachmentAccess.set(slime, FloraFaunaRegistry.SLIME_LAST_SHED, level.getGameTime());
                     Vec3 center = Vec3.atCenterOf(pos);
                     ItemEntity drop = new ItemEntity(level, center.x, pos.getY() + 0.15, center.z, new ItemStack(Items.SLIME_BALL));
                     drop.setDeltaMovement(Vec3.ZERO);
@@ -84,7 +106,7 @@ public final class SlimeGrateFarm {
         // normal entity physics still handles fences, walls, gravity and landing.
         Vec3 delta = Vec3.atCenterOf(lure.target).subtract(now).multiply(1, 0, 1);
         if (delta.lengthSqr() < 0.45 || slime.getY() + 3 < lure.target.getY()) {
-            slime.removeData(FloraFaunaRegistry.SLIME_NOTE);
+            net.j40climb.florafauna.platform.AttachmentAccess.remove(slime, FloraFaunaRegistry.SLIME_NOTE);
             return;
         }
         Vec3 hop = delta.normalize().scale(0.25);

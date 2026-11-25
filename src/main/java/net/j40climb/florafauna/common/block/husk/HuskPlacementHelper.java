@@ -195,7 +195,7 @@ public final class HuskPlacementHelper {
      */
     @Nullable
     private static Placement getFallbackSpawn(ServerPlayer player, ServerLevel deathLevel) {
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         if (data.cocoonSpawnPos() != null && data.cocoonSpawnDim() != null) {
             ServerLevel cocoonLevel = deathLevel.getServer().getLevel(data.cocoonSpawnDim());
             if (cocoonLevel != null) {

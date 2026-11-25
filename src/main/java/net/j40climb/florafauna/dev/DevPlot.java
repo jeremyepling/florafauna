@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
-import net.neoforged.fml.ModList;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -46,8 +45,8 @@ public enum DevPlot {
 
     public static List<DevPlot> available() {
         return Arrays.stream(values()).filter(plot -> switch (plot) {
-            case FRENCHIE -> ModList.get().isLoaded("florafauna_frenchies");
-            case HAMMER, TOOL_ACTIONS -> ModList.get().isLoaded("florafauna_hammer");
+            case FRENCHIE -> net.j40climb.florafauna.platform.PlatformEnvironment.isModLoaded("florafauna_frenchies");
+            case HAMMER, TOOL_ACTIONS -> net.j40climb.florafauna.platform.PlatformEnvironment.isModLoaded("florafauna_hammer");
             default -> true;
         }).toList();
     }

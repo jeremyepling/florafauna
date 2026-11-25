@@ -9,10 +9,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+
+//? if neoforge {
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+//?}
 
 /**
  * Client-side particle handler for Restoration Husks.
@@ -27,24 +30,29 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  * - Same dimension as husk
  * - Within render distance (64 blocks)
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.CLIENT)
+//?}
 public class HuskParticleHandler {
 
     private static final double MAX_PARTICLE_DISTANCE = 64.0;
     private static final double FIREFLY_CHANCE_PER_TICK = 0.7; // Match FireflyBushBlock
 
+//? if neoforge {
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
-        if (!(event.getEntity() instanceof LocalPlayer player)) {
-            return;
-        }
+        if (event.getEntity() instanceof LocalPlayer player) tick(player);
+    }
+//?}
+
+    public static void tick(LocalPlayer player) {
 
         Level level = player.level();
         if (level == null || !level.isClientSide()) {
             return;
         }
 
-        PlayerSymbioteData data = player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        PlayerSymbioteData data = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         // Only show particles if player is weakened and has an active restoration husk
         if (data.symbioteState() != SymbioteState.BONDED_WEAKENED) {

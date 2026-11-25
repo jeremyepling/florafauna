@@ -18,11 +18,15 @@ import java.util.function.Consumer;
 public class SimpleGameTestInstance extends GameTestInstance {
 
     private final Consumer<GameTestHelper> testFunction;
+    private final TestData<Holder<TestEnvironmentDefinition<?>>> definition;
 
     public SimpleGameTestInstance(TestData<Holder<TestEnvironmentDefinition<?>>> info, Consumer<GameTestHelper> testFunction) {
         super(info);
         this.testFunction = testFunction;
+        this.definition = info;
     }
+
+    public TestData<Holder<TestEnvironmentDefinition<?>>> definition() { return definition; }
 
     @Override
     public void run(GameTestHelper helper) {

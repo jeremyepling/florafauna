@@ -22,12 +22,24 @@ import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.AABB;
+//? if neoforge {
 import net.neoforged.api.distmarker.Dist;
+//?}
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+//?}
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +47,9 @@ import java.nio.file.Path;
 import java.util.Set;
 import java.util.UUID;
 
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID, value = Dist.DEDICATED_SERVER)
+//?}
 public final class HuskMultiplayerServer {
     static final BlockPos HUSK = new BlockPos(0, 200, 8);
     static final String CLICK = "FloraFauna playtest: click recovery husk";
@@ -49,12 +63,15 @@ public final class HuskMultiplayerServer {
     private static UUID pendingClick;
     private static boolean sawClick;
 
+    //? if neoforge {
     @SubscribeEvent
-    public static void start(ServerStartedEvent event) throws IOException {
+    public static void start(ServerStartedEvent event) throws IOException { start(event.getServer()); }
+    //?}
+    public static void start(MinecraftServer server) throws IOException {
         String path = System.getProperty("florafauna.huskTest.root");
         if (path == null) return;
         Path directory = Path.of(path).toRealPath();
-        require(event.getServer().getWorldPath(LevelResource.ROOT).toRealPath()
+        require(server.getWorldPath(LevelResource.ROOT).toRealPath()
                         .equals(directory.resolve("server/world")), "Unexpected dedicated test world");
         phase = Integer.parseInt(Files.readString(directory.resolve("phase")).trim());
         require(phase == 1 || phase == 2, "Invalid test phase");
@@ -62,17 +79,22 @@ public final class HuskMultiplayerServer {
         Files.writeString(root.resolve("ready-" + phase), "ready");
     }
 
+    //? if neoforge {
     @SubscribeEvent
-    public static void onClick(PlayerInteractEvent.RightClickBlock event) {
-        if (root != null && HUSK.equals(event.getPos()) && event.getEntity().getUUID().equals(pendingClick)) {
+    public static void onClick(PlayerInteractEvent.RightClickBlock event) { onClick(event.getEntity(), event.getPos()); }
+    //?}
+    public static void onClick(net.minecraft.world.entity.player.Player player, BlockPos pos) {
+        if (root != null && HUSK.equals(pos) && player.getUUID().equals(pendingClick)) {
             sawClick = true;
         }
     }
 
+    //? if neoforge {
     @SubscribeEvent
-    public static void tick(ServerTickEvent.Post event) throws IOException {
+    public static void tick(ServerTickEvent.Post event) throws IOException { tick(event.getServer()); }
+    //?}
+    public static void tick(MinecraftServer server) throws IOException {
         if (root == null) return;
-        MinecraftServer server = event.getServer();
         if (step == Step.EXIT) {
             if (server.getPlayerList().getPlayerCount() == 0) server.halt(false);
             return;
@@ -111,7 +133,7 @@ public final class HuskMultiplayerServer {
                 move(visitor, HUSK.getZ() - 1.5);
                 owner.getInventory().clearContent();
                 visitor.getInventory().clearContent();
-                owner.setData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT.withSymbioteState(SymbioteState.BONDED_ACTIVE));
+                net.j40climb.florafauna.platform.AttachmentAccess.set(owner, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, PlayerSymbioteData.DEFAULT.withSymbioteState(SymbioteState.BONDED_ACTIVE));
                 owner.getInventory().setItem(SHARD_SLOT, barrel(owner).removeItem(2, 17));
                 owner.kill(owner.level());
                 step = Step.RESPAWN;
@@ -169,7 +191,7 @@ public final class HuskMultiplayerServer {
     }
 
     private static PlayerSymbioteData data(ServerPlayer player) {
-        return player.getData(FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        return net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
     }
 
     private static BarrelBlockEntity barrel(ServerPlayer player) {
@@ -198,7 +220,7 @@ public final class HuskMultiplayerServer {
         for (int slot = 0; slot < HuskBlockEntity.TOTAL_SLOTS; slot++) {
             int expected = slot == SHARD_SLOT ? stored : 0;
             require(husk.handler.getAmountAsInt(slot) == expected, "Expected " + expected + " items in husk slot " + slot);
-            if (expected > 0) require(husk.handler.getResource(slot).toStack().is(Items.AMETHYST_SHARD), "Wrong stored item");
+            if (expected > 0) require(husk.handler.getResource(slot).toStack(1).is(Items.AMETHYST_SHARD), "Wrong stored item");
         }
         require(level.getBlockState(HUSK).getValue(HuskBlock.HUSK_TYPE) == (stored == 0 ? HuskType.BROKEN : HuskType.RESTORATION), "Wrong husk type");
         require(level.getEntitiesOfClass(ItemEntity.class, new AABB(HUSK).inflate(5)).isEmpty(), "Unexpected loose drops near husk");

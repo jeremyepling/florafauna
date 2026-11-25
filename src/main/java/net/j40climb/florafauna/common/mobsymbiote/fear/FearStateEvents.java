@@ -15,10 +15,18 @@ import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
+//? if neoforge {
 import net.neoforged.bus.api.SubscribeEvent;
+//?}
+//? if neoforge {
 import net.neoforged.fml.common.EventBusSubscriber;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.entity.EntityTeleportEvent;
+//?}
+//? if neoforge {
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+//?}
 
 import java.util.Optional;
 
@@ -26,27 +34,37 @@ import java.util.Optional;
  * Event handler for the fear/stress state machine.
  * Processes fear state transitions for eligible mobs.
  */
+//? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
+//?}
 public class FearStateEvents {
 
     /**
      * Prevent endermen with MobSymbiote from teleporting.
      * The symbiote suppresses their teleportation ability.
      */
+    //? if neoforge {
     @SubscribeEvent
     public static void onEnderTeleport(EntityTeleportEvent.EnderEntity event) {
         if (MobSymbioteHelper.hasMobSymbiote(event.getEntity())) {
             event.setCanceled(true);
         }
     }
+    //?}
+
 
     /**
      * Main tick handler for the fear system.
      * Runs after entity tick to update fear state.
      */
+    //? if neoforge {
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
-        Entity entity = event.getEntity();
+        onEntityTick(event.getEntity());
+    }
+    //?}
+
+    public static void onEntityTick(net.minecraft.world.entity.Entity entity) {
 
         // Only process on server
         if (entity.level().isClientSide()) {
@@ -95,7 +113,7 @@ public class FearStateEvents {
         FearData data = FearHelper.getFearData(mob);
         FearData rested = data.checkRest(fearSource.isPresent(), currentTick, Config.exhaustedCooldownTicks);
         if (rested != data) {
-            mob.setData(FloraFaunaRegistry.FEAR_DATA, rested);
+            net.j40climb.florafauna.platform.AttachmentAccess.set(mob, FloraFaunaRegistry.FEAR_DATA, rested);
         }
     }
 
