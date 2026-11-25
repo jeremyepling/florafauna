@@ -1,11 +1,14 @@
 package net.j40climb.florafauna.playtest;
 
+import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.JsonOps;
 import net.j40climb.florafauna.common.block.wood.WoodType;
 import net.j40climb.florafauna.debug.DebugOverlay;
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -33,6 +36,7 @@ final class CompanionsPlaytest {
     private static final Identifier HAMMER = Identifier.fromNamespaceAndPath("florafauna", "hammer");
     private static final Identifier FRENCHIE = Identifier.fromNamespaceAndPath("florafauna", "frenchie");
     private static final Identifier CORE_ITEM = Identifier.fromNamespaceAndPath("florafauna", "dormant_symbiote");
+    private static final Identifier HAMMER_STAGE = Identifier.fromNamespaceAndPath("florafauna", "hammer_stage");
     private static final UUID DOG = UUID.fromString("fec76d21-ce62-468f-b351-4dabe610f64a");
     private static final Component TOOL_NAME = Component.literal("Quarry Hammer");
     private static final BlockPos STONE = new BlockPos(0, 201, 2);
@@ -73,7 +77,9 @@ final class CompanionsPlaytest {
         test.awaitClient("See the named Hammer, core item and the same tamed Frenchie", mc ->
                 TOOL_NAME.equals(mc.player.getMainHandItem().get(DataComponents.CUSTOM_NAME))
                 && mc.player.getMainHandItem().is(BuiltInRegistries.ITEM.getOptional(HAMMER).orElseThrow())
+                && mc.player.getMainHandItem().getCount() == 1
                 && mc.player.getOffhandItem().is(BuiltInRegistries.ITEM.getOptional(CORE_ITEM).orElseThrow())
+                && mc.player.getOffhandItem().getCount() == 1
                 && mc.level.getEntity(DOG) instanceof TamableAnimal dog && dog.isOwnedBy(mc.player));
         if (phase == 1) {
             test.awaitClient("Receive the stone in the shared world", mc -> mc.level.getBlockState(STONE).is(Blocks.STONE));
@@ -83,11 +89,32 @@ final class CompanionsPlaytest {
         test.awaitServer("Confirm the mined block, Hammer name and Frenchie owner on the server", p ->
                 p.level().isEmptyBlock(STONE) && TOOL_NAME.equals(p.getMainHandItem().get(DataComponents.CUSTOM_NAME))
                 && p.level().getEntity(DOG) instanceof TamableAnimal dog && dog.isOwnedBy(p));
-        test.client("Inspect the standalone Hammer from the core debug overlay", mc -> {
+        if (phase == 1) {
+            test.client("Verify Forged Hammer diagnostics hide the locked abilities", mc -> {
+                Playtest.require(hasStage(mc.player.getMainHandItem(), stageComponent(), "forged"), "Fresh Hammer was not Forged");
+                var lines = DebugOverlay.getModDataComponentLines(mc.player.getMainHandItem());
+                requireDiagnostics(lines, "Mining:", "Tool Config:", "Throw:", "  return=");
+                for (var locked : new String[]{"Lightning:", "Teleport:"}) {
+                    Playtest.require(lines.stream().noneMatch(line -> line.startsWith(locked)), "Forged Hammer exposed locked detail: " + locked);
+                }
+            });
+            test.server("Provide a Tempest-stage fixture on the same named tool for unlocked diagnostics", p -> {
+                var hammer = p.getMainHandItem();
+                Playtest.require(hammer.getCount() == 1 && TOOL_NAME.equals(hammer.get(DataComponents.CUSTOM_NAME)),
+                        "Stage fixture would replace or change the named Hammer");
+                setStage(hammer, stageComponent(), "tempest");
+                p.inventoryMenu.broadcastChanges();
+            });
+        }
+        test.awaitServer("Verify the one named Tempest Hammer on the server, including after restart", p ->
+                p.getMainHandItem().getCount() == 1 && TOOL_NAME.equals(p.getMainHandItem().get(DataComponents.CUSTOM_NAME))
+                        && hasStage(p.getMainHandItem(), stageComponent(), "tempest"));
+        test.awaitClient("Receive the Tempest stage with the same named tool, including after restart", mc ->
+                mc.player.getMainHandItem().getCount() == 1 && TOOL_NAME.equals(mc.player.getMainHandItem().get(DataComponents.CUSTOM_NAME))
+                        && hasStage(mc.player.getMainHandItem(), stageComponent(), "tempest"));
+        test.client("Inspect all unlocked Tempest Hammer details from the core debug overlay", mc -> {
             var lines = DebugOverlay.getModDataComponentLines(mc.player.getMainHandItem());
-            for (var prefix : new String[]{"Mining:", "Tool Config:", "Lightning:", "Teleport:", "Throw:", "  return="}) {
-                Playtest.require(lines.stream().anyMatch(line -> line.startsWith(prefix)), "Missing Hammer detail: " + prefix);
-            }
+            requireDiagnostics(lines, "Mining:", "Tool Config:", "Lightning:", "Teleport:", "Throw:", "  return=");
         });
         if (phase == 1) {
             var wood = WoodType.DRIFTWOOD.getBlockSet();
@@ -98,6 +125,29 @@ final class CompanionsPlaytest {
             test.client("Face the Frenchie with both mods' items equipped", mc ->
                     mc.player.lookAt(Anchor.EYES, mc.level.getEntity(DOG).getEyePosition()));
             test.screenshot("companions-rejoined");
+        }
+    }
+
+    private static DataComponentType<?> stageComponent() {
+        return BuiltInRegistries.DATA_COMPONENT_TYPE.getOptional(HAMMER_STAGE).orElseThrow();
+    }
+
+    private static <T> void setStage(ItemStack stack, DataComponentType<T> type, String stage) {
+        var codec = type.codec();
+        Playtest.require(codec != null, "Hammer stage component has no persistent codec");
+        stack.set(type, codec.parse(JsonOps.INSTANCE, new JsonPrimitive(stage)).getOrThrow());
+    }
+
+    private static <T> boolean hasStage(ItemStack stack, DataComponentType<T> type, String stage) {
+        var value = stack.get(type);
+        var codec = type.codec();
+        return value != null && codec != null && codec.encodeStart(JsonOps.INSTANCE, value).result()
+                .map(encoded -> encoded.equals(new JsonPrimitive(stage))).orElse(false);
+    }
+
+    private static void requireDiagnostics(java.util.List<String> lines, String... prefixes) {
+        for (var prefix : prefixes) {
+            Playtest.require(lines.stream().anyMatch(line -> line.startsWith(prefix)), "Missing Hammer detail: " + prefix);
         }
     }
 
