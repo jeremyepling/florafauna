@@ -23,7 +23,12 @@ abstract class FabricBlockDropMixin {
 
     // Only the loot-emission loop is a block break. Hand harvesting and shearing also call
     // popResource directly, and must remain ordinary items just as on NeoForge.
-    @WrapOperation(method = "dropResources", at = @At(value = "INVOKE",
+    // A name-only selector matches just the first overload; playerDestroy uses the six-argument path.
+    @WrapOperation(method = {
+            "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
+            "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V",
+            "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)V"
+    }, at = @At(value = "INVOKE",
             target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V"))
     private static void florafauna$emitBlockLoot(List<ItemStack> drops, Consumer<ItemStack> consumer, Operation<Void> original) {
         int depth = florafauna$blockLootDepth.get();
