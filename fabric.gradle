@@ -168,14 +168,15 @@ if (huskTestId != null) {
                 }
                 new File(directory, "${name}RunVmArgs.txt").text = vmArgs.collect(quote).join('\n')
                 new File(directory, "${name}RunClasspath.txt").text = '-classpath\n' + quote(runTask.classpath.asPath)
-                new File(directory, "${name}RunProgramArgs.txt").text = config.programArgs.collect(quote).join('\n')
+                // The Java launcher expands @files only before an explicit main class.
+                new File(directory, "${name}RunProgramArgs.txt").text = ([config.mainClass] + config.programArgs).collect(quote).join('\n')
                 def javaExecutable = javaToolchains.launcherFor(java.toolchain).get().executablePath.asFile
                 def gameDirectory = file(config.runDir)
                 gameDirectory.mkdirs()
                 def argsPrefix = new File(directory, name).absolutePath
                 new File(directory, "runHusk${role}.cmd").text = """@echo off
 cd /d "${gameDirectory.absolutePath}"
-"${javaExecutable.absolutePath}" "@${argsPrefix}RunVmArgs.txt" "@${argsPrefix}RunClasspath.txt" ${config.mainClass} "@${argsPrefix}RunProgramArgs.txt"
+"${javaExecutable.absolutePath}" "@${argsPrefix}RunVmArgs.txt" "@${argsPrefix}RunClasspath.txt" "@${argsPrefix}RunProgramArgs.txt"
 """
             }
         }
