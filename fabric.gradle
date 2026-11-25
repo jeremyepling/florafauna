@@ -112,7 +112,7 @@ loom {
                 source sourceSets.playtest
                 def directory = file(".tmp/world-playtests/${playtestId}/${playtestScenario}")
                 runDir project.relativePath(directory)
-                programArgs '--width', '960', '--height', '540', '--quickPlaySingleplayer', 'playtest'
+                programArgs '--username', 'FFPlaytest', '--width', '960', '--height', '540', '--quickPlaySingleplayer', 'playtest'
                 vmArg "-Dflorafauna.playtest.directory=${directory.absolutePath}"
                 vmArg "-Dflorafauna.playtest.scenario=${playtestScenario}"
                 vmArg "-Dflorafauna.playtest.phase=${playtestPhase}"
