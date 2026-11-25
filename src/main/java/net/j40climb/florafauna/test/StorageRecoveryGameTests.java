@@ -408,7 +408,9 @@ final class StorageRecoveryGameTests {
         try {
             for (int hit = 1; hit <= 5; hit++) {
                 clearDamageCooldown(player);
+                float previousHealth = player.getHealth();
                 player.hurtServer(h.getLevel(), source, 1);
+                require(h, player.getHealth() == previousHealth - 1, "Combat fixture did not deliver damage on hit " + hit);
                 require(h, ChaosSuppressor.isSuppressed(player) == (hit == 5), "Wrong voice suppression on hit " + hit);
             }
         } finally {
@@ -499,7 +501,7 @@ final class StorageRecoveryGameTests {
         //? if <26.3 {
         player.invulnerableTime = 0;
         //?} else {
-        /*player.setInvulnerableTime(0);
+        /*player.damageCooldownTime = 0;
         *///?}
     }
 
