@@ -202,15 +202,16 @@ final class StorageRecoveryGameTests {
         var berries = level.getEntitiesOfClass(ItemEntity.class, area, item -> item.getItem().is(Items.SWEET_BERRIES));
         require(h, stones.size() == 1 && stones.getFirst().getItem().getCount() == 1,
                 "Breaking one stone did not yield exactly one cobblestone entity");
-        require(h, berries.size() == 1 && berries.getFirst().getItem().getCount() >= 2
-                        && berries.getFirst().getItem().getCount() <= 3,
-                "A ripe bush did not yield its vanilla two-or-three-berry stack");
+        int berryCount = berries.stream().mapToInt(item -> item.getItem().getCount()).sum();
+        require(h, berryCount >= 2 && berryCount <= 3,
+                "A ripe bush did not yield its vanilla two-or-three berries, got " + berryCount);
         var mined = stones.getFirst();
-        var harvested = berries.getFirst();
-        var harvestedStack = harvested.getItem().copy();
+        // Vanilla harvest uses two loot pools and can emit separate entities. Freeze merging so each original stack is traceable.
+        var harvestedStacks = berries.stream().map(item -> item.getItem().copy()).toList();
+        berries.forEach(ItemEntity::setNeverPickUp);
         require(h, net.j40climb.florafauna.platform.AttachmentAccess.get(mined, FloraFaunaRegistry.BLOCK_DROP_DATA).isBlockDrop(),
                 "Stone mining loot was not marked as a block drop");
-        require(h, !net.j40climb.florafauna.platform.AttachmentAccess.get(harvested, FloraFaunaRegistry.BLOCK_DROP_DATA).isBlockDrop(),
+        require(h, berries.stream().noneMatch(item -> net.j40climb.florafauna.platform.AttachmentAccess.get(item, FloraFaunaRegistry.BLOCK_DROP_DATA).isBlockDrop()),
                 "Right-click berry harvest was incorrectly marked as block-breaking loot");
         require(h, ItemStack.isSameItemSameComponents(new ItemStack(Items.COBBLESTONE), mined.getItem()),
                 "Origin tagging changed the mined cobblestone components");
@@ -218,14 +219,20 @@ final class StorageRecoveryGameTests {
         var anchor = h.getBlockEntity(CENTER, Tier1MiningAnchorBlockEntity.class);
         anchor.tick(level, anchor.getBlockPos(), anchor.getBlockState());
         require(h, net.j40climb.florafauna.platform.AttachmentAccess.get(mined, FloraFaunaRegistry.CLAIMED_ITEM_DATA).claimed()
-                        && !net.j40climb.florafauna.platform.AttachmentAccess.get(harvested, FloraFaunaRegistry.CLAIMED_ITEM_DATA).claimed(),
+                        && berries.stream().noneMatch(item -> net.j40climb.florafauna.platform.AttachmentAccess.get(item, FloraFaunaRegistry.CLAIMED_ITEM_DATA).claimed()),
                 "Block-drop-only anchor did not distinguish mining from right-click harvesting");
         h.startSequence().thenWaitUntil(() -> require(h, anchor.getStoredCount() == 1 && !mined.isAlive(),
                         "Anchor did not absorb exactly the one mined cobblestone"))
-                .thenExecute(() -> require(h, harvested.isAlive() && harvested.getItem().getCount() == harvestedStack.getCount()
-                                && ItemStack.isSameItemSameComponents(harvestedStack, harvested.getItem())
-                                && !net.j40climb.florafauna.platform.AttachmentAccess.get(harvested, FloraFaunaRegistry.CLAIMED_ITEM_DATA).claimed(),
-                        "Anchor consumed or changed the non-mining berry harvest"))
+                .thenExecute(() -> {
+                    for (int index = 0; index < berries.size(); index++) {
+                        var harvested = berries.get(index);
+                        var original = harvestedStacks.get(index);
+                        require(h, harvested.isAlive() && harvested.getItem().getCount() == original.getCount()
+                                        && ItemStack.isSameItemSameComponents(original, harvested.getItem())
+                                        && !net.j40climb.florafauna.platform.AttachmentAccess.get(harvested, FloraFaunaRegistry.CLAIMED_ITEM_DATA).claimed(),
+                                "Anchor consumed or changed a non-mining berry harvest stack");
+                    }
+                })
                 .thenSucceed();
     }
 
@@ -335,7 +342,7 @@ final class StorageRecoveryGameTests {
     }
 
     private static void deathVeto(GameTestHelper h) {
-        var player = h.makeMockServerPlayerInLevel();
+        var player = connectSurvivalPlayer(h);
         player.setGameMode(GameType.SURVIVAL);
         var stack = new ItemStack(Items.AMETHYST_SHARD, 17);
         stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
@@ -389,7 +396,7 @@ final class StorageRecoveryGameTests {
     }
 
     private static void damageObservations(GameTestHelper h) {
-        var player = h.makeMockServerPlayerInLevel();
+        var player = connectSurvivalPlayer(h);
         var attacker = (net.minecraft.world.entity.LivingEntity) net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
                 .getValue(net.minecraft.resources.Identifier.withDefaultNamespace("zombie"))
                 .create(h.getLevel(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
@@ -412,7 +419,7 @@ final class StorageRecoveryGameTests {
     }
 
     private static void fallDamage(GameTestHelper h) {
-        var player = h.makeMockServerPlayerInLevel();
+        var player = connectSurvivalPlayer(h);
         player.setGameMode(GameType.SURVIVAL);
         player.getInventory().clearContent();
         player.setHealth(20);
@@ -466,6 +473,26 @@ final class StorageRecoveryGameTests {
                         && ItemStack.isSameItemSameComponents(countedCopper, inventory.getItem(9)),
                 "Partial shift-click changed named stack components");
         h.succeed();
+    }
+
+    /** Real Survival semantics and an acknowledged embedded connection are required to exercise player damage. */
+    private static ServerPlayer connectSurvivalPlayer(GameTestHelper h) {
+        var level = h.getLevel();
+        var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(
+                new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "survival-fixture"), false);
+        var player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation()) {};
+        var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+        new io.netty.channel.embedded.EmbeddedChannel(connection);
+        level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        //? if neoforge {
+        net.neoforged.neoforge.network.registration.NetworkRegistry.configureMockConnection(connection);
+        //?}
+        player.connection.handleAcceptPlayerLoad(new net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket());
+        player.setGameMode(GameType.SURVIVAL);
+        player.snapTo(h.absoluteVec(new Vec3(2.5, 1, 2.5)), 0, 0);
+        require(h, player.connection.hasClientLoaded() && player.gameMode() == GameType.SURVIVAL,
+                "Embedded damage fixture did not enter loaded Survival mode");
+        return player;
     }
 
     private static void clearDamageCooldown(ServerPlayer player) {

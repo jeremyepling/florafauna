@@ -200,7 +200,7 @@ Logs are written under each slot's `.tmp/worktree-tests`. When ready to publish 
 
 ## Project Structure
 
-The Java entry point is `FloraFauna.java`; gameplay lives under `common/`, and registration and client setup under `setup/`, all in the `net.j40climb.florafauna` package. See [AGENTS.md](AGENTS.md#implement-a-feature) for implementation conventions.
+Shared gameplay, models, registry definitions and creative contents live in `src/main/java`, in the `net.j40climb.florafauna` package. Loader entrypoints, setup and native platform adapters live in `src/fabric/java` and `src/neoforge/java`. Stonecutter selects the `fabric` and `neoforge` conditionals and applies shared Minecraft API replacements from `gradle/version-compat.gradle`. Target-specific APIs and resources live under `versions/<target>/target`. See [AGENTS.md](AGENTS.md#implement-a-feature) for implementation conventions.
 
 - [Player symbiote](src/main/java/net/j40climb/florafauna/common/symbiote/README.md) and [husk recovery](src/main/java/net/j40climb/florafauna/common/block/husk/README.md)
 - [Mining anchors and pods](src/main/java/net/j40climb/florafauna/common/block/mininganchor/README.md) and [item intake](src/main/java/net/j40climb/florafauna/common/block/iteminput/README.md)

@@ -1,4 +1,6 @@
-package net.j40climb.florafauna.test.fabric;
+package net.j40climb.florafauna.test.fabric.mixin;
+
+import net.j40climb.florafauna.test.fabric.FabricSpawnVeto;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;

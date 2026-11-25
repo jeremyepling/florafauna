@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "net.j40climb.florafauna.test.fabric",
+  "package": "net.j40climb.florafauna.test.fabric.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": ["SpawnVetoMixin"],
   "injectors": {"defaultRequire": 1}
