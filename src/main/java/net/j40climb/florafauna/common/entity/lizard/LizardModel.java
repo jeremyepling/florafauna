@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 
 public class LizardModel extends EntityModel<LizardRenderState> {
     public static final ModelLayerLocation LIZARD =
@@ -98,8 +97,8 @@ public class LizardModel extends EntityModel<LizardRenderState> {
     }
 
     private void applyHeadRotation(float headYaw, float headPitch) {
-        headYaw = Mth.clamp(headYaw, -30f, 30f);
-        headPitch = Mth.clamp(headYaw, -325f, 45);
+        headYaw = Math.clamp(headYaw, -30f, 30f);
+        headPitch = Math.clamp(headYaw, -325f, 45);
 
         this.head.yRot = headYaw * ((float)Math.PI / 180f);
         this.head.xRot = headPitch *  ((float)Math.PI / 180f);

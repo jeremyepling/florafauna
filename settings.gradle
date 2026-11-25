@@ -14,11 +14,20 @@ plugins {
 
 rootProject.name = 'florafauna'
 
+def previewTarget = '26.4-neoforge'
+def previewEnabled = providers.gradleProperty('previewNeoVersion').isPresent()
+def available = file('versions').listFiles().findAll {
+    new File(it, 'gradle.properties').isFile() && (it.name != previewTarget || previewEnabled)
+}*.name.sort()
+
+if (!previewEnabled && gradle.startParameter.taskNames.any { it.tokenize(':').contains(previewTarget) }) {
+    throw new GradleException('The 26.4 preview requires -PpreviewNeoVersion=<NeoForge version for 26.4-snapshot-10>.')
+}
+
 stonecutter {
     centralScript = 'build.gradle'
     create(rootProject) {
-        file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }
-                .sort { it.name }.each { version(it.name, it.name.take(it.name.lastIndexOf('-'))) }
+        available.each { version(it, it.take(it.lastIndexOf('-'))) }
         vcsVersion = '26.1-neoforge'
     }
 }
@@ -40,21 +49,23 @@ if (unknown || selected.size() != selected.unique(false).size()) {
 }
 
 // Qualified Stonecutter tasks only need checkouts for their own Minecraft version.
-def available = file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }*.name
 def requestedProjects = gradle.startParameter.taskNames.collectMany { it.tokenize(':') }.intersect(available)
 def targets = (requestedProjects ?: available).unique().collect { it.take(it.lastIndexOf('-')) }
 // A grouped workspace uses <mod>/main and <mod>/worktrees/<feature>.
 def modHome = rootDir.parentFile.name == 'worktrees' ? rootDir.parentFile.parentFile : rootDir.parentFile
 def builds = [:]
-targets.each { mcVersion ->
+targets.each { target ->
+    def game = new Properties()
+    file("versions/${target}-neoforge/gradle.properties").withReader('UTF-8') { game.load(it) }
+    def mcVersion = game.minecraft_version
     selected.each { companion ->
         def checkoutNames = ["${companion}-${mcVersion}", "florafauna-${companion}-${mcVersion}",
                              companion, "florafauna-${companion}"]
         def candidates = []
         if (modHome.name == 'florafauna') {
-            def versionDir = mcVersion == '26.1' ? 'main' : mcVersion
+            def versionDir = target == '26.1' ? 'main' : target
             def main = new File(modHome.parentFile, "${companion}/main")
-            if (new File(main, "versions/${mcVersion}-neoforge/gradle.properties").isFile()) candidates << main
+            if (new File(main, "versions/${target}-neoforge/gradle.properties").isFile()) candidates << main
             candidates << new File(modHome.parentFile, "${companion}/${versionDir}")
         }
         candidates.addAll(checkoutNames.collect { file("../${it}") })
@@ -66,8 +77,8 @@ targets.each { mcVersion ->
         }
         def props = new Properties()
         metadata.withReader('UTF-8') { props.load(it) }
-        def targetProject = ":${mcVersion}-neoforge"
-        def targetMetadata = new File(dir, "versions/${mcVersion}-neoforge/gradle.properties")
+        def targetProject = ":${target}-neoforge"
+        def targetMetadata = new File(dir, "versions/${target}-neoforge/gradle.properties")
         if (targetMetadata.isFile()) {
             targetMetadata.withReader('UTF-8') { props.load(it) }
         }

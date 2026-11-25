@@ -194,7 +194,7 @@ final class RecoveryPlaytest {
 
     private static Button enabledButton(Screen screen, String key) {
         return screen.children().stream().filter(Button.class::isInstance).map(Button.class::cast)
-                .filter(b -> b.active && b.visible && b.getMessage().equals(Component.translatable(key))).findFirst().orElse(null);
+                .filter(b -> b.isActive() && b.getMessage().equals(Component.translatable(key))).findFirst().orElse(null);
     }
 
     private static void click(Minecraft mc, String key) {

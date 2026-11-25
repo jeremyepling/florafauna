@@ -100,21 +100,31 @@ public abstract class BaseScreen extends Screen {
     protected abstract void initContent();
 
     @Override
+    //? if >=26.4 {
+    /*public void extractBackground(GuiGraphicsExtractor guiGraphics) {
+        super.extractBackground(guiGraphics);
+    *///?} else {
     public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // 1. Render blurred background
         super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+    //?}
 
         // 2. Render the GUI texture
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, guiTexture, leftPos, topPos, 0, 0, IMAGE_WIDTH, IMAGE_HEIGHT, 256, 256);
     }
 
     @Override
+    //? if >=26.4 {
+    /*public void extractRenderState(GuiGraphicsExtractor guiGraphics) {
+        super.extractRenderState(guiGraphics);
+        renderContent(guiGraphics, guiGraphics.mouseX(), guiGraphics.mouseY(), guiGraphics.partialTicks());
+    *///?} else {
     public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 1. Render background and widgets
         super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         // 2. Let subclass render custom content (including title)
         renderContent(guiGraphics, mouseX, mouseY, partialTick);
+    //?}
     }
 
     /**

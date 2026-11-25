@@ -78,11 +78,15 @@ public class ClientSetup {
      */
     public static void init(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerLayers);
+        //? if <26.4 {
         modEventBus.addListener(ClientSetup::registerRenderers);
+        //?}
         modEventBus.addListener(SlimeSplitLayer::addLayer);
         modEventBus.addListener(SlimeSplitLayer::registerState);
         modEventBus.addListener(ClientSetup::registerSilkPose);
+        //? if <26.4 {
         modEventBus.addListener(ClientSetup::registerScreens);
+        //?}
         modEventBus.addListener(ClientSetup::registerPayloads);
         modEventBus.addListener(ClientSetup::registerKeyBindings);
         modEventBus.addListener(ClientSetup::registerGuiLayers);
@@ -110,17 +114,21 @@ public class ClientSetup {
     /**
      * Client setup: register entity renderers.
      */
+    //? if <26.4 {
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
         event.registerEntityRenderer(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);
     }
+    //?}
 
     /**
      * Register menu screens.
      */
+    //? if <26.4 {
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get(), ContainmentChamberScreen::new);
     }
+    //?}
 
     /**
      * Register key bindings.

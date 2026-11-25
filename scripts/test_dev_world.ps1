@@ -13,7 +13,8 @@ param(
     [string]$FrenchiesDir,
     [string]$SourceWorld,
     [switch]$Offline,
-    [ValidateSet('26.1', '26.3')][string]$Target = '26.1'
+    [string]$PreviewNeoVersion,
+    [ValidateSet('26.1', '26.3', '26.4')][string]$Target = '26.1'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -31,7 +32,7 @@ $checkout = Split-Path $PSScriptRoot -Parent
 $project = "$Target-neoforge"
 $targetDir = Join-Path $checkout "versions/$project"
 $optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
-if ($Target -eq '26.3') { $optionsTemplate = Join-Path $targetDir 'dev/options-template.txt' }
+if ($Target -ne '26.1') { $optionsTemplate = Join-Path $checkout 'versions/26.3-neoforge/dev/options-template.txt' }
 if (!$SourceWorld) {
     $saveRoot = if ($Target -eq '26.1') { $checkout } else { $targetDir }
     $profile = switch ($DevMods) { 'all' { 'frenchies-hammer' } 'hammer' { 'hammer' } 'frenchies' { 'frenchies' } default { 'core' } }
@@ -57,6 +58,7 @@ $options = @('--console=plain')
 if ($DevMods) { $options += "-PdevMods=$DevMods" }
 if ($HammerDir) { $options += "-PhammerDir=$((Resolve-Path -LiteralPath $HammerDir).Path)" }
 if ($FrenchiesDir) { $options += "-PfrenchiesDir=$((Resolve-Path -LiteralPath $FrenchiesDir).Path)" }
+if ($PreviewNeoVersion) { $options += "-PpreviewNeoVersion=$PreviewNeoVersion" }
 if ($Offline) { $options += '--offline' }
 $hash = (Get-FileHash -LiteralPath $level).Hash
 Write-Host "Source save: $world"

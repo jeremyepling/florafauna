@@ -36,6 +36,19 @@ foreach ($target in '26.1-neoforge', '26.3-neoforge') {
 
 For a shorter iteration, `:26.1-neoforge:check` compiles client playtests and runs any JUnit tests. Use `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-neoforge:runGameTestServer` to check the saved barrier pen. Ready PRs and release builds run the full headless checks and upload one JAR per version. Draft PRs run `check` on both.
 
+### Minecraft 26.4 preview
+
+The opt-in `26.4-neoforge` target tracks **26.4 Snapshot 10**, the Minecraft version of NeoForge's `port/26.4` commit `e9012cb09aea9261144cdf41d62b5a63f1e5f5dd`. As of November 25, 2026, NeoForge had not published a compatible loader, and that source revision failed to compile. Running the mod on this preview requires a working NeoForge build for the same snapshot. [Upstream port](https://github.com/neoforged/NeoForge/commit/e9012cb09aea9261144cdf41d62b5a63f1e5f5dd)
+
+Once a matching development artifact is available in the NeoForge Maven repository or Maven Local, supply its version in both invocations. The normal 26.1 and 26.3 builds need no preview property.
+
+```powershell
+.\gradlew.bat "-PpreviewNeoVersion=$neoVersion" :26.4-neoforge:runData
+.\gradlew.bat "-PpreviewNeoVersion=$neoVersion" :26.4-neoforge:build :26.4-neoforge:runGameTestServer
+```
+
+For the client scenarios, use `-Target 26.4 -PreviewNeoVersion $neoVersion`. For companion runs, use checkouts that target the same Minecraft snapshot and NeoForge build.
+
 ### Play with the Hammer and Frenchies
 
 FloraFauna, Hammer and Frenchies can each run on their own. To play or develop with them together, choose the mods for a particular Minecraft version. A Stonecutter companion checkout supplies both targets. [Hammer source and tests](https://github.com/jeremyepling/hammer) · [Frenchies source and tests](https://github.com/jeremyepling/frenchies)

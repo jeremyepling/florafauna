@@ -36,8 +36,13 @@ public class ContainmentChamberMenu extends BaseContainerMenu {
         addPlayerInventory(playerInventory);
         addPlayerHotbar(playerInventory);
 
-        addSlot(new ResourceHandlerSlot(blockEntity.handler, blockEntity.handler::set, 0, 54, 34 ));
-        addSlot(new ResourceHandlerSlot(blockEntity.handler, blockEntity.handler::set, 1, 104, 34 ));
+        //? if >=26.4 {
+        /*addSlot(new ResourceHandlerSlot(blockEntity.handler, blockEntity.handler::set, 0, 54, 34, Slot.Section.INPUT));
+        addSlot(new ResourceHandlerSlot(blockEntity.handler, blockEntity.handler::set, 1, 104, 34, Slot.Section.SECOND_INPUT));
+        *///?} else {
+        addSlot(new ResourceHandlerSlot(blockEntity.handler, blockEntity.handler::set, 0, 54, 34));
+        addSlot(new ResourceHandlerSlot(blockEntity.handler, blockEntity.handler::set, 1, 104, 34));
+        //?}
 
         addDataSlots(data);
     }

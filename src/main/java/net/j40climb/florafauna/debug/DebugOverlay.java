@@ -89,7 +89,11 @@ public class DebugOverlay implements GuiLayer {
     private record DebugLine(String text, int color) {}
 
     @Override
+    //? if >=26.4 {
+    /*public void render(GuiGraphicsExtractor guiGraphics) {
+    *///?} else {
     public void render(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
+    //?}
         if (!enabled) {
             return;
         }
