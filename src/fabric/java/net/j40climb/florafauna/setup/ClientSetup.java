@@ -4,6 +4,8 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -47,6 +49,14 @@ public final class ClientSetup implements ClientModInitializer {
 
     public static void sendToServer(CustomPacketPayload payload) { ClientPlayNetworking.send(payload); }
 
+    @SuppressWarnings("unchecked") // Hammer exports this callback under its own namespaced protocol key.
+    private static void connectHammerDiagnostics() {
+        Object provider = FabricLoader.getInstance().getObjectShare().get("florafauna_hammer:tool_diagnostics");
+        if (provider instanceof java.util.function.BiConsumer<?, ?>) {
+            DebugOverlay.setHammerDiagnostics((java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, java.util.List<String>>) provider);
+        }
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static void registerSlimeLayer(LivingEntityRenderLayerRegistrationCallback.RegistrationHelper layers,
                                           SlimeRenderer renderer, net.minecraft.client.model.geom.EntityModelSet models) {
@@ -57,6 +67,8 @@ public final class ClientSetup implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // All client initializers have run before CLIENT_STARTED, regardless of optional mod ordering.
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> connectHammerDiagnostics());
         KeyMappingHelper.registerKeyMapping(DASH_KEY.get());
         KeyMappingHelper.registerKeyMapping(MOB_BARRIER_CONFIG_KEY.get());
         KeyMappingHelper.registerKeyMapping(NOCLIP_KEY.get());

@@ -60,6 +60,11 @@ public class DebugOverlay
 
     private static BiConsumer<ItemStack, List<String>> hammerDiagnostics;
 
+    /** Native loader adapters install the optional provider using only game and JDK types. */
+    public static void setHammerDiagnostics(BiConsumer<ItemStack, List<String>> provider) {
+        hammerDiagnostics = provider;
+    }
+
 //? if neoforge {
     @SuppressWarnings("unchecked") // The matching Hammer sender and message ID define the callback's argument types.
     public static void receiveHammerDiagnostics(InterModProcessEvent event) {
