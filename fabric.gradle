@@ -55,7 +55,8 @@ sourceSets.test {
 
 def fabricLoaderVersion = '0.19.5'
 def companionNames = ['hammer', 'frenchies'].findAll { companion ->
-    gradle.includedBuilds.any { it.name == "dev-${companion}" || it.name == "dev-${companion}-${minecraft_version}" }
+    gradle.ext.devCompanionTargets.contains(project.name) &&
+            gradle.includedBuilds.any { it.name == "dev-${companion}" || it.name == "dev-${companion}-${minecraft_version}" }
 }
 def playtestId = providers.gradleProperty('playtestId').orNull
 def playtestScenario = providers.gradleProperty('playtestScenario').orNull

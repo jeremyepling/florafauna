@@ -49,6 +49,9 @@ def requestedProjects = gradle.startParameter.taskNames.collectMany { it.tokeniz
 def targets = (requestedProjects ?: available).unique()
 // Fabric consumes shared datagen from its NeoForge sibling.
 targets = (targets + targets.findAll { it.endsWith('-fabric') }.collect { it.replace('-fabric', '-neoforge') }).unique()
+// Loom resolves every Fabric project's runtime during configuration. Only inject
+// companions into targets for which this invocation installed substitutions.
+gradle.ext.devCompanionTargets = targets
 // A grouped workspace uses <mod>/main and <mod>/worktrees/<feature>.
 def modHome = rootDir.parentFile.name == 'worktrees' ? rootDir.parentFile.parentFile : rootDir.parentFile
 def builds = [:]
