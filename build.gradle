@@ -102,6 +102,14 @@ neoForge {
             }
         }
         if (playtestId != null) {
+            if (playtestScenario == 'spawnblooms') {
+                spawnBloomProbe {
+                    server()
+                    gameDirectory = file(".tmp/world-playtests/${playtestId}/spawnblooms")
+                    programArgument '--nogui'
+                    systemProperty 'florafauna.spawnBloomProbe.phase', playtestPhase
+                }
+            }
             worldPlaytest {
                 client()
                 def directory = file(".tmp/world-playtests/${playtestId}/${playtestScenario}")

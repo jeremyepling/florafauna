@@ -17,6 +17,7 @@ public final class FabricPlaytest implements ModInitializer {
             catch (IOException error) { throw new UncheckedIOException(error); }
         });
         ServerTickEvents.END_SERVER_TICK.register(server -> {
+            SpawnBloomProbe.check(server);
             try { HuskMultiplayerServer.tick(server); }
             catch (IOException error) { throw new UncheckedIOException(error); }
         });

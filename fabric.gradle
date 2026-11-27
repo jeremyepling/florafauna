@@ -108,6 +108,15 @@ loom {
             vmArg "-Dfabric-api.gametest.report-file=${file('build/test-results/gametest.xml')}"
         }
         if (playtestId != null) {
+            if (playtestScenario == 'spawnblooms') {
+                spawnBloomProbe {
+                    server()
+                    source sourceSets.playtest
+                    runDir project.relativePath(file(".tmp/world-playtests/${playtestId}/spawnblooms"))
+                    programArg '--nogui'
+                    vmArg "-Dflorafauna.spawnBloomProbe.phase=${playtestPhase}"
+                }
+            }
             worldPlaytest {
                 client()
                 source sourceSets.playtest
