@@ -214,6 +214,17 @@ sourceSets.main.resources {
     exclude '.cache/**'
 }
 
+// Older data generation runs may still have a copy of the now-authored bloom table.
+def generatedResourcePath = generatedResources.absolutePath + File.separator
+tasks.named('processResources') {
+    eachFile { resource ->
+        if (resource.path == 'data/florafauna/loot_table/blocks/resonant_bloom.json'
+                && resource.file.absolutePath.startsWith(generatedResourcePath)) {
+            resource.exclude()
+        }
+    }
+}
+
 // Sets up a dependency configuration called 'localRuntime'.
 // This configuration should be used instead of 'runtimeOnly' to declare
 // a dependency that will be present for runtime testing but that is

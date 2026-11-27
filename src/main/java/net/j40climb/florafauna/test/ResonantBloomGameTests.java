@@ -9,6 +9,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 /*import net.minecraft.world.level.levelgen.feature.Feature;
 *///?}
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
@@ -34,6 +37,23 @@ final class ResonantBloomGameTests {
     *///?}
 
     private ResonantBloomGameTests() {}
+
+    static void dropsPollen(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 2, 1);
+        helper.setBlock(pos.below(), Blocks.GRASS_BLOCK);
+        helper.setBlock(pos, FloraFaunaRegistry.RESONANT_BLOOM.get());
+
+        ServerLevel level = helper.getLevel();
+        BlockPos absolutePos = helper.absolutePos(pos);
+        level.destroyBlock(absolutePos, true);
+        int pollen = level.getEntitiesOfClass(ItemEntity.class, new AABB(absolutePos).inflate(1),
+                        entity -> entity.getItem().is(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get()))
+                .stream().mapToInt(entity -> entity.getItem().getCount()).sum();
+        if (pollen != 2) {
+            throw helper.assertionException("Expected two Symbiotic Pollen from one Resonant Bloom, got " + pollen);
+        }
+        helper.succeed();
+    }
 
     static void naturalDiscovery(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
