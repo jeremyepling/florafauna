@@ -3,8 +3,19 @@ package net.j40climb.florafauna.common;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
+//? if >=26.4 {
+/*import static net.minecraft.commands.arguments.IntegerArgument.getInteger;
+import static net.minecraft.commands.arguments.IntegerArgument.integer;
+import static net.minecraft.commands.arguments.StringArgument.getString;
+import static net.minecraft.commands.arguments.StringArgument.word;
+import static net.minecraft.commands.suggestions.SuggestLiteralString.suggestLiteral;
+*///?} else {
+import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
+import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
+import static com.mojang.brigadier.arguments.StringArgumentType.getString;
+import static com.mojang.brigadier.arguments.StringArgumentType.word;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+//?}
 import com.mojang.brigadier.context.CommandContext;
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.debug.DebugOverlay;
@@ -83,6 +94,15 @@ import java.util.Map;
 public class FloraFaunaCommands {
 
     /** Permission check: OP level 2 (gamemaster) OR creative mode */
+    //? if <26.4 {
+    private static SuggestionProvider<CommandSourceStack> suggestLiteral(String... values) {
+        return (context, builder) -> {
+            for (String value : values) builder.suggest(value);
+            return builder.buildFuture();
+        };
+    }
+    //?}
+
     private static boolean hasDevPermission(CommandSourceStack source) {
         return Commands.hasPermission(new PermissionCheck.Require(Permissions.COMMANDS_GAMEMASTER)).test(source) ||
                 (source.getEntity() instanceof ServerPlayer p && p.isCreative());
@@ -119,21 +139,16 @@ public class FloraFaunaCommands {
                                 .then(Commands.literal("reset")
                                         .executes(devCommand(FloraFaunaCommands::resetSymbiote)))
                                 .then(Commands.literal("toggle")
-                                        .then(Commands.argument("ability", StringArgumentType.word())
-                                                .suggests((context, builder) -> {
-                                                    builder.suggest("dash");
-                                                    builder.suggest("featherFalling");
-                                                    builder.suggest("speed");
-                                                    return builder.buildFuture();
-                                                })
+                                        .then(Commands.argument("ability", word())
+                                                .suggests(suggestLiteral("dash", "featherFalling", "speed"))
                                                 .executes(devCommand(FloraFaunaCommands::toggleAbility))))
                                 .then(Commands.literal("setJumpBoost")
-                                        .then(Commands.argument("level", IntegerArgumentType.integer(0, 4))
+                                        .then(Commands.argument("level", integer(0, 4))
                                                 .executes(devCommand(FloraFaunaCommands::setJumpBoost))))
                                 .then(Commands.literal("dream")
                                         .executes(devCommand(FloraFaunaCommands::triggerDream))
                                         .then(Commands.literal("force")
-                                                .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
+                                                .then(Commands.argument("level", integer(1, 3))
                                                         .executes(devCommand(FloraFaunaCommands::forceDream)))))
                                 .then(Commands.literal("cooldown")
                                         .then(Commands.literal("reset")
@@ -141,18 +156,15 @@ public class FloraFaunaCommands {
                                 .then(Commands.literal("progress")
                                         .executes(devCommand(FloraFaunaCommands::showProgress))
                                         .then(Commands.literal("set")
-                                                .then(Commands.argument("concept", StringArgumentType.word())
-                                                        .then(Commands.argument("state", StringArgumentType.word())
-                                                                .suggests((context, builder) -> {
-                                                                    for (SignalState state : SignalState.values()) {
-                                                                        builder.suggest(state.name().toLowerCase());
-                                                                    }
-                                                                    return builder.buildFuture();
-                                                                })
+                                                .then(Commands.argument("concept", word())
+                                                        .then(Commands.argument("state", word())
+                                                                .suggests(suggestLiteral(java.util.Arrays.stream(SignalState.values())
+                                                                        .map(state -> state.name().toLowerCase(java.util.Locale.ROOT))
+                                                                        .toArray(String[]::new)))
                                                                 .executes(devCommand(FloraFaunaCommands::setProgressState)))))))
                         .then(Commands.literal("mininganchor")
                                 .then(Commands.literal("fill")
-                                        .then(Commands.argument("amount", IntegerArgumentType.integer(0, 16000))
+                                        .then(Commands.argument("amount", integer(0, 16000))
                                                 .executes(devCommand(FloraFaunaCommands::fillMiningAnchor))))
                                 .then(Commands.literal("clear")
                                         .executes(devCommand(FloraFaunaCommands::clearMiningAnchor)))
@@ -330,7 +342,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        String ability = StringArgumentType.getString(context, "ability");
+        String ability = getString(context, "ability");
         PlayerSymbioteData newData;
 
         switch (ability.toLowerCase()) {
@@ -382,7 +394,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        int level = IntegerArgumentType.getInteger(context, "level");
+        int level = getInteger(context, "level");
         PlayerSymbioteData newData = currentData.withJumpBoost(level);
         net.j40climb.florafauna.platform.AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, newData);
 
@@ -434,7 +446,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        int levelNum = IntegerArgumentType.getInteger(context, "level");
+        int levelNum = getInteger(context, "level");
         DreamLevel level = DreamLevel.fromOrdinal(levelNum - 1);
 
         boolean success = DreamInsightEngine.forceDream(player, level);
@@ -492,8 +504,8 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        String concept = StringArgumentType.getString(context, "concept");
-        String stateStr = StringArgumentType.getString(context, "state");
+        String concept = getString(context, "concept");
+        String stateStr = getString(context, "state");
 
         SignalState state;
         try {
@@ -579,7 +591,7 @@ public class FloraFaunaCommands {
             return 0;
         }
 
-        int amount = IntegerArgumentType.getInteger(context, "amount");
+        int amount = getInteger(context, "amount");
 
         // Add cobblestone to pods (spawns pods as needed)
         int remaining = amount;
