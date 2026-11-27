@@ -13,8 +13,10 @@ import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenHelper;
 import net.j40climb.florafauna.common.mobsymbiote.irongarden.IronGardenState;
 import net.j40climb.florafauna.common.mobsymbiote.MobSymbioteData;
 import net.j40climb.florafauna.common.block.mininganchor.AnchorFillState;
+import net.j40climb.florafauna.common.symbiote.abilities.SymbiotePassiveStats;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
+import net.j40climb.florafauna.common.symbiote.onboarding.SymbioteOnboarding;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.j40climb.florafauna.common.block.mobbarrier.MobBarrierBlockEntity;
 import net.minecraft.client.DeltaTracker;
@@ -45,11 +47,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 
 /**
  * Debug overlay that displays symbiote state information on screen.
- * Toggle with /symbiote_debug command.
+ * Toggle with /florafauna debug.
  */
 public class DebugOverlay
 //? if neoforge {
@@ -192,8 +195,7 @@ public class DebugOverlay
                     data.symbioteState().areAbilitiesActive() ? enabledColor : disabledColor));
             lines.add(new DebugLine("  Dash: " + formatBool(data.dash()), data.dash() ? enabledColor : color));
             lines.add(new DebugLine("  Feather: " + formatBool(data.featherFalling()), data.featherFalling() ? enabledColor : color));
-            lines.add(new DebugLine("  Speed: " + formatBool(data.speed()), data.speed() ? enabledColor : color));
-            lines.add(new DebugLine("  Jump: " + data.jumpBoost(), data.jumpBoost() > 0 ? enabledColor : color));
+            buildPassiveStatLines(lines, player, data, color, enabledColor);
         }
 
         // Cocoon State section
@@ -236,6 +238,43 @@ public class DebugOverlay
 
         // Targeted Entity or Block section
         buildTargetedEntityOrBlockLines(lines, player, color, headerColor, valueColor, enabledColor, disabledColor);
+    }
+
+    private static void buildPassiveStatLines(List<DebugLine> lines, LocalPlayer player, PlayerSymbioteData data,
+                                              int color, int enabledColor) {
+        boolean active = data.symbioteState().areAbilitiesActive();
+        int speedPercent = (int) Math.round(SymbiotePassiveStats.SPEED_BONUS * 100);
+        String speed = data.speed()
+                ? "+" + speedPercent + "% movement speed" + (active ? "" : " (inactive)")
+                : "off (+" + speedPercent + "% when enabled)";
+        lines.add(new DebugLine("  Speed: " + speed, active && data.speed() ? enabledColor : color));
+        if (!data.speed()) {
+            lines.add(new DebugLine("    Dev: /florafauna symbiote toggle speed", color));
+        }
+
+        int jumpLevel = data.jumpBoost();
+        if (jumpLevel > 0) {
+            String bonus = String.format(Locale.ROOT, "+%.2f jump velocity", SymbiotePassiveStats.jumpBonus(jumpLevel));
+            lines.add(new DebugLine("  Jump " + jumpLevel + ": " + bonus + (active ? "" : " (inactive)"),
+                    active ? enabledColor : color));
+            lines.add(new DebugLine("    Survival max: level 1", color));
+            return;
+        }
+
+        var progress = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+        int jumpsLeft = Math.max(0, SymbioteOnboarding.JUMPS_REQUIRED - SymbioteOnboarding.jumpCount(progress));
+        int biomesLeft = Math.max(0, SymbioteOnboarding.BIOMES_REQUIRED - SymbioteOnboarding.jumpBiomeCount(progress));
+        String nextBonus = String.format(Locale.ROOT, "+%.2f jump velocity", SymbiotePassiveStats.jumpBonus(1));
+        lines.add(new DebugLine("  Jump: off (next: " + nextBonus + ")", color));
+        if (jumpsLeft > 0) {
+            lines.add(new DebugLine("    Ground jumps remaining: " + jumpsLeft, color));
+        }
+        if (biomesLeft > 0) {
+            lines.add(new DebugLine("    Jump in " + biomesLeft + " new " + (biomesLeft == 1 ? "biome" : "biomes"), color));
+        }
+        if (jumpsLeft == 0 && biomesLeft == 0) {
+            lines.add(new DebugLine("    Jump once while the bond is active", color));
+        }
     }
 
     /**
