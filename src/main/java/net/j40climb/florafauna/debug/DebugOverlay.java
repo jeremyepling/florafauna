@@ -193,9 +193,7 @@ public class DebugOverlay
             lines.add(new DebugLine("Tier: " + data.tier(), color));
             lines.add(new DebugLine("Abilities Active: " + (data.symbioteState().areAbilitiesActive() ? "Yes" : "No"),
                     data.symbioteState().areAbilitiesActive() ? enabledColor : disabledColor));
-            lines.add(new DebugLine("  Dash: " + formatBool(data.dash()), data.dash() ? enabledColor : color));
-            lines.add(new DebugLine("  Feather: " + formatBool(data.featherFalling()), data.featherFalling() ? enabledColor : color));
-            buildPassiveStatLines(lines, player, data, color, enabledColor);
+            buildAbilityLines(lines, player, data, color, enabledColor);
         }
 
         // Cocoon State section
@@ -240,16 +238,30 @@ public class DebugOverlay
         buildTargetedEntityOrBlockLines(lines, player, color, headerColor, valueColor, enabledColor, disabledColor);
     }
 
-    private static void buildPassiveStatLines(List<DebugLine> lines, LocalPlayer player, PlayerSymbioteData data,
-                                              int color, int enabledColor) {
+    private static void buildAbilityLines(List<DebugLine> lines, LocalPlayer player, PlayerSymbioteData data,
+                                          int color, int enabledColor) {
         boolean active = data.symbioteState().areAbilitiesActive();
-        int speedPercent = (int) Math.round(SymbiotePassiveStats.SPEED_BONUS * 100);
-        String speed = data.speed()
-                ? "+" + speedPercent + "% movement speed" + (active ? "" : " (inactive)")
-                : "off (+" + speedPercent + "% when enabled)";
-        lines.add(new DebugLine("  Speed: " + speed, active && data.speed() ? enabledColor : color));
-        if (!data.speed()) {
-            lines.add(new DebugLine("    Dev: /florafauna symbiote toggle speed", color));
+        var progress = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
+
+        String dash = data.dash() ? "unlocked" : "sprint-jump "
+                + Math.max(1, SymbioteOnboarding.DASH_JUMPS_REQUIRED - SymbioteOnboarding.sprintJumpCount(progress))
+                + " more times";
+        lines.add(new DebugLine("  Dash: " + dash, active && data.dash() ? enabledColor : color));
+        String feather = data.featherFalling() ? "negates fall damage" : "survive "
+                + Math.max(1, SymbioteOnboarding.FALLS_REQUIRED - SymbioteOnboarding.damagingLandingCount(progress))
+                + " more damaging falls";
+        lines.add(new DebugLine("  Feather Falling: " + feather, active && data.featherFalling() ? enabledColor : color));
+
+        int speedLevel = data.speedLevel();
+        int speedPercent = speedPercent(speedLevel);
+        String speed = speedLevel == 0 ? "off" : "+" + speedPercent + "% movement speed" + (active ? "" : " (inactive)");
+        lines.add(new DebugLine("  Speed: " + speed, active && speedLevel > 0 ? enabledColor : color));
+        if (speedLevel < 2) {
+            int goal = speedLevel == 0 ? SymbioteOnboarding.SPEED_ONE_CM : SymbioteOnboarding.SPEED_TWO_CM;
+            int remainingCm = Math.max(1, goal - SymbioteOnboarding.sprintDistanceCm(progress));
+            int remainingBlocks = (remainingCm + 99) / 100;
+            lines.add(new DebugLine("    Sprint " + remainingBlocks + " more blocks for +"
+                    + speedPercent(speedLevel + 1) + "% total", color));
         }
 
         int jumpLevel = data.jumpBoost();
@@ -261,7 +273,6 @@ public class DebugOverlay
             return;
         }
 
-        var progress = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.SYMBIOTE_PROGRESS_ATTACHMENT);
         int jumpsLeft = Math.max(0, SymbioteOnboarding.JUMPS_REQUIRED - SymbioteOnboarding.jumpCount(progress));
         int biomesLeft = Math.max(0, SymbioteOnboarding.BIOMES_REQUIRED - SymbioteOnboarding.jumpBiomeCount(progress));
         String nextBonus = String.format(Locale.ROOT, "+%.2f jump velocity", SymbiotePassiveStats.jumpBonus(1));
@@ -275,6 +286,10 @@ public class DebugOverlay
         if (jumpsLeft == 0 && biomesLeft == 0) {
             lines.add(new DebugLine("    Jump once while the bond is active", color));
         }
+    }
+
+    private static int speedPercent(int level) {
+        return (int) Math.round(SymbiotePassiveStats.speedBonus(level) * 100);
     }
 
     /**

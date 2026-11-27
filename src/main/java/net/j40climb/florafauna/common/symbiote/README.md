@@ -35,12 +35,12 @@ BONDED_WEAKENED ──(interact with husk)──> BONDED_ACTIVE
 
 | Ability | Effect while the bond is active | How to get it |
 |---------|---------------------------------|---------------|
-| Dash | Burst in the direction you are looking. Default key is Mouse 4. | Dev command `/florafauna symbiote toggle dash`. |
-| Feather Falling | Cancels fall damage. | Dev command `/florafauna symbiote toggle featherFalling`. |
-| Speed | +40% movement speed, equivalent to Speed II. | Dev command `/florafauna symbiote toggle speed`. |
+| Dash | Burst in the direction you are looking. Default key is Mouse 4. | Sprint-jump 20 times after binding. |
+| Feather Falling | Cancels fall damage. | Survive five falls that deal damage after binding. |
+| Speed | +20% or +40% movement speed, equivalent to Speed I or II. | Sprint 100 blocks after binding for level 1 and 500 total for level 2. |
 | Jump Boost | +0.10 jump velocity per level, equivalent to vanilla Jump Boost. | Jump 25 times across at least two biomes after binding to earn level 1. The dev command `/florafauna symbiote setJumpBoost <level>` can set levels 0–4. |
 
-Speed and Jump Boost are passive. The stronger of the bond bonus and a potion's corresponding bonus applies. The potion keeps its own timer, and the bond bonus resumes when it wears off. Run `/florafauna debug on` to see the configured increases and remaining jump actions.
+Speed and Jump Boost are passive. The stronger of the bond bonus and a potion's corresponding bonus applies. The potion keeps its own timer, and the bond bonus resumes when it wears off. Run `/florafauna debug on` to see the configured increases and remaining actions.
 
 ## Player Data
 
