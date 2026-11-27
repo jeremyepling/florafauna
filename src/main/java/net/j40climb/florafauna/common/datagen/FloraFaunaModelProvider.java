@@ -87,7 +87,6 @@ public class FloraFaunaModelProvider extends ModelProvider {
     // These are simple models that can be data generated and have no custom json from blockbench
     private static void registerGeneratedItemModels(ItemModelGenerators itemModels) {
         itemModels.generateFlatItem(FloraFaunaRegistry.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
@@ -133,6 +132,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.getRegisteredName().equals("florafauna:mob_output"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:slime_grate"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:ferric_poppy"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:symbiotic_pollen"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:resonant_bloom"));
     }
 

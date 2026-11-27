@@ -214,12 +214,16 @@ sourceSets.main.resources {
     exclude '.cache/**'
 }
 
-// Older data generation runs may still have a copy of the now-authored bloom table.
+// Older data generation runs may still have copies of these authored resources.
 def generatedResourcePath = generatedResources.absolutePath + File.separator
+def authoredResources = [
+        'data/florafauna/loot_table/blocks/resonant_bloom.json',
+        'assets/florafauna/items/symbiotic_pollen.json',
+        'assets/florafauna/models/item/symbiotic_pollen.json'
+] as Set
 tasks.named('processResources') {
     eachFile { resource ->
-        if (resource.path == 'data/florafauna/loot_table/blocks/resonant_bloom.json'
-                && resource.file.absolutePath.startsWith(generatedResourcePath)) {
+        if (resource.path in authoredResources && resource.file.absolutePath.startsWith(generatedResourcePath)) {
             resource.exclude()
         }
     }
