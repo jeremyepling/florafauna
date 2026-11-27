@@ -478,7 +478,7 @@ final class StorageRecoveryGameTests {
     }
 
     /** Real Survival semantics and an acknowledged embedded connection are required to exercise player damage. */
-    private static ServerPlayer connectSurvivalPlayer(GameTestHelper h) {
+    static ServerPlayer connectSurvivalPlayer(GameTestHelper h) {
         var level = h.getLevel();
         var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(
                 new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "survival-fixture"), false);
@@ -497,7 +497,7 @@ final class StorageRecoveryGameTests {
         return player;
     }
 
-    private static void clearDamageCooldown(ServerPlayer player) {
+    static void clearDamageCooldown(ServerPlayer player) {
         //? if <26.3 {
         player.invulnerableTime = 0;
         //?} else {

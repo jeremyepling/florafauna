@@ -137,6 +137,8 @@ public class FloraFaunaGameTests {
         registerDialogueRepositoryTests(event, defaultEnv);
         registerTest(event, defaultEnv, "symbiote_passive_potion_precedence", SymbiotePassiveGameTests::potionPrecedence);
         registerTest(event, defaultEnv, "symbiote_passive_potion_expiry", SymbiotePassiveGameTests::potionExpiry);
+        registerTest(event, defaultEnv, "symbiote_passive_survival_progression", SymbiotePassiveGameTests::survivalProgression);
+        registerTest(event, defaultEnv, "symbiote_passive_speed_save_compatibility", SymbiotePassiveGameTests::speedSaveCompatibility);
         registerTest(event, defaultEnv, "resonant_bloom_natural_discovery", ResonantBloomGameTests::naturalDiscovery);
         registerTest(event, defaultEnv, "resonant_bloom_drops_pollen", ResonantBloomGameTests::dropsPollen);
 
