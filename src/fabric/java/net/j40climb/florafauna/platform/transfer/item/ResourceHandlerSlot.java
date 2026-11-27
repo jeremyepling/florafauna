@@ -11,7 +11,11 @@ public final class ResourceHandlerSlot extends Slot {
     private final ItemStacksResourceHandler handler;
     private final int index;
 
+    //? if >=26.4 {
+    /*public ResourceHandlerSlot(ItemStacksResourceHandler handler, Setter setter, int index, int x, int y, Slot.Section section) {
+    *///?} else {
     public ResourceHandlerSlot(ItemStacksResourceHandler handler, Setter setter, int index, int x, int y) {
+    //?}
         super(new Container() {
             public int getContainerSize() { return handler.size(); }
             public boolean isEmpty() {
@@ -35,7 +39,11 @@ public final class ResourceHandlerSlot extends Slot {
             public void clearContent() {
                 for (int i = 0; i < handler.size(); i++) setItem(i, ItemStack.EMPTY);
             }
+        //? if >=26.4 {
+        /*}, index, x, y, section);
+        *///?} else {
         }, index, x, y);
+        //?}
         this.handler = handler;
         this.index = index;
     }

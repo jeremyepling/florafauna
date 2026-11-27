@@ -25,8 +25,10 @@ abstract class FabricBlockDropMixin {
     // popResource directly, and must remain ordinary items just as on NeoForge.
     // A name-only selector matches just the first overload; playerDestroy uses the six-argument path.
     @WrapOperation(method = {
+            //? if <26.4 {
             "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)V",
             "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V",
+            //?}
             "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)V"
     }, at = @At(value = "INVOKE",
             target = "Ljava/util/List;forEach(Ljava/util/function/Consumer;)V"))

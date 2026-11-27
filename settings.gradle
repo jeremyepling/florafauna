@@ -15,14 +15,23 @@ plugins {
 
 rootProject.name = 'florafauna'
 
+def previewTarget = '26.4-neoforge'
+def previewEnabled = providers.gradleProperty('previewNeoVersion').isPresent()
+def available = file('versions').listFiles().findAll {
+    new File(it, 'gradle.properties').isFile() && (it.name != previewTarget || previewEnabled)
+}*.name.sort()
+
+if (!previewEnabled && gradle.startParameter.taskNames.any { it.tokenize(':').contains(previewTarget) }) {
+    throw new GradleException('The 26.4 preview requires -PpreviewNeoVersion=<NeoForge version for 26.4-snapshot-10>.')
+}
+
 stonecutter {
     centralScript = 'build.gradle'
     create(rootProject) {
-        file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }
-                .sort { it.name }.each {
-                    def target = version(it.name, it.name.take(it.name.lastIndexOf('-')))
-                    if (it.name.endsWith('-fabric')) target.buildscript('fabric.gradle')
-                }
+        available.each { name ->
+            def target = version(name, name.take(name.lastIndexOf('-')))
+            if (name.endsWith('-fabric')) target.buildscript('fabric.gradle')
+        }
         vcsVersion = '26.1-neoforge'
     }
 }
@@ -44,11 +53,10 @@ if (unknown || selected.size() != selected.unique(false).size()) {
 }
 
 // Qualified Stonecutter tasks only need checkouts for their own Minecraft version.
-def available = file('versions').listFiles().findAll { new File(it, 'gradle.properties').isFile() }*.name
 def requestedProjects = gradle.startParameter.taskNames.collectMany { it.tokenize(':') }.intersect(available)
 def targets = (requestedProjects ?: available).unique()
 // Fabric consumes shared datagen from its NeoForge sibling.
-targets = (targets + targets.findAll { it.endsWith('-fabric') }.collect { it.replace('-fabric', '-neoforge') }).unique()
+targets = (targets + targets.findAll { it.endsWith('-fabric') }.collect { it == '26.4-fabric' ? '26.3-neoforge' : it.replace('-fabric', '-neoforge') }).unique()
 // Loom resolves every Fabric project's runtime during configuration. Only inject
 // companions into targets for which this invocation installed substitutions.
 gradle.ext.devCompanionTargets = targets
@@ -56,7 +64,9 @@ gradle.ext.devCompanionTargets = targets
 def modHome = rootDir.parentFile.name == 'worktrees' ? rootDir.parentFile.parentFile : rootDir.parentFile
 def builds = [:]
 targets.each { target ->
-    def mcVersion = target.take(target.lastIndexOf('-'))
+    def game = new Properties()
+    file("versions/${target}/gradle.properties").withReader('UTF-8') { game.load(it) }
+    def mcVersion = game.minecraft_version
     selected.each { companion ->
         def checkoutNames = ["${companion}-${mcVersion}", "florafauna-${companion}-${mcVersion}",
                              companion, "florafauna-${companion}"]

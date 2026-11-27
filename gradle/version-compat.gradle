@@ -1,7 +1,20 @@
 stonecutter {
     replacements {
         string {
-            direction = project.minecraft_version == '26.3'
+            direction = stonecutter.eval(current.version, '>=26.4')
+            replace('net.minecraft.client.renderer.RenderPipelines;', 'net.minecraft.client.gui.GuiPipeline;')
+            replace('RenderPipelines.GUI_TEXTURED', 'GuiPipeline.TEXTURED')
+            replace('net.minecraft.world.level.block.SoundType;', 'net.minecraft.world.level.block.sounds.BlockSoundSets;')
+            replace('SoundType.AMETHYST)', 'BlockSoundSets.AMETHYST_BLOCK)')
+            ['COPPER', 'GRASS', 'METAL', 'NETHERITE_BLOCK', 'SCULK', 'STONE', 'WOOD', 'WOOL'].each { sound ->
+                replace("SoundType.${sound})", "BlockSoundSets.${sound})")
+            }
+            replace('properties.spawnEgg(', 'properties.spawns(')
+            replace('Commands.LEVEL_GAMEMASTERS', 'net.minecraft.commands.CommandPermissionLevels.LEVEL_GAMEMASTERS')
+            replace('getUpdateTag(HolderLookup.Provider', 'getUpdateTag(net.minecraft.core.HolderGetter.Provider')
+        }
+        string {
+            direction = stonecutter.eval(current.version, '>=26.3')
             replace('mc.screen', 'mc.gui.screen()')
             replace('mc.setScreen(', 'mc.gui.setScreen(')
             replace('Minecraft.getInstance().setScreen(', 'Minecraft.getInstance().gui.setScreen(')
@@ -10,18 +23,18 @@ stonecutter {
             replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
         }
         regex {
-            direction = project.minecraft_version == '26.3'
+            direction = stonecutter.eval(current.version, '>=26.3')
             replace(/(?<![\w.])BlockEvent\.BreakEvent\b/, 'BreakBlockEvent',
                     /(?<![\w.])BreakBlockEvent\b/, 'BlockEvent.BreakEvent')
         }
         // Match vanilla constants, leaving EntityType.Builder and FloraFaunaTags.EntityTypes alone.
         regex {
-            direction = project.minecraft_version == '26.3'
+            direction = stonecutter.eval(current.version, '>=26.3')
             replace(/(?<![\w.])EntityType\.(?=[A-Z_]+\b)/, 'EntityTypes.',
                     /(?<![\w.])EntityTypes\.(?=[A-Z_]+\b)/, 'EntityType.')
         }
         regex {
-            direction = project.minecraft_version == '26.3'
+            direction = stonecutter.eval(current.version, '>=26.3')
             replace(/\bEnderMan(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'Enderman',
                     /\bEnderman(?= enderman|\.class|;|\.DATA_CREEPY| via reflection)/, 'EnderMan')
         }

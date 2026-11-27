@@ -29,7 +29,12 @@ sourceSets.main.java.exclude 'net/j40climb/florafauna/common/datagen/**'
 sourceSets.main.resources.exclude 'data/florafauna/neoforge/**', 'data/neoforge/**', 'META-INF/accesstransformer.cfg', 'META-INF/neoforge.mods.toml'
 
 // Data is identical across loaders; generate it once with the matching Minecraft providers.
-def dataProject = project(":${minecraft_version}-neoforge")
+// Preview resources use the latest compatible generated data until NeoForge datagen is available.
+def preview = project.name == '26.4-fabric'
+def dataProject = project(preview ? ':26.3-neoforge' : ":${minecraft_version}-neoforge")
+if (preview) {
+    tasks.named('processResources') { from(rootProject.file('versions/26.3-fabric/target/resources')) { include 'data/**' } }
+}
 def generatedResources = dataProject.layout.buildDirectory.dir('generated/resources/datagen')
 sourceSets.main.resources.srcDir generatedResources
 tasks.named('processResources') { dependsOn "${dataProject.path}:runData" }
@@ -38,7 +43,7 @@ def fabricPlaytestSources = sourceSets.create('fabricPlaytest')
 sourceSets.create('playtest') {
     java.source(fabricPlaytestSources.java)
     resources.source(fabricPlaytestSources.resources)
-    java.srcDir 'target/playtest'
+    java.srcDir preview ? rootProject.file('versions/26.3-neoforge/target/playtest') : file('target/playtest')
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
@@ -53,7 +58,7 @@ sourceSets.test {
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
 
-def fabricLoaderVersion = '0.19.5'
+def fabricLoaderVersion = findProperty('fabric_loader_version') ?: '0.19.5'
 def companionNames = ['hammer', 'frenchies'].findAll { companion ->
     gradle.ext.devCompanionTargets.contains(project.name) &&
             gradle.includedBuilds.any { it.name == "dev-${companion}" || it.name == "dev-${companion}-${minecraft_version}" }
@@ -201,7 +206,7 @@ tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 processResources {
     def metadata = [version: project.version, mod_id: mod_id, mod_name: mod_name, mod_version: mod_version,
                     mod_description: mod_description, mod_authors: mod_authors, mod_license: mod_license,
-                    minecraft_version: minecraft_version, fabric_loader_version: fabricLoaderVersion,
+                    minecraft_version: findProperty('minecraft_version_range') ?: minecraft_version, fabric_loader_version: fabricLoaderVersion,
                     fabric_api_version: fabric_api_version]
     inputs.properties metadata
     filesMatching('fabric.mod.json') { expand metadata }

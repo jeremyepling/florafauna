@@ -3,7 +3,6 @@ package net.j40climb.florafauna.client.gui;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -39,7 +38,6 @@ public abstract class BaseContainerMenu extends AbstractContainerMenu {
     protected static final int INVENTORY_X = 8;
     protected static final int INVENTORY_Y = 84;
     protected static final int HOTBAR_Y = 142;
-    protected static final int SLOT_SIZE = 18;
 
     protected BaseContainerMenu(@Nullable MenuType<?> menuType, int containerId) {
         super(menuType, containerId);
@@ -50,14 +48,7 @@ public abstract class BaseContainerMenu extends AbstractContainerMenu {
      * Call this in your constructor after setting up custom slots.
      */
     protected void addPlayerInventory(Inventory playerInventory) {
-        for (int row = 0; row < PLAYER_INVENTORY_ROW_COUNT; row++) {
-            for (int col = 0; col < PLAYER_INVENTORY_COLUMN_COUNT; col++) {
-                int slotIndex = col + row * PLAYER_INVENTORY_COLUMN_COUNT + HOTBAR_SLOT_COUNT;
-                int x = INVENTORY_X + col * SLOT_SIZE;
-                int y = INVENTORY_Y + row * SLOT_SIZE;
-                addSlot(new Slot(playerInventory, slotIndex, x, y));
-            }
-        }
+        addInventoryExtendedSlots(playerInventory, INVENTORY_X, INVENTORY_Y);
     }
 
     /**
@@ -65,9 +56,6 @@ public abstract class BaseContainerMenu extends AbstractContainerMenu {
      * Call this in your constructor after setting up custom slots.
      */
     protected void addPlayerHotbar(Inventory playerInventory) {
-        for (int col = 0; col < HOTBAR_SLOT_COUNT; col++) {
-            int x = INVENTORY_X + col * SLOT_SIZE;
-            addSlot(new Slot(playerInventory, col, x, HOTBAR_Y));
-        }
+        addInventoryHotbarSlots(playerInventory, INVENTORY_X, HOTBAR_Y);
     }
 }

@@ -9,7 +9,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+//? if <26.4 {
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+//?} else {
+/*import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+*///?}
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -74,9 +82,18 @@ public final class ClientSetup implements ClientModInitializer {
         KeyMappingHelper.registerKeyMapping(NOCLIP_KEY.get());
         ModelLayerRegistry.registerModelLayer(GeckoModel.GECKO, GeckoModel::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(LizardModel.LIZARD, LizardModel::createBodyLayer);
+        //? if >=26.4 {
+        /*EntityRendererProvider<GeckoEntity> gecko = GeckoRenderer::new;
+        EntityRendererProvider<LizardEntity> lizard = LizardRenderer::new;
+        Registry.register(BuiltInClientRegistries.ENTITY_RENDERER, FloraFaunaRegistry.GECKO_KEY.identifier(), gecko);
+        Registry.register(BuiltInClientRegistries.ENTITY_RENDERER, FloraFaunaRegistry.LIZARD_KEY.identifier(), lizard);
+        MenuScreens.ScreenConstructor<ContainmentChamberMenu, ContainmentChamberScreen> chamber = ContainmentChamberScreen::new;
+        Registry.register(BuiltInClientRegistries.MENU_SCREEN, BuiltInRegistries.MENU.getKey(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get()), chamber);
+        *///?} else {
         EntityRendererRegistry.register(FloraFaunaRegistry.GECKO.get(), GeckoRenderer::new);
         EntityRendererRegistry.register(FloraFaunaRegistry.LIZARD.get(), LizardRenderer::new);
         MenuScreens.register(FloraFaunaRegistry.CONTAINMENT_CHAMBER_MENU.get(), ContainmentChamberScreen::new);
+        //?}
         LivingEntityRenderLayerRegistrationCallback.EVENT.register((type, renderer, layers, context) -> {
             if (renderer instanceof SlimeRenderer slime) registerSlimeLayer(layers, slime, context.getModelSet());
         });

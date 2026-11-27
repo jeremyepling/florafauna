@@ -301,7 +301,7 @@ final class OnboardingPlaytest {
 
     private static Button enabledButton(Screen screen, String key) {
         return screen.children().stream().filter(Button.class::isInstance).map(Button.class::cast)
-                .filter(button -> button.active && button.visible
+                .filter(button -> button.isActive()
                         && button.getMessage().equals(Component.translatable(key))).findFirst().orElse(null);
     }
 

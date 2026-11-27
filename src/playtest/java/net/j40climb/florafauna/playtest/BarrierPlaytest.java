@@ -147,7 +147,11 @@ final class BarrierPlaytest {
                         && enabledButton(mc.screen, "gui.florafauna.mob_barrier.block_vision.off") != null);
         t.screenshot("barrier-editor-vision-off");
         t.client("Close the editor with Escape", mc -> Playtest.require(
+                //? if >=26.4 {
+                /*mc.screen.keyPressed(new KeyEvent(InputConstants.KEY_ESCAPE, 0, 0, false)), "Barrier editor ignored Escape"));
+                *///?} else {
                 mc.screen.keyPressed(new KeyEvent(InputConstants.KEY_ESCAPE, 0, 0)), "Barrier editor ignored Escape"));
+                //?}
         t.awaitClient("Return to the world with the edited barrier item", mc -> mc.screen == null);
         t.client("Aim at the support for the edited barrier", mc ->
                 mc.player.lookAt(Anchor.EYES, Vec3.atBottomCenterOf(EDITED_BARRIER)));
@@ -228,7 +232,7 @@ final class BarrierPlaytest {
 
     private static Button enabledButton(Screen screen, String key) {
         return screen.children().stream().filter(Button.class::isInstance).map(Button.class::cast)
-                .filter(button -> button.active && button.visible && button.getMessage().equals(Component.translatable(key)))
+                .filter(button -> button.isActive() && button.getMessage().equals(Component.translatable(key)))
                 .findFirst().orElse(null);
     }
 

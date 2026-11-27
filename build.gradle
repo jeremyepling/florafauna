@@ -36,7 +36,9 @@ def companionNames = ['hammer', 'frenchies'].findAll { companion ->
 }
 def profile = companionNames ? companionNames.sort().join('-') : 'core'
 def clientDir = new File(runRoot, "client-${wt}-${profile}")
-def devOptions = project.name == '26.3-neoforge' ? file('dev/options-template.txt') : rootProject.file('dev/options-template.txt')
+def previewTarget = project.name == '26.4-neoforge'
+def targetBase = previewTarget ? rootProject.file('versions/26.3-neoforge') : projectDir
+def devOptions = project.name == '26.1-neoforge' ? rootProject.file('dev/options-template.txt') : new File(targetBase, 'dev/options-template.txt')
 def generatedResources = layout.buildDirectory.dir('generated/resources/datagen').get().asFile
 def sharedResources = rootProject.file('src/main/resources')
 def devSave = providers.gradleProperty('devSave').orElse('dev').get()
@@ -52,13 +54,18 @@ if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenari
     throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
 }
 // Sources that use different provider contracts or rendering hooks live with their target.
-sourceSets.main.java.srcDir 'target/java'
-sourceSets.main.resources.srcDir 'target/resources'
+sourceSets.main.java.srcDir new File(targetBase, 'target/java')
+sourceSets.main.resources.srcDir new File(targetBase, 'target/resources')
+sourceSets.main.resources.srcDir 'target/mixins'
+if (previewTarget) {
+    sourceSets.main.java.exclude '**/mixin/LocatorBarMixin.java'
+    sourceSets.main.java.srcDir 'target/java'
+}
 
 apply from: rootProject.file('gradle/version-compat.gradle')
 
 sourceSets.create('playtest') {
-    java.srcDir 'target/playtest'
+    java.srcDir new File(targetBase, 'target/playtest')
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
@@ -72,11 +79,13 @@ tasks.named('check') {
     dependsOn tasks.named('compilePlaytestJava')
 }
 
+def loaderVersion = previewTarget ? providers.gradleProperty('previewNeoVersion').get() : project.neo_version
+def loaderRange = previewTarget ? "[${loaderVersion}]" : project.neo_version_range
 neoForge {
     // Specify the version of NeoForge to use.
-    version = project.neo_version
+    version = loaderVersion
 
-    accessTransformers.from(file('target/resources/META-INF/accesstransformer.cfg'))
+    accessTransformers.from(new File(targetBase, 'target/resources/META-INF/accesstransformer.cfg'))
 
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.
@@ -270,8 +279,8 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     var replaceProperties = [
             minecraft_version      : minecraft_version,
             minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            neo_version_range      : neo_version_range,
+            neo_version            : loaderVersion,
+            neo_version_range      : loaderRange,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,

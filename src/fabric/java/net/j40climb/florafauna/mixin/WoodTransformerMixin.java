@@ -1,4 +1,5 @@
-package net.j40climb.florafauna.mixin;
+//? if >=26.3 {
+/*package net.j40climb.florafauna.mixin;
 
 import java.util.List;
 import net.j40climb.florafauna.common.block.wood.WoodBlockSet;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Extends the vanilla axe transformer, including callers such as Hammer. */
+// Extends the vanilla axe transformer, including callers such as Hammer.
 @Mixin(BlockTransformer.class)
 abstract class WoodTransformerMixin {
     @Inject(method = "transformBlock", at = @At("HEAD"), cancellable = true)
@@ -40,3 +41,4 @@ abstract class WoodTransformerMixin {
         }
     }
 }
+*///?}

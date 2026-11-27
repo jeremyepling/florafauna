@@ -2,7 +2,8 @@
 # Two offline development clients connect only to a disposable loopback server.
 param(
     [switch]$Offline,
-    [ValidateSet('26.1', '26.3')][string]$Target = '26.1',
+    [string]$PreviewNeoVersion,
+    [ValidateSet('26.1', '26.3', '26.4')][string]$Target = '26.1',
     [ValidateSet('neoforge', 'fabric')][string]$Loader = 'neoforge'
 )
 
@@ -12,7 +13,7 @@ $checkout = Split-Path $PSScriptRoot -Parent
 $project = "$Target-$Loader"
 $targetDir = Join-Path $checkout "versions/$project"
 $optionsTemplate = Join-Path $checkout 'dev/options-template.txt'
-if ($Target -eq '26.3') { $optionsTemplate = Join-Path $checkout "versions/$Target-neoforge/dev/options-template.txt" }
+if ($Target -ne '26.1') { $optionsTemplate = Join-Path $checkout 'versions/26.3-neoforge/dev/options-template.txt' }
 $runId = [guid]::NewGuid().ToString('N')
 $root = Join-Path $targetDir ".tmp/husk-multiplayer/$runId"
 $roles = 'Server', 'Owner', 'Visitor'
@@ -47,6 +48,7 @@ Push-Location -LiteralPath $checkout
 try {
     Write-Host "Multiplayer test world and logs: $root"
     $options = @('--console=plain')
+    if ($PreviewNeoVersion) { $options += "-PpreviewNeoVersion=$PreviewNeoVersion" }
     if ($Offline) { $options += '--offline' }
     & .\gradlew.bat @options ":${project}:runData" *> (Join-Path $root 'datagen.log')
     if ($LASTEXITCODE -ne 0) { throw "Data generation failed. See $root/datagen.log" }

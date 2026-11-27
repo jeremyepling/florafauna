@@ -74,8 +74,13 @@ public abstract class BaseContainerScreen<T extends AbstractContainerMenu> exten
     }
 
     @Override
+    //? if >=26.4 {
+    /*public void extractBackground(GuiGraphicsExtractor guiGraphics) {
+        super.extractBackground(guiGraphics);
+    *///?} else {
     public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+    //?}
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, guiTexture, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
     }
 

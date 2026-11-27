@@ -1,6 +1,8 @@
 package net.j40climb.florafauna.common;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -86,6 +88,16 @@ public class FloraFaunaCommands {
                 (source.getEntity() instanceof ServerPlayer p && p.isCreative());
     }
 
+    // Snapshot command trees serialize permission checks before a player's game mode is available.
+    private static Command<CommandSourceStack> devCommand(Command<CommandSourceStack> action) {
+        return context -> {
+            if (!hasDevPermission(context.getSource())) {
+                throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().create();
+            }
+            return action.run(context);
+        };
+    }
+
     /**
      * Registers all mod commands.
      *
@@ -94,16 +106,18 @@ public class FloraFaunaCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("florafauna")
+                        //? if <26.4 {
                         .requires(FloraFaunaCommands::hasDevPermission)
+                        //?}
                         .then(Commands.literal("symbiote")
                                 .then(Commands.literal("check")
-                                        .executes(FloraFaunaCommands::checkSymbiote))
+                                        .executes(devCommand(FloraFaunaCommands::checkSymbiote)))
                                 .then(Commands.literal("bond")
-                                        .executes(FloraFaunaCommands::bondSymbiote))
+                                        .executes(devCommand(FloraFaunaCommands::bondSymbiote)))
                                 .then(Commands.literal("unbond")
-                                        .executes(FloraFaunaCommands::unbondSymbiote))
+                                        .executes(devCommand(FloraFaunaCommands::unbondSymbiote)))
                                 .then(Commands.literal("reset")
-                                        .executes(FloraFaunaCommands::resetSymbiote))
+                                        .executes(devCommand(FloraFaunaCommands::resetSymbiote)))
                                 .then(Commands.literal("toggle")
                                         .then(Commands.argument("ability", StringArgumentType.word())
                                                 .suggests((context, builder) -> {
@@ -112,20 +126,20 @@ public class FloraFaunaCommands {
                                                     builder.suggest("speed");
                                                     return builder.buildFuture();
                                                 })
-                                                .executes(FloraFaunaCommands::toggleAbility)))
+                                                .executes(devCommand(FloraFaunaCommands::toggleAbility))))
                                 .then(Commands.literal("setJumpBoost")
                                         .then(Commands.argument("level", IntegerArgumentType.integer(0, 4))
-                                                .executes(FloraFaunaCommands::setJumpBoost)))
+                                                .executes(devCommand(FloraFaunaCommands::setJumpBoost))))
                                 .then(Commands.literal("dream")
-                                        .executes(FloraFaunaCommands::triggerDream)
+                                        .executes(devCommand(FloraFaunaCommands::triggerDream))
                                         .then(Commands.literal("force")
                                                 .then(Commands.argument("level", IntegerArgumentType.integer(1, 3))
-                                                        .executes(FloraFaunaCommands::forceDream))))
+                                                        .executes(devCommand(FloraFaunaCommands::forceDream)))))
                                 .then(Commands.literal("cooldown")
                                         .then(Commands.literal("reset")
-                                                .executes(FloraFaunaCommands::resetCooldowns)))
+                                                .executes(devCommand(FloraFaunaCommands::resetCooldowns))))
                                 .then(Commands.literal("progress")
-                                        .executes(FloraFaunaCommands::showProgress)
+                                        .executes(devCommand(FloraFaunaCommands::showProgress))
                                         .then(Commands.literal("set")
                                                 .then(Commands.argument("concept", StringArgumentType.word())
                                                         .then(Commands.argument("state", StringArgumentType.word())
@@ -135,17 +149,17 @@ public class FloraFaunaCommands {
                                                                     }
                                                                     return builder.buildFuture();
                                                                 })
-                                                                .executes(FloraFaunaCommands::setProgressState))))))
+                                                                .executes(devCommand(FloraFaunaCommands::setProgressState)))))))
                         .then(Commands.literal("mininganchor")
                                 .then(Commands.literal("fill")
                                         .then(Commands.argument("amount", IntegerArgumentType.integer(0, 16000))
-                                                .executes(FloraFaunaCommands::fillMiningAnchor)))
+                                                .executes(devCommand(FloraFaunaCommands::fillMiningAnchor))))
                                 .then(Commands.literal("clear")
-                                        .executes(FloraFaunaCommands::clearMiningAnchor))
+                                        .executes(devCommand(FloraFaunaCommands::clearMiningAnchor)))
                                 .then(Commands.literal("growpod")
-                                        .executes(FloraFaunaCommands::growMiningAnchorPod))
+                                        .executes(devCommand(FloraFaunaCommands::growMiningAnchorPod)))
                                 .then(Commands.literal("status")
-                                        .executes(FloraFaunaCommands::miningAnchorStatus)))
+                                        .executes(devCommand(FloraFaunaCommands::miningAnchorStatus))))
         );
     }
 
@@ -702,19 +716,21 @@ public class FloraFaunaCommands {
 
             dispatcher.register(
                     Commands.literal("florafauna")
+                            //? if <26.4 {
                             .requires(FloraFaunaCommands::hasDevPermission)
+                            //?}
                             .then(Commands.literal("debug")
-                                    .executes(context -> toggleDebug(context.getSource()))
+                                    .executes(devCommand(context -> toggleDebug(context.getSource())))
                                     .then(Commands.literal("on")
-                                            .executes(context -> setDebug(context.getSource(), true)))
+                                            .executes(devCommand(context -> setDebug(context.getSource(), true))))
                                     .then(Commands.literal("off")
-                                            .executes(context -> setDebug(context.getSource(), false))))
+                                            .executes(devCommand(context -> setDebug(context.getSource(), false)))))
                             .then(Commands.literal("noclip")
-                                    .executes(context -> toggleNoClip(context.getSource()))
+                                    .executes(devCommand(context -> toggleNoClip(context.getSource())))
                                     .then(Commands.literal("on")
-                                            .executes(context -> setNoClip(context.getSource(), true)))
+                                            .executes(devCommand(context -> setNoClip(context.getSource(), true))))
                                     .then(Commands.literal("off")
-                                            .executes(context -> setNoClip(context.getSource(), false))))
+                                            .executes(devCommand(context -> setNoClip(context.getSource(), false)))))
             );
         }
 
