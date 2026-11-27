@@ -51,7 +51,7 @@ public final class ClientSetup implements ClientModInitializer {
 
     @SuppressWarnings("unchecked") // Hammer exports this callback under its own namespaced protocol key.
     private static void connectHammerDiagnostics() {
-        Object provider = FabricLoader.getInstance().getObjectShare().get("florafauna_hammer:tool_diagnostics");
+        Object provider = FabricLoader.getInstance().getObjectShare().get("hammer:tool_diagnostics");
         if (provider instanceof java.util.function.BiConsumer<?, ?>) {
             DebugOverlay.setHammerDiagnostics((java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, java.util.List<String>>) provider);
         }
