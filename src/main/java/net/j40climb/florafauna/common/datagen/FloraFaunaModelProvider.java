@@ -7,6 +7,7 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
+import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.core.Holder;
@@ -86,7 +87,11 @@ public class FloraFaunaModelProvider extends ModelProvider {
 
     // These are simple models that can be data generated and have no custom json from blockbench
     private static void registerGeneratedItemModels(ItemModelGenerators itemModels) {
-        itemModels.generateFlatItem(FloraFaunaRegistry.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
+        Item dormantSymbiote = FloraFaunaRegistry.DORMANT_SYMBIOTE.get();
+        var dormantModel = itemModels.createFlatItemModel(
+                dormantSymbiote, FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.itemModelOutput.accept(dormantSymbiote,
+                ItemModelUtils.tintedModel(dormantModel, ItemModelUtils.constantTint(0xFF91A494)));
         itemModels.generateFlatItem(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
