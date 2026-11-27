@@ -2,6 +2,7 @@ package net.j40climb.florafauna.common.symbiote.abilities;
 
 import net.j40climb.florafauna.FloraFauna;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
+import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
 import net.j40climb.florafauna.platform.AttachmentAccess;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.resources.Identifier;
@@ -12,7 +13,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 
 public final class SymbiotePassiveStats {
-    public static final double SPEED_BONUS = 2 * (double) 0.2F;
+    private static final double SPEED_PER_LEVEL = 0.2F;
+    public static final double SPEED_BONUS = SymbioteData.MAX_SPEED_LEVEL * SPEED_PER_LEVEL;
     public static final Identifier SPEED_MODIFIER = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_speed");
     public static final Identifier SAFE_FALL_MODIFIER = Identifier.fromNamespaceAndPath(FloraFauna.MOD_ID, "symbiote_safe_fall");
 
@@ -20,6 +22,10 @@ public final class SymbiotePassiveStats {
 
     public static float jumpBonus(int level) {
         return Math.max(0, level) * 0.1F;
+    }
+
+    public static double speedBonus(int level) {
+        return level * SPEED_PER_LEVEL;
     }
 
     public static float jumpBonus(Player player) {
@@ -31,7 +37,7 @@ public final class SymbiotePassiveStats {
     static void updateAttributes(ServerPlayer player, PlayerSymbioteData data) {
         boolean active = data.symbioteState().areAbilitiesActive();
         updateModifier(player.getAttribute(Attributes.MOVEMENT_SPEED), SPEED_MODIFIER,
-                active && data.speed() ? SPEED_BONUS : 0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                active ? speedBonus(data.speedLevel()) : 0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         updateModifier(player.getAttribute(Attributes.SAFE_FALL_DISTANCE), SAFE_FALL_MODIFIER,
                 active ? Math.max(0, data.jumpBoost()) : 0, AttributeModifier.Operation.ADD_VALUE);
     }

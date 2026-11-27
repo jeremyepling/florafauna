@@ -3,6 +3,7 @@ package net.j40climb.florafauna.common.symbiote.binding;
 import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteData;
 import net.j40climb.florafauna.common.symbiote.item.DormantSymbioteItem;
+import net.j40climb.florafauna.common.symbiote.onboarding.SymbioteOnboarding;
 import net.j40climb.florafauna.common.symbiote.progress.ProgressSignalTracker;
 import net.j40climb.florafauna.common.symbiote.voice.VoiceCooldownState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
@@ -95,6 +96,7 @@ public final class SymbioteBindingHelper {
      * @return UnbindResult containing the created item (if successful)
      */
     public static UnbindResult unbindSymbiote(ServerPlayer player) {
+        SymbioteOnboarding.flushSprintProgress(player);
         PlayerSymbioteData currentData = net.j40climb.florafauna.platform.AttachmentAccess.get(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
 
         if (!currentData.symbioteState().isBonded()) {

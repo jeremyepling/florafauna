@@ -6,6 +6,8 @@
   "mixins": [
     "symbiote.AttributeInstanceMixin",
     "symbiote.LivingEntityJumpMixin",
+    "symbiote.PlayerListAdaptationMixin",
+    "symbiote.ServerPlayerAdaptationMixin",
     "noclip.PlayerNoClipMixin",
     "noclip.ServerGamePacketListenerImplMixin",
     "WoodTransformerMixin"
