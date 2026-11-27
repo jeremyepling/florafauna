@@ -8,7 +8,7 @@ The Symbiote is a permanent player companion that provides abilities, observatio
 
 ## Binding Process
 
-1. **Find a Resonant Bloom** in plains or forests. Breaking one gives two pollen and starts the spore encounter.
+1. **Find a Resonant Bloom.** New Overworlds start with five spread around world spawn, each within 100 blocks. These Blooms are placed once and do not regrow after breaking. You can also find Blooms naturally in plains and forests. Breaking one gives two pollen and starts the spore encounter.
 2. **Eat one pollen** to set persistent `symbioteBindable = true`; there is no preparation deadline.
 3. **Make a Cocoon Chamber** from the other pollen, an oak plank, and white wool. Select **Bind** to bond the carried spore. A Dormant Symbiote item can still be used to rebind an existing symbiote.
 4. **Explore and learn** - The bond gives nearby-bloom perception; 25 jumps across two biomes unlock Jump Boost I. Resting at the chamber gives increasingly direct guidance while this adaptation is unfinished.
