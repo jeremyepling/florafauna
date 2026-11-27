@@ -256,7 +256,7 @@ public class DebugOverlay
         int speedPercent = speedPercent(speedLevel);
         String speed = speedLevel == 0 ? "off" : "+" + speedPercent + "% movement speed" + (active ? "" : " (inactive)");
         lines.add(new DebugLine("  Speed: " + speed, active && speedLevel > 0 ? enabledColor : color));
-        if (speedLevel < 2) {
+        if (speedLevel < SymbioteData.MAX_SPEED_LEVEL) {
             int goal = speedLevel == 0 ? SymbioteOnboarding.SPEED_ONE_CM : SymbioteOnboarding.SPEED_TWO_CM;
             int remainingCm = Math.max(1, goal - SymbioteOnboarding.sprintDistanceCm(progress));
             int remainingBlocks = (remainingCm + 99) / 100;
