@@ -25,8 +25,8 @@ public class HudMixin {
     private Minecraft minecraft;
 
     // Inject at the head of nextContextualInfoState() to return LOCATOR
-// when player has active restoration husk in BONDED_WEAKENED state,
-// or when player has an active waypoint anchor in the same dimension.
+    // when player has active restoration husk in BONDED_WEAKENED state,
+    // or when player has an active waypoint anchor in the same dimension.
     @Inject(method = "nextContextualInfoState", at = @At("HEAD"), cancellable = true)
     private void florafauna$forceLocatorBar(CallbackInfoReturnable<Hud.ContextualInfo> cir) {
         LocalPlayer player = this.minecraft.player;

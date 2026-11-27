@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.dev;
 
 import net.j40climb.florafauna.FloraFauna;
+import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -54,6 +55,8 @@ public class DevWorldSetup {
     private static void setupDevWorld(ServerPlayer player) {
         ServerLevel serverLevel = player.level();
         MinecraftServer server = serverLevel.getServer();
+        // GameTest fixtures control their own weather, clock and difficulty across player joins.
+        if (server instanceof GameTestServer) return;
         var rules = serverLevel.getGameRules();
         rules.set(GameRules.SHOW_ADVANCEMENT_MESSAGES, false, server);
         rules.set(GameRules.ADVANCE_TIME, false, server);
