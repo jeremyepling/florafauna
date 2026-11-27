@@ -23,7 +23,7 @@ To build one JAR, generate that target's data first, then package it in a second
 .\gradlew.bat :26.1-neoforge:build
 ```
 
-The result is `versions/26.1-neoforge/build/libs/florafauna-26.1-neoforge-<mod version>.jar`. Substitute `26.3-neoforge`, `26.1-fabric` or `26.3-fabric` for the other JARs. Install the matching loader and, for Fabric, Fabric API. Fabric builds generate and consume shared data from the matching NeoForge target automatically. Each subproject owns its compiled classes, launch files and JARs. To run the full headless checks for all targets from a clean checkout, use PowerShell 7.
+JARs use `<mod-id>-<minecraft-version>-<loader>-<mod-version>.jar`. For example, FloraFauna 0.0.2 for Minecraft 26.1 NeoForge builds to `versions/26.1-neoforge/build/libs/florafauna-26.1-neoforge-0.0.2.jar`. The root `gradle.properties` sets `mod_version` for all four targets, independently of the Minecraft and loader versions. Install the matching loader and, for Fabric, Fabric API. Fabric builds generate and consume shared data from the matching NeoForge target automatically. Each subproject owns its compiled classes, launch files and JARs. To run the full headless checks for all targets from a clean checkout, use PowerShell 7.
 
 ```powershell
 foreach ($target in '26.1-neoforge', '26.3-neoforge', '26.1-fabric', '26.3-fabric') {
