@@ -84,8 +84,8 @@ targets.each { target ->
         if (targetMetadata.isFile()) {
             targetMetadata.withReader('UTF-8') { props.load(it) }
         }
-        if (props.mod_id != "florafauna_${companion}" || props.minecraft_version != mcVersion) {
-            throw new GradleException("Expected florafauna_${companion} for Minecraft ${mcVersion} at ${dir}, found ${props.mod_id} for ${props.minecraft_version}.")
+        if (props.mod_id != companion || props.minecraft_version != mcVersion) {
+            throw new GradleException("Expected ${companion} for Minecraft ${mcVersion} at ${dir}, found ${props.mod_id} for ${props.minecraft_version}.")
         }
         def build = builds.computeIfAbsent(dir.canonicalFile) {
             [name: targetMetadata.isFile() ? "dev-${companion}" : "dev-${companion}-${mcVersion}", modules: [:]]

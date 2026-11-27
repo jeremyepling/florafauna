@@ -69,7 +69,7 @@ public class DebugOverlay
     @SuppressWarnings("unchecked") // The matching Hammer sender and message ID define the callback's argument types.
     public static void receiveHammerDiagnostics(InterModProcessEvent event) {
         InterModComms.getMessages(FloraFauna.MOD_ID, "hammer_tool_diagnostics"::equals)
-                .filter(message -> message.senderModId().equals("florafauna_hammer"))
+                .filter(message -> message.senderModId().equals("hammer"))
                 .map(message -> message.messageSupplier().get())
                 .filter(BiConsumer.class::isInstance)
                 .findFirst().ifPresent(callback -> hammerDiagnostics = (BiConsumer<ItemStack, List<String>>) callback);

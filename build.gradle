@@ -148,7 +148,7 @@ neoForge {
         gameTestServer {
             type = "gameTestServer"
             gameDirectory = new File(runRoot, "gameTestServer-${wt}")
-            systemProperty 'neoforge.enabledGameTestNamespaces', ([project.mod_id] + companionNames.collect { "florafauna_${it}" }).join(',')
+            systemProperty 'neoforge.enabledGameTestNamespaces', ([project.mod_id] + companionNames).join(',')
             def selector = providers.gradleProperty('gameTestFilter').orNull
             if (selector != null) {
                 if (!(selector ==~ /[a-z0-9_.*?-]+:[a-z0-9_.*?\/-]+/)) {

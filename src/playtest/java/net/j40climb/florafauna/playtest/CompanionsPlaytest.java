@@ -33,17 +33,17 @@ import java.util.UUID;
 
 /** Verifies the separately packaged mods through Minecraft's registries and the saved world. */
 final class CompanionsPlaytest {
-    private static final Identifier HAMMER = Identifier.fromNamespaceAndPath("florafauna", "hammer");
-    private static final Identifier FRENCHIE = Identifier.fromNamespaceAndPath("florafauna", "frenchie");
+    private static final Identifier HAMMER = Identifier.fromNamespaceAndPath("hammer", "hammer");
+    private static final Identifier FRENCHIE = Identifier.fromNamespaceAndPath("frenchies", "frenchie");
     private static final Identifier CORE_ITEM = Identifier.fromNamespaceAndPath("florafauna", "dormant_symbiote");
-    private static final Identifier HAMMER_STAGE = Identifier.fromNamespaceAndPath("florafauna", "hammer_stage");
+    private static final Identifier HAMMER_STAGE = Identifier.fromNamespaceAndPath("hammer", "hammer_stage");
     private static final UUID DOG = UUID.fromString("fec76d21-ce62-468f-b351-4dabe610f64a");
     private static final Component TOOL_NAME = Component.literal("Quarry Hammer");
     private static final BlockPos STONE = new BlockPos(0, 201, 2);
 
     static void steps(Playtest test, int phase) {
         test.client("Load all three separate mods", mc -> {
-            for (String id : new String[]{"florafauna", "florafauna_hammer", "florafauna_frenchies"}) {
+            for (String id : new String[]{"florafauna", "hammer", "frenchies"}) {
                 //? if neoforge {
                 Playtest.require(ModList.get().isLoaded(id), "Missing mod " + id);
                 //?} else {
