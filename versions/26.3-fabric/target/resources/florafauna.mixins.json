@@ -4,6 +4,8 @@
   "compatibilityLevel": "JAVA_25",
   "minVersion": "0.8",
   "mixins": [
+    "symbiote.AttributeInstanceMixin",
+    "symbiote.LivingEntityJumpMixin",
     "noclip.PlayerNoClipMixin",
     "noclip.ServerGamePacketListenerImplMixin",
     "WoodTransformerMixin"
