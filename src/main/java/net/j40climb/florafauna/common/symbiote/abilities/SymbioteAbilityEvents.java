@@ -50,6 +50,7 @@ public class SymbioteAbilityEvents {
             return;
         }
 
+        DashPayload.expireLanding(serverPlayer);
         PlayerSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(serverPlayer, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
         SymbiotePassiveStats.updateAttributes(serverPlayer, symbioteData);
         if (!symbioteData.symbioteState().areAbilitiesActive()) {

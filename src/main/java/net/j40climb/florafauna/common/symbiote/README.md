@@ -35,7 +35,7 @@ BONDED_WEAKENED ──(interact with husk)──> BONDED_ACTIVE
 
 | Ability | Effect while the bond is active | How to get it |
 |---------|---------------------------------|---------------|
-| Dash | Burst in the direction you are looking. Default key is Mouse 4. | Sprint-jump 20 times after binding. |
+| Dash | Burst in the direction you are looking and land safely from that dash. Default key is Mouse 4. | Sprint-jump 20 times after binding. |
 | Feather Falling | Cancels fall damage. | Survive five falls that deal damage after binding. |
 | Speed | +20% or +40% movement speed, equivalent to Speed I or II. | Sprint 100 blocks after binding for level 1 and 500 total for level 2. |
 | Jump Boost | +0.10 jump velocity per level, equivalent to vanilla Jump Boost. | Jump 25 times across at least two biomes after binding to earn level 1. The dev command `/florafauna symbiote setJumpBoost <level>` can set levels 0–4. |

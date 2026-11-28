@@ -1,6 +1,7 @@
 package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.Config;
+import net.j40climb.florafauna.platform.AttachmentAccess;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskPlacementHelper;
 import net.j40climb.florafauna.common.block.husk.HuskDeathHandler;
@@ -82,6 +83,7 @@ final class StorageRecoveryGameTests {
         registerTest(event, environment, "failed_husk_placement_keeps_inventory", StorageRecoveryGameTests::failedPlacement);
         registerTest(event, environment, "husk_death_veto_preserves_inventory", StorageRecoveryGameTests::deathVeto);
         registerTest(event, environment, "dash_requires_active_grant", StorageRecoveryGameTests::dashGrant);
+        registerTest(event, environment, "dash_safe_landing", StorageRecoveryGameTests::dashSafeLanding);
         registerTest(event, environment, "one_observation_per_damage_event", StorageRecoveryGameTests::damageObservations);
         registerTest(event, environment, "player_fall_damage_uses_symbiote_ability", StorageRecoveryGameTests::fallDamage);
         registerTest(event, environment, "containment_shift_click_preserves_counted_stacks", StorageRecoveryGameTests::containmentShiftClick);
@@ -393,6 +395,54 @@ final class StorageRecoveryGameTests {
         }
         h.getLevel().getServer().getPlayerList().remove(player);
         h.succeed();
+    }
+
+    private static void dashSafeLanding(GameTestHelper h) {
+        h.setBlock(CENTER, Blocks.STONE);
+        Vec3 landing = Vec3.atBottomCenterOf(h.absolutePos(CENTER).above());
+        var player = connectSurvivalPlayer(h);
+        var bonded = PlayerSymbioteData.DEFAULT.withSymbioteState(SymbioteState.BONDED_ACTIVE);
+        try {
+            AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bonded.withDash(true));
+            player.setOnGround(false);
+            player.setPos(landing.add(0, 9, 0));
+            DashPayload.dash(player);
+            hardLanding(h, player, landing, false, "airborne dash");
+            hardLanding(h, player, landing, true, "next fall without a dash");
+
+            AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bonded.withDash(false));
+            player.setOnGround(false);
+            player.setPos(landing.add(0, 9, 0));
+            DashPayload.dash(player);
+            hardLanding(h, player, landing, true, "rejected dash");
+
+            AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bonded.withDash(true));
+            DashPayload.dash(player);
+            // Remain on the floor after a level dash, then start an unrelated fall.
+            player.setOnGroundWithMovement(true, false, Vec3.ZERO);
+            player.doCheckFallDamage(0, 0, 0, true);
+            player.tick();
+            player.tick();
+            hardLanding(h, player, landing, true, "grounded dash that never left the floor");
+        } finally {
+            h.getLevel().getServer().getPlayerList().remove(player);
+        }
+        h.succeed();
+    }
+
+    private static void hardLanding(GameTestHelper h, ServerPlayer player, Vec3 landing,
+                                    boolean expectDamage, String phase) {
+        clearDamageCooldown(player);
+        player.setHealth(20);
+        player.setPos(landing.add(0, 9, 0));
+        // Replay the movement and fall checks used for accepted player move packets.
+        for (int height = 8; height >= 0; height--) {
+            boolean grounded = height == 0;
+            player.setPos(landing.add(0, height, 0));
+            player.setOnGroundWithMovement(grounded, false, new Vec3(0, -1, 0));
+            player.doCheckFallDamage(0, -1, 0, grounded);
+        }
+        require(h, (player.getHealth() < 20) == expectDamage, phase + ": health was " + player.getHealth());
     }
 
     private static void damageObservations(GameTestHelper h) {
