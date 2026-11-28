@@ -16,6 +16,8 @@ Coding agents share the repository's worktree, implementation and testing instru
 
 Maintain Minecraft 26.1 and 26.3 together on `main`, with Fabric and NeoForge builds for each. Start feature branches from `main`, edit shared gameplay once, and test all four targets before merging. Stonecutter defaults to editing 26.1 NeoForge. Use target-specific code or resources where Minecraft or loader APIs differ. All targets use Java 25; Fabric uses Loom and NeoForge uses ModDevGradle. Exact dependencies live in `versions/<minecraft-version>-<loader>/gradle.properties` and the loader build scripts.
 
+The `26.1` branch also builds Minecraft 26.1.1 and 26.1.2 for both loaders. Select the exact patch project, such as `:26.1.2-fabric:build`. Stonecutter shares the 26.1 implementation and each project resolves its own game and loader dependencies.
+
 To build one JAR, generate that target's data first, then package it in a second invocation.
 
 ```powershell
@@ -26,7 +28,7 @@ To build one JAR, generate that target's data first, then package it in a second
 The result is `versions/26.1-neoforge/build/libs/florafauna-26.1-neoforge-<mod version>.jar`. Substitute `26.3-neoforge`, `26.1-fabric` or `26.3-fabric` for the other JARs. Install the matching loader and, for Fabric, Fabric API. Fabric builds generate and consume shared data from the matching NeoForge target automatically. Each subproject owns its compiled classes, launch files and JARs. To run the full headless checks for all targets from a clean checkout, use PowerShell 7.
 
 ```powershell
-foreach ($target in '26.1-neoforge', '26.3-neoforge', '26.1-fabric', '26.3-fabric') {
+foreach ($target in (Get-ChildItem versions -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'gradle.properties') }).Name) {
     .\gradlew.bat ":${target}:runData"
     if ($LASTEXITCODE) { throw "Datagen failed for $target" }
     .\gradlew.bat ":${target}:build" ":${target}:runGameTestServer"
@@ -34,7 +36,7 @@ foreach ($target in '26.1-neoforge', '26.3-neoforge', '26.1-fabric', '26.3-fabri
 }
 ```
 
-For a shorter iteration, `:<target>:check` runs unit and compilation checks. Use `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-fabric:runGameTestServer` to check the saved barrier pen on Fabric. Ready PRs and release builds run the full headless checks and upload one JAR per Minecraft version and loader. Draft PRs run `check` on all four targets.
+For a shorter iteration, `:<target>:check` runs unit and compilation checks. Use `.\gradlew.bat '-PgameTestFilter=florafauna:saved_barrier_pen_filters' :26.1-fabric:runGameTestServer` to check the saved barrier pen on Fabric. Ready PRs and release builds run the full headless checks and upload one JAR per Minecraft version and loader. Draft PRs run `check` on each target.
 
 ### Play with the Hammer and Frenchies
 

@@ -10,7 +10,7 @@ stonecutter {
             replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
         }
         regex {
-            direction = project.minecraft_version == '26.3'
+            direction = stonecutter.eval(current.version, '>=26.1.2')
             replace(/(?<![\w.])BlockEvent\.BreakEvent\b/, 'BreakBlockEvent',
                     /(?<![\w.])BreakBlockEvent\b/, 'BlockEvent.BreakEvent')
         }

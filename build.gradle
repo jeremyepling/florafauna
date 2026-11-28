@@ -52,13 +52,14 @@ if (playtestId != null && (!(playtestId ==~ /[0-9a-f]{32}/) || !(playtestScenari
     throw new GradleException('Use scripts/test_dev_world.ps1 to prepare an isolated world playtest.')
 }
 // Sources that use different provider contracts or rendering hooks live with their target.
-sourceSets.main.java.srcDir 'target/java'
-sourceSets.main.resources.srcDir 'target/resources'
+def sharedTargetDir = rootProject.file("versions/${findProperty('shared_target') ?: project.name}/target")
+sourceSets.main.java.srcDir new File(sharedTargetDir, 'java')
+sourceSets.main.resources.srcDir new File(sharedTargetDir, 'resources')
 
 apply from: rootProject.file('gradle/version-compat.gradle')
 
 sourceSets.create('playtest') {
-    java.srcDir 'target/playtest'
+    java.srcDir new File(sharedTargetDir, 'playtest')
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
@@ -76,7 +77,7 @@ neoForge {
     // Specify the version of NeoForge to use.
     version = project.neo_version
 
-    accessTransformers.from(file('target/resources/META-INF/accesstransformer.cfg'))
+    accessTransformers.from(new File(sharedTargetDir, 'resources/META-INF/accesstransformer.cfg'))
 
     // Default run configurations.
     // These can be tweaked, removed, or duplicated as needed.

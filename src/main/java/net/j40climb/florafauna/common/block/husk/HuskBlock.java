@@ -30,7 +30,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 //?}
 //? if neoforge {
-//? if <26.3 {
+//? if <26.1.2 {
 import net.neoforged.neoforge.event.level.BlockEvent;
 //?} else {
 /*import net.neoforged.neoforge.event.level.block.BreakBlockEvent;

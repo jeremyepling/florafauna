@@ -13,7 +13,7 @@ param(
     [string]$FrenchiesDir,
     [string]$SourceWorld,
     [switch]$Offline,
-    [ValidateSet('26.1', '26.3')][string]$Target = '26.1',
+    [ValidateSet('26.1', '26.1.1', '26.1.2', '26.3')][string]$Target = '26.1',
     [ValidateSet('neoforge', 'fabric')][string]$Loader = 'neoforge'
 )
 

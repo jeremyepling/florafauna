@@ -23,8 +23,9 @@ repositories {
 def loaderSources = sourceSets.create('fabric')
 sourceSets.main.java.source(loaderSources.java)
 sourceSets.main.resources.source(loaderSources.resources)
-sourceSets.main.java.srcDir 'target/java'
-sourceSets.main.resources.srcDir 'target/resources'
+def sharedTargetDir = rootProject.file("versions/${findProperty('shared_target') ?: project.name}/target")
+sourceSets.main.java.srcDir new File(sharedTargetDir, 'java')
+sourceSets.main.resources.srcDir new File(sharedTargetDir, 'resources')
 sourceSets.main.java.exclude 'net/j40climb/florafauna/common/datagen/**'
 sourceSets.main.resources.exclude 'data/florafauna/neoforge/**', 'data/neoforge/**', 'META-INF/accesstransformer.cfg', 'META-INF/neoforge.mods.toml'
 
@@ -55,7 +56,7 @@ def fabricPlaytestSources = sourceSets.create('fabricPlaytest')
 sourceSets.create('playtest') {
     java.source(fabricPlaytestSources.java)
     resources.source(fabricPlaytestSources.resources)
-    java.srcDir 'target/playtest'
+    java.srcDir new File(sharedTargetDir, 'playtest')
     compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
@@ -70,7 +71,7 @@ sourceSets.test {
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
 
-def fabricLoaderVersion = '0.19.5'
+def fabricLoaderVersion = findProperty('fabric_loader_version') ?: '0.19.5'
 def companionNames = ['hammer', 'frenchies'].findAll { companion ->
     gradle.ext.devCompanionTargets.contains(project.name) &&
             gradle.includedBuilds.any { it.name == "dev-${companion}" || it.name == "dev-${companion}-${minecraft_version}" }
@@ -105,7 +106,7 @@ dependencies {
 }
 
 loom {
-    accessWidenerPath = file('target/resources/florafauna.accesswidener')
+    accessWidenerPath = new File(sharedTargetDir, 'resources/florafauna.accesswidener')
     mods {
         florafauna { sourceSet sourceSets.main }
         florafauna_gametest { sourceSet fabricGameTests }
