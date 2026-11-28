@@ -1,6 +1,6 @@
 # FloraFauna
 
-A Fabric and NeoForge mod for Minecraft 26.1 and 26.3, with a Fabric preview for 26.4 Pre-Release 1. Players can bond with a symbiote, recover gear from a husk, grow a living storage network and transport bonded mobs. Hammer mining and Frenchie companions are available as separate mods.
+A Fabric and NeoForge mod for Minecraft 26.1 and 26.3, with a Fabric preview for 26.4 Pre-Release 2. Players can bond with a symbiote, recover gear from a husk, grow a living storage network and transport bonded mobs. Hammer mining and Frenchie companions are available as separate mods.
 
 Coding agents share the repository's worktree, implementation and testing instructions. If you start a coordinator in the parent workspace, point its workspace instructions to `florafauna/AGENTS.md`. [Shared agent guide](AGENTS.md)
 
@@ -38,13 +38,13 @@ For a shorter iteration, `:<target>:check` runs unit and compilation checks. Use
 
 ### Minecraft 26.4 preview
 
-For Fabric, use Minecraft `26.4-pre-1`, Fabric Loader `0.20.1`, and Fabric API `0.167.1+26.4`. The Fabric preview packages shared resources from the 26.3 data generator. To collect matching jars for all three mods, run the following from this checkout with Hammer and Frenchies checkouts that contain the preview target.
+For Fabric, use Minecraft `26.4-pre-2`, Fabric Loader `0.20.1`, and Fabric API `0.167.1+26.4`. The Fabric preview packages shared resources from the 26.3 data generator. To collect matching jars for all three mods, run the following from this checkout with Hammer and Frenchies checkouts that contain the preview target.
 
 ```powershell
 .\gradlew.bat -PdevMods=all "-PhammerDir=$hammerDir" "-PfrenchiesDir=$frenchiesDir" :26.4-fabric:assembleDevMods
 ```
 
-The three jars are written to `versions/26.4-fabric/build/dev-mods/26.4-pre-1/`. Use `:26.4-fabric:runGameTestServer` with the same properties to exercise the combined server.
+The three jars are written to `versions/26.4-fabric/build/dev-mods/26.4-pre-2/`. Use `:26.4-fabric:runGameTestServer` with the same properties to exercise the combined server.
 
 The opt-in `26.4-neoforge` target tracks **26.4 Snapshot 10**, the Minecraft version of NeoForge's `port/26.4` commit `e9012cb09aea9261144cdf41d62b5a63f1e5f5dd`. As of November 25, 2026, NeoForge had not published a compatible loader, and that source revision failed to compile. Running the mod on this preview requires a working NeoForge build for the same snapshot. [Upstream port](https://github.com/neoforged/NeoForge/commit/e9012cb09aea9261144cdf41d62b5a63f1e5f5dd)
 
