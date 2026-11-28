@@ -218,6 +218,9 @@ sourceSets.main.resources {
 def generatedResourcePath = generatedResources.absolutePath + File.separator
 def authoredResources = [
         'data/florafauna/loot_table/blocks/resonant_bloom.json',
+        'assets/florafauna/blockstates/husk.json',
+        'assets/florafauna/models/block/husk.json',
+        'assets/florafauna/items/husk.json',
         'assets/florafauna/items/symbiotic_pollen.json',
         'assets/florafauna/models/item/symbiotic_pollen.json'
 ] as Set

@@ -32,6 +32,20 @@ sourceSets.main.resources.exclude 'data/florafauna/neoforge/**', 'data/neoforge/
 def dataProject = project(":${minecraft_version}-neoforge")
 def generatedResources = dataProject.layout.buildDirectory.dir('generated/resources/datagen')
 sourceSets.main.resources.srcDir generatedResources
+// Exclude obsolete generated husk assets after switching to authored variants.
+def generatedResourcePath = generatedResources.get().asFile.absolutePath + File.separator
+def authoredHuskResources = [
+        'assets/florafauna/blockstates/husk.json',
+        'assets/florafauna/models/block/husk.json',
+        'assets/florafauna/items/husk.json'
+] as Set
+tasks.named('processResources') {
+    eachFile { resource ->
+        if (resource.path in authoredHuskResources && resource.file.absolutePath.startsWith(generatedResourcePath)) {
+            resource.exclude()
+        }
+    }
+}
 tasks.named('processResources') { dependsOn "${dataProject.path}:runData" }
 
 def fabricPlaytestSources = sourceSets.create('fabricPlaytest')

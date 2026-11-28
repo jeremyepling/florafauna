@@ -2,9 +2,11 @@ package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.Config;
 import net.j40climb.florafauna.platform.AttachmentAccess;
+import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskPlacementHelper;
 import net.j40climb.florafauna.common.block.husk.HuskDeathHandler;
+import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity;
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlockEntity;
@@ -18,10 +20,13 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -270,18 +275,34 @@ final class StorageRecoveryGameTests {
         var husk = h.getBlockEntity(CENTER, HuskBlockEntity.class);
         var player = createTestPlayer(h);
         var inventory = player.getInventory();
+        husk.setOwner(player.getUUID());
+        BlockPos pos = husk.getBlockPos();
+        var hit = new BlockHitResult(Vec3.atBottomCenterOf(pos.above()), Direction.UP, pos, false);
+        var shards = new ItemStack(Items.AMETHYST_SHARD, 17);
+        shards.set(DataComponents.CUSTOM_NAME, Component.literal("Recovered shards"));
         for (int slot = 0; slot < 36; slot++) {
             inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
         }
-        inventory.setItem(0, new ItemStack(Items.AMETHYST_SHARD, 63));
-        husk.handler.set(7, ItemResource.of(Items.AMETHYST_SHARD), 17);
-        husk.transferItemsToPlayer(player);
-        require(h, inventory.countItem(Items.AMETHYST_SHARD) == 64 && husk.handler.getAmountAsInt(7) == 16,
-                "Partial pickup failed to preserve remainder");
+        inventory.setItem(0, shards.copyWithCount(63));
+        husk.handler.set(7, ItemResource.of(shards), shards.getCount());
+        var fullHusk = h.getBlockState(CENTER);
+        require(h, fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                "Owner could not use the stocked husk");
+        require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                        && ItemStack.matches(husk.handler.getResource(7).toStack(husk.handler.getAmountAsInt(7)), shards.copyWithCount(16))
+                        && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION,
+                "Partial pickup failed to preserve the named remainder or stocked husk state");
         inventory.setItem(1, ItemStack.EMPTY);
-        husk.transferItemsToPlayer(player);
-        husk.transferItemsToPlayer(player);
-        require(h, inventory.countItem(Items.AMETHYST_SHARD) == 80 && husk.isEmpty(), "Second pickup lost or duplicated items");
+        require(h, h.getBlockState(CENTER).useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                "Owner could not recover the rest of the shards");
+        var shell = h.getBlockState(CENTER);
+        require(h, shell.is(FloraFaunaRegistry.HUSK.get()) && shell.getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN,
+                "Final pickup did not leave a broken husk shell");
+        shell.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+        require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                        && ItemStack.matches(inventory.getItem(1), shards.copyWithCount(16))
+                        && inventory.countItem(Items.AMETHYST_SHARD) == 80 && husk.isEmpty(),
+                "Final pickup lost, duplicated or changed the named shards");
         h.succeed();
     }
 

@@ -41,9 +41,6 @@ public class FloraFaunaModelProvider extends ModelProvider {
         // Mob Barrier - invisible block, model not actually rendered
         blockModels.createTrivialCube(FloraFaunaRegistry.MOB_BARRIER.get());
 
-        // Husk block - uses a simple cube for now (blockstate variants handled by json)
-        blockModels.createTrivialCube(FloraFaunaRegistry.HUSK.get());
-
         // Item Input System blocks
         blockModels.createTrivialCube(FloraFaunaRegistry.STORAGE_ANCHOR.get());
         // ROOT_ITEM_INPUT has STATE property - all assets manually defined in resources
@@ -123,6 +120,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
     protected Stream<? extends Holder<Item>> getKnownItems() {
         // Exclude blocks with STATE property (manually defined)
         return FloraFaunaRegistry.ITEMS.getEntries().stream()
+                .filter(x -> !x.getRegisteredName().equals("florafauna:husk"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:item_input"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:feral_mining_anchor"))
@@ -140,6 +138,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
     protected Stream<? extends Holder<Block>> getKnownBlocks() {
         // Exclude blocks with STATE property - assets manually defined in resources
         return FloraFaunaRegistry.BLOCKS.getEntries().stream()
+                .filter(x -> !x.equals(FloraFaunaRegistry.HUSK))
                 .filter(x -> !x.equals(FloraFaunaRegistry.ITEM_INPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.FIELD_RELAY))
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_MINING_ANCHOR))
