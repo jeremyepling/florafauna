@@ -7,7 +7,7 @@
       "model": "florafauna:block/item_input"
     },
     "state=blocked": {
-      "model": "florafauna:block/item_input"
+      "model": "florafauna:block/item_input_blocked"
     }
   }
 }

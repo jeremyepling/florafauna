@@ -1,6 +1,58 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "florafauna:block/item_input"
-  }
+  "parent": "minecraft:block/block",
+  "textures": {"leaf": "florafauna:block/item_input", "throat": "florafauna:block/item_input_throat", "particle": "#leaf"},
+  "elements": [
+    {
+      "name": "Root base",
+      "from": [2, 0, 2],
+      "to": [14, 3, 14],
+      "faces": {
+        "north": {"uv": [2, 13, 14, 16], "texture": "#leaf"},
+        "east": {"uv": [2, 13, 14, 16], "texture": "#leaf"},
+        "south": {"uv": [2, 13, 14, 16], "texture": "#leaf"},
+        "west": {"uv": [2, 13, 14, 16], "texture": "#leaf"},
+        "up": {"uv": [2, 2, 14, 14], "texture": "#throat"},
+        "down": {"uv": [2, 2, 14, 14], "texture": "#leaf"}
+      }
+    },
+    {
+      "name": "Left lobe",
+      "from": [2, 3, 4],
+      "to": [5, 7, 12],
+      "faces": {
+        "north": {"uv": [11, 9, 14, 13], "texture": "#leaf"},
+        "east": {"uv": [4, 9, 12, 13], "texture": "#throat"},
+        "south": {"uv": [2, 9, 5, 13], "texture": "#leaf"},
+        "west": {"uv": [4, 9, 12, 13], "texture": "#leaf"},
+        "up": {"uv": [2, 4, 5, 12], "texture": "#leaf"},
+        "down": {"uv": [2, 4, 5, 12], "texture": "#leaf"}
+      }
+    },
+    {
+      "name": "Right lobe",
+      "from": [11, 3, 4],
+      "to": [14, 8, 12],
+      "faces": {
+        "north": {"uv": [2, 8, 5, 13], "texture": "#leaf"},
+        "east": {"uv": [4, 8, 12, 13], "texture": "#leaf"},
+        "south": {"uv": [11, 8, 14, 13], "texture": "#leaf"},
+        "west": {"uv": [4, 8, 12, 13], "texture": "#throat"},
+        "up": {"uv": [11, 4, 14, 12], "texture": "#leaf"},
+        "down": {"uv": [11, 4, 14, 12], "texture": "#leaf"}
+      }
+    },
+    {
+      "name": "Back lobe",
+      "from": [5, 3, 11],
+      "to": [11, 7, 14],
+      "faces": {
+        "north": {"uv": [5, 9, 11, 13], "texture": "#throat"},
+        "east": {"uv": [2, 9, 5, 13], "texture": "#leaf"},
+        "south": {"uv": [5, 9, 11, 13], "texture": "#leaf"},
+        "west": {"uv": [11, 9, 14, 13], "texture": "#leaf"},
+        "up": {"uv": [5, 11, 11, 14], "texture": "#leaf"},
+        "down": {"uv": [5, 2, 11, 5], "texture": "#leaf"}
+      }
+    }
+  ]
 }

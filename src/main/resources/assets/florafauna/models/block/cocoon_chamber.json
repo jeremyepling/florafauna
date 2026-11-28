@@ -1,0 +1,71 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"silk": "florafauna:block/cocoon_chamber", "bark": "florafauna:block/cocoon_roots", "particle": "#silk"},
+  "elements": [
+    {
+      "name": "Root cushion",
+      "from": [3, 0, 3],
+      "to": [13, 3, 13],
+      "faces": {
+        "north": {"uv": [3, 13, 13, 16], "texture": "#bark"},
+        "east": {"uv": [3, 13, 13, 16], "texture": "#bark"},
+        "south": {"uv": [3, 13, 13, 16], "texture": "#bark"},
+        "west": {"uv": [3, 13, 13, 16], "texture": "#bark"},
+        "up": {"uv": [3, 3, 13, 13], "texture": "#bark"},
+        "down": {"uv": [3, 3, 13, 13], "texture": "#bark"}
+      }
+    },
+    {
+      "name": "Silk body",
+      "from": [4, 3, 4],
+      "to": [12, 12, 12],
+      "faces": {
+        "north": {"uv": [4, 4, 12, 13], "texture": "#silk"},
+        "east": {"uv": [4, 4, 12, 13], "texture": "#silk"},
+        "south": {"uv": [4, 4, 12, 13], "texture": "#silk"},
+        "west": {"uv": [4, 4, 12, 13], "texture": "#silk"},
+        "up": {"uv": [4, 4, 12, 12], "texture": "#silk"},
+        "down": {"uv": [4, 4, 12, 12], "texture": "#silk"}
+      }
+    },
+    {
+      "name": "Folded crown",
+      "from": [5, 12, 5],
+      "to": [11, 15, 11],
+      "faces": {
+        "north": {"uv": [5, 1, 11, 4], "texture": "#silk"},
+        "east": {"uv": [5, 1, 11, 4], "texture": "#silk"},
+        "south": {"uv": [5, 1, 11, 4], "texture": "#silk"},
+        "west": {"uv": [5, 1, 11, 4], "texture": "#silk"},
+        "up": {"uv": [5, 5, 11, 11], "texture": "#silk"},
+        "down": {"uv": [5, 5, 11, 11], "texture": "#silk"}
+      }
+    },
+    {
+      "name": "West root",
+      "from": [2, 0, 6],
+      "to": [4, 7, 11],
+      "faces": {
+        "north": {"uv": [12, 9, 14, 16], "texture": "#bark"},
+        "east": {"uv": [5, 9, 10, 16], "texture": "#bark"},
+        "south": {"uv": [2, 9, 4, 16], "texture": "#bark"},
+        "west": {"uv": [6, 9, 11, 16], "texture": "#bark"},
+        "up": {"uv": [2, 6, 4, 11], "texture": "#bark"},
+        "down": {"uv": [2, 5, 4, 10], "texture": "#bark"}
+      }
+    },
+    {
+      "name": "East root",
+      "from": [12, 0, 4],
+      "to": [14, 6, 9],
+      "faces": {
+        "north": {"uv": [2, 10, 4, 16], "texture": "#bark"},
+        "east": {"uv": [7, 10, 12, 16], "texture": "#bark"},
+        "south": {"uv": [12, 10, 14, 16], "texture": "#bark"},
+        "west": {"uv": [4, 10, 9, 16], "texture": "#bark"},
+        "up": {"uv": [12, 4, 14, 9], "texture": "#bark"},
+        "down": {"uv": [12, 7, 14, 12], "texture": "#bark"}
+      }
+    }
+  ]
+}

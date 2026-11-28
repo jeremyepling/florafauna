@@ -36,7 +36,6 @@ public class FloraFaunaModelProvider extends ModelProvider {
     private static void registerGeneratedBlockModels(BlockModelGenerators blockModels) {
         blockModels.createTrivialCube(FloraFaunaRegistry.TEAL_MOSS_BLOCK.get());
         blockModels.createTrivialCube(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
-        blockModels.createTrivialCube(FloraFaunaRegistry.COCOON_CHAMBER.get());
 
         // Mob Barrier - invisible block, model not actually rendered
         blockModels.createTrivialCube(FloraFaunaRegistry.MOB_BARRIER.get());
@@ -121,6 +120,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
         // Exclude blocks with STATE property (manually defined)
         return FloraFaunaRegistry.ITEMS.getEntries().stream()
                 .filter(x -> !x.getRegisteredName().equals("florafauna:husk"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:cocoon_chamber"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:item_input"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:feral_mining_anchor"))
@@ -139,6 +139,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
         // Exclude blocks with STATE property - assets manually defined in resources
         return FloraFaunaRegistry.BLOCKS.getEntries().stream()
                 .filter(x -> !x.equals(FloraFaunaRegistry.HUSK))
+                .filter(x -> !x.equals(FloraFaunaRegistry.COCOON_CHAMBER))
                 .filter(x -> !x.equals(FloraFaunaRegistry.ITEM_INPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.FIELD_RELAY))
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_MINING_ANCHOR))
