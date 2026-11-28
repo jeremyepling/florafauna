@@ -76,7 +76,7 @@
   "command.florafauna.plot.entry": "The entrance to %s has changed. Check its address with /ffplot list.",
   "command.florafauna.plot.missing": "Build this plot first with /ffplot build %s.",
 
-  "key.categories.florafauna": "Flora Fauna",
+  "key.category.florafauna.key-category": "FloraFauna",
   "itemGroup.florafauna.florafauna_items_tab": "Flora Fauna Items",
 
   "item.florafauna.dormant_symbiote": "Dormant Symbiote",
