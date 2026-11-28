@@ -273,46 +273,50 @@ final class StorageRecoveryGameTests {
     private static void partialRecovery(GameTestHelper h) {
         h.setBlock(CENTER, FloraFaunaRegistry.HUSK.get());
         var husk = h.getBlockEntity(CENTER, HuskBlockEntity.class);
-        var player = createTestPlayer(h);
-        var inventory = player.getInventory();
-        husk.setOwner(player.getUUID());
-        BlockPos pos = husk.getBlockPos();
-        var hit = new BlockHitResult(Vec3.atBottomCenterOf(pos.above()), Direction.UP, pos, false);
-        var shards = new ItemStack(Items.AMETHYST_SHARD, 17);
-        shards.set(DataComponents.CUSTOM_NAME, Component.literal("Recovered shards"));
-        for (int slot = 0; slot < 36; slot++) {
-            inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+        var player = connectSurvivalPlayer(h);
+        try {
+            var inventory = player.getInventory();
+            husk.setOwner(player.getUUID());
+            BlockPos pos = husk.getBlockPos();
+            var hit = new BlockHitResult(Vec3.atBottomCenterOf(pos.above()), Direction.UP, pos, false);
+            var shards = new ItemStack(Items.AMETHYST_SHARD, 17);
+            shards.set(DataComponents.CUSTOM_NAME, Component.literal("Recovered shards"));
+            for (int slot = 0; slot < 36; slot++) {
+                inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+            }
+            inventory.setItem(0, shards.copyWithCount(63));
+            husk.handler.set(7, ItemResource.of(shards), shards.getCount());
+            var fullHusk = h.getBlockState(CENTER);
+            require(h, fullHusk.getLightEmission() == 10
+                            && fullHusk.setValue(HuskBlock.HUSK_TYPE, HuskType.CONTAINER).getLightEmission() == 10,
+                    "Both recoverable husk types should emit light level 10");
+            require(h, fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                    "Owner could not use the stocked husk");
+            require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                            && ItemStack.matches(husk.handler.getResource(7).toStack(husk.handler.getAmountAsInt(7)), shards.copyWithCount(16))
+                            && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION
+                            && h.getBlockState(CENTER).getLightEmission() == 10,
+                    "Partial pickup failed to preserve the named remainder or stocked husk state");
+            fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+            require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                            && husk.handler.getAmountAsInt(7) == 16
+                            && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION,
+                    "Retrying with a full inventory changed the remaining items or broke the husk");
+            inventory.setItem(1, ItemStack.EMPTY);
+            require(h, h.getBlockState(CENTER).useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                    "Owner could not recover the rest of the shards");
+            var shell = h.getBlockState(CENTER);
+            require(h, shell.is(FloraFaunaRegistry.HUSK.get()) && shell.getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN
+                            && shell.getLightEmission() == 0,
+                    "Final pickup did not leave an unlit broken husk shell");
+            shell.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+            require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                            && ItemStack.matches(inventory.getItem(1), shards.copyWithCount(16))
+                            && inventory.countItem(Items.AMETHYST_SHARD) == 80 && husk.isEmpty(),
+                    "Final pickup lost, duplicated or changed the named shards");
+        } finally {
+            h.getLevel().getServer().getPlayerList().remove(player);
         }
-        inventory.setItem(0, shards.copyWithCount(63));
-        husk.handler.set(7, ItemResource.of(shards), shards.getCount());
-        var fullHusk = h.getBlockState(CENTER);
-        require(h, fullHusk.getLightEmission() == 10
-                        && fullHusk.setValue(HuskBlock.HUSK_TYPE, HuskType.CONTAINER).getLightEmission() == 10,
-                "Both recoverable husk types should emit light level 10");
-        require(h, fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
-                "Owner could not use the stocked husk");
-        require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
-                        && ItemStack.matches(husk.handler.getResource(7).toStack(husk.handler.getAmountAsInt(7)), shards.copyWithCount(16))
-                        && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION
-                        && h.getBlockState(CENTER).getLightEmission() == 10,
-                "Partial pickup failed to preserve the named remainder or stocked husk state");
-        fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
-        require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
-                        && husk.handler.getAmountAsInt(7) == 16
-                        && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION,
-                "Retrying with a full inventory changed the remaining items or broke the husk");
-        inventory.setItem(1, ItemStack.EMPTY);
-        require(h, h.getBlockState(CENTER).useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
-                "Owner could not recover the rest of the shards");
-        var shell = h.getBlockState(CENTER);
-        require(h, shell.is(FloraFaunaRegistry.HUSK.get()) && shell.getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN
-                        && shell.getLightEmission() == 0,
-                "Final pickup did not leave an unlit broken husk shell");
-        shell.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
-        require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
-                        && ItemStack.matches(inventory.getItem(1), shards.copyWithCount(16))
-                        && inventory.countItem(Items.AMETHYST_SHARD) == 80 && husk.isEmpty(),
-                "Final pickup lost, duplicated or changed the named shards");
         h.succeed();
     }
 
