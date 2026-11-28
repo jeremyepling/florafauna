@@ -46,7 +46,7 @@ For Fabric, use Minecraft `26.4-pre-2`, Fabric Loader `0.20.1`, and Fabric API `
 
 The three jars are written to `versions/26.4-fabric/build/dev-mods/26.4-pre-2/`. Use `:26.4-fabric:runGameTestServer` with the same properties to exercise the combined server.
 
-The opt-in `26.4-neoforge` target tracks **26.4 Snapshot 10**, the Minecraft version of NeoForge's `port/26.4` commit `e9012cb09aea9261144cdf41d62b5a63f1e5f5dd`. As of November 25, 2026, NeoForge had not published a compatible loader, and that source revision failed to compile. Running the mod on this preview requires a working NeoForge build for the same snapshot. [Upstream port](https://github.com/neoforged/NeoForge/commit/e9012cb09aea9261144cdf41d62b5a63f1e5f5dd)
+The opt-in `26.4-neoforge` target tracks **26.4 Snapshot 10**. On November 28, 2026, NeoForge Maven had no matching loader. Upstream setup completed at `1c14d83`, but Java compilation failed on NeoForge’s fluid API types. [Upstream port](https://github.com/neoforged/NeoForge/commit/1c14d8301132d6e4fe291e50c3262b718a0a5c63)
 
 Once a matching development artifact is available in the NeoForge Maven repository or Maven Local, supply its version in both invocations. The normal 26.1 and 26.3 builds need no preview property.
 
