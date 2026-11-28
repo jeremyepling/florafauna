@@ -37,6 +37,23 @@ if (preview) {
 }
 def generatedResources = dataProject.layout.buildDirectory.dir('generated/resources/datagen')
 sourceSets.main.resources.srcDir generatedResources
+// Exclude obsolete generated assets after switching to authored models.
+def generatedResourcePath = generatedResources.get().asFile.absolutePath + File.separator
+def authoredModelResources = [
+        'assets/florafauna/blockstates/cocoon_chamber.json',
+        'assets/florafauna/blockstates/husk.json',
+        'assets/florafauna/models/block/cocoon_chamber.json',
+        'assets/florafauna/models/block/husk.json',
+        'assets/florafauna/items/cocoon_chamber.json',
+        'assets/florafauna/items/husk.json'
+] as Set
+tasks.named('processResources') {
+    eachFile { resource ->
+        if (resource.path in authoredModelResources && resource.file.absolutePath.startsWith(generatedResourcePath)) {
+            resource.exclude()
+        }
+    }
+}
 tasks.named('processResources') { dependsOn "${dataProject.path}:runData" }
 
 def fabricPlaytestSources = sourceSets.create('fabricPlaytest')

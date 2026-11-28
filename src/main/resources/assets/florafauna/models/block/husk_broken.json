@@ -1,0 +1,560 @@
+{
+  "textures": {
+    "shell": "florafauna:block/husk",
+    "particle": "#shell"
+  },
+  "elements": [
+    {
+      "name": "Collapsed base",
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        2,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "West shell",
+      "from": [
+        1,
+        2,
+        3
+      ],
+      "to": [
+        4,
+        8,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            8,
+            15,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            3,
+            8,
+            13,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            1,
+            8,
+            4,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            3,
+            8,
+            13,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            1,
+            3,
+            4,
+            13
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            1,
+            3,
+            4,
+            13
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "West raised shard",
+      "from": [
+        2,
+        8,
+        4
+      ],
+      "to": [
+        4,
+        11,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            5,
+            14,
+            8
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            8,
+            5,
+            12,
+            8
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            2,
+            5,
+            4,
+            8
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            4,
+            5,
+            8,
+            8
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            2,
+            4,
+            4,
+            8
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            2,
+            8,
+            4,
+            12
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "Back shell",
+      "from": [
+        4,
+        2,
+        12
+      ],
+      "to": [
+        12,
+        6,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            1,
+            10,
+            4,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            4,
+            10,
+            12,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            12,
+            10,
+            15,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            4,
+            12,
+            12,
+            15
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            4,
+            1,
+            12,
+            4
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "Back raised shard",
+      "from": [
+        6,
+        6,
+        13
+      ],
+      "to": [
+        10,
+        8,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            1,
+            8,
+            3,
+            10
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            6,
+            8,
+            10,
+            10
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            13,
+            8,
+            15,
+            10
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            6,
+            13,
+            10,
+            15
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            6,
+            1,
+            10,
+            3
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "East shell",
+      "from": [
+        12,
+        2,
+        8
+      ],
+      "to": [
+        15,
+        5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            11,
+            4,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            1,
+            11,
+            8,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            12,
+            11,
+            15,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            8,
+            11,
+            15,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            15,
+            15
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            12,
+            1,
+            15,
+            8
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "Front fragment",
+      "from": [
+        5,
+        2,
+        1
+      ],
+      "to": [
+        9,
+        4,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            12,
+            11,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            12,
+            12,
+            15,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            5,
+            12,
+            9,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            1,
+            12,
+            4,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            5,
+            1,
+            9,
+            4
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            5,
+            12,
+            9,
+            15
+          ],
+          "texture": "#shell"
+        }
+      }
+    },
+    {
+      "name": "Loose chip",
+      "from": [
+        10,
+        2,
+        5
+      ],
+      "to": [
+        13,
+        3,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            13,
+            6,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "east": {
+          "uv": [
+            9,
+            13,
+            11,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "south": {
+          "uv": [
+            10,
+            13,
+            13,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "west": {
+          "uv": [
+            5,
+            13,
+            7,
+            14
+          ],
+          "texture": "#shell"
+        },
+        "up": {
+          "uv": [
+            10,
+            5,
+            13,
+            7
+          ],
+          "texture": "#shell"
+        },
+        "down": {
+          "uv": [
+            10,
+            9,
+            13,
+            11
+          ],
+          "texture": "#shell"
+        }
+      }
+    }
+  ]
+}

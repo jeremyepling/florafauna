@@ -19,7 +19,6 @@ import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChambe
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberMenu;
 import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
-import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlock;
 import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.Tier2MiningAnchorBlock;
@@ -175,7 +174,7 @@ public class FloraFaunaRegistry {
             props -> new HuskBlock(props
                     .strength(50f, 1200f)
                     .sound(SoundType.SCULK)
-                    .lightLevel(state -> state.getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION ? 7 : 0)
+                    .lightLevel(state -> state.getValue(HuskBlock.HUSK_TYPE).holdsItems() ? 10 : 0)
                     .noOcclusion()
             ));
 

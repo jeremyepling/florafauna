@@ -3,7 +3,10 @@ package net.j40climb.florafauna.common.block.husk;
 import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -43,7 +46,7 @@ import org.jetbrains.annotations.Nullable;
  * - Only the owner can interact with and break the block
  * - Mobs cannot damage or interact with it
  * - Never used as a spawn point
- * - Light level 7 for RESTORATION type (beacon effect)
+ * - Light and fireflies for recoverable husks
  */
 //? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
@@ -83,6 +86,19 @@ public class HuskBlock extends BaseEntityBlock {
         return RenderShape.MODEL;
     }
 
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (!state.getValue(HUSK_TYPE).holdsItems()) return;
+
+        // Start above the shell, where the fireflies won't be hidden inside the block.
+        for (int i = 0; i < 2; i++) {
+            double x = pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0;
+            double y = pos.getY() + 1.05 + random.nextDouble() * 0.75;
+            double z = pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 2.0;
+            level.addParticle(ParticleTypes.FIREFLY, x, y, z, 0.0, 0.0, 0.0);
+        }
+    }
+
     /**
      * Explicitly prevent respawning at this block.
      * Per spec: Husks are never used as spawn points.
@@ -99,7 +115,7 @@ public class HuskBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (!(player instanceof ServerPlayer serverPlayer)) {
+        if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
             return InteractionResult.PASS;
         }
 
@@ -109,7 +125,7 @@ public class HuskBlock extends BaseEntityBlock {
         }
 
         // Delegate to the interaction handler
-        return HuskInteractionHandler.handleInteraction(serverPlayer, huskEntity, state, level, pos);
+        return HuskInteractionHandler.handleInteraction(serverPlayer, huskEntity, state, serverLevel, pos);
     }
 
     //? if neoforge {

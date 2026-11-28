@@ -12,16 +12,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
-//? if <26.3 {
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-//?} else {
-/*import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
-*///?}
-
 import java.util.Set;
 
 public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
@@ -65,20 +55,6 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
         // Iron Garden System blocks
         // Ferric Poppy drops the ferric poppy item (for crafting into nuggets)
         dropOther(FloraFaunaRegistry.FERRIC_POPPY.get(), FloraFaunaRegistry.FERRIC_POPPY_ITEM.get());
-        // One discovery supplies pollen for consumption and the Cocoon Chamber.
-        add(FloraFaunaRegistry.RESONANT_BLOOM.get(), LootTable.lootTable()
-                .withPool(LootPool.lootPool()
-                        //? if <26.3 {
-                        .setRolls(ConstantValue.exactly(1))
-                        //?} else {
-                        /*.setRolls(ContextIntProviders.exactly(1))
-                        *///?}
-                        .add(LootItem.lootTableItem(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get())
-                                //? if <26.3 {
-                                .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2))))));
-                                //?} else {
-                                /*.apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(2))))));
-                                *///?}
 
         // Wood blocks - all drop themselves (slabs use special loot table)
         for (WoodType woodType : WoodType.values()) {
@@ -96,6 +72,8 @@ public class FloraFaunaBlockLootTableProvider extends BlockLootSubProvider {
 
     @Override
     protected Iterable<Block> getKnownBlocks() {
-        return FloraFaunaRegistry.BLOCKS.getEntries().stream().map(Holder::value)::iterator;
+        return FloraFaunaRegistry.BLOCKS.getEntries().stream()
+                .filter(block -> !block.equals(FloraFaunaRegistry.RESONANT_BLOOM))
+                .map(Holder::value)::iterator;
     }
 }

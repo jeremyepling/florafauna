@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": 2
+          },
+          "name": "florafauna:symbiotic_pollen"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "florafauna:blocks/resonant_bloom"
+}

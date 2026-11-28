@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "husk_type=restoration": {
+      "model": "florafauna:block/husk"
+    },
+    "husk_type=container": {
+      "model": "florafauna:block/husk"
+    },
+    "husk_type=broken": {
+      "model": "florafauna:block/husk_broken"
+    }
+  }
+}

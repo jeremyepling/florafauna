@@ -1,9 +1,12 @@
 package net.j40climb.florafauna.test;
 
 import net.j40climb.florafauna.Config;
+import net.j40climb.florafauna.platform.AttachmentAccess;
+import net.j40climb.florafauna.common.block.husk.HuskBlock;
 import net.j40climb.florafauna.common.block.husk.HuskBlockEntity;
 import net.j40climb.florafauna.common.block.husk.HuskPlacementHelper;
 import net.j40climb.florafauna.common.block.husk.HuskDeathHandler;
+import net.j40climb.florafauna.common.block.husk.HuskType;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.ItemInputBlockEntity;
 import net.j40climb.florafauna.common.block.iteminput.storageanchor.StorageAnchorBlockEntity;
 import net.j40climb.florafauna.common.block.mininganchor.Tier1MiningAnchorBlockEntity;
@@ -17,10 +20,13 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -82,6 +88,7 @@ final class StorageRecoveryGameTests {
         registerTest(event, environment, "failed_husk_placement_keeps_inventory", StorageRecoveryGameTests::failedPlacement);
         registerTest(event, environment, "husk_death_veto_preserves_inventory", StorageRecoveryGameTests::deathVeto);
         registerTest(event, environment, "dash_requires_active_grant", StorageRecoveryGameTests::dashGrant);
+        registerTest(event, environment, "dash_safe_landing", StorageRecoveryGameTests::dashSafeLanding);
         registerTest(event, environment, "one_observation_per_damage_event", StorageRecoveryGameTests::damageObservations);
         registerTest(event, environment, "player_fall_damage_uses_symbiote_ability", StorageRecoveryGameTests::fallDamage);
         registerTest(event, environment, "containment_shift_click_preserves_counted_stacks", StorageRecoveryGameTests::containmentShiftClick);
@@ -266,20 +273,50 @@ final class StorageRecoveryGameTests {
     private static void partialRecovery(GameTestHelper h) {
         h.setBlock(CENTER, FloraFaunaRegistry.HUSK.get());
         var husk = h.getBlockEntity(CENTER, HuskBlockEntity.class);
-        var player = createTestPlayer(h);
-        var inventory = player.getInventory();
-        for (int slot = 0; slot < 36; slot++) {
-            inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+        var player = connectSurvivalPlayer(h);
+        try {
+            var inventory = player.getInventory();
+            husk.setOwner(player.getUUID());
+            BlockPos pos = husk.getBlockPos();
+            var hit = new BlockHitResult(Vec3.atBottomCenterOf(pos.above()), Direction.UP, pos, false);
+            var shards = new ItemStack(Items.AMETHYST_SHARD, 17);
+            shards.set(DataComponents.CUSTOM_NAME, Component.literal("Recovered shards"));
+            for (int slot = 0; slot < 36; slot++) {
+                inventory.setItem(slot, new ItemStack(Items.COBBLESTONE, 64));
+            }
+            inventory.setItem(0, shards.copyWithCount(63));
+            husk.handler.set(7, ItemResource.of(shards), shards.getCount());
+            var fullHusk = h.getBlockState(CENTER);
+            require(h, fullHusk.getLightEmission() == 10
+                            && fullHusk.setValue(HuskBlock.HUSK_TYPE, HuskType.CONTAINER).getLightEmission() == 10,
+                    "Both recoverable husk types should emit light level 10");
+            require(h, fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                    "Owner could not use the stocked husk");
+            require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                            && ItemStack.matches(husk.handler.getResource(7).toStack(husk.handler.getAmountAsInt(7)), shards.copyWithCount(16))
+                            && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION
+                            && h.getBlockState(CENTER).getLightEmission() == 10,
+                    "Partial pickup failed to preserve the named remainder or stocked husk state");
+            fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+            require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                            && husk.handler.getAmountAsInt(7) == 16
+                            && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION,
+                    "Retrying with a full inventory changed the remaining items or broke the husk");
+            inventory.setItem(1, ItemStack.EMPTY);
+            require(h, h.getBlockState(CENTER).useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
+                    "Owner could not recover the rest of the shards");
+            var shell = h.getBlockState(CENTER);
+            require(h, shell.is(FloraFaunaRegistry.HUSK.get()) && shell.getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN
+                            && shell.getLightEmission() == 0,
+                    "Final pickup did not leave an unlit broken husk shell");
+            shell.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+            require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                            && ItemStack.matches(inventory.getItem(1), shards.copyWithCount(16))
+                            && inventory.countItem(Items.AMETHYST_SHARD) == 80 && husk.isEmpty(),
+                    "Final pickup lost, duplicated or changed the named shards");
+        } finally {
+            h.getLevel().getServer().getPlayerList().remove(player);
         }
-        inventory.setItem(0, new ItemStack(Items.AMETHYST_SHARD, 63));
-        husk.handler.set(7, ItemResource.of(Items.AMETHYST_SHARD), 17);
-        husk.transferItemsToPlayer(player);
-        require(h, inventory.countItem(Items.AMETHYST_SHARD) == 64 && husk.handler.getAmountAsInt(7) == 16,
-                "Partial pickup failed to preserve remainder");
-        inventory.setItem(1, ItemStack.EMPTY);
-        husk.transferItemsToPlayer(player);
-        husk.transferItemsToPlayer(player);
-        require(h, inventory.countItem(Items.AMETHYST_SHARD) == 80 && husk.isEmpty(), "Second pickup lost or duplicated items");
         h.succeed();
     }
 
@@ -395,6 +432,54 @@ final class StorageRecoveryGameTests {
         h.succeed();
     }
 
+    private static void dashSafeLanding(GameTestHelper h) {
+        h.setBlock(CENTER, Blocks.STONE);
+        Vec3 landing = Vec3.atBottomCenterOf(h.absolutePos(CENTER).above());
+        var player = connectSurvivalPlayer(h);
+        var bonded = PlayerSymbioteData.DEFAULT.withSymbioteState(SymbioteState.BONDED_ACTIVE);
+        try {
+            AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bonded.withDash(true));
+            player.setOnGround(false);
+            player.setPos(landing.add(0, 9, 0));
+            DashPayload.dash(player);
+            hardLanding(h, player, landing, false, "airborne dash");
+            hardLanding(h, player, landing, true, "next fall without a dash");
+
+            AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bonded.withDash(false));
+            player.setOnGround(false);
+            player.setPos(landing.add(0, 9, 0));
+            DashPayload.dash(player);
+            hardLanding(h, player, landing, true, "rejected dash");
+
+            AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, bonded.withDash(true));
+            DashPayload.dash(player);
+            // Remain on the floor after a level dash, then start an unrelated fall.
+            player.setOnGroundWithMovement(true, false, Vec3.ZERO);
+            player.doCheckFallDamage(0, 0, 0, true);
+            player.tick();
+            player.tick();
+            hardLanding(h, player, landing, true, "grounded dash that never left the floor");
+        } finally {
+            h.getLevel().getServer().getPlayerList().remove(player);
+        }
+        h.succeed();
+    }
+
+    private static void hardLanding(GameTestHelper h, ServerPlayer player, Vec3 landing,
+                                    boolean expectDamage, String phase) {
+        clearDamageCooldown(player);
+        player.setHealth(20);
+        player.setPos(landing.add(0, 9, 0));
+        // Replay the movement and fall checks used for accepted player move packets.
+        for (int height = 8; height >= 0; height--) {
+            boolean grounded = height == 0;
+            player.setPos(landing.add(0, height, 0));
+            player.setOnGroundWithMovement(grounded, false, new Vec3(0, -1, 0));
+            player.doCheckFallDamage(0, -1, 0, grounded);
+        }
+        require(h, (player.getHealth() < 20) == expectDamage, phase + ": health was " + player.getHealth());
+    }
+
     private static void damageObservations(GameTestHelper h) {
         var player = connectSurvivalPlayer(h);
         var attacker = (net.minecraft.world.entity.LivingEntity) net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
@@ -478,7 +563,7 @@ final class StorageRecoveryGameTests {
     }
 
     /** Real Survival semantics and an acknowledged embedded connection are required to exercise player damage. */
-    private static ServerPlayer connectSurvivalPlayer(GameTestHelper h) {
+    static ServerPlayer connectSurvivalPlayer(GameTestHelper h) {
         var level = h.getLevel();
         var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(
                 new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "survival-fixture"), false);
@@ -497,7 +582,7 @@ final class StorageRecoveryGameTests {
         return player;
     }
 
-    private static void clearDamageCooldown(ServerPlayer player) {
+    static void clearDamageCooldown(ServerPlayer player) {
         //? if <26.3 {
         player.invulnerableTime = 0;
         //?} else {

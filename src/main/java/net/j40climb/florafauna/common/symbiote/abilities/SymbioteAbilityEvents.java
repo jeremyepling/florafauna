@@ -5,8 +5,6 @@ import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -27,7 +25,7 @@ import java.util.List;
 
 /**
  * Event handler for symbiote abilities.
- * Handles creeper detection, speed effect, fall damage negation, and jump boost.
+ * Handles creeper detection, passive stat bonuses, and fall damage negation.
  */
 //? if neoforge {
 @EventBusSubscriber(modid = FloraFauna.MOD_ID)
@@ -52,7 +50,9 @@ public class SymbioteAbilityEvents {
             return;
         }
 
+        DashPayload.expireLanding(serverPlayer);
         PlayerSymbioteData symbioteData = net.j40climb.florafauna.platform.AttachmentAccess.get(serverPlayer, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA);
+        SymbiotePassiveStats.updateAttributes(serverPlayer, symbioteData);
         if (!symbioteData.symbioteState().areAbilitiesActive()) {
             return;
         }
@@ -61,16 +61,6 @@ public class SymbioteAbilityEvents {
         if (serverPlayer.tickCount % 20 == 0) {
             // Creeper detection
             detectNearbyCreepers(serverPlayer);
-        }
-
-        // Apply speed effect continuously when enabled
-        if (symbioteData.speed()) {
-            applySpeedEffect(serverPlayer);
-        }
-
-        // Apply jump boost effect when enabled
-        if (symbioteData.jumpBoost() > 0) {
-            applyJumpBoostEffect(serverPlayer, symbioteData.jumpBoost());
         }
     }
 
@@ -124,39 +114,6 @@ public class SymbioteAbilityEvents {
         } else {
             return dz > 0 ? "south" : "north";
         }
-    }
-
-    /**
-     * Applies Speed 2 effect to the player
-     */
-    private static void applySpeedEffect(ServerPlayer player) {
-        // Apply Speed 2 for 2 seconds (40 ticks), refresh every tick
-        // Using ambient=true and showParticles=false for a cleaner effect
-        MobEffectInstance speedEffect = new MobEffectInstance(
-                MobEffects.SPEED,
-                40,    // duration: 2 seconds
-                1,     // amplifier: 1 = Speed 2
-                true,  // ambient
-                false  // showParticles
-        );
-        player.addEffect(speedEffect);
-    }
-
-    /**
-     * Applies Jump Boost effect to the player based on jumpBoost level
-     * jumpBoost 1 = Jump Boost I, jumpBoost 2 = Jump Boost II, etc.
-     */
-    private static void applyJumpBoostEffect(ServerPlayer player, int jumpBoost) {
-        // Apply Jump Boost for 2 seconds (40 ticks), refresh every tick
-        // Amplifier is jumpBoost - 1 (jumpBoost 1 = amplifier 0 = Jump Boost I)
-        MobEffectInstance jumpEffect = new MobEffectInstance(
-                MobEffects.JUMP_BOOST,
-                40,             // duration: 2 seconds
-                jumpBoost - 1,  // amplifier: jumpBoost - 1
-                true,           // ambient
-                false           // showParticles
-        );
-        player.addEffect(jumpEffect);
     }
 
     /**

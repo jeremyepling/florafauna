@@ -25,7 +25,6 @@ import net.j40climb.florafauna.client.KeyInputEvents;
 import net.j40climb.florafauna.common.block.cocoonchamber.CocoonChamberScreen;
 import net.j40climb.florafauna.common.block.cocoonchamber.networking.OpenCocoonScreenPayload;
 import net.j40climb.florafauna.common.block.containmentchamber.ContainmentChamberScreen;
-import net.j40climb.florafauna.common.block.husk.HuskParticleHandler;
 import net.j40climb.florafauna.common.block.iteminput.ItemInputAnimationTracker;
 import net.j40climb.florafauna.common.block.iteminput.rootiteminput.networking.ItemInputAnimationPayload;
 import net.j40climb.florafauna.common.block.mininganchor.networking.AnchorFillStatePayload;
@@ -59,7 +58,7 @@ public final class ClientSetup implements ClientModInitializer {
 
     @SuppressWarnings("unchecked") // Hammer exports this callback under its own namespaced protocol key.
     private static void connectHammerDiagnostics() {
-        Object provider = FabricLoader.getInstance().getObjectShare().get("florafauna_hammer:tool_diagnostics");
+        Object provider = FabricLoader.getInstance().getObjectShare().get("hammer:tool_diagnostics");
         if (provider instanceof java.util.function.BiConsumer<?, ?>) {
             DebugOverlay.setHammerDiagnostics((java.util.function.BiConsumer<net.minecraft.world.item.ItemStack, java.util.List<String>>) provider);
         }
@@ -108,10 +107,7 @@ public final class ClientSetup implements ClientModInitializer {
                 AttachmentAccess.set(player, FloraFaunaRegistry.PLAYER_SYMBIOTE_DATA, data.withLastAnnouncedFillState(payload.fillState()));
             }
         });
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            KeyInputEvents.onClientTick();
-            if (client.player != null) HuskParticleHandler.tick(client.player);
-        });
+        ClientTickEvents.END_CLIENT_TICK.register(client -> KeyInputEvents.onClientTick());
         ClientTickEvents.END_LEVEL_TICK.register(level -> ItemInputAnimationTracker.tick());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             NoClipClientState.setEnabled(false);

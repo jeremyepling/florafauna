@@ -5,6 +5,7 @@ import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -16,10 +17,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public final class LocatorWaypoints {
-    // Distance-based sprites (matching our waypoint_style pattern)
-    private static final Identifier HUSK_SPRITE_NEAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/husk_near");
-    private static final Identifier HUSK_SPRITE_MID = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/husk_mid");
-    private static final Identifier HUSK_SPRITE_FAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/husk_far");
+    private static final Identifier XAERO_GUI = Identifier.fromNamespaceAndPath("xaerobetterpvp", "gui/guis.png");
+    private static final Identifier SKELETON_TEXTURE = Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png");
+    private static final int SKULL_SIZE = 9;
 
     // Distance thresholds for sprite selection
     private static final float NEAR_DISTANCE = 50.0f;
@@ -29,16 +29,12 @@ public final class LocatorWaypoints {
 
     private static final Identifier LOCATOR_BAR_ARROW_DOWN = Identifier.withDefaultNamespace("hud/locator_bar_arrow_down");
 
-    // Sculk teal color in ARGB format
-    private static final int TEAL_COLOR = 0xFF0F8080;
-
-    // Mining Anchor sprites (reuse husk sprites with different colors based on fill state)
     private static final Identifier ANCHOR_SPRITE_NEAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/anchor_near");
     private static final Identifier ANCHOR_SPRITE_MID = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/anchor_mid");
     private static final Identifier ANCHOR_SPRITE_FAR = Identifier.fromNamespaceAndPath("florafauna", "hud/locator_bar_dot/anchor_far");
 
     // Fill state colors
-    private static final int ANCHOR_COLOR_NORMAL = 0xFF0F8080;   // Teal (same as husk)
+    private static final int ANCHOR_COLOR_NORMAL = 0xFF0F8080;   // Teal
     private static final int ANCHOR_COLOR_WARNING = 0xFFFF8800;  // Orange
     private static final int ANCHOR_COLOR_FULL = 0xFFFF0000;     // Red
 
@@ -94,35 +90,20 @@ public final class LocatorWaypoints {
             return;
         }
 
-        // Calculate distance to husk for sprite selection
-        float distance = (float) Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-
-        // Select sprite and size based on distance (like vanilla WaypointStyle.sprite())
-        Identifier sprite;
-        int spriteSize;
-        if (distance < NEAR_DISTANCE) {
-            sprite = HUSK_SPRITE_NEAR;
-            spriteSize = 9;  // Near sprite is 9x9
-        } else if (distance >= FAR_DISTANCE) {
-            sprite = HUSK_SPRITE_FAR;
-            spriteSize = 5;  // Far sprite is 5x5
-        } else {
-            sprite = HUSK_SPRITE_MID;
-            spriteSize = 7;  // Mid sprite is 7x7
-        }
-
-        // Center the sprite horizontally, accounting for its size
-        int halfWidth = Mth.ceil((guiGraphics.guiWidth() - spriteSize) / 2.0F);
-
-        // Map angle to bar position (-60 to +60 maps to -86.5 to +86.5 pixels)
+        int halfWidth = Mth.ceil((guiGraphics.guiWidth() - SKULL_SIZE) / 2.0F);
         int xOffset = Mth.floor(relativeAngle * 173.0 / 2.0 / VISIBLE_DEGREE_RANGE);
-
-        // Render the husk sprite with teal color
-        // Vanilla renders 9x9 waypoints at (x, top - 2)
-        // Adjust Y offset to vertically center smaller sprites at the same position
-        // 9x9: offset -2, 7x7: offset -1, 5x5: offset 0
-        int yOffset = -2 + (9 - spriteSize) / 2;
-        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, halfWidth + xOffset, barTop + yOffset, spriteSize, spriteSize, TEAL_COLOR);
+        int x = halfWidth + xOffset;
+        int y = barTop - 2;
+        // Use Xaero's own nine-pixel death waypoint glyph, including its one-pixel shadow.
+        if (Minecraft.getInstance().getResourceManager().getResource(XAERO_GUI).isPresent()) {
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, XAERO_GUI, x + 1, y + 1, 0, 78,
+                    SKULL_SIZE, SKULL_SIZE, 9, 9, 256, 256, 0xFF3E3E3E);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, XAERO_GUI, x, y, 0, 78,
+                    SKULL_SIZE, SKULL_SIZE, 9, 9, 256, 256, 0xFFFCFCFC);
+        } else {
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, SKELETON_TEXTURE, x, y, 8, 8,
+                    SKULL_SIZE, SKULL_SIZE, 8, 8, 64, 32);
+        }
 
         // Render up/down arrows if husk is above or below player
         double heightDiff = huskVec.y - playerPos.y;

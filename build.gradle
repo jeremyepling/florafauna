@@ -157,7 +157,7 @@ neoForge {
         gameTestServer {
             type = "gameTestServer"
             gameDirectory = new File(runRoot, "gameTestServer-${wt}")
-            systemProperty 'neoforge.enabledGameTestNamespaces', ([project.mod_id] + companionNames.collect { "florafauna_${it}" }).join(',')
+            systemProperty 'neoforge.enabledGameTestNamespaces', ([project.mod_id] + companionNames).join(',')
             def selector = providers.gradleProperty('gameTestFilter').orNull
             if (selector != null) {
                 if (!(selector ==~ /[a-z0-9_.*?-]+:[a-z0-9_.*?\/-]+/)) {
@@ -221,6 +221,27 @@ tasks.matching { it.name == 'runWorldPlaytest' }.configureEach {
 sourceSets.main.resources {
     srcDir generatedResources
     exclude '.cache/**'
+}
+
+// Older data generation runs may still have copies of these authored resources.
+def generatedResourcePath = generatedResources.absolutePath + File.separator
+def authoredResources = [
+        'data/florafauna/loot_table/blocks/resonant_bloom.json',
+        'assets/florafauna/blockstates/cocoon_chamber.json',
+        'assets/florafauna/blockstates/husk.json',
+        'assets/florafauna/models/block/cocoon_chamber.json',
+        'assets/florafauna/models/block/husk.json',
+        'assets/florafauna/items/cocoon_chamber.json',
+        'assets/florafauna/items/husk.json',
+        'assets/florafauna/items/symbiotic_pollen.json',
+        'assets/florafauna/models/item/symbiotic_pollen.json'
+] as Set
+tasks.named('processResources') {
+    eachFile { resource ->
+        if (resource.path in authoredResources && resource.file.absolutePath.startsWith(generatedResourcePath)) {
+            resource.exclude()
+        }
+    }
 }
 
 // Sets up a dependency configuration called 'localRuntime'.

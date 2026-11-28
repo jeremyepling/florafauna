@@ -144,9 +144,11 @@ public class HuskBlockEntity extends BlockEntity {
     /**
      * Transfer items from this husk back to the player.
      * Items that don't fit remain in the husk.
+     * Returns whether the player received any items.
      */
-    public void transferItemsToPlayer(Player player) {
+    public boolean transferItemsToPlayer(Player player) {
         Inventory inv = player.getInventory();
+        boolean transferred = false;
 
         // Transfer main inventory first (slots 0-35)
         for (int i = 0; i < 36; i++) {
@@ -156,8 +158,9 @@ public class HuskBlockEntity extends BlockEntity {
                 if (inv.getItem(i).isEmpty()) {
                     inv.setItem(i, stack);
                     clearSlot(i);
+                    transferred = true;
                 } else {
-                    transferToAvailableSlots(inv, i, stack);
+                    transferred |= transferToAvailableSlots(inv, i, stack);
                 }
                 // If can't add, it stays in the husk
             }
@@ -172,8 +175,9 @@ public class HuskBlockEntity extends BlockEntity {
                 if (player.getItemBySlot(armorSlots[i]).isEmpty()) {
                     player.setItemSlot(armorSlots[i], armorStack);
                     clearSlot(ARMOR_START + i);
+                    transferred = true;
                 } else {
-                    transferToAvailableSlots(inv, ARMOR_START + i, armorStack);
+                    transferred |= transferToAvailableSlots(inv, ARMOR_START + i, armorStack);
                 }
             }
         }
@@ -184,15 +188,19 @@ public class HuskBlockEntity extends BlockEntity {
             if (player.getOffhandItem().isEmpty()) {
                 player.setItemSlot(EquipmentSlot.OFFHAND, offhandStack);
                 clearSlot(OFFHAND_SLOT);
+                transferred = true;
             } else {
-                transferToAvailableSlots(inv, OFFHAND_SLOT, offhandStack);
+                transferred |= transferToAvailableSlots(inv, OFFHAND_SLOT, offhandStack);
             }
         }
 
         setChanged();
+        // A husk placed with an empty inventory has no slot changes to trigger this.
+        checkAndTransitionToBroken();
+        return transferred;
     }
 
-    private void transferToAvailableSlots(Inventory inventory, int huskSlot, ItemStack remaining) {
+    private boolean transferToAvailableSlots(Inventory inventory, int huskSlot, ItemStack remaining) {
         int originalCount = remaining.getCount();
         while (!remaining.isEmpty()) {
             int slot = inventory.getSlotWithRemainingSpace(remaining);
@@ -208,7 +216,9 @@ public class HuskBlockEntity extends BlockEntity {
         }
         if (remaining.getCount() < originalCount) {
             handler.set(huskSlot, ItemResource.of(remaining), remaining.getCount());
+            return true;
         }
+        return false;
     }
 
     /**

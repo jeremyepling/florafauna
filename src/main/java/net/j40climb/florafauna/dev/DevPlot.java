@@ -45,8 +45,8 @@ public enum DevPlot {
 
     public static List<DevPlot> available() {
         return Arrays.stream(values()).filter(plot -> switch (plot) {
-            case FRENCHIE -> net.j40climb.florafauna.platform.PlatformEnvironment.isModLoaded("florafauna_frenchies");
-            case HAMMER, TOOL_ACTIONS -> net.j40climb.florafauna.platform.PlatformEnvironment.isModLoaded("florafauna_hammer");
+            case FRENCHIE -> net.j40climb.florafauna.platform.PlatformEnvironment.isModLoaded("frenchies");
+            case HAMMER, TOOL_ACTIONS -> net.j40climb.florafauna.platform.PlatformEnvironment.isModLoaded("hammer");
             default -> true;
         }).toList();
     }

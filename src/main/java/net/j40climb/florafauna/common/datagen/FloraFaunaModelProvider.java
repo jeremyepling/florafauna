@@ -7,7 +7,6 @@ import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
-import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.core.Holder;
@@ -37,13 +36,9 @@ public class FloraFaunaModelProvider extends ModelProvider {
     private static void registerGeneratedBlockModels(BlockModelGenerators blockModels) {
         blockModels.createTrivialCube(FloraFaunaRegistry.TEAL_MOSS_BLOCK.get());
         blockModels.createTrivialCube(FloraFaunaRegistry.SYMBIOTE_CONTAINMENT_CHAMBER.get());
-        blockModels.createTrivialCube(FloraFaunaRegistry.COCOON_CHAMBER.get());
 
         // Mob Barrier - invisible block, model not actually rendered
         blockModels.createTrivialCube(FloraFaunaRegistry.MOB_BARRIER.get());
-
-        // Husk block - uses a simple cube for now (blockstate variants handled by json)
-        blockModels.createTrivialCube(FloraFaunaRegistry.HUSK.get());
 
         // Item Input System blocks
         blockModels.createTrivialCube(FloraFaunaRegistry.STORAGE_ANCHOR.get());
@@ -87,12 +82,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
 
     // These are simple models that can be data generated and have no custom json from blockbench
     private static void registerGeneratedItemModels(ItemModelGenerators itemModels) {
-        Item dormantSymbiote = FloraFaunaRegistry.DORMANT_SYMBIOTE.get();
-        var dormantModel = itemModels.createFlatItemModel(
-                dormantSymbiote, FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.itemModelOutput.accept(dormantSymbiote,
-                ItemModelUtils.tintedModel(dormantModel, ItemModelUtils.constantTint(0xFF91A494)));
-        itemModels.generateFlatItem(FloraFaunaRegistry.SYMBIOTIC_POLLEN.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(FloraFaunaRegistry.DORMANT_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.MOB_SYMBIOTE.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.GECKO_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(FloraFaunaRegistry.LIZARD_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
@@ -129,6 +119,8 @@ public class FloraFaunaModelProvider extends ModelProvider {
     protected Stream<? extends Holder<Item>> getKnownItems() {
         // Exclude blocks with STATE property (manually defined)
         return FloraFaunaRegistry.ITEMS.getEntries().stream()
+                .filter(x -> !x.getRegisteredName().equals("florafauna:husk"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:cocoon_chamber"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:item_input"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:field_relay"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:feral_mining_anchor"))
@@ -138,6 +130,7 @@ public class FloraFaunaModelProvider extends ModelProvider {
                 .filter(x -> !x.getRegisteredName().equals("florafauna:mob_output"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:slime_grate"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:ferric_poppy"))
+                .filter(x -> !x.getRegisteredName().equals("florafauna:symbiotic_pollen"))
                 .filter(x -> !x.getRegisteredName().equals("florafauna:resonant_bloom"));
     }
 
@@ -145,6 +138,8 @@ public class FloraFaunaModelProvider extends ModelProvider {
     protected Stream<? extends Holder<Block>> getKnownBlocks() {
         // Exclude blocks with STATE property - assets manually defined in resources
         return FloraFaunaRegistry.BLOCKS.getEntries().stream()
+                .filter(x -> !x.equals(FloraFaunaRegistry.HUSK))
+                .filter(x -> !x.equals(FloraFaunaRegistry.COCOON_CHAMBER))
                 .filter(x -> !x.equals(FloraFaunaRegistry.ITEM_INPUT))
                 .filter(x -> !x.equals(FloraFaunaRegistry.FIELD_RELAY))
                 .filter(x -> !x.equals(FloraFaunaRegistry.TIER1_MINING_ANCHOR))
