@@ -70,7 +70,7 @@ sourceSets.test {
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
 
-def fabricLoaderVersion = '0.19.5'
+def fabricLoaderVersion = findProperty('fabric_loader_version') ?: '0.19.5'
 def companionNames = ['hammer', 'frenchies'].findAll { companion ->
     gradle.ext.devCompanionTargets.contains(project.name) &&
             gradle.includedBuilds.any { it.name == "dev-${companion}" || it.name == "dev-${companion}-${minecraft_version}" }
