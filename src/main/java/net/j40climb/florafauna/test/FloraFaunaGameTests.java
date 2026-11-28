@@ -2256,6 +2256,8 @@ public class FloraFaunaGameTests {
         helper.setBlock(new BlockPos(1, 2, 1), net.minecraft.world.level.block.Blocks.STONE);
         helper.assertTrue(FearSourceDetector.detectCreeperFearSource(creeper, 4).isEmpty(),
                 "The wall blocks sight of the ocelot and the nearby cow is harmless");
+        // GameTests share a level. The ocelot can scare creepers in neighboring pens.
+        ocelot.discard();
         helper.succeed();
     }
 
