@@ -286,18 +286,23 @@ final class StorageRecoveryGameTests {
         inventory.setItem(0, shards.copyWithCount(63));
         husk.handler.set(7, ItemResource.of(shards), shards.getCount());
         var fullHusk = h.getBlockState(CENTER);
+        require(h, fullHusk.getLightEmission() == 10
+                        && fullHusk.setValue(HuskBlock.HUSK_TYPE, HuskType.CONTAINER).getLightEmission() == 10,
+                "Both recoverable husk types should emit light level 10");
         require(h, fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
                 "Owner could not use the stocked husk");
         require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
                         && ItemStack.matches(husk.handler.getResource(7).toStack(husk.handler.getAmountAsInt(7)), shards.copyWithCount(16))
-                        && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION,
+                        && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION
+                        && h.getBlockState(CENTER).getLightEmission() == 10,
                 "Partial pickup failed to preserve the named remainder or stocked husk state");
         inventory.setItem(1, ItemStack.EMPTY);
         require(h, h.getBlockState(CENTER).useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
                 "Owner could not recover the rest of the shards");
         var shell = h.getBlockState(CENTER);
-        require(h, shell.is(FloraFaunaRegistry.HUSK.get()) && shell.getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN,
-                "Final pickup did not leave a broken husk shell");
+        require(h, shell.is(FloraFaunaRegistry.HUSK.get()) && shell.getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN
+                        && shell.getLightEmission() == 0,
+                "Final pickup did not leave an unlit broken husk shell");
         shell.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
         require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
                         && ItemStack.matches(inventory.getItem(1), shards.copyWithCount(16))

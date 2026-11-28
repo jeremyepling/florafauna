@@ -28,7 +28,7 @@ When a player with a bonded symbiote dies, their inventory is stored in a Symbio
 | Type | Created When | Stores Items | Restores Abilities | Locator Bar | Particles |
 |------|--------------|--------------|-------------------|-------------|-----------|
 | RESTORATION | Die while BONDED_ACTIVE | Yes | Yes | Yes | Yes |
-| CONTAINER | Die while BONDED_WEAKENED | Yes | No | No | No |
+| CONTAINER | Die while BONDED_WEAKENED | Yes | No | No | Yes |
 | BROKEN | After all items retrieved | No | No | No | No |
 
 ## Storage Layout
@@ -79,10 +79,11 @@ When a player with a bonded symbiote dies, their inventory is stored in a Symbio
 2. If original slot occupied, add to any available slot
 3. If inventory full, item remains in husk
 
+Both recoverable husk types emit light and ambient fireflies. The broken shell stops emitting both.
+
 ## Restoration Husk Features
 
 - **Locator Bar** - HUD element pointing to husk location
-- **Particles** - Firefly-style ambient particles (visible to all players)
 - **Ability Restore** - Symbiote transitions WEAKENED → ACTIVE on interaction
 - **Dimension Tracked** - Works across dimensions
 
