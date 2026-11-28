@@ -10,6 +10,11 @@ stonecutter {
                 replace("SoundType.${sound})", "BlockSoundSets.${sound})")
             }
             replace('properties.spawnEgg(', 'properties.spawns(')
+            replace('SoundEvents.SCULK_BLOCK_BREAK', 'SoundEvents.SCULK.breakSound().orElseThrow().value()')
+            replace('player.doCheckFallDamage(0, 0, 0, true)', 'player.updateFallDistanceAndCheckFallDamageForClientControlledEntity(Vec3.ZERO, true)')
+            replace('player.doCheckFallDamage(0, -1, 0, grounded)', 'player.updateFallDistanceAndCheckFallDamageForClientControlledEntity(new Vec3(0, -1, 0), grounded)')
+            replace('florafauna$landAfterDash(double dy, boolean onGround', 'florafauna$landAfterDash(boolean onGround')
+            replace('original.call(dy, onGround, state, pos)', 'original.call(onGround, state, pos)')
             replace('Commands.LEVEL_GAMEMASTERS', 'net.minecraft.commands.CommandPermissionLevels.LEVEL_GAMEMASTERS')
             replace('getUpdateTag(HolderLookup.Provider', 'getUpdateTag(net.minecraft.core.HolderGetter.Provider')
         }

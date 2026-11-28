@@ -78,7 +78,7 @@ For feature worktrees or other locations, pass `-PhammerDir=../path-to-hammer` a
 
 **Installing the jars.** The collection task writes the core and selected companion jars to `versions/<target>/build/dev-mods/<minecraft-version>/`. The 26.3 example above writes to `versions/26.3-neoforge/build/dev-mods/26.3/`. Copy the chosen jars into the client and server `mods` directories for that Minecraft version.
 
-**Opening a bundled-mod save.** Back up the closed world, replace the old FloraFauna jar with the split core and install the matching companion jars for any Hammer or Frenchie content present in the save before its first load. The companions retain the original `florafauna:*` registry IDs. In a 26.1 migration test, the split mods loaded and saved the named Hammer with its original vein settings and charge, and the sitting Frenchie retained its UUID and owner.
+**Opening a bundled-mod save.** Back up the closed world and work on a copy. Current Hammer and Frenchies builds use `hammer:*` and `frenchies:*` IDs. Worlds containing their older `florafauna:*` IDs need a separate migration for affected items, dogs, equipment and courier data. Open the migrated copy with the matching three jars and verify the recovered content before continuing play.
 
 ### IntelliJ editing target
 
