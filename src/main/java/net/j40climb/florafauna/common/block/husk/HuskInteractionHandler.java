@@ -4,10 +4,13 @@ import net.j40climb.florafauna.common.symbiote.data.PlayerSymbioteData;
 import net.j40climb.florafauna.common.symbiote.data.SymbioteState;
 import net.j40climb.florafauna.setup.FloraFaunaRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -37,7 +40,7 @@ public final class HuskInteractionHandler {
             ServerPlayer player,
             HuskBlockEntity husk,
             BlockState state,
-            Level level,
+            ServerLevel level,
             BlockPos pos
     ) {
         // Owner-only check
@@ -55,17 +58,20 @@ public final class HuskInteractionHandler {
             return InteractionResult.PASS;
         }
 
-        // Transfer items to player
-        husk.transferItemsToPlayer(player);
+        boolean transferred = husk.transferItemsToPlayer(player);
 
         // If this is a restoration husk, restore symbiote abilities
         if (huskType == HuskType.RESTORATION) {
             restoreSymbiote(player);
         }
 
-        // The block state transition to BROKEN is handled by HuskBlockEntity.checkAndTransitionToBroken()
-        // which is called when contents change
-
+        if (husk.getBlockState().getValue(HuskBlock.HUSK_TYPE) == HuskType.BROKEN) {
+            level.playSound(null, pos, SoundEvents.SCULK_BLOCK_BREAK, SoundSource.BLOCKS, 0.9F, 0.9F);
+            level.sendParticles(ParticleTypes.SMOKE, pos.getX() + 0.5, pos.getY() + 0.85, pos.getZ() + 0.5,
+                    8, 0.22, 0.12, 0.22, 0.02);
+        } else if (transferred) {
+            level.playSound(null, pos, SoundEvents.BUNDLE_REMOVE_ONE, SoundSource.BLOCKS, 0.5F, 0.95F);
+        }
         return InteractionResult.SUCCESS;
     }
 
