@@ -296,6 +296,11 @@ final class StorageRecoveryGameTests {
                         && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION
                         && h.getBlockState(CENTER).getLightEmission() == 10,
                 "Partial pickup failed to preserve the named remainder or stocked husk state");
+        fullHusk.useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+        require(h, ItemStack.matches(inventory.getItem(0), shards.copyWithCount(64))
+                        && husk.handler.getAmountAsInt(7) == 16
+                        && h.getBlockState(CENTER).getValue(HuskBlock.HUSK_TYPE) == HuskType.RESTORATION,
+                "Retrying with a full inventory changed the remaining items or broke the husk");
         inventory.setItem(1, ItemStack.EMPTY);
         require(h, h.getBlockState(CENTER).useItemOn(player.getMainHandItem(), h.getLevel(), player, InteractionHand.MAIN_HAND, hit).consumesAction(),
                 "Owner could not recover the rest of the shards");

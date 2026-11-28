@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import net.j40climb.florafauna.FloraFauna;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -114,7 +115,7 @@ public class HuskBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
 
-        if (!(player instanceof ServerPlayer serverPlayer)) {
+        if (!(player instanceof ServerPlayer serverPlayer) || !(level instanceof ServerLevel serverLevel)) {
             return InteractionResult.PASS;
         }
 
@@ -124,7 +125,7 @@ public class HuskBlock extends BaseEntityBlock {
         }
 
         // Delegate to the interaction handler
-        return HuskInteractionHandler.handleInteraction(serverPlayer, huskEntity, state, level, pos);
+        return HuskInteractionHandler.handleInteraction(serverPlayer, huskEntity, state, serverLevel, pos);
     }
 
     //? if neoforge {
